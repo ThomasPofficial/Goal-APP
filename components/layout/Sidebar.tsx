@@ -1,0 +1,79 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import AccountMenu from "./AccountMenu";
+import {
+  LayoutDashboard,
+  Search,
+  FolderOpen,
+  MessageSquare,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import type { GeniusType } from "@/data/traits";
+
+const navItems = [
+  { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+  { href: "/people", icon: Search, label: "Discover People" },
+  { href: "/projects", icon: FolderOpen, label: "Projects" },
+  { href: "/messages", icon: MessageSquare, label: "Messages" },
+];
+
+interface SidebarProps {
+  userName?: string | null;
+  userEmail?: string | null;
+  geniusType?: GeniusType | null;
+}
+
+export default function Sidebar({ userName, userEmail, geniusType }: SidebarProps) {
+  const pathname = usePathname();
+
+  return (
+    <aside className="fixed left-0 top-0 h-full w-[240px] bg-[#16161a] border-r border-[#2a2a33] flex flex-col z-40">
+      {/* Logo */}
+      <div className="flex items-center gap-3 px-5 h-14 border-b border-[#2a2a33] flex-shrink-0">
+        <div className="w-7 h-7 rounded-md bg-[#c9a84c] flex items-center justify-center flex-shrink-0">
+          <span className="text-[#0f0f11] font-bold text-sm">N</span>
+        </div>
+        <span className="font-semibold text-[#e8e8ec] tracking-wide">Nivarro</span>
+      </div>
+
+      {/* Navigation */}
+      <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+        {navItems.map(({ href, icon: Icon, label }) => {
+          const active =
+            href === "/dashboard"
+              ? pathname === "/dashboard"
+              : pathname.startsWith(href);
+          return (
+            <Link
+              key={href}
+              href={href}
+              className={cn(
+                "flex items-center gap-3 px-3 py-2.5 rounded-md text-sm transition-all",
+                active
+                  ? "bg-[#1e1e24] text-[#e8e8ec] border-l-2 border-[#c9a84c] pl-[10px]"
+                  : "text-[#9898a8] hover:text-[#e8e8ec] hover:bg-[#1e1e2480]"
+              )}
+            >
+              <Icon
+                className={cn(
+                  "w-4 h-4 flex-shrink-0",
+                  active ? "text-[#c9a84c]" : ""
+                )}
+              />
+              {label}
+            </Link>
+          );
+        })}
+      </nav>
+
+      {/* Account section — the popup menu lives here */}
+      <AccountMenu
+        userName={userName}
+        userEmail={userEmail}
+        geniusType={geniusType}
+      />
+    </aside>
+  );
+}
