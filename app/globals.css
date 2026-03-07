@@ -1,0 +1,90 @@
+@import "tailwindcss";
+
+:root {
+  --sidebar-width: 240px;
+  --sidebar-width-collapsed: 64px;
+  --topbar-height: 56px;
+  --card-gap: 16px;
+  --transition-fast: 120ms ease;
+  --transition-base: 200ms ease;
+
+  /* Nivarro dark scholarly palette */
+  --color-base: #0f0f11;
+  --color-surface: #16161a;
+  --color-elevated: #1e1e24;
+  --color-border: #2a2a33;
+  --color-text-primary: #e8e8ec;
+  --color-text-secondary: #9898a8;
+  --color-text-muted: #5a5a6a;
+  --color-amber: #c9a84c;
+  --color-amber-light: #e3c06a;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  background-color: #0f0f11;
+  color: #e8e8ec;
+  font-family: system-ui, -apple-system, sans-serif;
+  min-height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #16161a;
+}
+::-webkit-scrollbar-thumb {
+  background: #2a2a33;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3a3a44;
+}
+
+/* Selection */
+::selection {
+  background: rgba(201, 168, 76, 0.25);
+  color: #e8e8ec;
+}
+
+/* Focus visible only for keyboard nav */
+:focus-visible {
+  outline: 2px solid rgba(201, 168, 76, 0.6);
+  outline-offset: 2px;
+}
+
+/* Input reset */
+input,
+textarea,
+select {
+  background-color: #1e1e24;
+  color: #e8e8ec;
+  border: 1px solid #2a2a33;
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  transition: border-color var(--transition-fast);
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: rgba(201, 168, 76, 0.5);
+  box-shadow: 0 0 0 1px rgba(201, 168, 76, 0.2);
+}
+
+/* Smooth transitions */
+a,
+button {
+  transition: color var(--transition-fast), background-color var(--transition-fast),
+    border-color var(--transition-fast), opacity var(--transition-fast);
+}
