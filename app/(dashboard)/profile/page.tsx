@@ -31,6 +31,9 @@ export default async function ProfilePage() {
               bio: profile.bio ?? "",
               strengthSummary: profile.strengthSummary ?? "",
               traitIds: profile.traitLinks.map((l) => l.traitId),
+              dateOfBirth: profile.dateOfBirth
+                ? profile.dateOfBirth.toISOString().split("T")[0]
+                : "",
             }
           : null
       }
