@@ -82,6 +82,7 @@ model Profile {
   strengthSummary String?
   avatarUrl       String?
   geniusType      GeniusType?
+  dateOfBirth     DateTime?
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
 

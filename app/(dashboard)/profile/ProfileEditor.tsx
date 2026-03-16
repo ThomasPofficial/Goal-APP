@@ -27,6 +27,7 @@ interface Props {
     bio: string;
     strengthSummary: string;
     traitIds: string[];
+    dateOfBirth: string;
   } | null;
   allTraits: Trait[];
 }
@@ -42,6 +43,9 @@ export default function ProfileEditor({ initialProfile, allTraits }: Props) {
   const [bio, setBio] = useState(initialProfile?.bio ?? "");
   const [strengthSummary, setStrengthSummary] = useState(
     initialProfile?.strengthSummary ?? ""
+  );
+  const [dateOfBirth, setDateOfBirth] = useState(
+    initialProfile?.dateOfBirth ?? ""
   );
   const [selectedTraitIds, setSelectedTraitIds] = useState<string[]>(
     initialProfile?.traitIds ?? []
@@ -75,6 +79,7 @@ export default function ProfileEditor({ initialProfile, allTraits }: Props) {
         bio,
         strengthSummary,
         traitIds: selectedTraitIds,
+        dateOfBirth: dateOfBirth || undefined,
       }),
     });
 
@@ -129,6 +134,20 @@ export default function ProfileEditor({ initialProfile, allTraits }: Props) {
               placeholder="e.g. Builder & Systems Thinker"
               className="w-full"
             />
+          </div>
+
+          <div>
+            <label className="block text-xs text-[#9898a8] mb-1.5 uppercase tracking-wider font-medium">
+              Date of Birth
+            </label>
+            <input
+              type="date"
+              value={dateOfBirth}
+              onChange={(e) => setDateOfBirth(e.target.value)}
+              className="w-full"
+              style={{ colorScheme: "dark" }}
+            />
+            <p className="text-xs text-[#5a5a6a] mt-1">Used for age-range filtering in search. Not shown publicly.</p>
           </div>
 
           <div>

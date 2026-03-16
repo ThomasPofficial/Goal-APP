@@ -9,6 +9,7 @@ const profileSchema = z.object({
   bio: z.string().max(1000).optional(),
   strengthSummary: z.string().max(500).optional(),
   traitIds: z.array(z.string()).max(5),
+  dateOfBirth: z.string().optional(),
 });
 
 export async function PUT(req: NextRequest) {
@@ -25,8 +26,10 @@ export async function PUT(req: NextRequest) {
     return NextResponse.json({ error: "Invalid input" }, { status: 400 });
   }
 
-  const { displayName, headline, bio, strengthSummary, traitIds } =
+  const { displayName, headline, bio, strengthSummary, traitIds, dateOfBirth } =
     parsed.data;
+
+  const dob = dateOfBirth ? new Date(dateOfBirth) : undefined;
 
   // Upsert profile
   const profile = await prisma.profile.upsert({
@@ -37,12 +40,14 @@ export async function PUT(req: NextRequest) {
       headline,
       bio,
       strengthSummary,
+      dateOfBirth: dob,
     },
     update: {
       displayName,
       headline,
       bio,
       strengthSummary,
+      dateOfBirth: dob,
     },
   });
 
