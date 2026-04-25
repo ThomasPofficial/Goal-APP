@@ -13,7 +13,7 @@ Improvement pass on the existing Goal-APP Next.js platform. The base app (auth, 
 
 **Tech stack:** Next.js App Router + TypeScript · Tailwind CSS · Prisma/SQLite · NextAuth v5 · Socket.io (Render backend for real-time)
 
-**Dark/light mode:** Every new or modified file uses Tailwind `dark:` variants. Existing untouched files may remain hardcoded dark. The transition is incremental.
+**Dark/light mode:** Every new or modified **component and page** file uses Tailwind `dark:` variants. Pure TypeScript utility/lib files (no JSX) are exempt. Existing untouched files may remain hardcoded dark. The transition is incremental.
 
 ---
 
@@ -96,7 +96,9 @@ model Profile {
   // ... existing fields unchanged ...
   handle          String?  @unique
   currentFocus    String?            // max 120 chars, "What are you working on?"
-  interests       String   @default("[]")  // JSON array of tag strings
+  interests       String   @default("[]")  // JSON array of tag strings, e.g. '["Finance","Robotics"]'
+  // Filtering on /peers is application-layer: fetch profiles, JSON.parse interests, filter in JS.
+  // SQLite has no JSON indexing. Acceptable for v1.
   grade           Int?               // 9 | 10 | 11 | 12
   schoolName      String?
   isFirstGen      Boolean  @default(false)
@@ -246,7 +248,7 @@ model NoteboardCard {
   id        String          @id @default(cuid())
   teamId    String
   type      NoteboardType
-  payload   String          // JSON blob (type-specific fields)
+  payload   String          // JSON blob — schema per type below
   creatorId String
   order     Int             @default(0)
   createdAt DateTime        @default(now())
@@ -260,6 +262,17 @@ enum NoteboardType {
   TASK
   CHECKLIST
 }
+
+// NoteboardCard payload JSON schemas:
+//
+// NOTE:
+// { body: string, color: string, reminderAt?: string | null }
+//
+// TASK:
+// { title: string, assigneeIds: string[], dueDate?: string | null, status: 'todo' | 'inprogress' | 'done' }
+//
+// CHECKLIST:
+// { title: string, items: { id: string, text: string, checked: boolean }[] }
 ```
 
 ---
@@ -297,13 +310,13 @@ One connection to the Render Socket.io server. Components call `useSocket()` —
 
 ```typescript
 import { io, Socket } from 'socket.io-client'
-import { useEffect, useRef } from 'react'
+import { useRef } from 'react'
 
 let socket: Socket | null = null
 
 export function getSocket(): Socket {
   if (!socket) {
-    socket = io(process.env.NEXT_PUBLIC_SOCKET_URL!, { autoConnect: true, reconnection: true })
+    socket = io(process.env.NEXT_PUBLIC_SOCKET_URL!, { autoConnect: false, reconnection: true })
   }
   return socket
 }
@@ -313,6 +326,17 @@ export function useSocket() {
   return ref.current
 }
 ```
+
+**Connection lifecycle:**
+- Connect: called once after successful NextAuth session is established (in root layout or auth provider, after `useSession` returns `authenticated`)
+- Disconnect: called on logout (in the signOut callback)
+- Reconnection: handled automatically by socket.io-client (`reconnection: true`)
+- Reconnection state: the UI does not need to surface reconnection state in v1 — socket.io handles it silently
+
+**Architecture note — relay-only pattern:** The Render Socket.io server is a pure relay. It receives events from clients and broadcasts to rooms. It does **not** read or write to the Prisma/SQLite database. All data persistence goes through Next.js API routes on Vercel. This resolves the SQLite file-sharing conflict between Vercel and Render. Example flow for a team message:
+1. Client emits `team_message_send` to Render socket server
+2. Server broadcasts `team_message_receive` to all room participants
+3. Client simultaneously calls `POST /api/teams/[id]/messages` to persist to SQLite via Prisma
 
 ---
 
@@ -336,9 +360,18 @@ Dashboard · Peers · Orgs · Teams · Messages
 
 ## 6. Onboarding Gate
 
-`middleware.ts` checks `onboardingComplete` on all authenticated routes except `/onboarding` and `/quiz`. Redirect to `/onboarding` if false.
+`middleware.ts` runs on all requests:
 
-Flow:
+1. **Unauthenticated** requests to protected routes → NextAuth redirects to `/login` (existing, unchanged)
+2. **Authenticated** requests where `onboardingComplete === false` → redirect to `/onboarding`
+3. **Excluded from gate** (never redirected): `/onboarding`, `/quiz`, `/api/*`, `/_next/*`, `/favicon.ico`, `/login`, `/register`
+4. `/onboarding` is in the exclusion list — no redirect loop possible
+
+**Routes gated:** `/dashboard`, `/peers`, `/orgs`, `/teams`, `/messages`, `/profile`
+
+If `onboardingComplete` is missing on an old account, treat as `false`.
+
+Onboarding flow:
 1. **Quiz result reveal** — full-screen, type name + tagline + description + tension + "Continue →"
 2. **Step 2 — Current Focus** — single textarea, 120 char limit, live counter, cycling placeholders, "Skip for now"
 3. **Step 3 — Interests** — grouped tag grid, selected in type accent color, 10 max, 1 required, freeform input
@@ -467,11 +500,14 @@ Own profile at `/profile/me`. Public-facing.
 
 ## 13. Shared Behavior
 
-- **Optimistic UI** on: save opportunity, save contact, checklist toggle, task status change. Revert + toast on error.
+- **Optimistic UI** on: save opportunity, save contact, checklist toggle, task status change. On API error: immediately revert the optimistic state to the previous value and show an error toast ("Something went wrong — try again"). Never leave the UI in an inconsistent state.
+- **`/people` → `/peers` migration:** The old `/people` route gets a Next.js `redirect()` (301) in its `page.tsx` pointing to `/peers`. The `/people` folder is kept with only a redirect — all logic moves to `/peers`.
 - **Skeleton screens** (not spinners) on all initial data loads: dashboard feed, peers grid, orgs directory, noteboard.
 - **Empty states** on every list and feed: small SVG icon + message + CTA. No blank areas.
 - **Mobile nav**: AppShell bottom tab bar — Dashboard, Peers, Orgs, Teams, Messages.
-- **No goals anywhere.** No goals page, field, or reference in any new component or API.
+- **No goals anywhere.** No goals page, field, or reference in any new component or API. The existing dashboard (`DashboardClient.tsx`) references a `goal` field on the Project model — leave that untouched (it belongs to Projects, not the Goals feature). Do not add any new `goal` references.
+- **Team access control:** Only `TeamMember` records for a given team may view or interact with `/teams/[teamId]`, its chat, or its noteboard. Non-members get a 403. Team creator is auto-added as ADMIN. API routes for `/api/teams/[id]/*` check session userId against TeamMember table before responding.
+- **API auth:** All API routes except `/api/auth/*` require a valid NextAuth session. Unauthenticated requests return 401. This applies to every route listed in Section 14.
 
 ---
 
