@@ -491,7 +491,7 @@ Events: `noteboard_card_create`, `noteboard_card_update`, `noteboard_card_delete
 
 Two-panel desktop (list left ~320px, thread right). Single-panel mobile.
 
-**Conversation list**: search bar + three collapsible sections (Direct messages / Group chats / Team chats). Each row: stacked avatars + genius type rings + name + last message preview + timestamp + unread badge + online dot (DMs). "New message" button → user picker.
+**Conversation list**: search bar + three collapsible sections (Direct messages / Group chats / Team chats). Each row: stacked avatars + genius type rings + name + last message preview + timestamp + unread badge + online dot (DMs). "New message" button → user picker (creates DM). **"New group" FAB** (bottom-right "+") → participant-selection modal (same as Peers FAB — student search + avatar chips, max 10) → `POST /api/conversations { participantIds, type: 'GROUP' }` → navigate to `/messages?group=[id]`. Group conversations created from `/peers` FAB also land here.
 
 **Message thread**:
 - Header: DM (avatar + name + online) | Group (stacked avatars + "Group · N") | Team (name + "Open workspace" link)
