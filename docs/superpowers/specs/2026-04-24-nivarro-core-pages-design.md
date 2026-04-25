@@ -94,17 +94,17 @@ All additions. Nothing existing changes or is removed.
 ```prisma
 model Profile {
   // ... existing fields unchanged ...
-  handle          String?  @unique
-  currentFocus    String?            // max 120 chars, "What are you working on?"
-  interests       String   @default("[]")  // JSON array of tag strings, e.g. '["Finance","Robotics"]'
-  // Filtering on /peers is application-layer: fetch profiles, JSON.parse interests, filter in JS.
-  // SQLite has no JSON indexing. Acceptable for v1.
-  grade           Int?               // 9 | 10 | 11 | 12
-  schoolName      String?
-  isFirstGen      Boolean  @default(false)
-  isHomeschooled  Boolean  @default(false)
-  isInternational Boolean  @default(false)
-  onboardingComplete Boolean @default(false)
+  handle               String?  @unique   // auto-generated on onboarding complete; editable in profile drawer
+  currentFocus         String?            // max 120 chars
+  interests            String   @default("[]")  // JSON array, e.g. '["Finance","Robotics"]'
+  // Filtering: application-layer (fetch all, JSON.parse, filter in JS). Cap fetch at 500 rows.
+  grade                Int?               // 9 | 10 | 11 | 12
+  schoolName           String?
+  isFirstGen           Boolean  @default(false)
+  isHomeschooled       Boolean  @default(false)
+  isInternational      Boolean  @default(false)
+  onboardingComplete   Boolean  @default(false)
+  secondaryGeniusType  GeniusType?        // optional second type; shown on profile and peers panel
 
   savedOpportunities SavedOpportunity[]
   contacts           Contact[]         @relation("ContactOwner")
@@ -112,6 +112,8 @@ model Profile {
   teamMemberships    TeamMember[]
 }
 ```
+
+**Handle generation:** During onboarding completion, auto-generate as `displayName.toLowerCase().replace(/[^a-z0-9]/g, '') + 4-digit random suffix` (e.g., "thomas" → "thomas4821"). Guarantee uniqueness via retry loop with different suffix. Store on Profile. User may edit in profile Edit drawer (validated unique via `GET /api/profile/check-handle?h=...` debounced).
 
 ### New models
 ```prisma
@@ -194,6 +196,26 @@ model Contact {
   @@unique([ownerId, targetId])
 }
 
+// Extend existing Conversation model — add type + optional teamId
+// (Do NOT create a separate TeamMessage model — all messaging stays unified)
+model Conversation {
+  // ... existing fields unchanged ...
+  type    ConversationType @default(DIRECT)
+  teamId  String?          // only set when type = TEAM; links chat to a Team
+
+  team Team? @relation(fields: [teamId], references: [id])
+}
+
+enum ConversationType {
+  DIRECT
+  GROUP
+  TEAM
+}
+
+// The Conversation.teamId + type=TEAM is the team chat.
+// Messages page queries Conversation for all three sections via type.
+// /teams/[teamId] and /messages share the same Conversation row — bidirectional.
+
 model Team {
   id          String     @id @default(cuid())
   name        String
@@ -204,10 +226,10 @@ model Team {
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 
-  org          Org?           @relation(fields: [orgId], references: [id])
-  members      TeamMember[]
-  messages     TeamMessage[]
+  org            Org?            @relation(fields: [orgId], references: [id])
+  members        TeamMember[]
   noteboardCards NoteboardCard[]
+  conversation   Conversation[]  // should have exactly one TEAM conversation
 }
 
 enum TeamStatus {
@@ -232,16 +254,6 @@ model TeamMember {
 enum TeamRole {
   ADMIN
   MEMBER
-}
-
-model TeamMessage {
-  id        String   @id @default(cuid())
-  teamId    String
-  senderId  String
-  body      String
-  createdAt DateTime @default(now())
-
-  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
 }
 
 model NoteboardCard {
@@ -328,15 +340,16 @@ export function useSocket() {
 ```
 
 **Connection lifecycle:**
-- Connect: called once after successful NextAuth session is established (in root layout or auth provider, after `useSession` returns `authenticated`)
-- Disconnect: called on logout (in the signOut callback)
-- Reconnection: handled automatically by socket.io-client (`reconnection: true`)
-- Reconnection state: the UI does not need to surface reconnection state in v1 — socket.io handles it silently
+- Connect: called once after `useSession` returns `authenticated`; passes NextAuth JWT in `auth.token` of the socket handshake: `io(url, { auth: { token: session.accessToken } })`
+- Disconnect: called in `signOut` callback
+- Reconnection: automatic (`reconnection: true`); no UI state needed for v1
 
-**Architecture note — relay-only pattern:** The Render Socket.io server is a pure relay. It receives events from clients and broadcasts to rooms. It does **not** read or write to the Prisma/SQLite database. All data persistence goes through Next.js API routes on Vercel. This resolves the SQLite file-sharing conflict between Vercel and Render. Example flow for a team message:
-1. Client emits `team_message_send` to Render socket server
-2. Server broadcasts `team_message_receive` to all room participants
-3. Client simultaneously calls `POST /api/teams/[id]/messages` to persist to SQLite via Prisma
+**Socket auth on Render:** The Render server validates the NextAuth JWT using the same `AUTH_SECRET` env var (set identically on both Vercel and Render). Validation: `jwt.verify(token, process.env.AUTH_SECRET)`. Reject connection with 401 if invalid.
+
+**Architecture — relay-only:** Render server receives events and broadcasts to rooms. No DB access. All persistence via Next.js API routes on Vercel. Example (team message):
+1. Client emits `team_message_send` → Render broadcasts `team_message_receive` to room
+2. Client simultaneously calls `POST /api/teams/[id]/messages` to persist to SQLite
+Note: SQLite write serialization under concurrent sends is a known v1 constraint — acceptable.
 
 ---
 
@@ -344,17 +357,19 @@ export function useSocket() {
 
 | New route | Maps from | Notes |
 |-----------|-----------|-------|
-| `/peers` | `/people` | Renamed. Keeps filter logic. Improves visuals. |
+| `/peers` | `/people` | Renamed. 301 redirect at `/people`. Keeps filter logic. |
 | `/orgs` | — | New. Org directory. |
 | `/orgs/[orgId]` | — | New. Full org detail page. |
 | `/teams/[teamId]` | `/team` (partial) | New. Full team workspace. |
-| `/onboarding` | — | New. 4-step flow (quiz reveal → focus → interests → background). |
-| `/profile/[handle]` | `/profile` | Dynamic handle route. `/profile/me` = own profile. |
+| `/onboarding` | — | New. 4-step flow. |
+| `/profile/[handle]` | `/profile` | Dynamic handle route. `/profile/me` renders in-place (does NOT redirect to handle URL). |
 
-`/projects` and `/team` (old) remain accessible but are no longer in the sidebar nav.
+`/projects` and `/team` remain accessible but are removed from sidebar nav.
 
 ### Sidebar nav (updated)
 Dashboard · Peers · Orgs · Teams · Messages
+
+**Sidebar dark mode note:** `Sidebar.tsx` is being modified (new nav items). Apply `dark:` Tailwind variants to all color classes in the sidebar file as part of the update. Convert `bg-[#16161a]` → `bg-white dark:bg-[#16161a]` etc.
 
 ---
 
@@ -370,6 +385,8 @@ Dashboard · Peers · Orgs · Teams · Messages
 **Routes gated:** `/dashboard`, `/peers`, `/orgs`, `/teams`, `/messages`, `/profile`
 
 If `onboardingComplete` is missing on an old account, treat as `false`.
+
+**Onboarding precondition:** A user enters `/onboarding` only after completing the quiz (`geniusType` is set on their Profile). The middleware checks: if authenticated + `geniusType` is null → redirect to `/quiz`. If authenticated + `geniusType` set + `onboardingComplete` false → redirect to `/onboarding`. The quiz result reveal in Step 1 reads `geniusType` from the DB — it is never re-computed here.
 
 Onboarding flow:
 1. **Quiz result reveal** — full-screen, type name + tagline + description + tension + "Continue →"
@@ -391,7 +408,17 @@ Two-column desktop (left ~320px, right flex-1). Single column mobile.
 
 ### Center column
 - **Opportunity ticker** (top): Horizontally scrolling strip, always near-black bg in both modes. Category label + org name + opportunity title + deadline. CSS marquee, pauses on hover. Clicking → `/orgs/[orgId]`. Data: `GET /api/opportunities/ticker?limit=20`, re-fetches every 10 min.
-- **Opportunity feed**: "Opportunities for you" header. Filter chips (All/Internship/Fellowship/Competition/Accelerator/Grant/Bootcamp). Cards with: left accent bar in category color, org logo + name, title, description (2-line), chips (deadline, grade, format), Save toggle + "View organization →". Recommendation signals: interest overlap, grade filter, genius type affinity, eligibility flags, recency. Refresh every 5 min or on visibilitychange. Infinite scroll.
+- **Opportunity feed**: "Opportunities for you" header. Filter chips (All/Internship/Fellowship/Competition/Accelerator/Grant/Bootcamp). Cards with: left accent bar in category color, org logo + name, title, description (2-line), chips (deadline, grade, format), Save toggle + "View organization →". Refresh every 5 min or on visibilitychange. Infinite scroll.
+
+**Recommendation algorithm** (`GET /api/opportunities/recommended`):
+1. Hard filter: `gradeEligibility` includes user's grade (or is null = any grade)
+2. Hard filter: `deadline` is null or in the future
+3. Score each remaining opportunity:
+   - +3 for each interest tag on the opportunity that matches a user interest tag
+   - +2 if `geniusType` affinity matches category (DYNAMO→COMPETITION/ACCELERATOR, BLAZE→FELLOWSHIP/CLUB, TEMPO→INTERNSHIP/FELLOWSHIP, STEEL→RESEARCH/BOOTCAMP)
+   - +1 if `isFirstGen` and opportunity has `isFirstGenFriendly` flag (future field — skip for v1)
+4. Sort by score DESC, then deadline ASC as tiebreaker
+5. Return paginated, 20 per page
 
 ---
 
@@ -507,30 +534,41 @@ Own profile at `/profile/me`. Public-facing.
 - **Mobile nav**: AppShell bottom tab bar — Dashboard, Peers, Orgs, Teams, Messages.
 - **No goals anywhere.** No goals page, field, or reference in any new component or API. The existing dashboard (`DashboardClient.tsx`) references a `goal` field on the Project model — leave that untouched (it belongs to Projects, not the Goals feature). Do not add any new `goal` references.
 - **Team access control:** Only `TeamMember` records for a given team may view or interact with `/teams/[teamId]`, its chat, or its noteboard. Non-members get a 403. Team creator is auto-added as ADMIN. API routes for `/api/teams/[id]/*` check session userId against TeamMember table before responding.
-- **API auth:** All API routes except `/api/auth/*` require a valid NextAuth session. Unauthenticated requests return 401. This applies to every route listed in Section 14.
+- **API auth:** All API routes except `/api/auth/*` and `GET /api/profile/[handle]` require a valid NextAuth session. Unauthenticated requests return 401.
+- **Contacts are unilateral bookmarks.** No acceptance flow. `POST /api/contacts` immediately saves. This is a "save for later" system, not a mutual-friend system.
+- **Org creation is admin-seeded in v1.** No org creation UI is built. Orgs are seeded directly into the DB or via an admin-only route outside this spec's scope. The spec only covers student-facing org browsing and applying.
+- **Onboarding partial progress:** If a user closes mid-onboarding, they restart from Step 1 (quiz reveal) on next login. Steps 2–4 are not saved until `PATCH /api/profile` is called on final completion.
+- **Drag-to-reorder** on the noteboard uses `PATCH /api/teams/[id]/noteboard` (bulk reorder) with `{ orderedIds: string[] }`. Recommended library: `@dnd-kit/core` (works with React 18 + Next.js App Router).
 
 ---
 
-## 14. API Routes (new)
+## 14. API Routes (new — all require NextAuth session except noted)
 
 | Method | Path | Description |
 |--------|------|-------------|
-| GET | `/api/opportunities/ticker` | Latest N opportunities for ticker |
-| GET | `/api/opportunities/recommended` | Personalized feed with signals |
-| POST | `/api/feedback` | Submit platform feedback |
-| GET | `/api/orgs` | Org directory with filters |
+| GET | `/api/opportunities/ticker` | Latest 20 opportunities for scrolling ticker |
+| GET | `/api/opportunities/recommended` | Scored, paginated feed (grade+interests+type affinity) |
+| POST | `/api/feedback` | Submit feedback `{ message }` |
+| GET | `/api/peers` | Peers grid — filtered profiles (q, geniusType[], grade[], interests[], limit=500) |
+| GET | `/api/orgs` | Org directory (category, status, search) |
 | GET | `/api/orgs/[id]` | Single org detail |
 | POST | `/api/orgs/[id]/apply` | Submit team application |
-| GET | `/api/teams/[id]` | Team detail |
-| POST | `/api/teams/[id]/messages` | Send team message |
-| GET | `/api/teams/[id]/noteboard` | Fetch noteboard cards |
-| POST | `/api/teams/[id]/noteboard` | Create noteboard card |
-| PATCH | `/api/teams/[id]/noteboard/[cardId]` | Update card |
+| GET | `/api/teams` | All teams current user is a member of |
+| POST | `/api/teams` | Create team `{ name, description, orgId? }` — creator auto-added as ADMIN |
+| GET | `/api/teams/[id]` | Team detail (members, status, org) |
+| POST | `/api/teams/[id]/messages` | Persist team message `{ body }` (called alongside socket emit) |
+| GET | `/api/teams/[id]/noteboard` | Fetch all noteboard cards ordered by `order` |
+| POST | `/api/teams/[id]/noteboard` | Create card `{ type, payload }` — validates payload shape per type |
+| PATCH | `/api/teams/[id]/noteboard/[cardId]` | Update card payload or status |
+| PATCH | `/api/teams/[id]/noteboard` | Bulk reorder `{ orderedIds: string[] }` — updates all `order` values |
 | DELETE | `/api/teams/[id]/noteboard/[cardId]` | Delete card |
-| PATCH | `/api/profile` | Update profile fields |
-| GET | `/api/profile/[handle]` | Public profile by handle |
-| POST | `/api/contacts` | Save contact |
+| GET | `/api/contacts` | Current user's saved contacts (profiles they've bookmarked) |
+| POST | `/api/contacts` | Save contact `{ targetProfileId }` — unilateral bookmark, no acceptance needed |
 | DELETE | `/api/contacts/[id]` | Remove contact |
+| POST | `/api/conversations` | Create DM or group conversation `{ participantIds[], type }` — deduplicates DMs |
+| PATCH | `/api/profile` | Update own profile fields |
+| GET | `/api/profile/[handle]` | Public profile by handle — no auth required for public profiles |
+| GET | `/api/profile/check-handle` | `?h=<handle>` — returns `{ available: boolean }` for handle uniqueness check |
 
 ---
 
