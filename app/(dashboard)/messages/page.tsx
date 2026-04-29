@@ -16,7 +16,12 @@ export default async function MessagesPage({
   if (params.userId && myId) {
     const recipientId = params.userId;
     const existing = await prisma.conversation.findFirst({
-      where: { participants: { every: { userId: { in: [myId, recipientId] } } } },
+      where: {
+        AND: [
+          { participants: { some: { userId: myId } } },
+          { participants: { some: { userId: recipientId } } },
+        ],
+      },
       include: { participants: true },
     });
     if (existing && existing.participants.length === 2) {

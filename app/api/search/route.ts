@@ -106,10 +106,10 @@ export async function GET(req: NextRequest) {
     (where as Record<string, unknown>).AND = [
       {
         OR: [
-          { displayName: { contains: q } },
-          { headline: { contains: q } },
-          { bio: { contains: q } },
-          { strengthSummary: { contains: q } },
+          { displayName: { contains: q, mode: "insensitive" } },
+          { headline: { contains: q, mode: "insensitive" } },
+          { bio: { contains: q, mode: "insensitive" } },
+          { strengthSummary: { contains: q, mode: "insensitive" } },
         ],
       },
     ];
