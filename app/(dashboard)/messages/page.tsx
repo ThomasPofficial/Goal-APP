@@ -11,6 +11,26 @@ export default async function MessagesPage({
   const myId = session?.user?.id ?? "";
   const params = await searchParams;
 
+  // If arriving from a profile's Message button, create/find the conversation server-side
+  let openConvoId: string | null = null;
+  if (params.userId && myId) {
+    const recipientId = params.userId;
+    const existing = await prisma.conversation.findFirst({
+      where: { participants: { every: { userId: { in: [myId, recipientId] } } } },
+      include: { participants: true },
+    });
+    if (existing && existing.participants.length === 2) {
+      openConvoId = existing.id;
+    } else {
+      const convo = await prisma.conversation.create({
+        data: {
+          participants: { createMany: { data: [{ userId: myId }, { userId: recipientId }] } },
+        },
+      });
+      openConvoId = convo.id;
+    }
+  }
+
   const conversations = await prisma.conversation.findMany({
     where: { participants: { some: { userId: myId } } },
     include: {
@@ -56,7 +76,7 @@ export default async function MessagesPage({
     <MessagesClient
       initialConversations={formatted}
       currentUserId={myId}
-      openWithUserId={params.userId ?? null}
+      openConvoId={openConvoId}
     />
   );
 }
