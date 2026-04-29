@@ -98,7 +98,7 @@ export async function GET(req: NextRequest) {
   // Build WHERE clause — require at least a display name (so empty signups don't appear)
   const where: Prisma.ProfileWhereInput = {
     userId: { not: userId },
-    displayName: { not: null },
+    NOT: [{ displayName: null }, { displayName: "" }],
   };
 
   // Keyword filter
