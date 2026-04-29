@@ -1,18 +1,20 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { redirect } from "next/navigation";
 import MessagesClient from "./MessagesClient";
+
+export const dynamic = "force-dynamic";
 
 export default async function MessagesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ userId?: string }>;
+  searchParams: Promise<{ userId?: string; convoId?: string }>;
 }) {
   const session = await auth();
   const myId = session?.user?.id ?? "";
   const params = await searchParams;
 
-  // If arriving from a profile's Message button, create/find the conversation server-side
-  let openConvoId: string | null = null;
+  // Coming from a profile's Message button — create/find conversation then redirect
   if (params.userId && myId) {
     const recipientId = params.userId;
     const existing = await prisma.conversation.findFirst({
@@ -22,19 +24,24 @@ export default async function MessagesPage({
           { participants: { some: { userId: recipientId } } },
         ],
       },
-      include: { participants: true },
+      include: { participants: { select: { userId: true } } },
     });
+    let convoId: string;
     if (existing && existing.participants.length === 2) {
-      openConvoId = existing.id;
+      convoId = existing.id;
     } else {
       const convo = await prisma.conversation.create({
         data: {
           participants: { createMany: { data: [{ userId: myId }, { userId: recipientId }] } },
         },
       });
-      openConvoId = convo.id;
+      convoId = convo.id;
     }
+    redirect(`/messages?convoId=${convoId}`);
   }
+
+  // convoId param: which conversation to open on load
+  const openConvoId = params.convoId ?? null;
 
   const conversations = await prisma.conversation.findMany({
     where: { participants: { some: { userId: myId } } },
