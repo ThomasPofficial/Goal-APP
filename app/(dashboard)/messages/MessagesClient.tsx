@@ -186,7 +186,7 @@ export default function MessagesClient({
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
               placeholder="Write a message..."
-              className="flex-1"
+              className="flex-1 bg-[#1e1e24] border border-[#2a2a33] rounded-md px-3 py-2 text-sm text-[#e8e8ec] placeholder-[#5a5a6a] outline-none focus:border-[#c9a84c] transition-colors"
               disabled={sending}
             />
             <button

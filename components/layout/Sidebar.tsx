@@ -5,8 +5,9 @@ import { usePathname } from "next/navigation";
 import AccountMenu from "./AccountMenu";
 import {
   LayoutDashboard,
-  Search,
-  FolderOpen,
+  Users,
+  Building2,
+  Users2,
   MessageSquare,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -14,8 +15,9 @@ import type { GeniusType } from "@/data/traits";
 
 const navItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
-  { href: "/people", icon: Search, label: "Discover People" },
-  { href: "/projects", icon: FolderOpen, label: "Projects" },
+  { href: "/peers", icon: Users, label: "Peers" },
+  { href: "/orgs", icon: Building2, label: "Orgs" },
+  { href: "/team", icon: Users2, label: "Teams" },
   { href: "/messages", icon: MessageSquare, label: "Messages" },
 ];
 
