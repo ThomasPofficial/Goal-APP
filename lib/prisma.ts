@@ -6,8 +6,12 @@ const globalForPrisma = globalThis as unknown as {
 };
 
 function createClient() {
+  const connectionString = process.env.DATABASE_URL!;
   const adapter = new PrismaPg({
-    connectionString: process.env.DATABASE_URL!,
+    connectionString,
+    ssl: connectionString?.includes("render.com")
+      ? { rejectUnauthorized: false }
+      : false,
   });
   return new PrismaClient({ adapter });
 }
