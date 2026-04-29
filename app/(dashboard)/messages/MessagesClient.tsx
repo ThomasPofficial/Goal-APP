@@ -32,6 +32,7 @@ interface Props {
 export default function MessagesClient({
   initialConversations,
   currentUserId,
+  openWithUserId,
 }: Props) {
   const router = useRouter();
   const [convos, setConvos] = useState(initialConversations);
@@ -45,6 +46,43 @@ export default function MessagesClient({
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const activeConvo = convos.find((c) => c.id === activeConvoId);
+
+  useEffect(() => {
+    if (!openWithUserId) return;
+    fetch("/api/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ recipientId: openWithUserId }),
+    })
+      .then((r) => r.json())
+      .then(async ({ conversationId }) => {
+        if (!conversationId) return;
+        // Fetch full conversation list so sidebar stays up to date
+        const res = await fetch("/api/messages");
+        if (res.ok) {
+          const all = await res.json();
+          // Re-format to match the Conversation shape expected by the client
+          const formatted: Conversation[] = all.map((c: any) => {
+            const other = c.participants.find((p: any) => p.userId !== currentUserId);
+            const last = c.messages[0];
+            return {
+              id: c.id,
+              otherUser: {
+                id: other?.userId ?? "",
+                name: other?.user?.profile?.displayName ?? other?.user?.name ?? "Unknown",
+                avatarUrl: other?.user?.profile?.avatarUrl ?? null,
+              },
+              lastMessage: last
+                ? { content: last.content, isMe: last.senderId === currentUserId, createdAt: last.createdAt }
+                : null,
+              updatedAt: c.updatedAt,
+            };
+          });
+          setConvos(formatted);
+        }
+        setActiveConvoId(conversationId);
+      });
+  }, [openWithUserId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (activeConvoId) loadMessages(activeConvoId);
