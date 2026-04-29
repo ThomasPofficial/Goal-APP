@@ -36,11 +36,11 @@ export default async function PersonProfilePage({
   return (
     <div className="max-w-2xl">
       <Link
-        href="/people"
+        href="/peers"
         className="inline-flex items-center gap-1.5 text-sm text-[#9898a8] hover:text-[#e8e8ec] mb-6 transition-colors"
       >
         <ArrowLeft className="w-4 h-4" />
-        Back to People
+        Back to Peers
       </Link>
 
       <div className="bg-[#16161a] border border-[#2a2a33] rounded-xl overflow-hidden">
