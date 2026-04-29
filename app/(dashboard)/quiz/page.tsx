@@ -29,20 +29,20 @@ export default async function QuizPage(props: {
     <div>
       {/* Tab switcher */}
       <div className="max-w-lg mx-auto pt-8 pb-0">
-        <div className="flex gap-1 bg-[#16161a] border border-[#2a2a33] rounded-lg p-1 mb-1">
+        <div className="flex gap-1 bg-[#0d0d0e] border border-[#1c1c20] rounded-lg p-1 mb-1">
           <Link
             href="/quiz?tab=genius"
             className={`flex-1 flex items-center justify-center gap-1.5 text-sm font-medium rounded-md px-4 py-2 transition-colors ${
               tab === "genius"
-                ? "bg-[#c9a84c] text-[#0f0f11]"
-                : "text-[#9898a8] hover:text-[#e8e8ec]"
+                ? "bg-[#c9a84c] text-[#080809]"
+                : "text-[#909098] hover:text-[#eaeaea]"
             }`}
           >
             Genius Quiz
             {geniusDone && (
               <CheckCircle2
                 className={`w-3.5 h-3.5 ${
-                  tab === "genius" ? "text-[#0f0f11]" : "text-[#4ADE80]"
+                  tab === "genius" ? "text-[#080809]" : "text-[#4ADE80]"
                 }`}
               />
             )}
@@ -51,21 +51,21 @@ export default async function QuizPage(props: {
             href="/quiz?tab=traits"
             className={`flex-1 flex items-center justify-center gap-1.5 text-sm font-medium rounded-md px-4 py-2 transition-colors ${
               tab === "traits"
-                ? "bg-[#c9a84c] text-[#0f0f11]"
-                : "text-[#9898a8] hover:text-[#e8e8ec]"
+                ? "bg-[#c9a84c] text-[#080809]"
+                : "text-[#909098] hover:text-[#eaeaea]"
             }`}
           >
             Traits Quiz
             {traitsDone && (
               <CheckCircle2
                 className={`w-3.5 h-3.5 ${
-                  tab === "traits" ? "text-[#0f0f11]" : "text-[#4ADE80]"
+                  tab === "traits" ? "text-[#080809]" : "text-[#4ADE80]"
                 }`}
               />
             )}
           </Link>
         </div>
-        <p className="text-[10px] text-[#3a3a44] text-center mb-0">
+        <p className="text-[10px] text-[#28282e] text-center mb-0">
           Complete both quizzes to build your full Skill Card
         </p>
       </div>

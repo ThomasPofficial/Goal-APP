@@ -157,18 +157,18 @@ export default function ProjectDetail({
     <div className="space-y-6">
       <Link
         href="/dashboard"
-        className="inline-flex items-center gap-1.5 text-sm text-[#9898a8] hover:text-[#e8e8ec] transition-colors"
+        className="inline-flex items-center gap-1.5 text-sm text-[#909098] hover:text-[#eaeaea] transition-colors"
       >
         <ArrowLeft className="w-4 h-4" />
         Dashboard
       </Link>
 
       {/* Project header */}
-      <div className="bg-[#16161a] border border-[#2a2a33] rounded-xl p-5">
+      <div className="bg-[#0d0d0e] border border-[#1c1c20] rounded-xl p-5">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
-              <h1 className="text-xl font-semibold text-[#e8e8ec] truncate">
+              <h1 className="text-xl font-semibold text-[#eaeaea] truncate">
                 {project.name}
               </h1>
               <span
@@ -182,13 +182,13 @@ export default function ProjectDetail({
               </span>
             </div>
             {project.goal && (
-              <p className="text-sm text-[#9898a8]">
-                <span className="text-[#5a5a6a]">Goal: </span>
+              <p className="text-sm text-[#909098]">
+                <span className="text-[#58586a]">Goal: </span>
                 {project.goal}
               </p>
             )}
             {project.description && (
-              <p className="text-xs text-[#5a5a6a] mt-2">{project.description}</p>
+              <p className="text-xs text-[#58586a] mt-2">{project.description}</p>
             )}
           </div>
 
@@ -211,10 +211,10 @@ export default function ProjectDetail({
           <div className="flex items-start gap-3">
             <CheckCircle2 className="w-5 h-5 text-[#4ADE80] flex-shrink-0 mt-0.5" />
             <div>
-              <div className="text-sm font-semibold text-[#e8e8ec] mb-1">
+              <div className="text-sm font-semibold text-[#eaeaea] mb-1">
                 Project complete — endorse your teammates
               </div>
-              <p className="text-xs text-[#9898a8]">
+              <p className="text-xs text-[#909098]">
                 Select up to 5 traits that each teammate genuinely displayed during
                 this project. Your endorsements appear on their Skill Cards.
               </p>
@@ -226,7 +226,7 @@ export default function ProjectDetail({
       {/* Member Skill Cards */}
       <div>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-sm font-semibold text-[#e8e8ec] uppercase tracking-wider">
+          <h2 className="text-sm font-semibold text-[#eaeaea] uppercase tracking-wider">
             Team Members ({otherMembers.length + 1})
           </h2>
           {isOwner && !isCompleted && (
@@ -238,19 +238,19 @@ export default function ProjectDetail({
                 className="text-sm py-1.5 px-3 pr-8 w-48"
               />
               {searching && (
-                <Loader2 className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#5a5a6a] animate-spin" />
+                <Loader2 className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#58586a] animate-spin" />
               )}
               {searchResults.length > 0 && (
-                <div className="absolute top-full right-0 mt-1 w-64 bg-[#1e1e24] border border-[#2a2a33] rounded-lg shadow-[0_8px_24px_rgba(0,0,0,0.5)] z-20 py-1">
+                <div className="absolute top-full right-0 mt-1 w-64 bg-[#131315] border border-[#1c1c20] rounded-lg shadow-[0_8px_24px_rgba(0,0,0,0.5)] z-20 py-1">
                   {searchResults.map((p) => (
                     <button
                       key={p.userId}
                       onClick={() => addMember(p.userId)}
-                      className="w-full text-left px-3 py-2.5 hover:bg-[#2a2a33] transition-colors"
+                      className="w-full text-left px-3 py-2.5 hover:bg-[#1c1c20] transition-colors"
                     >
-                      <div className="text-sm text-[#e8e8ec]">{p.displayName}</div>
+                      <div className="text-sm text-[#eaeaea]">{p.displayName}</div>
                       {p.headline && (
-                        <div className="text-xs text-[#5a5a6a] truncate">
+                        <div className="text-xs text-[#58586a] truncate">
                           {p.headline}
                         </div>
                       )}
@@ -317,16 +317,16 @@ export default function ProjectDetail({
       {/* Endorsement modal */}
       {endorseFor && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#16161a] border border-[#2a2a33] rounded-xl p-6 w-full max-w-lg shadow-[0_24px_48px_rgba(0,0,0,0.6)]">
+          <div className="bg-[#0d0d0e] border border-[#1c1c20] rounded-xl p-6 w-full max-w-lg shadow-[0_24px_48px_rgba(0,0,0,0.6)]">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-base font-semibold text-[#e8e8ec]">
+              <h2 className="text-base font-semibold text-[#eaeaea]">
                 Endorse traits
               </h2>
               <button onClick={() => setEndorseFor(null)}>
-                <X className="w-5 h-5 text-[#5a5a6a] hover:text-[#9898a8]" />
+                <X className="w-5 h-5 text-[#58586a] hover:text-[#909098]" />
               </button>
             </div>
-            <p className="text-sm text-[#9898a8] mb-5">
+            <p className="text-sm text-[#909098] mb-5">
               Select up to 5 traits that this person genuinely displayed during the
               project. Be honest — these will appear on their permanent Skill Card.
             </p>
@@ -344,9 +344,9 @@ export default function ProjectDetail({
                       isDisabled ? "opacity-30 cursor-not-allowed" : "cursor-pointer"
                     } ${isSel ? "opacity-100" : "opacity-70"}`}
                     style={{
-                      borderLeftColor: "#9898a8",
-                      backgroundColor: isSel ? "#9898a825" : "#9898a80C",
-                      color: isSel ? "#e8e8ec" : "#9898a8",
+                      borderLeftColor: "#909098",
+                      backgroundColor: isSel ? "#90909825" : "#9090980C",
+                      color: isSel ? "#eaeaea" : "#909098",
                     }}
                   >
                     {isSel && <Check className="w-3 h-3" />}
@@ -357,20 +357,20 @@ export default function ProjectDetail({
             </div>
 
             <div className="flex items-center justify-between">
-              <span className="text-xs text-[#5a5a6a]">
+              <span className="text-xs text-[#58586a]">
                 {selectedTraits.length}/5 selected
               </span>
               <div className="flex gap-2">
                 <button
                   onClick={() => setEndorseFor(null)}
-                  className="text-sm text-[#9898a8] hover:text-[#e8e8ec] px-3 py-2"
+                  className="text-sm text-[#909098] hover:text-[#eaeaea] px-3 py-2"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={submitEndorsement}
                   disabled={selectedTraits.length === 0 || submitting}
-                  className="flex items-center gap-2 bg-[#4ADE80] hover:bg-[#22C55E] text-[#0f0f11] font-semibold text-sm rounded-md px-4 py-2 transition-colors disabled:opacity-50"
+                  className="flex items-center gap-2 bg-[#4ADE80] hover:bg-[#22C55E] text-[#080809] font-semibold text-sm rounded-md px-4 py-2 transition-colors disabled:opacity-50"
                 >
                   {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
                   Submit endorsement

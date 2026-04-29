@@ -31,13 +31,13 @@ export default function Sidebar({ userName, userEmail, geniusType }: SidebarProp
   const pathname = usePathname();
 
   return (
-    <aside className="fixed left-0 top-0 h-full w-[240px] bg-[#16161a] border-r border-[#2a2a33] flex flex-col z-40">
+    <aside className="fixed left-0 top-0 h-full w-[240px] bg-[#0d0d0e] border-r border-[#1c1c20] flex flex-col z-40">
       {/* Logo */}
-      <div className="flex items-center gap-3 px-5 h-14 border-b border-[#2a2a33] flex-shrink-0">
+      <div className="flex items-center gap-3 px-5 h-14 border-b border-[#1c1c20] flex-shrink-0">
         <div className="w-7 h-7 rounded-md bg-[#c9a84c] flex items-center justify-center flex-shrink-0">
-          <span className="text-[#0f0f11] font-bold text-sm">N</span>
+          <span className="text-[#080809] font-bold text-sm">N</span>
         </div>
-        <span className="font-semibold text-[#e8e8ec] tracking-wide">Nivarro</span>
+        <span className="font-semibold text-[#eaeaea] tracking-wide">Nivarro</span>
       </div>
 
       {/* Navigation */}
@@ -54,8 +54,8 @@ export default function Sidebar({ userName, userEmail, geniusType }: SidebarProp
               className={cn(
                 "flex items-center gap-3 px-3 py-2.5 rounded-md text-sm transition-all",
                 active
-                  ? "bg-[#1e1e24] text-[#e8e8ec] border-l-2 border-[#c9a84c] pl-[10px]"
-                  : "text-[#9898a8] hover:text-[#e8e8ec] hover:bg-[#1e1e2480]"
+                  ? "bg-[#131315] text-[#eaeaea] border-l-2 border-[#c9a84c] pl-[10px]"
+                  : "text-[#909098] hover:text-[#eaeaea] hover:bg-[#13131580]"
               )}
             >
               <Icon

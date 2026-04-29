@@ -39,23 +39,23 @@ export default function NewProjectPage() {
     <div className="max-w-xl">
       <Link
         href="/dashboard"
-        className="inline-flex items-center gap-1.5 text-sm text-[#9898a8] hover:text-[#e8e8ec] mb-6 transition-colors"
+        className="inline-flex items-center gap-1.5 text-sm text-[#909098] hover:text-[#eaeaea] mb-6 transition-colors"
       >
         <ArrowLeft className="w-4 h-4" />
         Back to Dashboard
       </Link>
 
       <div className="mb-6">
-        <h1 className="text-2xl font-semibold text-[#e8e8ec]">New Project</h1>
-        <p className="text-sm text-[#9898a8] mt-1">
+        <h1 className="text-2xl font-semibold text-[#eaeaea]">New Project</h1>
+        <p className="text-sm text-[#909098] mt-1">
           Define your project, then handpick the right collaborators for it.
         </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-5">
-        <div className="bg-[#16161a] border border-[#2a2a33] rounded-xl p-5 space-y-4">
+        <div className="bg-[#0d0d0e] border border-[#1c1c20] rounded-xl p-5 space-y-4">
           <div>
-            <label className="block text-xs font-medium text-[#9898a8] uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-medium text-[#909098] uppercase tracking-wider mb-1.5">
               Project Name *
             </label>
             <input
@@ -68,7 +68,7 @@ export default function NewProjectPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-[#9898a8] uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-medium text-[#909098] uppercase tracking-wider mb-1.5">
               Goal
             </label>
             <input
@@ -77,13 +77,13 @@ export default function NewProjectPage() {
               placeholder="e.g. Ship a working MVP by Q2"
               className="w-full"
             />
-            <p className="text-xs text-[#5a5a6a] mt-1.5">
+            <p className="text-xs text-[#58586a] mt-1.5">
               A single clear sentence: what does success look like?
             </p>
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-[#9898a8] uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-medium text-[#909098] uppercase tracking-wider mb-1.5">
               Description
             </label>
             <textarea
@@ -106,14 +106,14 @@ export default function NewProjectPage() {
           <button
             type="submit"
             disabled={saving || !name}
-            className="flex items-center gap-2 bg-[#c9a84c] hover:bg-[#e3c06a] text-[#0f0f11] font-semibold text-sm rounded-md px-5 py-2.5 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 bg-[#c9a84c] hover:bg-[#e3c06a] text-[#080809] font-semibold text-sm rounded-md px-5 py-2.5 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {saving && <Loader2 className="w-4 h-4 animate-spin" />}
             {saving ? "Creating..." : "Create Project"}
           </button>
           <Link
             href="/dashboard"
-            className="text-sm text-[#9898a8] hover:text-[#e8e8ec] transition-colors"
+            className="text-sm text-[#909098] hover:text-[#eaeaea] transition-colors"
           >
             Cancel
           </Link>
