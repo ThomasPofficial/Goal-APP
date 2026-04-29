@@ -18,12 +18,22 @@ export default async function QuizPage(props: {
     where: { userId },
     select: {
       geniusType: true,
-      traitLinks: { select: { id: true } },
+      strengthSummary: true,
+      traitLinks: {
+        orderBy: { order: "asc" },
+        include: { trait: true },
+      },
     },
   });
 
   const geniusDone = !!profile?.geniusType;
   const traitsDone = (profile?.traitLinks?.length ?? 0) > 0;
+  const existingTraits = profile?.traitLinks.map((l) => ({
+    id: l.trait.id,
+    slug: l.trait.slug,
+    name: l.trait.name,
+    category: l.trait.category,
+  })) ?? [];
 
   return (
     <div>
@@ -76,7 +86,11 @@ export default async function QuizPage(props: {
           existingType={profile?.geniusType ?? null}
         />
       ) : (
-        <TraitQuizClient alreadyCompleted={traitsDone} />
+        <TraitQuizClient
+          alreadyCompleted={traitsDone}
+          existingTraits={existingTraits}
+          existingSummary={profile?.strengthSummary ?? null}
+        />
       )}
     </div>
   );

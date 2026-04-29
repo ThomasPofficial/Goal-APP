@@ -14,13 +14,6 @@ import {
   Sparkles,
 } from "lucide-react";
 
-interface TraitData {
-  id: string;
-  slug: string;
-  name: string;
-  category: string;
-}
-
 interface TraitResult {
   traitSlugs: string[];
   traitIds: string[];
@@ -28,11 +21,20 @@ interface TraitResult {
   explanation: string;
 }
 
-interface Props {
-  alreadyCompleted: boolean;
+interface TraitData {
+  id: string;
+  slug: string;
+  name: string;
+  category: string;
 }
 
-export default function TraitQuizClient({ alreadyCompleted }: Props) {
+interface Props {
+  alreadyCompleted: boolean;
+  existingTraits: TraitData[];
+  existingSummary: string | null;
+}
+
+export default function TraitQuizClient({ alreadyCompleted, existingTraits, existingSummary }: Props) {
   const router = useRouter();
   const [step, setStep] = useState<"quiz" | "analyzing" | "result">(
     alreadyCompleted ? "result" : "quiz"
@@ -266,35 +268,81 @@ export default function TraitQuizClient({ alreadyCompleted }: Props) {
     );
   }
 
-  // Already completed but no result loaded (page refresh state)
+  // Already completed but no result loaded (page refresh state) — show saved traits
   if (alreadyCompleted && !result) {
     return (
-      <div className="max-w-lg mx-auto py-8 text-center">
-        <div className="bg-[#0d0d0e] border border-[#1c1c20] rounded-xl p-8">
-          <CheckCircle2 className="w-8 h-8 text-[#4ADE80] mx-auto mb-3" />
-          <h2 className="text-sm font-semibold text-[#eaeaea] mb-2">
-            You&apos;ve already completed the Traits Quiz
-          </h2>
-          <p className="text-xs text-[#909098] mb-5">
-            Your recommended traits have been applied to your profile.
-          </p>
-          <div className="space-y-2">
-            <button
-              onClick={() => router.push("/profile")}
-              className="w-full flex items-center justify-center gap-2 bg-[#c9a84c] hover:bg-[#e3c06a] text-[#080809] font-semibold rounded-md py-2.5 text-sm transition-colors"
-            >
-              View Profile
-              <ArrowRight className="w-4 h-4" />
-            </button>
-            <button
-              onClick={handleRetake}
-              className="w-full flex items-center justify-center gap-1.5 text-xs text-[#58586a] hover:text-[#909098] transition-colors py-1.5"
-            >
-              <RotateCcw className="w-3 h-3" />
-              Retake quiz
-            </button>
+      <div className="max-w-lg mx-auto py-8">
+        <div className="bg-[#0d0d0e] border border-[#1c1c20] rounded-xl overflow-hidden">
+          <div className="h-1 w-full bg-gradient-to-r from-[#7B61FF] via-[#c9a84c] to-[#4ECDC4]" />
+          <div className="p-6">
+            <div className="flex items-center gap-2 mb-5">
+              <CheckCircle2 className="w-4 h-4 text-[#4ADE80]" />
+              <span className="text-xs font-semibold text-[#909098] uppercase tracking-wider">
+                Your Current Traits
+              </span>
+            </div>
+
+            {existingTraits.length > 0 ? (
+              <>
+                <div className="flex flex-wrap gap-2.5 mb-5">
+                  {existingTraits.map((trait) => (
+                    <TraitBadge
+                      key={trait.slug}
+                      name={trait.name}
+                      category={trait.category as TraitCategory}
+                      size="md"
+                    />
+                  ))}
+                </div>
+
+                {existingSummary && (
+                  <div className="bg-[#131315] border border-[#1c1c20] rounded-lg p-4 mb-5">
+                    <p className="text-sm text-[#909098] leading-relaxed">
+                      {existingSummary}
+                    </p>
+                  </div>
+                )}
+
+                <div className="space-y-2 mb-6">
+                  {existingTraits.map((trait) => {
+                    const color = TRAIT_CATEGORY_COLORS[trait.category as TraitCategory];
+                    return (
+                      <div key={trait.slug} className="flex items-center gap-3 px-3 py-2 rounded-lg bg-[#131315]">
+                        <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />
+                        <span className="text-xs font-medium text-[#eaeaea]">{trait.name}</span>
+                        <span className="text-[10px] ml-auto" style={{ color }}>
+                          {trait.category.toLowerCase().replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            ) : (
+              <p className="text-xs text-[#909098] mb-5">Your traits are set on your profile.</p>
+            )}
+
+            <div className="space-y-2">
+              <button
+                onClick={() => router.push("/profile")}
+                className="w-full flex items-center justify-center gap-2 bg-[#c9a84c] hover:bg-[#e3c06a] text-[#080809] font-semibold rounded-md py-2.5 text-sm transition-colors"
+              >
+                View Profile
+                <ArrowRight className="w-4 h-4" />
+              </button>
+              <button
+                onClick={handleRetake}
+                className="w-full flex items-center justify-center gap-1.5 text-xs text-[#58586a] hover:text-[#909098] transition-colors py-1.5"
+              >
+                <RotateCcw className="w-3 h-3" />
+                Retake quiz
+              </button>
+            </div>
           </div>
         </div>
+        <p className="text-xs text-[#58586a] text-center mt-4 px-4">
+          These traits appear on your Skill Card. You can always adjust them in your profile.
+        </p>
       </div>
     );
   }
