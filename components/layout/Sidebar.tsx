@@ -37,7 +37,7 @@ export default function Sidebar({ userName, userEmail, geniusType }: SidebarProp
         <div className="w-7 h-7 rounded-md bg-[#c9a84c] flex items-center justify-center flex-shrink-0">
           <span className="text-[#080809] font-bold text-sm">N</span>
         </div>
-        <span className="font-semibold text-[#eaeaea] tracking-wide">Nivarro</span>
+        <span className="font-semibold text-[#c9a84c] tracking-wide">NIVARRO</span>
       </div>
 
       {/* Navigation */}
