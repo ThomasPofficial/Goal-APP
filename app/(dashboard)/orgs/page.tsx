@@ -23,14 +23,14 @@ export default async function OrgsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-[#e8e8ec]">Orgs</h1>
-          <p className="text-sm text-[#9898a8] mt-1">
+          <h1 className="text-2xl font-semibold text-[#eaeaea]">Orgs</h1>
+          <p className="text-sm text-[#909098] mt-1">
             Collaborate with your organizations and teams.
           </p>
         </div>
         <Link
           href="/projects/new"
-          className="inline-flex items-center gap-1.5 text-sm font-medium bg-[#c9a84c] hover:bg-[#e3c06a] text-[#0f0f11] rounded-md px-4 py-2 transition-colors"
+          className="inline-flex items-center gap-1.5 text-sm font-medium bg-[#c9a84c] hover:bg-[#e3c06a] text-[#080809] rounded-md px-4 py-2 transition-colors"
         >
           <Plus className="w-4 h-4" />
           New Org
@@ -38,9 +38,9 @@ export default async function OrgsPage() {
       </div>
 
       {projects.length === 0 ? (
-        <div className="text-center py-16 border border-dashed border-[#2a2a33] rounded-xl">
-          <Building2 className="w-8 h-8 text-[#5a5a6a] mx-auto mb-3" />
-          <p className="text-sm text-[#5a5a6a] mb-4">
+        <div className="text-center py-16 border border-dashed border-[#1c1c20] rounded-xl">
+          <Building2 className="w-8 h-8 text-[#58586a] mx-auto mb-3" />
+          <p className="text-sm text-[#58586a] mb-4">
             No orgs yet. Create one to start collaborating.
           </p>
           <Link
@@ -54,7 +54,7 @@ export default async function OrgsPage() {
         <>
           {active.length > 0 && (
             <section>
-              <h2 className="text-xs font-semibold text-[#5a5a6a] uppercase tracking-wider mb-3">
+              <h2 className="text-xs font-semibold text-[#58586a] uppercase tracking-wider mb-3">
                 Active
               </h2>
               <div className="space-y-2">
@@ -67,7 +67,7 @@ export default async function OrgsPage() {
 
           {completed.length > 0 && (
             <section>
-              <h2 className="text-xs font-semibold text-[#5a5a6a] uppercase tracking-wider mb-3">
+              <h2 className="text-xs font-semibold text-[#58586a] uppercase tracking-wider mb-3">
                 Completed
               </h2>
               <div className="space-y-2">
@@ -105,7 +105,7 @@ function OrgRow({
   return (
     <Link
       href={`/projects/${project.id}`}
-      className="flex items-center gap-4 bg-[#16161a] border border-[#2a2a33] rounded-xl px-5 py-4 hover:border-[#3a3a44] transition-colors group"
+      className="flex items-center gap-4 bg-[#0d0d0e] border border-[#1c1c20] rounded-xl px-5 py-4 hover:border-[#28282e] transition-colors group"
     >
       <div
         className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
@@ -119,25 +119,25 @@ function OrgRow({
         )}
       </div>
       <div className="flex-1 min-w-0">
-        <div className="text-sm font-semibold text-[#e8e8ec] truncate group-hover:text-[#c9a84c] transition-colors">
+        <div className="text-sm font-semibold text-[#eaeaea] truncate group-hover:text-[#c9a84c] transition-colors">
           {project.name}
           {isOwner && (
-            <span className="ml-2 text-[10px] text-[#5a5a6a] font-normal">
+            <span className="ml-2 text-[10px] text-[#58586a] font-normal">
               Owner
             </span>
           )}
         </div>
         {project.goal && (
-          <div className="text-xs text-[#9898a8] truncate mt-0.5">
+          <div className="text-xs text-[#909098] truncate mt-0.5">
             {project.goal}
           </div>
         )}
       </div>
       <div className="flex items-center gap-3 flex-shrink-0">
-        <span className="text-xs text-[#5a5a6a]">
+        <span className="text-xs text-[#58586a]">
           {project.members.length} member{project.members.length !== 1 ? "s" : ""}
         </span>
-        <span className="text-xs text-[#5a5a6a]">
+        <span className="text-xs text-[#58586a]">
           {formatDate(project.createdAt)}
         </span>
       </div>

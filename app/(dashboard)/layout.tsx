@@ -21,7 +21,7 @@ export default async function DashboardLayout({
   });
 
   return (
-    <div className="min-h-screen bg-[#0f0f11]">
+    <div className="min-h-screen bg-[#080809]">
       <Sidebar
         userName={profile?.displayName ?? session.user.name}
         userEmail={session.user.email}

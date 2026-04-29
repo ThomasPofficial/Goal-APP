@@ -170,8 +170,8 @@ export default function SmartSearch({ allTraits }: Props) {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold text-[#e8e8ec]">Discover People</h1>
-        <p className="text-sm text-[#9898a8] mt-1">
+        <h1 className="text-2xl font-semibold text-[#eaeaea]">Discover People</h1>
+        <p className="text-sm text-[#909098] mt-1">
           Find collaborators by keywords, genius type, traits, or age range.
         </p>
       </div>
@@ -181,7 +181,7 @@ export default function SmartSearch({ allTraits }: Props) {
 
         {/* Keyword search */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#5a5a6a]" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#58586a]" />
           <input
             value={query}
             onChange={(e) => {
@@ -199,8 +199,8 @@ export default function SmartSearch({ allTraits }: Props) {
             onClick={() => setGenius("")}
             className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
               !geniusType
-                ? "bg-[#c9a84c] text-[#0f0f11]"
-                : "bg-[#1e1e24] text-[#9898a8] hover:text-[#e8e8ec] border border-[#2a2a33]"
+                ? "bg-[#c9a84c] text-[#080809]"
+                : "bg-[#131315] text-[#909098] hover:text-[#eaeaea] border border-[#1c1c20]"
             }`}
           >
             All types
@@ -214,8 +214,8 @@ export default function SmartSearch({ allTraits }: Props) {
                 onClick={() => setGenius(type)}
                 className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${
                   active
-                    ? "border-transparent text-[#0f0f11]"
-                    : "bg-[#1e1e24] text-[#9898a8] hover:text-[#e8e8ec] border-[#2a2a33]"
+                    ? "border-transparent text-[#080809]"
+                    : "bg-[#131315] text-[#909098] hover:text-[#eaeaea] border-[#1c1c20]"
                 }`}
                 style={
                   active
@@ -235,7 +235,7 @@ export default function SmartSearch({ allTraits }: Props) {
             <button
               type="button"
               onClick={() => setTraitDropdownOpen((o) => !o)}
-              className="w-full flex items-center justify-between px-3 py-2 bg-[#16161a] border border-[#2a2a33] rounded-md text-sm text-[#9898a8] hover:border-[#3a3a44] transition-colors"
+              className="w-full flex items-center justify-between px-3 py-2 bg-[#0d0d0e] border border-[#1c1c20] rounded-md text-sm text-[#909098] hover:border-[#28282e] transition-colors"
             >
               <span>
                 {selectedSlugs.length > 0
@@ -250,8 +250,8 @@ export default function SmartSearch({ allTraits }: Props) {
             </button>
 
             {traitDropdownOpen && (
-              <div className="absolute z-20 top-full mt-1 left-0 w-full max-h-72 overflow-y-auto bg-[#16161a] border border-[#2a2a33] rounded-xl shadow-xl">
-                <div className="sticky top-0 bg-[#16161a] p-2 border-b border-[#2a2a33]">
+              <div className="absolute z-20 top-full mt-1 left-0 w-full max-h-72 overflow-y-auto bg-[#0d0d0e] border border-[#1c1c20] rounded-xl shadow-xl">
+                <div className="sticky top-0 bg-[#0d0d0e] p-2 border-b border-[#1c1c20]">
                   <input
                     autoFocus
                     value={traitSearch}
@@ -263,7 +263,7 @@ export default function SmartSearch({ allTraits }: Props) {
                 <div className="p-2 space-y-3">
                   {Object.entries(traitsByCategory).map(([cat, traits]) => (
                     <div key={cat}>
-                      <p className="text-[10px] font-semibold text-[#5a5a6a] uppercase tracking-wider px-1 mb-1">
+                      <p className="text-[10px] font-semibold text-[#58586a] uppercase tracking-wider px-1 mb-1">
                         {TRAIT_CATEGORY_LABELS[cat as TraitCategory]}
                       </p>
                       <div className="flex flex-wrap gap-1">
@@ -281,7 +281,7 @@ export default function SmartSearch({ allTraits }: Props) {
                                 backgroundColor: active
                                   ? `${color}30`
                                   : `${color}0C`,
-                                color: active ? color : "#9898a8",
+                                color: active ? color : "#909098",
                               }}
                             >
                               {t.name}
@@ -298,8 +298,8 @@ export default function SmartSearch({ allTraits }: Props) {
 
           {/* Min traits counter */}
           {selectedSlugs.length > 0 && (
-            <div className="flex items-center gap-1.5 bg-[#16161a] border border-[#2a2a33] rounded-md px-3 py-2 text-sm shrink-0">
-              <span className="text-[#9898a8] text-xs">Min:</span>
+            <div className="flex items-center gap-1.5 bg-[#0d0d0e] border border-[#1c1c20] rounded-md px-3 py-2 text-sm shrink-0">
+              <span className="text-[#909098] text-xs">Min:</span>
               <button
                 type="button"
                 onClick={() => {
@@ -307,11 +307,11 @@ export default function SmartSearch({ allTraits }: Props) {
                   setMinTraits(n);
                   scheduleSearch({ minTraits: n });
                 }}
-                className="w-5 h-5 flex items-center justify-center text-[#9898a8] hover:text-[#e8e8ec] font-bold"
+                className="w-5 h-5 flex items-center justify-center text-[#909098] hover:text-[#eaeaea] font-bold"
               >
                 −
               </button>
-              <span className="text-[#e8e8ec] font-semibold w-4 text-center text-xs">
+              <span className="text-[#eaeaea] font-semibold w-4 text-center text-xs">
                 {minTraits}
               </span>
               <button
@@ -321,7 +321,7 @@ export default function SmartSearch({ allTraits }: Props) {
                   setMinTraits(n);
                   scheduleSearch({ minTraits: n });
                 }}
-                className="w-5 h-5 flex items-center justify-center text-[#9898a8] hover:text-[#e8e8ec] font-bold"
+                className="w-5 h-5 flex items-center justify-center text-[#909098] hover:text-[#eaeaea] font-bold"
               >
                 +
               </button>
@@ -357,11 +357,11 @@ export default function SmartSearch({ allTraits }: Props) {
         )}
 
         {/* DOB range (collapsible) */}
-        <div className="border border-[#2a2a33] rounded-xl overflow-hidden">
+        <div className="border border-[#1c1c20] rounded-xl overflow-hidden">
           <button
             type="button"
             onClick={() => setDobOpen((o) => !o)}
-            className="w-full flex items-center justify-between px-4 py-2.5 text-xs text-[#9898a8] hover:text-[#e8e8ec] transition-colors"
+            className="w-full flex items-center justify-between px-4 py-2.5 text-xs text-[#909098] hover:text-[#eaeaea] transition-colors"
           >
             <span className="font-medium">Date of birth range filter</span>
             {dobOpen ? (
@@ -371,9 +371,9 @@ export default function SmartSearch({ allTraits }: Props) {
             )}
           </button>
           {dobOpen && (
-            <div className="px-4 pb-4 grid grid-cols-2 gap-3 bg-[#16161a]">
+            <div className="px-4 pb-4 grid grid-cols-2 gap-3 bg-[#0d0d0e]">
               <div>
-                <label className="block text-[10px] text-[#5a5a6a] uppercase tracking-wider mb-1">
+                <label className="block text-[10px] text-[#58586a] uppercase tracking-wider mb-1">
                   Born after
                 </label>
                 <input
@@ -388,7 +388,7 @@ export default function SmartSearch({ allTraits }: Props) {
                 />
               </div>
               <div>
-                <label className="block text-[10px] text-[#5a5a6a] uppercase tracking-wider mb-1">
+                <label className="block text-[10px] text-[#58586a] uppercase tracking-wider mb-1">
                   Born before
                 </label>
                 <input
@@ -410,7 +410,7 @@ export default function SmartSearch({ allTraits }: Props) {
                     setDobTo("");
                     scheduleSearch({ dobFrom: "", dobTo: "" });
                   }}
-                  className="col-span-2 text-xs text-[#5a5a6a] hover:text-[#9898a8] text-left"
+                  className="col-span-2 text-xs text-[#58586a] hover:text-[#909098] text-left"
                 >
                   Clear date filter
                 </button>
@@ -429,22 +429,22 @@ export default function SmartSearch({ allTraits }: Props) {
         )}
 
         {hasSearched && !searchError && (
-          <p className="text-xs text-[#5a5a6a] mb-4">
+          <p className="text-xs text-[#58586a] mb-4">
             {loading ? "Searching…" : `${total} ${total === 1 ? "person" : "people"} found`}
           </p>
         )}
 
         {!hasSearched && (
-          <div className="text-center py-16 border border-dashed border-[#2a2a33] rounded-xl">
-            <p className="text-sm text-[#5a5a6a]">
+          <div className="text-center py-16 border border-dashed border-[#1c1c20] rounded-xl">
+            <p className="text-sm text-[#58586a]">
               Use the filters above to find collaborators.
             </p>
           </div>
         )}
 
         {hasSearched && !loading && results.length === 0 && (
-          <div className="text-center py-16 border border-dashed border-[#2a2a33] rounded-xl">
-            <p className="text-sm text-[#5a5a6a]">No people match your filters.</p>
+          <div className="text-center py-16 border border-dashed border-[#1c1c20] rounded-xl">
+            <p className="text-sm text-[#58586a]">No people match your filters.</p>
           </div>
         )}
 
@@ -470,7 +470,7 @@ function SearchResultCard({ result }: { result: SearchResult }) {
   const completedProjects = result.projects.filter((p) => p.status === "COMPLETED");
 
   return (
-    <div className="group bg-[#16161a] border border-[#2a2a33] rounded-[10px] p-5 flex flex-col gap-4 shadow-[0_1px_3px_rgba(0,0,0,0.4)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.5),0_0_0_1px_rgba(201,168,76,0.15)] hover:border-[#3a3a44] transition-all duration-200">
+    <div className="group bg-[#0d0d0e] border border-[#1c1c20] rounded-[10px] p-5 flex flex-col gap-4 shadow-[0_1px_3px_rgba(0,0,0,0.4)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.5),0_0_0_1px_rgba(201,168,76,0.15)] hover:border-[#28282e] transition-all duration-200">
 
       {/* Header */}
       <div className="flex items-start gap-3">
@@ -487,11 +487,11 @@ function SearchResultCard({ result }: { result: SearchResult }) {
           )}
         </div>
         <div className="min-w-0 flex-1">
-          <h3 className="font-semibold text-[#e8e8ec] text-sm truncate">
+          <h3 className="font-semibold text-[#eaeaea] text-sm truncate">
             {result.displayName}
           </h3>
           {result.headline && (
-            <p className="text-xs text-[#9898a8] truncate mt-0.5">
+            <p className="text-xs text-[#909098] truncate mt-0.5">
               {result.headline}
             </p>
           )}
@@ -534,7 +534,7 @@ function SearchResultCard({ result }: { result: SearchResult }) {
             </div>
           ))}
           {completedProjects.slice(0, 1).map((p) => (
-            <div key={p.id} className="flex items-center gap-1.5 text-xs text-[#5a5a6a]">
+            <div key={p.id} className="flex items-center gap-1.5 text-xs text-[#58586a]">
               <Briefcase className="w-3 h-3 shrink-0" />
               <span className="truncate">{p.name}</span>
               <span className="shrink-0">· completed</span>
@@ -551,7 +551,7 @@ function SearchResultCard({ result }: { result: SearchResult }) {
 
         <Link
           href={`/people/${result.userId}`}
-          className="block text-center text-xs font-medium text-[#9898a8] hover:text-[#e8e8ec] border border-[#2a2a33] hover:border-[#3a3a44] rounded-md py-1.5 transition-colors"
+          className="block text-center text-xs font-medium text-[#909098] hover:text-[#eaeaea] border border-[#1c1c20] hover:border-[#28282e] rounded-md py-1.5 transition-colors"
         >
           View profile
         </Link>

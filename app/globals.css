@@ -9,13 +9,13 @@
   --transition-base: 200ms ease;
 
   /* Nivarro dark scholarly palette */
-  --color-base: #0f0f11;
-  --color-surface: #16161a;
-  --color-elevated: #1e1e24;
-  --color-border: #2a2a33;
-  --color-text-primary: #e8e8ec;
-  --color-text-secondary: #9898a8;
-  --color-text-muted: #5a5a6a;
+  --color-base: #080809;
+  --color-surface: #0d0d0e;
+  --color-elevated: #131315;
+  --color-border: #1c1c20;
+  --color-text-primary: #eaeaea;
+  --color-text-secondary: #909098;
+  --color-text-muted: #58586a;
   --color-amber: #c9a84c;
   --color-amber-light: #e3c06a;
 }
@@ -26,8 +26,8 @@
 
 html,
 body {
-  background-color: #0f0f11;
-  color: #e8e8ec;
+  background-color: #080809;
+  color: #eaeaea;
   font-family: system-ui, -apple-system, sans-serif;
   min-height: 100%;
   margin: 0;
@@ -40,20 +40,20 @@ body {
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #16161a;
+  background: #0d0d0e;
 }
 ::-webkit-scrollbar-thumb {
-  background: #2a2a33;
+  background: #1c1c20;
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #3a3a44;
+  background: #28282e;
 }
 
 /* Selection */
 ::selection {
   background: rgba(201, 168, 76, 0.25);
-  color: #e8e8ec;
+  color: #eaeaea;
 }
 
 /* Focus visible only for keyboard nav */
@@ -66,9 +66,9 @@ body {
 input,
 textarea,
 select {
-  background-color: #1e1e24;
-  color: #e8e8ec;
-  border: 1px solid #2a2a33;
+  background-color: #131315;
+  color: #eaeaea;
+  border: 1px solid #1c1c20;
   border-radius: 6px;
   padding: 0.5rem 0.75rem;
   transition: border-color var(--transition-fast);
