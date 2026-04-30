@@ -11,12 +11,16 @@ export async function middleware(req: NextRequest) {
     pathname.startsWith("/register") ||
     pathname.startsWith("/api/auth");
 
+  // Use AUTH_URL as the base so redirects go to the public domain,
+  // not the internal Render host (localhost:10000).
+  const base = process.env.AUTH_URL ?? req.nextUrl.origin;
+
   if (!token && !isPublic) {
-    return NextResponse.redirect(new URL("/login", req.url));
+    return NextResponse.redirect(new URL("/login", base));
   }
 
   if (token && (pathname === "/login" || pathname === "/register")) {
-    return NextResponse.redirect(new URL("/dashboard", req.url));
+    return NextResponse.redirect(new URL("/dashboard", base));
   }
 
   return NextResponse.next();
