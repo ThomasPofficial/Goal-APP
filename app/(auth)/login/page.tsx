@@ -1,20 +1,18 @@
 "use client";
 
 import { Suspense, useState } from "react";
-import { signIn } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { loginAction } from "@/app/actions/auth";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Loader2 } from "lucide-react";
 
 function LoginForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
-  const raw = searchParams.get("callbackUrl") ?? "";
-  const callbackUrl = raw.startsWith("/") ? raw : "/dashboard";
+  const errorParam = searchParams.get("error");
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [error, setError] = useState(errorParam ? "Invalid email or password." : "");
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -22,20 +20,13 @@ function LoginForm() {
     setError("");
     setLoading(true);
 
-    const res = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-    });
+    const result = await loginAction(email, password);
 
-    setLoading(false);
-
-    if (res?.error) {
-      setError("Invalid email or password.");
-    } else {
-      router.push(callbackUrl);
-      router.refresh();
+    if (result?.error) {
+      setError(result.error);
+      setLoading(false);
     }
+    // On success, loginAction redirects server-side — no client navigation needed
   }
 
   return (
