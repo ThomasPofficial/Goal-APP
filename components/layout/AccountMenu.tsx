@@ -45,29 +45,29 @@ export default function AccountMenu({
   }, [open]);
 
   return (
-    <div ref={containerRef} className="relative px-3 pb-4 pt-3 border-t border-[#2a2a33]">
+    <div ref={containerRef} className="relative px-3 pb-4 pt-3 border-t border-[#1c1c20]">
       {/* Popup panel — renders above the button */}
       {open && (
-        <div className="absolute bottom-full left-3 right-3 mb-2 bg-[#1e1e24] border border-[#2a2a33] rounded-xl shadow-[0_24px_48px_rgba(0,0,0,0.6)] p-4 animate-[fadeIn_0.15s_ease] z-50">
+        <div className="absolute bottom-full left-3 right-3 mb-2 bg-[#131315] border border-[#1c1c20] rounded-xl shadow-[0_24px_48px_rgba(0,0,0,0.6)] p-4 animate-[fadeIn_0.15s_ease] z-50">
           {/* User info */}
-          <div className="flex items-center gap-3 mb-4 pb-4 border-b border-[#2a2a33]">
+          <div className="flex items-center gap-3 mb-4 pb-4 border-b border-[#1c1c20]">
             <div className="w-10 h-10 rounded-full bg-[#c9a84c20] text-[#c9a84c] text-sm font-bold flex items-center justify-center ring-1 ring-[#c9a84c30] flex-shrink-0">
               {initials}
             </div>
             <div className="min-w-0">
-              <div className="text-sm font-semibold text-[#e8e8ec] truncate">
+              <div className="text-sm font-semibold text-[#eaeaea] truncate">
                 {userName ?? "Your Account"}
               </div>
               {userEmail && (
-                <div className="text-xs text-[#5a5a6a] truncate">{userEmail}</div>
+                <div className="text-xs text-[#58586a] truncate">{userEmail}</div>
               )}
             </div>
           </div>
 
           {/* Genius type */}
           {genius ? (
-            <div className="mb-4 pb-4 border-b border-[#2a2a33]">
-              <div className="text-[10px] text-[#5a5a6a] uppercase tracking-wider mb-1.5">
+            <div className="mb-4 pb-4 border-b border-[#1c1c20]">
+              <div className="text-[10px] text-[#58586a] uppercase tracking-wider mb-1.5">
                 Genius Type
               </div>
               <div
@@ -83,7 +83,7 @@ export default function AccountMenu({
               </div>
             </div>
           ) : (
-            <div className="mb-4 pb-4 border-b border-[#2a2a33]">
+            <div className="mb-4 pb-4 border-b border-[#1c1c20]">
               <Link
                 href="/quiz"
                 onClick={() => setOpen(false)}
@@ -99,14 +99,14 @@ export default function AccountMenu({
             <Link
               href="/profile"
               onClick={() => setOpen(false)}
-              className="flex items-center gap-2.5 px-2 py-2 rounded-md text-sm text-[#9898a8] hover:text-[#e8e8ec] hover:bg-[#2a2a33] transition-colors"
+              className="flex items-center gap-2.5 px-2 py-2 rounded-md text-sm text-[#909098] hover:text-[#eaeaea] hover:bg-[#1c1c20] transition-colors"
             >
               <User className="w-4 h-4 flex-shrink-0" />
               Edit Profile
             </Link>
             <button
               onClick={() => signOut({ callbackUrl: "/login" })}
-              className="w-full flex items-center gap-2.5 px-2 py-2 rounded-md text-sm text-[#9898a8] hover:text-[#f87171] hover:bg-[#f8717110] transition-colors"
+              className="w-full flex items-center gap-2.5 px-2 py-2 rounded-md text-sm text-[#909098] hover:text-[#f87171] hover:bg-[#f8717110] transition-colors"
             >
               <LogOut className="w-4 h-4 flex-shrink-0" />
               Sign out
@@ -118,13 +118,13 @@ export default function AccountMenu({
       {/* Trigger button */}
       <button
         onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-center gap-3 px-2 py-2.5 rounded-lg hover:bg-[#1e1e2480] transition-colors group"
+        className="w-full flex items-center gap-3 px-2 py-2.5 rounded-lg hover:bg-[#13131580] transition-colors group"
       >
         <div className="w-8 h-8 rounded-full bg-[#c9a84c20] text-[#c9a84c] text-xs font-bold flex items-center justify-center ring-1 ring-[#c9a84c30] flex-shrink-0">
           {initials}
         </div>
         <div className="flex-1 min-w-0 text-left">
-          <div className="text-xs font-medium text-[#e8e8ec] truncate">
+          <div className="text-xs font-medium text-[#eaeaea] truncate">
             {userName ?? "Account"}
           </div>
           {genius && (
@@ -134,7 +134,7 @@ export default function AccountMenu({
           )}
         </div>
         <ChevronUp
-          className={`w-3.5 h-3.5 text-[#5a5a6a] flex-shrink-0 transition-transform duration-150 ${
+          className={`w-3.5 h-3.5 text-[#58586a] flex-shrink-0 transition-transform duration-150 ${
             open ? "rotate-0" : "rotate-180"
           }`}
         />

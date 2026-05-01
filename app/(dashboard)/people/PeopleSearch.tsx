@@ -57,8 +57,8 @@ export default function PeopleSearch({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold text-[#e8e8ec]">Discover People</h1>
-        <p className="text-sm text-[#9898a8] mt-1">
+        <h1 className="text-2xl font-semibold text-[#eaeaea]">Discover People</h1>
+        <p className="text-sm text-[#909098] mt-1">
           Find collaborators by name, strengths, or traits.
         </p>
       </div>
@@ -66,7 +66,7 @@ export default function PeopleSearch({
       {/* Search + filters */}
       <div className="space-y-3">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#5a5a6a]" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#58586a]" />
           <input
             value={query}
             onChange={(e) => {
@@ -87,8 +87,8 @@ export default function PeopleSearch({
             }}
             className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
               !selectedCategory
-                ? "bg-[#c9a84c] text-[#0f0f11]"
-                : "bg-[#1e1e24] text-[#9898a8] hover:text-[#e8e8ec] border border-[#2a2a33]"
+                ? "bg-[#c9a84c] text-[#080809]"
+                : "bg-[#131315] text-[#909098] hover:text-[#eaeaea] border border-[#1c1c20]"
             }`}
           >
             All
@@ -103,8 +103,8 @@ export default function PeopleSearch({
               }}
               className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
                 selectedCategory === cat
-                  ? "bg-[#c9a84c] text-[#0f0f11]"
-                  : "bg-[#1e1e24] text-[#9898a8] hover:text-[#e8e8ec] border border-[#2a2a33]"
+                  ? "bg-[#c9a84c] text-[#080809]"
+                  : "bg-[#131315] text-[#909098] hover:text-[#eaeaea] border border-[#1c1c20]"
               }`}
             >
               {TRAIT_CATEGORY_LABELS[cat]}
@@ -119,7 +119,7 @@ export default function PeopleSearch({
       >
         {initialProfiles.length > 0 ? (
           <>
-            <p className="text-xs text-[#5a5a6a] mb-4">
+            <p className="text-xs text-[#58586a] mb-4">
               {initialProfiles.length} {initialProfiles.length === 1 ? "person" : "people"} found
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -134,8 +134,8 @@ export default function PeopleSearch({
             </div>
           </>
         ) : (
-          <div className="text-center py-16 border border-dashed border-[#2a2a33] rounded-xl">
-            <p className="text-sm text-[#5a5a6a]">
+          <div className="text-center py-16 border border-dashed border-[#1c1c20] rounded-xl">
+            <p className="text-sm text-[#58586a]">
               {query || selectedCategory
                 ? "No people match your search."
                 : "No other users have created profiles yet."}

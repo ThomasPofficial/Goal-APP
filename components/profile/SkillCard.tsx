@@ -45,7 +45,7 @@ export default function SkillCard({
 
   return (
     <div
-      className={`group bg-[#16161a] border border-[#2a2a33] rounded-[10px] flex flex-col gap-3.5 shadow-[0_1px_3px_rgba(0,0,0,0.4)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.5),0_0_0_1px_rgba(201,168,76,0.15)] hover:border-[#3a3a44] transition-all duration-200 ${
+      className={`group bg-[#0d0d0e] border border-[#1c1c20] rounded-[10px] flex flex-col gap-3.5 shadow-[0_1px_3px_rgba(0,0,0,0.4)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.5),0_0_0_1px_rgba(201,168,76,0.15)] hover:border-[#28282e] transition-all duration-200 ${
         compact ? "p-4" : "p-5"
       }`}
     >
@@ -74,14 +74,14 @@ export default function SkillCard({
 
         <div className="min-w-0 flex-1">
           <h3
-            className={`font-semibold text-[#e8e8ec] truncate ${
+            className={`font-semibold text-[#eaeaea] truncate ${
               compact ? "text-sm" : "text-sm"
             }`}
           >
             {data.displayName}
           </h3>
           {data.headline && (
-            <p className="text-xs text-[#9898a8] truncate mt-0.5">
+            <p className="text-xs text-[#909098] truncate mt-0.5">
               {data.headline}
             </p>
           )}
@@ -103,7 +103,7 @@ export default function SkillCard({
       {data.selfTraits.length > 0 && (
         <div>
           {hasPeerTraits && (
-            <div className="text-[9px] text-[#5a5a6a] uppercase tracking-wider mb-1.5 font-medium">
+            <div className="text-[9px] text-[#58586a] uppercase tracking-wider mb-1.5 font-medium">
               Self-Selected
             </div>
           )}
@@ -122,8 +122,8 @@ export default function SkillCard({
 
       {/* Peer-endorsed traits (shown only when they exist) */}
       {hasPeerTraits && (
-        <div className="border-t border-[#2a2a33] pt-3">
-          <div className="text-[9px] text-[#5a5a6a] uppercase tracking-wider mb-1.5 font-medium flex items-center gap-1">
+        <div className="border-t border-[#1c1c20] pt-3">
+          <div className="text-[9px] text-[#58586a] uppercase tracking-wider mb-1.5 font-medium flex items-center gap-1">
             <span className="text-[#4ADE80]">✓</span> Peer-Endorsed
           </div>
           <div className="flex flex-wrap gap-1.5">
@@ -135,7 +135,7 @@ export default function SkillCard({
                   size="sm"
                 />
                 {trait.endorseCount > 1 && (
-                  <span className="text-[9px] text-[#5a5a6a]">
+                  <span className="text-[9px] text-[#58586a]">
                     ×{trait.endorseCount}
                   </span>
                 )}
@@ -147,7 +147,7 @@ export default function SkillCard({
 
       {/* Strength summary (not in compact mode) */}
       {!compact && data.strengthSummary && (
-        <p className="text-xs text-[#9898a8] leading-relaxed line-clamp-3 border-t border-[#2a2a33] pt-3">
+        <p className="text-xs text-[#909098] leading-relaxed line-clamp-3 border-t border-[#1c1c20] pt-3">
           {data.strengthSummary}
         </p>
       )}
@@ -156,7 +156,7 @@ export default function SkillCard({
       <div className="flex items-center gap-2 mt-auto pt-0.5">
         <Link
           href={`/people/${data.userId}`}
-          className="flex-1 text-center text-xs font-medium text-[#9898a8] hover:text-[#e8e8ec] border border-[#2a2a33] hover:border-[#3a3a44] rounded-md py-1.5 transition-colors"
+          className="flex-1 text-center text-xs font-medium text-[#909098] hover:text-[#eaeaea] border border-[#1c1c20] hover:border-[#28282e] rounded-md py-1.5 transition-colors"
         >
           View
         </Link>

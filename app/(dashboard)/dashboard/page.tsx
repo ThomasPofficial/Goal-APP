@@ -51,7 +51,7 @@ export default async function DashboardPage() {
       prisma.conversationParticipant.count({ where: { userId } }),
     ]);
 
-  const hasProfile = !!(profile?.displayName && profile.displayName !== session?.user?.name);
+  const hasProfile = !!(profile?.displayName && profile.traitLinks.length > 0);
   const hasQuiz = !!profile?.geniusType;
   const hasProject = !!activeProject;
   const onboardingComplete = hasProfile && hasQuiz && hasProject;

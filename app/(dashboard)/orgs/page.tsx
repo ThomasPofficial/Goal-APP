@@ -1,10 +1,10 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import { FolderOpen, Plus, Check } from "lucide-react";
+import { Building2, Plus, Check } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 
-export default async function ProjectsPage() {
+export default async function OrgsPage() {
   const session = await auth();
   const userId = session!.user!.id;
 
@@ -23,9 +23,9 @@ export default async function ProjectsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-[#eaeaea]">Projects</h1>
+          <h1 className="text-2xl font-semibold text-[#eaeaea]">Orgs</h1>
           <p className="text-sm text-[#909098] mt-1">
-            Handpick collaborators for each project.
+            Collaborate with your organizations and teams.
           </p>
         </div>
         <Link
@@ -33,21 +33,21 @@ export default async function ProjectsPage() {
           className="inline-flex items-center gap-1.5 text-sm font-medium bg-[#c9a84c] hover:bg-[#e3c06a] text-[#080809] rounded-md px-4 py-2 transition-colors"
         >
           <Plus className="w-4 h-4" />
-          New Project
+          New Org
         </Link>
       </div>
 
       {projects.length === 0 ? (
         <div className="text-center py-16 border border-dashed border-[#1c1c20] rounded-xl">
-          <FolderOpen className="w-8 h-8 text-[#58586a] mx-auto mb-3" />
+          <Building2 className="w-8 h-8 text-[#58586a] mx-auto mb-3" />
           <p className="text-sm text-[#58586a] mb-4">
-            No projects yet. Create one to start building your team.
+            No orgs yet. Create one to start collaborating.
           </p>
           <Link
             href="/projects/new"
             className="text-sm text-[#c9a84c] hover:text-[#e3c06a]"
           >
-            Create your first project →
+            Create your first org →
           </Link>
         </div>
       ) : (
@@ -59,7 +59,7 @@ export default async function ProjectsPage() {
               </h2>
               <div className="space-y-2">
                 {active.map((p) => (
-                  <ProjectRow key={p.id} project={p} userId={userId} />
+                  <OrgRow key={p.id} project={p} userId={userId} />
                 ))}
               </div>
             </section>
@@ -72,7 +72,7 @@ export default async function ProjectsPage() {
               </h2>
               <div className="space-y-2">
                 {completed.map((p) => (
-                  <ProjectRow key={p.id} project={p} userId={userId} />
+                  <OrgRow key={p.id} project={p} userId={userId} />
                 ))}
               </div>
             </section>
@@ -83,7 +83,7 @@ export default async function ProjectsPage() {
   );
 }
 
-function ProjectRow({
+function OrgRow({
   project,
   userId,
 }: {
@@ -115,7 +115,7 @@ function ProjectRow({
         {isCompleted ? (
           <Check className="w-4 h-4 text-[#4ADE80]" />
         ) : (
-          <FolderOpen className="w-4 h-4 text-[#c9a84c]" />
+          <Building2 className="w-4 h-4 text-[#c9a84c]" />
         )}
       </div>
       <div className="flex-1 min-w-0">

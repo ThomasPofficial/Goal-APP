@@ -36,16 +36,16 @@ export default async function PersonProfilePage({
   return (
     <div className="max-w-2xl">
       <Link
-        href="/people"
-        className="inline-flex items-center gap-1.5 text-sm text-[#9898a8] hover:text-[#e8e8ec] mb-6 transition-colors"
+        href="/peers"
+        className="inline-flex items-center gap-1.5 text-sm text-[#909098] hover:text-[#eaeaea] mb-6 transition-colors"
       >
         <ArrowLeft className="w-4 h-4" />
-        Back to People
+        Back to Peers
       </Link>
 
-      <div className="bg-[#16161a] border border-[#2a2a33] rounded-xl overflow-hidden">
+      <div className="bg-[#0d0d0e] border border-[#1c1c20] rounded-xl overflow-hidden">
         {/* Header */}
-        <div className="p-6 border-b border-[#2a2a33]">
+        <div className="p-6 border-b border-[#1c1c20]">
           <div className="flex items-start gap-4">
             <div className="w-16 h-16 rounded-full flex-shrink-0 flex items-center justify-center text-lg font-bold bg-[#c9a84c20] text-[#c9a84c] ring-2 ring-[#c9a84c30]">
               {profile.avatarUrl ? (
@@ -60,17 +60,17 @@ export default async function PersonProfilePage({
               )}
             </div>
             <div className="flex-1 min-w-0">
-              <h1 className="text-xl font-semibold text-[#e8e8ec]">
+              <h1 className="text-xl font-semibold text-[#eaeaea]">
                 {profile.displayName}
               </h1>
               {profile.headline && (
-                <p className="text-sm text-[#9898a8] mt-1">{profile.headline}</p>
+                <p className="text-sm text-[#909098] mt-1">{profile.headline}</p>
               )}
               {!isOwnProfile && (
                 <div className="flex gap-2 mt-3">
                   <Link
                     href={`/messages?userId=${userId}`}
-                    className="text-xs font-medium px-3 py-1.5 bg-[#c9a84c] hover:bg-[#e3c06a] text-[#0f0f11] rounded-md transition-colors"
+                    className="text-xs font-medium px-3 py-1.5 bg-[#c9a84c] hover:bg-[#e3c06a] text-[#080809] rounded-md transition-colors"
                   >
                     Message
                   </Link>
@@ -82,8 +82,8 @@ export default async function PersonProfilePage({
 
         {/* Traits */}
         {profile.traitLinks.length > 0 && (
-          <div className="p-6 border-b border-[#2a2a33]">
-            <h2 className="text-xs font-semibold text-[#5a5a6a] uppercase tracking-wider mb-3">
+          <div className="p-6 border-b border-[#1c1c20]">
+            <h2 className="text-xs font-semibold text-[#58586a] uppercase tracking-wider mb-3">
               Traits
             </h2>
             <div className="flex flex-wrap gap-2">
@@ -101,11 +101,11 @@ export default async function PersonProfilePage({
 
         {/* Strength summary */}
         {profile.strengthSummary && (
-          <div className="p-6 border-b border-[#2a2a33]">
-            <h2 className="text-xs font-semibold text-[#5a5a6a] uppercase tracking-wider mb-3">
+          <div className="p-6 border-b border-[#1c1c20]">
+            <h2 className="text-xs font-semibold text-[#58586a] uppercase tracking-wider mb-3">
               Strengths
             </h2>
-            <p className="text-sm text-[#9898a8] leading-relaxed">
+            <p className="text-sm text-[#909098] leading-relaxed">
               {profile.strengthSummary}
             </p>
           </div>
@@ -114,10 +114,10 @@ export default async function PersonProfilePage({
         {/* Bio */}
         {profile.bio && (
           <div className="p-6">
-            <h2 className="text-xs font-semibold text-[#5a5a6a] uppercase tracking-wider mb-3">
+            <h2 className="text-xs font-semibold text-[#58586a] uppercase tracking-wider mb-3">
               About
             </h2>
-            <p className="text-sm text-[#9898a8] leading-relaxed">{profile.bio}</p>
+            <p className="text-sm text-[#909098] leading-relaxed">{profile.bio}</p>
           </div>
         )}
       </div>
