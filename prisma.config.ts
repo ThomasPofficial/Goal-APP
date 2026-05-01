@@ -6,7 +6,7 @@ export default defineConfig({
   migrate: {
     async adapter(env) {
       const { PrismaPg } = await import("@prisma/adapter-pg");
-      return new PrismaPg({ connectionString: env.DATABASE_URL });
+      return new PrismaPg({ connectionString: env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
     },
   },
 });
