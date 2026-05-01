@@ -1,12 +1,14 @@
 "use client";
 
 import { Suspense, useState } from "react";
+import { useRouter } from "next/navigation";
 import { loginAction } from "@/app/actions/auth";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Loader2 } from "lucide-react";
 
 function LoginForm() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const errorParam = searchParams.get("error");
 
@@ -20,13 +22,19 @@ function LoginForm() {
     setError("");
     setLoading(true);
 
-    const result = await loginAction(email, password);
-
-    if (result?.error) {
-      setError(result.error);
+    try {
+      const result = await loginAction(email, password);
+      if ("error" in result) {
+        setError(result.error);
+        setLoading(false);
+      } else {
+        // Session cookie is set — navigate client-side to avoid Render's internal host redirect
+        router.push("/dashboard");
+      }
+    } catch {
+      setError("Something went wrong. Please try again.");
       setLoading(false);
     }
-    // On success, loginAction redirects server-side — no client navigation needed
   }
 
   return (
