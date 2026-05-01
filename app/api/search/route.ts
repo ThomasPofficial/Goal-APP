@@ -95,16 +95,10 @@ export async function GET(req: NextRequest) {
   });
   const myGeniusType = myProfile?.geniusType ?? null;
 
-  // Build WHERE clause — completeness gate always applied
+  // Build WHERE clause — require at least a display name (so empty signups don't appear)
   const where: Prisma.ProfileWhereInput = {
     userId: { not: userId },
-    // Completeness gate: must have geniusType, at least one trait, and bio or strengthSummary
-    geniusType: { not: null },
-    traitLinks: { some: {} },
-    OR: [
-      { bio: { not: null } },
-      { strengthSummary: { not: null } },
-    ],
+    NOT: { displayName: "" },
   };
 
   // Keyword filter
@@ -112,10 +106,10 @@ export async function GET(req: NextRequest) {
     (where as Record<string, unknown>).AND = [
       {
         OR: [
-          { displayName: { contains: q } },
-          { headline: { contains: q } },
-          { bio: { contains: q } },
-          { strengthSummary: { contains: q } },
+          { displayName: { contains: q, mode: "insensitive" } },
+          { headline: { contains: q, mode: "insensitive" } },
+          { bio: { contains: q, mode: "insensitive" } },
+          { strengthSummary: { contains: q, mode: "insensitive" } },
         ],
       },
     ];

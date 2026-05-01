@@ -14,13 +14,6 @@ import {
   Sparkles,
 } from "lucide-react";
 
-interface TraitData {
-  id: string;
-  slug: string;
-  name: string;
-  category: string;
-}
-
 interface TraitResult {
   traitSlugs: string[];
   traitIds: string[];
@@ -28,11 +21,20 @@ interface TraitResult {
   explanation: string;
 }
 
-interface Props {
-  alreadyCompleted: boolean;
+interface TraitData {
+  id: string;
+  slug: string;
+  name: string;
+  category: string;
 }
 
-export default function TraitQuizClient({ alreadyCompleted }: Props) {
+interface Props {
+  alreadyCompleted: boolean;
+  existingTraits: TraitData[];
+  existingSummary: string | null;
+}
+
+export default function TraitQuizClient({ alreadyCompleted, existingTraits, existingSummary }: Props) {
   const router = useRouter();
   const [step, setStep] = useState<"quiz" | "analyzing" | "result">(
     alreadyCompleted ? "result" : "quiz"
@@ -121,12 +123,12 @@ export default function TraitQuizClient({ alreadyCompleted }: Props) {
   if (step === "analyzing") {
     return (
       <div className="max-w-lg mx-auto py-12 text-center">
-        <div className="bg-[#16161a] border border-[#2a2a33] rounded-xl p-10">
+        <div className="bg-[#0d0d0e] border border-[#1c1c20] rounded-xl p-10">
           <Loader2 className="w-8 h-8 text-[#c9a84c] animate-spin mx-auto mb-4" />
-          <h2 className="text-sm font-semibold text-[#e8e8ec] mb-2">
+          <h2 className="text-sm font-semibold text-[#eaeaea] mb-2">
             Analyzing your answers
           </h2>
-          <p className="text-xs text-[#5a5a6a]">
+          <p className="text-xs text-[#58586a]">
             Identifying the traits that most accurately describe you...
           </p>
         </div>
@@ -138,13 +140,13 @@ export default function TraitQuizClient({ alreadyCompleted }: Props) {
   if ((step === "result" || alreadyCompleted) && result) {
     return (
       <div className="max-w-lg mx-auto py-8">
-        <div className="bg-[#16161a] border border-[#2a2a33] rounded-xl overflow-hidden">
+        <div className="bg-[#0d0d0e] border border-[#1c1c20] rounded-xl overflow-hidden">
           <div className="h-1 w-full bg-gradient-to-r from-[#7B61FF] via-[#c9a84c] to-[#4ECDC4]" />
 
           <div className="p-6">
             <div className="flex items-center gap-2 mb-5">
               <Sparkles className="w-4 h-4 text-[#c9a84c]" />
-              <span className="text-xs font-semibold text-[#9898a8] uppercase tracking-wider">
+              <span className="text-xs font-semibold text-[#909098] uppercase tracking-wider">
                 Your Recommended Traits
               </span>
             </div>
@@ -162,8 +164,8 @@ export default function TraitQuizClient({ alreadyCompleted }: Props) {
             </div>
 
             {/* Explanation */}
-            <div className="bg-[#1e1e24] border border-[#2a2a33] rounded-lg p-4 mb-5">
-              <p className="text-sm text-[#9898a8] leading-relaxed">
+            <div className="bg-[#131315] border border-[#1c1c20] rounded-lg p-4 mb-5">
+              <p className="text-sm text-[#909098] leading-relaxed">
                 {result.explanation}
               </p>
             </div>
@@ -176,13 +178,13 @@ export default function TraitQuizClient({ alreadyCompleted }: Props) {
                 return (
                   <div
                     key={trait.slug}
-                    className="flex items-center gap-3 px-3 py-2 rounded-lg bg-[#1e1e24]"
+                    className="flex items-center gap-3 px-3 py-2 rounded-lg bg-[#131315]"
                   >
                     <div
                       className="w-1.5 h-1.5 rounded-full flex-shrink-0"
                       style={{ backgroundColor: color }}
                     />
-                    <span className="text-xs font-medium text-[#e8e8ec]">
+                    <span className="text-xs font-medium text-[#eaeaea]">
                       {trait.name}
                     </span>
                     <span
@@ -212,14 +214,14 @@ export default function TraitQuizClient({ alreadyCompleted }: Props) {
                 </div>
                 <button
                   onClick={() => router.push("/profile")}
-                  className="w-full flex items-center justify-center gap-2 bg-[#c9a84c] hover:bg-[#e3c06a] text-[#0f0f11] font-semibold rounded-md py-2.5 text-sm transition-colors"
+                  className="w-full flex items-center justify-center gap-2 bg-[#c9a84c] hover:bg-[#e3c06a] text-[#080809] font-semibold rounded-md py-2.5 text-sm transition-colors"
                 >
                   View Profile
                   <ArrowRight className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => router.push("/dashboard")}
-                  className="w-full text-center text-xs text-[#5a5a6a] hover:text-[#9898a8] transition-colors py-1.5"
+                  className="w-full text-center text-xs text-[#58586a] hover:text-[#909098] transition-colors py-1.5"
                 >
                   Go to Dashboard
                 </button>
@@ -229,7 +231,7 @@ export default function TraitQuizClient({ alreadyCompleted }: Props) {
                 <button
                   onClick={handleApply}
                   disabled={applying}
-                  className="w-full flex items-center justify-center gap-2 bg-[#c9a84c] hover:bg-[#e3c06a] text-[#0f0f11] font-semibold rounded-md py-2.5 text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full flex items-center justify-center gap-2 bg-[#c9a84c] hover:bg-[#e3c06a] text-[#080809] font-semibold rounded-md py-2.5 text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {applying ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
@@ -242,13 +244,13 @@ export default function TraitQuizClient({ alreadyCompleted }: Props) {
                 </button>
                 <button
                   onClick={() => router.push("/profile")}
-                  className="w-full text-center text-xs text-[#9898a8] hover:text-[#e8e8ec] border border-[#2a2a33] hover:border-[#3a3a44] rounded-md py-2 transition-colors"
+                  className="w-full text-center text-xs text-[#909098] hover:text-[#eaeaea] border border-[#1c1c20] hover:border-[#28282e] rounded-md py-2 transition-colors"
                 >
                   Review & customize in Profile
                 </button>
                 <button
                   onClick={handleRetake}
-                  className="w-full flex items-center justify-center gap-1.5 text-xs text-[#5a5a6a] hover:text-[#9898a8] transition-colors py-1.5"
+                  className="w-full flex items-center justify-center gap-1.5 text-xs text-[#58586a] hover:text-[#909098] transition-colors py-1.5"
                 >
                   <RotateCcw className="w-3 h-3" />
                   Retake quiz
@@ -258,7 +260,7 @@ export default function TraitQuizClient({ alreadyCompleted }: Props) {
           </div>
         </div>
 
-        <p className="text-xs text-[#5a5a6a] text-center mt-4 px-4">
+        <p className="text-xs text-[#58586a] text-center mt-4 px-4">
           These are recommendations based on your answers. You can always
           adjust your final traits in your profile.
         </p>
@@ -266,35 +268,81 @@ export default function TraitQuizClient({ alreadyCompleted }: Props) {
     );
   }
 
-  // Already completed but no result loaded (page refresh state)
+  // Already completed but no result loaded (page refresh state) — show saved traits
   if (alreadyCompleted && !result) {
     return (
-      <div className="max-w-lg mx-auto py-8 text-center">
-        <div className="bg-[#16161a] border border-[#2a2a33] rounded-xl p-8">
-          <CheckCircle2 className="w-8 h-8 text-[#4ADE80] mx-auto mb-3" />
-          <h2 className="text-sm font-semibold text-[#e8e8ec] mb-2">
-            You&apos;ve already completed the Traits Quiz
-          </h2>
-          <p className="text-xs text-[#9898a8] mb-5">
-            Your recommended traits have been applied to your profile.
-          </p>
-          <div className="space-y-2">
-            <button
-              onClick={() => router.push("/profile")}
-              className="w-full flex items-center justify-center gap-2 bg-[#c9a84c] hover:bg-[#e3c06a] text-[#0f0f11] font-semibold rounded-md py-2.5 text-sm transition-colors"
-            >
-              View Profile
-              <ArrowRight className="w-4 h-4" />
-            </button>
-            <button
-              onClick={handleRetake}
-              className="w-full flex items-center justify-center gap-1.5 text-xs text-[#5a5a6a] hover:text-[#9898a8] transition-colors py-1.5"
-            >
-              <RotateCcw className="w-3 h-3" />
-              Retake quiz
-            </button>
+      <div className="max-w-lg mx-auto py-8">
+        <div className="bg-[#0d0d0e] border border-[#1c1c20] rounded-xl overflow-hidden">
+          <div className="h-1 w-full bg-gradient-to-r from-[#7B61FF] via-[#c9a84c] to-[#4ECDC4]" />
+          <div className="p-6">
+            <div className="flex items-center gap-2 mb-5">
+              <CheckCircle2 className="w-4 h-4 text-[#4ADE80]" />
+              <span className="text-xs font-semibold text-[#909098] uppercase tracking-wider">
+                Your Current Traits
+              </span>
+            </div>
+
+            {existingTraits.length > 0 ? (
+              <>
+                <div className="flex flex-wrap gap-2.5 mb-5">
+                  {existingTraits.map((trait) => (
+                    <TraitBadge
+                      key={trait.slug}
+                      name={trait.name}
+                      category={trait.category as TraitCategory}
+                      size="md"
+                    />
+                  ))}
+                </div>
+
+                {existingSummary && (
+                  <div className="bg-[#131315] border border-[#1c1c20] rounded-lg p-4 mb-5">
+                    <p className="text-sm text-[#909098] leading-relaxed">
+                      {existingSummary}
+                    </p>
+                  </div>
+                )}
+
+                <div className="space-y-2 mb-6">
+                  {existingTraits.map((trait) => {
+                    const color = TRAIT_CATEGORY_COLORS[trait.category as TraitCategory];
+                    return (
+                      <div key={trait.slug} className="flex items-center gap-3 px-3 py-2 rounded-lg bg-[#131315]">
+                        <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />
+                        <span className="text-xs font-medium text-[#eaeaea]">{trait.name}</span>
+                        <span className="text-[10px] ml-auto" style={{ color }}>
+                          {trait.category.toLowerCase().replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            ) : (
+              <p className="text-xs text-[#909098] mb-5">Your traits are set on your profile.</p>
+            )}
+
+            <div className="space-y-2">
+              <button
+                onClick={() => router.push("/profile")}
+                className="w-full flex items-center justify-center gap-2 bg-[#c9a84c] hover:bg-[#e3c06a] text-[#080809] font-semibold rounded-md py-2.5 text-sm transition-colors"
+              >
+                View Profile
+                <ArrowRight className="w-4 h-4" />
+              </button>
+              <button
+                onClick={handleRetake}
+                className="w-full flex items-center justify-center gap-1.5 text-xs text-[#58586a] hover:text-[#909098] transition-colors py-1.5"
+              >
+                <RotateCcw className="w-3 h-3" />
+                Retake quiz
+              </button>
+            </div>
           </div>
         </div>
+        <p className="text-xs text-[#58586a] text-center mt-4 px-4">
+          These traits appear on your Skill Card. You can always adjust them in your profile.
+        </p>
       </div>
     );
   }
@@ -306,10 +354,10 @@ export default function TraitQuizClient({ alreadyCompleted }: Props) {
   return (
     <div className="max-w-lg mx-auto py-8">
       <div className="mb-6">
-        <h1 className="text-xl font-semibold text-[#e8e8ec] mb-1">
+        <h1 className="text-xl font-semibold text-[#eaeaea] mb-1">
           Traits Quiz
         </h1>
-        <p className="text-sm text-[#9898a8]">
+        <p className="text-sm text-[#909098]">
           15 questions to identify your 5 core traits. Answer as you actually
           are, not as you want to be.
         </p>
@@ -317,13 +365,13 @@ export default function TraitQuizClient({ alreadyCompleted }: Props) {
 
       {/* Progress */}
       <div className="mb-6">
-        <div className="flex justify-between text-xs text-[#5a5a6a] mb-2">
-          <span className="text-[#9898a8]">{currentCluster}</span>
+        <div className="flex justify-between text-xs text-[#58586a] mb-2">
+          <span className="text-[#909098]">{currentCluster}</span>
           <span>
             {currentQ + 1} / {TRAIT_QUIZ_QUESTIONS.length}
           </span>
         </div>
-        <div className="h-1 bg-[#2a2a33] rounded-full overflow-hidden">
+        <div className="h-1 bg-[#1c1c20] rounded-full overflow-hidden">
           <div
             className="h-full bg-[#c9a84c] rounded-full transition-all duration-300"
             style={{ width: `${progress}%` }}
@@ -347,7 +395,7 @@ export default function TraitQuizClient({ alreadyCompleted }: Props) {
                     ? "bg-[#c9a84c]"
                     : isCurrent
                     ? "bg-[#c9a84c60]"
-                    : "bg-[#2a2a33]"
+                    : "bg-[#1c1c20]"
                 }`}
                 style={{ width: `${100 / clusters.length - 2}%` }}
                 title={cluster}
@@ -360,9 +408,9 @@ export default function TraitQuizClient({ alreadyCompleted }: Props) {
       {/* Question card */}
       <div
         key={currentQ}
-        className="bg-[#16161a] border border-[#2a2a33] rounded-xl p-6 animate-[slideUp_0.2s_ease]"
+        className="bg-[#0d0d0e] border border-[#1c1c20] rounded-xl p-6 animate-[slideUp_0.2s_ease]"
       >
-        <h2 className="text-base font-medium text-[#e8e8ec] mb-5 leading-relaxed">
+        <h2 className="text-base font-medium text-[#eaeaea] mb-5 leading-relaxed">
           {question.question}
         </h2>
 
@@ -373,15 +421,15 @@ export default function TraitQuizClient({ alreadyCompleted }: Props) {
               onClick={() => setSelected(i)}
               className={`w-full text-left px-4 py-3.5 rounded-lg border text-sm leading-relaxed transition-all ${
                 selected === i
-                  ? "border-[#c9a84c] bg-[#c9a84c10] text-[#e8e8ec]"
-                  : "border-[#2a2a33] text-[#9898a8] hover:border-[#3a3a44] hover:text-[#e8e8ec] hover:bg-[#1e1e24]"
+                  ? "border-[#c9a84c] bg-[#c9a84c10] text-[#eaeaea]"
+                  : "border-[#1c1c20] text-[#909098] hover:border-[#28282e] hover:text-[#eaeaea] hover:bg-[#131315]"
               }`}
             >
               <span
                 className={`inline-flex items-center justify-center w-5 h-5 rounded-full border text-xs mr-3 flex-shrink-0 align-middle ${
                   selected === i
-                    ? "border-[#c9a84c] bg-[#c9a84c] text-[#0f0f11]"
-                    : "border-[#3a3a44]"
+                    ? "border-[#c9a84c] bg-[#c9a84c] text-[#080809]"
+                    : "border-[#28282e]"
                 }`}
               >
                 {selected === i ? "✓" : String.fromCharCode(65 + i)}
@@ -403,7 +451,7 @@ export default function TraitQuizClient({ alreadyCompleted }: Props) {
                 setAnswers((a) => a.slice(0, -1));
                 setSelected(answers[currentQ - 1] ?? null);
               }}
-              className="text-xs text-[#5a5a6a] hover:text-[#9898a8] transition-colors"
+              className="text-xs text-[#58586a] hover:text-[#909098] transition-colors"
             >
               ← Back
             </button>
@@ -413,7 +461,7 @@ export default function TraitQuizClient({ alreadyCompleted }: Props) {
           <button
             onClick={handleNext}
             disabled={selected === null}
-            className="flex items-center gap-2 bg-[#c9a84c] hover:bg-[#e3c06a] text-[#0f0f11] font-semibold text-sm rounded-md px-5 py-2.5 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 bg-[#c9a84c] hover:bg-[#e3c06a] text-[#080809] font-semibold text-sm rounded-md px-5 py-2.5 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {isLastQuestion ? "Analyze my traits" : "Next"}
             <ArrowRight className="w-4 h-4" />

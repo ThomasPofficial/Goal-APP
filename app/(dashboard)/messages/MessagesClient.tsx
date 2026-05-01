@@ -26,17 +26,18 @@ interface Message {
 interface Props {
   initialConversations: Conversation[];
   currentUserId: string;
-  openWithUserId: string | null;
+  openConvoId: string | null;
 }
 
 export default function MessagesClient({
   initialConversations,
   currentUserId,
+  openConvoId,
 }: Props) {
   const router = useRouter();
   const [convos, setConvos] = useState(initialConversations);
   const [activeConvoId, setActiveConvoId] = useState<string | null>(
-    initialConversations[0]?.id ?? null
+    openConvoId ?? initialConversations[0]?.id ?? null
   );
   const [messages, setMessages] = useState<Message[]>([]);
   const [loadingMessages, setLoadingMessages] = useState(false);
@@ -80,18 +81,18 @@ export default function MessagesClient({
   }
 
   return (
-    <div className="flex h-[calc(100vh-120px)] gap-0 bg-[#16161a] border border-[#2a2a33] rounded-xl overflow-hidden">
+    <div className="flex h-[calc(100vh-120px)] gap-0 bg-[#0d0d0e] border border-[#1c1c20] rounded-xl overflow-hidden">
       {/* Sidebar: Conversation list */}
-      <div className="w-64 flex-shrink-0 border-r border-[#2a2a33] flex flex-col">
-        <div className="px-4 py-3 border-b border-[#2a2a33]">
-          <h2 className="text-sm font-semibold text-[#e8e8ec]">Messages</h2>
+      <div className="w-64 flex-shrink-0 border-r border-[#1c1c20] flex flex-col">
+        <div className="px-4 py-3 border-b border-[#1c1c20]">
+          <h2 className="text-sm font-semibold text-[#eaeaea]">Messages</h2>
         </div>
 
         <div className="flex-1 overflow-y-auto">
           {convos.length === 0 ? (
             <div className="p-4 text-center">
-              <MessageSquare className="w-6 h-6 text-[#5a5a6a] mx-auto mb-2" />
-              <p className="text-xs text-[#5a5a6a]">
+              <MessageSquare className="w-6 h-6 text-[#58586a] mx-auto mb-2" />
+              <p className="text-xs text-[#58586a]">
                 No messages yet. Visit a profile to start a conversation.
               </p>
             </div>
@@ -102,19 +103,19 @@ export default function MessagesClient({
                 <button
                   key={c.id}
                   onClick={() => setActiveConvoId(c.id)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-[#1e1e24] transition-colors text-left border-b border-[#2a2a3320] ${
-                    activeConvoId === c.id ? "bg-[#1e1e24]" : ""
+                  className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-[#131315] transition-colors text-left border-b border-[#1c1c2020] ${
+                    activeConvoId === c.id ? "bg-[#131315]" : ""
                   }`}
                 >
                   <div className="w-8 h-8 rounded-full bg-[#c9a84c20] text-[#c9a84c] text-xs font-bold flex items-center justify-center flex-shrink-0">
                     {initials}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="text-sm font-medium text-[#e8e8ec] truncate">
+                    <div className="text-sm font-medium text-[#eaeaea] truncate">
                       {c.otherUser.name}
                     </div>
                     {c.lastMessage && (
-                      <div className="text-xs text-[#5a5a6a] truncate">
+                      <div className="text-xs text-[#58586a] truncate">
                         {c.lastMessage.isMe ? "You: " : ""}
                         {c.lastMessage.content}
                       </div>
@@ -131,11 +132,11 @@ export default function MessagesClient({
       {activeConvo ? (
         <div className="flex-1 flex flex-col min-w-0">
           {/* Thread header */}
-          <div className="px-5 py-3 border-b border-[#2a2a33] flex items-center gap-3">
+          <div className="px-5 py-3 border-b border-[#1c1c20] flex items-center gap-3">
             <div className="w-8 h-8 rounded-full bg-[#c9a84c20] text-[#c9a84c] text-xs font-bold flex items-center justify-center">
               {getInitials(activeConvo.otherUser.name)}
             </div>
-            <span className="text-sm font-semibold text-[#e8e8ec]">
+            <span className="text-sm font-semibold text-[#eaeaea]">
               {activeConvo.otherUser.name}
             </span>
           </div>
@@ -143,11 +144,11 @@ export default function MessagesClient({
           {/* Messages */}
           <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3">
             {loadingMessages ? (
-              <div className="text-center text-xs text-[#5a5a6a] py-8">
+              <div className="text-center text-xs text-[#58586a] py-8">
                 Loading...
               </div>
             ) : messages.length === 0 ? (
-              <div className="text-center text-xs text-[#5a5a6a] py-8">
+              <div className="text-center text-xs text-[#58586a] py-8">
                 No messages yet. Say hello!
               </div>
             ) : (
@@ -161,12 +162,12 @@ export default function MessagesClient({
                     <div
                       className={`max-w-[70%] px-3 py-2 rounded-xl text-sm leading-relaxed ${
                         isMe
-                          ? "bg-[#c9a84c20] text-[#e8e8ec] border border-[#c9a84c30]"
-                          : "bg-[#1e1e24] text-[#e8e8ec] border border-[#2a2a33]"
+                          ? "bg-[#c9a84c20] text-[#eaeaea] border border-[#c9a84c30]"
+                          : "bg-[#131315] text-[#eaeaea] border border-[#1c1c20]"
                       }`}
                     >
                       {msg.content}
-                      <div className="text-[10px] text-[#5a5a6a] mt-1">
+                      <div className="text-[10px] text-[#58586a] mt-1">
                         {formatRelativeDate(msg.createdAt)}
                       </div>
                     </div>
@@ -180,19 +181,19 @@ export default function MessagesClient({
           {/* Input */}
           <form
             onSubmit={sendMessage}
-            className="px-5 py-3 border-t border-[#2a2a33] flex gap-3"
+            className="px-5 py-3 border-t border-[#1c1c20] flex gap-3"
           >
             <input
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
               placeholder="Write a message..."
-              className="flex-1"
+              className="flex-1 bg-[#131315] border border-[#1c1c20] rounded-md px-3 py-2 text-sm text-[#eaeaea] placeholder-[#58586a] outline-none focus:border-[#c9a84c] transition-colors"
               disabled={sending}
             />
             <button
               type="submit"
               disabled={!newMessage.trim() || sending}
-              className="flex items-center justify-center w-9 h-9 rounded-md bg-[#c9a84c] hover:bg-[#e3c06a] text-[#0f0f11] transition-colors disabled:opacity-50"
+              className="flex items-center justify-center w-9 h-9 rounded-md bg-[#c9a84c] hover:bg-[#e3c06a] text-[#080809] transition-colors disabled:opacity-50"
             >
               <Send className="w-4 h-4" />
             </button>
@@ -200,7 +201,7 @@ export default function MessagesClient({
         </div>
       ) : (
         <div className="flex-1 flex items-center justify-center">
-          <p className="text-sm text-[#5a5a6a]">Select a conversation</p>
+          <p className="text-sm text-[#58586a]">Select a conversation</p>
         </div>
       )}
     </div>

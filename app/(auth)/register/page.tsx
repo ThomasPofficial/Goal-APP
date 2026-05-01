@@ -35,15 +35,15 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="bg-[#16161a] border border-[#2a2a33] rounded-xl p-8 shadow-[0_24px_48px_rgba(0,0,0,0.6)]">
+    <div className="bg-[#0d0d0e] border border-[#1c1c20] rounded-xl p-8 shadow-[0_24px_48px_rgba(0,0,0,0.6)]">
       <div className="mb-8 text-center">
         <div className="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-[#c9a84c] mb-4">
-          <span className="text-[#0f0f11] font-bold text-lg">N</span>
+          <span className="text-[#080809] font-bold text-lg">N</span>
         </div>
-        <h1 className="text-xl font-semibold text-[#e8e8ec]">
+        <h1 className="text-xl font-semibold text-[#eaeaea]">
           Join Nivarro
         </h1>
-        <p className="text-sm text-[#9898a8] mt-1">
+        <p className="text-sm text-[#909098] mt-1">
           Create your account to get started
         </p>
       </div>
@@ -52,7 +52,7 @@ export default function RegisterPage() {
         <div>
           <label
             htmlFor="name"
-            className="block text-xs font-medium text-[#9898a8] mb-1.5 uppercase tracking-wider"
+            className="block text-xs font-medium text-[#909098] mb-1.5 uppercase tracking-wider"
           >
             Full Name
           </label>
@@ -63,14 +63,14 @@ export default function RegisterPage() {
             onChange={(e) => setName(e.target.value)}
             placeholder="Your name"
             required
-            className="w-full bg-[#1e1e24] border border-[#2a2a33] rounded-md px-3 py-2.5 text-sm text-[#e8e8ec] placeholder:text-[#5a5a6a] focus:outline-none focus:border-[#c9a84c80] focus:shadow-[0_0_0_1px_rgba(201,168,76,0.2)]"
+            className="w-full bg-[#131315] border border-[#1c1c20] rounded-md px-3 py-2.5 text-sm text-[#eaeaea] placeholder:text-[#58586a] focus:outline-none focus:border-[#c9a84c80] focus:shadow-[0_0_0_1px_rgba(201,168,76,0.2)]"
           />
         </div>
 
         <div>
           <label
             htmlFor="email"
-            className="block text-xs font-medium text-[#9898a8] mb-1.5 uppercase tracking-wider"
+            className="block text-xs font-medium text-[#909098] mb-1.5 uppercase tracking-wider"
           >
             Email
           </label>
@@ -81,14 +81,14 @@ export default function RegisterPage() {
             onChange={(e) => setEmail(e.target.value)}
             placeholder="you@example.com"
             required
-            className="w-full bg-[#1e1e24] border border-[#2a2a33] rounded-md px-3 py-2.5 text-sm text-[#e8e8ec] placeholder:text-[#5a5a6a] focus:outline-none focus:border-[#c9a84c80] focus:shadow-[0_0_0_1px_rgba(201,168,76,0.2)]"
+            className="w-full bg-[#131315] border border-[#1c1c20] rounded-md px-3 py-2.5 text-sm text-[#eaeaea] placeholder:text-[#58586a] focus:outline-none focus:border-[#c9a84c80] focus:shadow-[0_0_0_1px_rgba(201,168,76,0.2)]"
           />
         </div>
 
         <div>
           <label
             htmlFor="password"
-            className="block text-xs font-medium text-[#9898a8] mb-1.5 uppercase tracking-wider"
+            className="block text-xs font-medium text-[#909098] mb-1.5 uppercase tracking-wider"
           >
             Password
           </label>
@@ -100,7 +100,7 @@ export default function RegisterPage() {
             placeholder="Minimum 6 characters"
             minLength={6}
             required
-            className="w-full bg-[#1e1e24] border border-[#2a2a33] rounded-md px-3 py-2.5 text-sm text-[#e8e8ec] placeholder:text-[#5a5a6a] focus:outline-none focus:border-[#c9a84c80] focus:shadow-[0_0_0_1px_rgba(201,168,76,0.2)]"
+            className="w-full bg-[#131315] border border-[#1c1c20] rounded-md px-3 py-2.5 text-sm text-[#eaeaea] placeholder:text-[#58586a] focus:outline-none focus:border-[#c9a84c80] focus:shadow-[0_0_0_1px_rgba(201,168,76,0.2)]"
           />
         </div>
 
@@ -113,14 +113,14 @@ export default function RegisterPage() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full flex items-center justify-center gap-2 bg-[#c9a84c] hover:bg-[#e3c06a] text-[#0f0f11] font-semibold text-sm rounded-md py-2.5 transition-colors disabled:opacity-60 disabled:cursor-not-allowed mt-2"
+          className="w-full flex items-center justify-center gap-2 bg-[#c9a84c] hover:bg-[#e3c06a] text-[#080809] font-semibold text-sm rounded-md py-2.5 transition-colors disabled:opacity-60 disabled:cursor-not-allowed mt-2"
         >
           {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
           {loading ? "Creating account..." : "Create account"}
         </button>
       </form>
 
-      <p className="mt-6 text-center text-sm text-[#5a5a6a]">
+      <p className="mt-6 text-center text-sm text-[#58586a]">
         Already have an account?{" "}
         <Link href="/login" className="text-[#c9a84c] hover:text-[#e3c06a]">
           Sign in

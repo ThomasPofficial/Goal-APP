@@ -98,21 +98,21 @@ export default function ProfileEditor({ initialProfile, allTraits }: Props) {
   return (
     <div className="max-w-2xl space-y-8">
       <div>
-        <h1 className="text-2xl font-semibold text-[#e8e8ec]">My Profile</h1>
-        <p className="text-sm text-[#9898a8] mt-1">
+        <h1 className="text-2xl font-semibold text-[#eaeaea]">My Profile</h1>
+        <p className="text-sm text-[#909098] mt-1">
           Tell others who you are and how you work best.
         </p>
       </div>
 
       <form onSubmit={handleSave} className="space-y-6">
         {/* Basic info */}
-        <div className="bg-[#16161a] border border-[#2a2a33] rounded-xl p-5 space-y-4">
-          <h2 className="text-xs font-semibold text-[#9898a8] uppercase tracking-wider">
+        <div className="bg-[#0d0d0e] border border-[#1c1c20] rounded-xl p-5 space-y-4">
+          <h2 className="text-xs font-semibold text-[#909098] uppercase tracking-wider">
             Basic Information
           </h2>
 
           <div>
-            <label className="block text-xs text-[#9898a8] mb-1.5 uppercase tracking-wider font-medium">
+            <label className="block text-xs text-[#909098] mb-1.5 uppercase tracking-wider font-medium">
               Display Name *
             </label>
             <input
@@ -125,7 +125,7 @@ export default function ProfileEditor({ initialProfile, allTraits }: Props) {
           </div>
 
           <div>
-            <label className="block text-xs text-[#9898a8] mb-1.5 uppercase tracking-wider font-medium">
+            <label className="block text-xs text-[#909098] mb-1.5 uppercase tracking-wider font-medium">
               Headline
             </label>
             <input
@@ -137,7 +137,7 @@ export default function ProfileEditor({ initialProfile, allTraits }: Props) {
           </div>
 
           <div>
-            <label className="block text-xs text-[#9898a8] mb-1.5 uppercase tracking-wider font-medium">
+            <label className="block text-xs text-[#909098] mb-1.5 uppercase tracking-wider font-medium">
               Date of Birth
             </label>
             <input
@@ -147,11 +147,11 @@ export default function ProfileEditor({ initialProfile, allTraits }: Props) {
               className="w-full"
               style={{ colorScheme: "dark" }}
             />
-            <p className="text-xs text-[#5a5a6a] mt-1">Used for age-range filtering in search. Not shown publicly.</p>
+            <p className="text-xs text-[#58586a] mt-1">Used for age-range filtering in search. Not shown publicly.</p>
           </div>
 
           <div>
-            <label className="block text-xs text-[#9898a8] mb-1.5 uppercase tracking-wider font-medium">
+            <label className="block text-xs text-[#909098] mb-1.5 uppercase tracking-wider font-medium">
               Bio
             </label>
             <textarea
@@ -164,7 +164,7 @@ export default function ProfileEditor({ initialProfile, allTraits }: Props) {
           </div>
 
           <div>
-            <label className="block text-xs text-[#9898a8] mb-1.5 uppercase tracking-wider font-medium">
+            <label className="block text-xs text-[#909098] mb-1.5 uppercase tracking-wider font-medium">
               Strength Summary
             </label>
             <textarea
@@ -178,16 +178,16 @@ export default function ProfileEditor({ initialProfile, allTraits }: Props) {
         </div>
 
         {/* Traits selector */}
-        <div className="bg-[#16161a] border border-[#2a2a33] rounded-xl p-5 space-y-5">
+        <div className="bg-[#0d0d0e] border border-[#1c1c20] rounded-xl p-5 space-y-5">
           <div className="flex items-center justify-between">
-            <h2 className="text-xs font-semibold text-[#9898a8] uppercase tracking-wider">
+            <h2 className="text-xs font-semibold text-[#909098] uppercase tracking-wider">
               Traits
             </h2>
             <span
               className={`text-xs font-medium ${
                 selectedTraitIds.length >= MAX_TRAITS
                   ? "text-[#c9a84c]"
-                  : "text-[#5a5a6a]"
+                  : "text-[#58586a]"
               }`}
             >
               {selectedTraitIds.length}/{MAX_TRAITS} selected
@@ -196,7 +196,7 @@ export default function ProfileEditor({ initialProfile, allTraits }: Props) {
 
           {/* Selected preview */}
           {selectedTraitIds.length > 0 && (
-            <div className="flex flex-wrap gap-2 p-3 bg-[#1e1e24] rounded-lg border border-[#2a2a33]">
+            <div className="flex flex-wrap gap-2 p-3 bg-[#131315] rounded-lg border border-[#1c1c20]">
               {selectedTraitIds.map((id) => {
                 const t = traitById[id];
                 if (!t) return null;
@@ -233,7 +233,7 @@ export default function ProfileEditor({ initialProfile, allTraits }: Props) {
                         backgroundColor: TRAIT_CATEGORY_COLORS[cat],
                       }}
                     />
-                    <span className="text-xs font-medium text-[#9898a8]">
+                    <span className="text-xs font-medium text-[#909098]">
                       {TRAIT_CATEGORY_LABELS[cat]}
                     </span>
                   </div>
@@ -263,7 +263,7 @@ export default function ProfileEditor({ initialProfile, allTraits }: Props) {
                               : `${TRAIT_CATEGORY_COLORS[cat]}0C`,
                             color: isSelected
                               ? TRAIT_CATEGORY_COLORS[cat]
-                              : "#9898a8",
+                              : "#909098",
                           }}
                         >
                           {isSelected && <Check className="w-3 h-3" />}
@@ -288,7 +288,7 @@ export default function ProfileEditor({ initialProfile, allTraits }: Props) {
           <button
             type="submit"
             disabled={saving || !displayName}
-            className="flex items-center gap-2 bg-[#c9a84c] hover:bg-[#e3c06a] text-[#0f0f11] font-semibold text-sm rounded-md px-5 py-2.5 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 bg-[#c9a84c] hover:bg-[#e3c06a] text-[#080809] font-semibold text-sm rounded-md px-5 py-2.5 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
             {saving ? "Saving..." : saved ? "Saved!" : "Save profile"}
