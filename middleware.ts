@@ -9,6 +9,8 @@ export async function middleware(req: NextRequest) {
   const isPublic =
     pathname.startsWith("/login") ||
     pathname.startsWith("/register") ||
+    pathname.startsWith("/forgot-password") ||
+    pathname.startsWith("/reset-password") ||
     pathname.startsWith("/api/auth");
 
   // Render's reverse proxy rewrites Host to localhost:10000 internally.
