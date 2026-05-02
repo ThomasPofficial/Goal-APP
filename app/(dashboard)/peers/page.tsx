@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import SmartSearch from "../people/SmartSearch";
@@ -11,4 +12,10 @@ export default async function PeersPage() {
   });
 
   return <SmartSearch allTraits={allTraits} />;
+=======
+import PeersClient from "./PeersClient";
+
+export default function PeersPage() {
+  return <PeersClient />;
+>>>>>>> Stashed changes
 }

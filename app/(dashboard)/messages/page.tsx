@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
@@ -10,9 +11,23 @@ export default async function MessagesPage({
 }: {
   searchParams: Promise<{ userId?: string; convoId?: string }>;
 }) {
+=======
+import { auth } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
+import { redirect } from 'next/navigation';
+import MessagesClient from './MessagesClient';
+import type { GeniusTypeKey } from '@/lib/geniusTypes';
+
+export default async function MessagesPage() {
+>>>>>>> Stashed changes
   const session = await auth();
-  const myId = session?.user?.id ?? "";
-  const params = await searchParams;
+  if (!session?.user?.id) redirect('/login');
+
+  const myProfile = await prisma.profile.findUnique({
+    where: { userId: session.user.id },
+    select: { id: true, displayName: true, avatarUrl: true, geniusType: true },
+  });
+  if (!myProfile) redirect('/onboarding');
 
   // Coming from a profile's Message button — create/find conversation then redirect
   if (params.userId && myId) {
@@ -44,51 +59,57 @@ export default async function MessagesPage({
   const openConvoId = params.convoId ?? null;
 
   const conversations = await prisma.conversation.findMany({
-    where: { participants: { some: { userId: myId } } },
+    where: { participants: { some: { userId: session.user.id } } },
     include: {
       participants: {
         include: {
-          user: { include: { profile: true } },
+          user: {
+            include: {
+              profile: { select: { id: true, displayName: true, avatarUrl: true, geniusType: true, handle: true } },
+            },
+          },
         },
       },
-      messages: {
-        orderBy: { createdAt: "desc" },
-        take: 1,
-        include: {
-          sender: { select: { id: true } },
-        },
-      },
+      messages: { orderBy: { createdAt: 'desc' }, take: 1 },
+      team: { select: { id: true, name: true } },
     },
-    orderBy: { updatedAt: "desc" },
+    orderBy: { updatedAt: 'desc' },
   });
 
-  // Format conversations for display
-  const formatted = conversations.map((c) => {
-    const otherParticipant = c.participants.find((p) => p.userId !== myId);
-    const lastMessage = c.messages[0];
-    return {
-      id: c.id,
-      otherUser: {
-        id: otherParticipant?.userId ?? "",
-        name: otherParticipant?.user.profile?.displayName ?? otherParticipant?.user.name ?? "Unknown",
-        avatarUrl: otherParticipant?.user.profile?.avatarUrl ?? null,
-      },
-      lastMessage: lastMessage
-        ? {
-            content: lastMessage.content,
-            isMe: lastMessage.sender.id === myId,
-            createdAt: lastMessage.createdAt.toISOString(),
-          }
+  const serialized = conversations.map((c) => ({
+    id: c.id,
+    type: c.type,
+    name: null as string | null,
+    teamId: c.teamId,
+    teamName: c.team?.name ?? null,
+    updatedAt: c.updatedAt.toISOString(),
+    lastMessage: c.messages[0]
+      ? { body: c.messages[0].content, createdAt: c.messages[0].createdAt.toISOString() }
+      : null,
+    participants: c.participants.map((p) => ({
+      id: p.id,
+      userId: p.userId,
+      profile: p.user.profile
+        ? { ...p.user.profile, geniusType: p.user.profile.geniusType as GeniusTypeKey | null }
         : null,
-      updatedAt: c.updatedAt.toISOString(),
-    };
-  });
+    })),
+  }));
 
   return (
     <MessagesClient
+<<<<<<< Updated upstream
       initialConversations={formatted}
       currentUserId={myId}
       openConvoId={openConvoId}
+=======
+      conversations={serialized}
+      myUserId={session.user.id}
+      myProfileId={myProfile.id}
+      myProfile={{
+        ...myProfile,
+        geniusType: myProfile.geniusType as GeniusTypeKey | null,
+      }}
+>>>>>>> Stashed changes
     />
   );
 }
