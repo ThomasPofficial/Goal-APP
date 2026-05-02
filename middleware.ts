@@ -11,9 +11,13 @@ export async function middleware(req: NextRequest) {
     pathname.startsWith("/register") ||
     pathname.startsWith("/api/auth");
 
-  // Use AUTH_URL as the base so redirects go to the public domain,
-  // not the internal Render host (localhost:10000).
-  const base = process.env.AUTH_URL ?? req.nextUrl.origin;
+  // Render's reverse proxy rewrites Host to localhost:10000 internally.
+  // Use x-forwarded-host + x-forwarded-proto to get the real public URL.
+  const fwdHost = req.headers.get("x-forwarded-host");
+  const fwdProto = req.headers.get("x-forwarded-proto") ?? "https";
+  const base = fwdHost
+    ? `${fwdProto}://${fwdHost}`
+    : (process.env.AUTH_URL ?? req.nextUrl.origin);
 
   if (!token && !isPublic) {
     return NextResponse.redirect(new URL("/login", base));
