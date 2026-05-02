@@ -20,13 +20,18 @@ function LoginForm() {
     setError("");
     setLoading(true);
 
-    const result = await loginAction(email, password);
-
-    if (result?.error) {
-      setError(result.error);
+    try {
+      const result = await loginAction(email, password);
+      if ("error" in result) {
+        setError(result.error);
+        setLoading(false);
+      } else {
+        window.location.href = "/dashboard";
+      }
+    } catch {
+      setError("Something went wrong. Please try again.");
       setLoading(false);
     }
-    // On success, loginAction redirects server-side — no client navigation needed
   }
 
   return (
