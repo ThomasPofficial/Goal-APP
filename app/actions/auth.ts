@@ -3,7 +3,7 @@
 import { signIn } from "@/lib/auth";
 import { AuthError } from "next-auth";
 import { prisma } from "@/lib/prisma";
-import { resend } from "@/lib/resend";
+import { getResendClient } from "@/lib/resend";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 
@@ -49,7 +49,7 @@ export async function requestPasswordReset(email: string): Promise<void> {
 
   const resetUrl = `${process.env.AUTH_URL}/reset-password?token=${rawToken}`;
 
-  await resend.emails.send({
+  await getResendClient().emails.send({
     from: process.env.FROM_EMAIL ?? "noreply@nivarro.co",
     to: user.email,
     subject: "Reset your Nivarro password",
