@@ -120,11 +120,6 @@ export default function LoginPage() {
         </Link>
       </p>
 
-      <div className="mt-4 pt-4 border-t border-[#1c1c20]">
-        <p className="text-xs text-center text-[#58586a]">
-          Demo: demo@nivarro.io / password123
-        </p>
-      </div>
     </div>
   );
 }
