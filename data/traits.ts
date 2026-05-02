@@ -55,38 +55,42 @@ export type GeniusType = "DYNAMO" | "BLAZE" | "TEMPO" | "STEEL";
 
 export const GENIUS_TYPE_INFO: Record<
   GeniusType,
-  { label: string; color: string; description: string; icon: string; nudgeCategories: TraitCategory[] }
+  { label: string; color: string; description: string; icon: string; tagline: string; nudgeCategories: TraitCategory[] }
 > = {
   DYNAMO: {
     label: "Dynamo",
-    color: "#FF6B35",
+    color: "#F59E0B",
     icon: "⚡",
+    tagline: "The Visionary Builder",
     description:
-      "High-energy idea generators who spark momentum and drive breakthroughs. You thrive on bold visions and relentless pursuit.",
+      "High-energy idea generators who spark momentum and drive breakthroughs. You see possibilities where others see problems and turn concepts into reality at full speed.",
     nudgeCategories: ["VISION", "DRIVE", "JUDGMENT"],
   },
   BLAZE: {
     label: "Blaze",
-    color: "#F7DC6F",
+    color: "#EF4444",
     icon: "🔥",
+    tagline: "The Bold Connector",
     description:
-      "Charismatic connectors who inspire action and energize every room they walk into. You build movements, not just teams.",
+      "Charismatic connectors who inspire action and energize every room they walk into. People follow your lead because your passion is contagious.",
     nudgeCategories: ["LEADERSHIP", "COMMUNICATION", "COLLABORATION"],
   },
   TEMPO: {
     label: "Tempo",
-    color: "#45B7D1",
-    icon: "🎵",
+    color: "#10B981",
+    icon: "🎯",
+    tagline: "The Steady Strategist",
     description:
-      "Steady enablers who make great ideas actually happen. You create the rhythm and reliability that lets a team perform at its best.",
+      "Steady enablers who make great ideas actually happen. You are the calm in the storm — methodical, reliable, the reason things don't fall apart.",
     nudgeCategories: ["ORGANIZATION", "ADAPTABILITY", "COLLABORATION"],
   },
   STEEL: {
     label: "Steel",
-    color: "#9898A8",
-    icon: "⚙️",
+    color: "#6366F1",
+    icon: "🛡️",
+    tagline: "The Deep Thinker",
     description:
-      "Rigorous thinkers who protect quality and cut through noise. You ensure that what ships is worthy of the vision.",
+      "Rigorous thinkers who protect quality and cut through noise. Your precision and integrity make you the person everyone trusts to get it exactly right.",
     nudgeCategories: ["ANALYTICAL", "INTEGRITY", "JUDGMENT"],
   },
 };

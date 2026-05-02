@@ -27,7 +27,7 @@ export default async function DashboardLayout({
         userEmail={session.user.email}
         geniusType={(profile?.geniusType as GeniusType | null) ?? null}
       />
-      <main className="pl-[240px] min-h-screen">
+      <main className="pl-[220px] min-h-screen">
         <div className="max-w-6xl mx-auto px-6 py-8">{children}</div>
       </main>
     </div>

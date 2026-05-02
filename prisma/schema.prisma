@@ -75,20 +75,34 @@ model User {
 }
 
 model Profile {
-  id              String      @id @default(cuid())
-  userId          String      @unique
-  displayName     String
-  headline        String?
-  bio             String?
-  strengthSummary String?
-  avatarUrl       String?
-  geniusType      GeniusType?
-  dateOfBirth     DateTime?
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  id                  String      @id @default(cuid())
+  userId              String      @unique
+  displayName         String
+  headline            String?
+  bio                 String?
+  strengthSummary     String?
+  avatarUrl           String?
+  geniusType          GeniusType?
+  secondaryGeniusType GeniusType?
+  dateOfBirth         DateTime?
+  handle              String?     @unique
+  currentFocus        String?
+  interests           String      @default("[]")
+  grade               Int?
+  schoolName          String?
+  isFirstGen          Boolean     @default(false)
+  isHomeschooled      Boolean     @default(false)
+  isInternational     Boolean     @default(false)
+  onboardingComplete  Boolean     @default(false)
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
 
-  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  traitLinks  ProfileTrait[]
+  user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  traitLinks         ProfileTrait[]
+  savedOpportunities SavedOpportunity[]
+  contacts           Contact[]          @relation("ContactOwner")
+  contactOf          Contact[]          @relation("ContactTarget")
+  teamMemberships    TeamMember[]
 }
 
 enum GeniusType {
@@ -110,8 +124,8 @@ model Trait {
   category    TraitCategory
   createdAt   DateTime      @default(now())
 
-  profileLinks       ProfileTrait[]
-  peerEndorsements   PeerEndorsedTrait[]
+  profileLinks     ProfileTrait[]
+  peerEndorsements PeerEndorsedTrait[]
 }
 
 model ProfileTrait {
@@ -141,10 +155,7 @@ enum TraitCategory {
 }
 
 // ─────────────────────────────────────────────
-// PROJECTS (replaces generic Team)
-// A project is the unit of collaboration.
-// You handpick members for a specific project.
-// When the project completes, endorsements are triggered.
+// PROJECTS
 // ─────────────────────────────────────────────
 
 model Project {
@@ -157,8 +168,8 @@ model Project {
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 
-  members           ProjectMember[]
-  endorsements      PeerEndorsement[]
+  members      ProjectMember[]
+  endorsements PeerEndorsement[]
 }
 
 model ProjectMember {
@@ -187,10 +198,6 @@ enum ProjectRole {
 
 // ─────────────────────────────────────────────
 // PEER ENDORSEMENTS
-// After a project completes, each member can endorse
-// each other member's top 5 traits.
-// Stored separately from self-selected traits so both
-// are shown on the Skill Card clearly.
 // ─────────────────────────────────────────────
 
 model PeerEndorsement {
@@ -201,9 +208,9 @@ model PeerEndorsement {
   completedAt DateTime?
   createdAt   DateTime  @default(now())
 
-  project  Project            @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  endorser User               @relation("EndorsementsGiven", fields: [endorserId], references: [id], onDelete: Cascade)
-  endorsee User               @relation("EndorsementsReceived", fields: [endorseeId], references: [id], onDelete: Cascade)
+  project  Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  endorser User                @relation("EndorsementsGiven", fields: [endorserId], references: [id], onDelete: Cascade)
+  endorsee User                @relation("EndorsementsReceived", fields: [endorseeId], references: [id], onDelete: Cascade)
   traits   PeerEndorsedTrait[]
 
   @@unique([projectId, endorserId, endorseeId])
@@ -242,12 +249,21 @@ model Note {
 // ─────────────────────────────────────────────
 
 model Conversation {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id        String           @id @default(cuid())
+  type      ConversationType @default(DIRECT)
+  teamId    String?
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
 
   participants ConversationParticipant[]
   messages     Message[]
+  team         Team?                    @relation(fields: [teamId], references: [id])
+}
+
+enum ConversationType {
+  DIRECT
+  GROUP
+  TEAM
 }
 
 model ConversationParticipant {
@@ -273,4 +289,158 @@ model Message {
 
   conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   sender       User         @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+}
+
+// ─────────────────────────────────────────────
+// ORGS & OPPORTUNITIES
+// ─────────────────────────────────────────────
+
+enum OrgCategory {
+  ACCELERATOR
+  FELLOWSHIP
+  INTERNSHIP
+  COMPETITION
+  BOOTCAMP
+  RESEARCH
+  CLUB
+}
+
+enum OrgStatus {
+  OPEN
+  CLOSED
+  ROLLING
+}
+
+model Org {
+  id               String      @id @default(cuid())
+  name             String
+  tagline          String?
+  description      String?
+  whatWeSeek       String?
+  category         OrgCategory
+  status           OrgStatus   @default(OPEN)
+  heroUrl          String?
+  accentColor      String?
+  minTeamSize      Int         @default(1)
+  maxTeamSize      Int         @default(5)
+  gradeEligibility String?
+  deadline         DateTime?
+  format           String?
+  location         String?
+  stipend          String?
+  createdAt        DateTime    @default(now())
+  createdById      String
+
+  opportunities Opportunity[]
+  teams         Team[]
+}
+
+model Opportunity {
+  id               String      @id @default(cuid())
+  orgId            String
+  title            String
+  description      String?
+  category         OrgCategory
+  deadline         DateTime?
+  gradeEligibility String?
+  isRemote         Boolean     @default(false)
+  createdAt        DateTime    @default(now())
+
+  org     Org                @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  savedBy SavedOpportunity[]
+}
+
+model SavedOpportunity {
+  id            String   @id @default(cuid())
+  profileId     String
+  opportunityId String
+  createdAt     DateTime @default(now())
+
+  profile     Profile     @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  opportunity Opportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, opportunityId])
+}
+
+// ─────────────────────────────────────────────
+// CONTACTS
+// ─────────────────────────────────────────────
+
+model Contact {
+  id        String   @id @default(cuid())
+  ownerId   String
+  targetId  String
+  createdAt DateTime @default(now())
+
+  owner  Profile @relation("ContactOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  target Profile @relation("ContactTarget", fields: [targetId], references: [id], onDelete: Cascade)
+
+  @@unique([ownerId, targetId])
+}
+
+// ─────────────────────────────────────────────
+// TEAMS
+// ─────────────────────────────────────────────
+
+enum TeamStatus {
+  ACTIVE
+  SUBMITTED
+  COMPLETED
+}
+
+enum TeamRole {
+  ADMIN
+  MEMBER
+}
+
+model Team {
+  id          String     @id @default(cuid())
+  name        String
+  description String?
+  status      TeamStatus @default(ACTIVE)
+  orgId       String?
+  createdById String
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  org            Org?            @relation(fields: [orgId], references: [id])
+  members        TeamMember[]
+  noteboardCards NoteboardCard[]
+  conversation   Conversation[]
+}
+
+model TeamMember {
+  id        String   @id @default(cuid())
+  teamId    String
+  profileId String
+  role      TeamRole @default(MEMBER)
+  joinedAt  DateTime @default(now())
+
+  team    Team    @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, profileId])
+}
+
+// ─────────────────────────────────────────────
+// NOTEBOARD
+// ─────────────────────────────────────────────
+
+enum NoteboardType {
+  NOTE
+  TASK
+  CHECKLIST
+}
+
+model NoteboardCard {
+  id        String        @id @default(cuid())
+  teamId    String
+  type      NoteboardType
+  payload   String
+  creatorId String
+  order     Int           @default(0)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
 }

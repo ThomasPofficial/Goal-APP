@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
@@ -143,4 +144,10 @@ function OrgRow({
       </div>
     </Link>
   );
+=======
+import OrgsClient from "./OrgsClient";
+
+export default function OrgsPage() {
+  return <OrgsClient />;
+>>>>>>> Stashed changes
 }

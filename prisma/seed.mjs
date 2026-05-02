@@ -90,13 +90,17 @@ const alexTraits = await prisma.trait.findMany({
 });
 const alexProfile = await prisma.profile.upsert({
   where: { userId: alex.id },
-  update: {},
+  update: { onboardingComplete: true, handle: "alexmorgan" },
   create: {
     userId: alex.id, displayName: "Alex Morgan",
+    handle: "alexmorgan",
     headline: "Builder & Systems Thinker",
     bio: "I build platforms that help ambitious people find each other and do their best work together.",
     strengthSummary: "Strong at seeing patterns across complex systems and translating vision into executable plans.",
     geniusType: "DYNAMO",
+    grade: 11,
+    onboardingComplete: true,
+    interests: JSON.stringify(["Startups", "AI / ML", "Systems Design", "Finance"]),
   },
 });
 for (let i = 0; i < alexTraits.length; i++) {
@@ -117,13 +121,17 @@ const jordanTraits = await prisma.trait.findMany({
 });
 const jordanProfile = await prisma.profile.upsert({
   where: { userId: jordan.id },
-  update: {},
+  update: { onboardingComplete: true, handle: "jordanlee" },
   create: {
     userId: jordan.id, displayName: "Jordan Lee",
+    handle: "jordanlee",
     headline: "Team Builder & People Leader",
     bio: "The best products are built by teams who genuinely understand each other.",
     strengthSummary: "Exceptional at aligning teams around a shared vision and keeping morale high.",
     geniusType: "BLAZE",
+    grade: 12,
+    onboardingComplete: true,
+    interests: JSON.stringify(["Leadership", "Psychology", "Film & Media", "Community Building"]),
   },
 });
 for (let i = 0; i < jordanTraits.length; i++) {
@@ -144,13 +152,17 @@ const samTraits = await prisma.trait.findMany({
 });
 const samProfile = await prisma.profile.upsert({
   where: { userId: sam.id },
-  update: {},
+  update: { onboardingComplete: true, handle: "sampatel" },
   create: {
     userId: sam.id, displayName: "Sam Patel",
+    handle: "sampatel",
     headline: "Operations & Execution Lead",
     bio: "I turn ambitious plans into running systems.",
     strengthSummary: "Unmatched at building operational backbone. Reliable, thorough, the reason things don't fall apart.",
     geniusType: "TEMPO",
+    grade: 10,
+    onboardingComplete: true,
+    interests: JSON.stringify(["Engineering", "Research", "Productivity", "Science"]),
   },
 });
 for (let i = 0; i < samTraits.length; i++) {
