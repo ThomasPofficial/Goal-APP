@@ -11,6 +11,15 @@ const PORT = process.env.PORT || 3000;
 const env = { ...process.env };
 
 try {
+  // The SQLite migration 20260426162504_nivarro_core was mistakenly committed and
+  // fails on PostgreSQL. Mark it as applied so migrate deploy can proceed.
+  try {
+    execSync("npx prisma migrate resolve --applied 20260426162504_nivarro_core", { stdio: "pipe", env });
+    console.log("→ Resolved legacy SQLite migration as applied.");
+  } catch (_) {
+    // Already resolved or not in failed state — safe to ignore.
+  }
+
   console.log("→ Running database migrations...");
   execSync("npx prisma migrate deploy", { stdio: "inherit", env });
 
