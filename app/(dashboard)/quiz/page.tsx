@@ -16,23 +16,25 @@ export default async function QuizPage(props: {
   const tab = searchParams.tab === "traits" ? "traits" : "genius";
 
   const session = await auth();
-  const userId = session!.user!.id;
+  const userId = session?.user?.id ?? null;
 
-  const profile = await prisma.profile.findUnique({
-    where: { userId },
-    select: {
-      geniusType: true,
-      strengthSummary: true,
-      traitLinks: {
-        orderBy: { order: "asc" },
-        include: { trait: true },
-      },
-    },
-  });
+  const profile = userId
+    ? await prisma.profile.findUnique({
+        where: { userId },
+        select: {
+          geniusType: true,
+          strengthSummary: true,
+          traitLinks: {
+            orderBy: { order: "asc" },
+            include: { trait: true },
+          },
+        },
+      })
+    : null;
 
   const geniusDone = !!profile?.geniusType;
   const traitsDone = (profile?.traitLinks?.length ?? 0) > 0;
-  const existingTraits = profile?.traitLinks.map((l) => ({
+  const existingTraits = profile?.traitLinks?.map((l) => ({
     id: l.trait.id,
     slug: l.trait.slug,
     name: l.trait.name,

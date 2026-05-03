@@ -23,7 +23,9 @@ export default auth((req) => {
     pathname.startsWith("/register") ||
     pathname.startsWith("/forgot-password") ||
     pathname.startsWith("/reset-password") ||
-    pathname.startsWith("/api/auth");
+    pathname.startsWith("/api/auth") ||
+    pathname.startsWith("/quiz") ||
+    pathname.startsWith("/onboarding");
 
   if (!req.auth && !isPublic) {
     const loginUrl = new URL("/login", req.url);
