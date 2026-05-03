@@ -42,7 +42,6 @@ export default function QuizClient({ alreadyCompleted, existingType }: Props) {
       setSelected(null);
       setCurrentQ((q) => q + 1);
     } else {
-      // Calculate result
       const scores: Record<GeniusType, number> = {
         DYNAMO: 0,
         BLAZE: 0,
@@ -81,14 +80,8 @@ export default function QuizClient({ alreadyCompleted, existingType }: Props) {
   if (step === "result" && result) {
     const genius = GENIUS_TYPE_INFO[result];
     return (
-<<<<<<< Updated upstream
-      <div className="max-w-lg mx-auto text-center py-8">
-        <div className="bg-[#0d0d0e] border border-[#1c1c20] rounded-xl overflow-hidden">
-=======
       <div className="max-w-lg text-center py-4">
         <div className="bg-[#16161a] border border-[#2a2a33] rounded-xl overflow-hidden">
->>>>>>> Stashed changes
-          {/* Color band */}
           <div
             className="h-2 w-full"
             style={{ backgroundColor: genius.color }}
@@ -117,13 +110,8 @@ export default function QuizClient({ alreadyCompleted, existingType }: Props) {
 
             <div className="space-y-2">
               <button
-<<<<<<< Updated upstream
-                onClick={() => router.push("/dashboard")}
-                className="w-full flex items-center justify-center gap-2 bg-[#c9a84c] hover:bg-[#e3c06a] text-[#080809] font-semibold rounded-md py-2.5 text-sm transition-colors"
-=======
                 onClick={() => router.push("/quiz?tab=traits")}
                 className="w-full flex items-center justify-center gap-2 bg-[#c9a84c] hover:bg-[#e3c06a] text-[#0f0f11] font-semibold rounded-md py-2.5 text-sm transition-colors"
->>>>>>> Stashed changes
               >
                 Next: Take Traits Quiz
                 <ArrowRight className="w-4 h-4" />
@@ -136,11 +124,7 @@ export default function QuizClient({ alreadyCompleted, existingType }: Props) {
               </button>
               <button
                 onClick={handleRetake}
-<<<<<<< Updated upstream
-                className="w-full flex items-center justify-center gap-2 text-[#58586a] hover:text-[#909098] text-sm transition-colors py-2"
-=======
                 className="w-full flex items-center justify-center gap-1.5 text-[#5a5a6a] hover:text-[#9898a8] text-sm transition-colors py-1.5"
->>>>>>> Stashed changes
               >
                 <RotateCcw className="w-3.5 h-3.5" />
                 Retake quiz
@@ -149,7 +133,6 @@ export default function QuizClient({ alreadyCompleted, existingType }: Props) {
           </div>
         </div>
 
-        {/* Nudge toward traits */}
         <div className="mt-4 text-xs text-[#58586a] px-4">
           As a <span style={{ color: genius.color }}>{genius.label}</span>, you
           may want to look at these categories when selecting your traits:{" "}
@@ -163,37 +146,18 @@ export default function QuizClient({ alreadyCompleted, existingType }: Props) {
 
   // ── QUIZ SCREEN ──────────────────────────────────────────────
   return (
-<<<<<<< Updated upstream
-    <div className="max-w-lg mx-auto py-8">
-      <div className="mb-6">
-        <h1 className="text-xl font-semibold text-[#eaeaea] mb-1">
-          Genius Quiz
-        </h1>
-        <p className="text-sm text-[#909098]">
-          8 questions to discover your archetype. Answer honestly — there are no
-          wrong answers.
-=======
     <div className="pb-8">
       <div className="mb-5">
         <p className="text-xs font-semibold text-[#5a5a6a] uppercase tracking-wider mb-1">Genius Quiz</p>
         <p className="text-sm text-[#9898a8]">
           8 questions · Answer honestly, there are no wrong answers
->>>>>>> Stashed changes
         </p>
       </div>
 
       {/* Progress bar */}
-<<<<<<< Updated upstream
-      <div className="mb-8">
-        <div className="flex justify-between text-xs text-[#58586a] mb-2">
-          <span>
-            Question {currentQ + 1} of {QUIZ_QUESTIONS.length}
-          </span>
-=======
       <div className="mb-6 max-w-lg">
         <div className="flex justify-between text-xs text-[#5a5a6a] mb-2">
           <span>Question {currentQ + 1} of {QUIZ_QUESTIONS.length}</span>
->>>>>>> Stashed changes
           <span>{Math.round(progress)}%</span>
         </div>
         <div className="h-1 bg-[#1c1c20] rounded-full overflow-hidden">
@@ -207,11 +171,7 @@ export default function QuizClient({ alreadyCompleted, existingType }: Props) {
       {/* Question card */}
       <div
         key={currentQ}
-<<<<<<< Updated upstream
-        className="bg-[#0d0d0e] border border-[#1c1c20] rounded-xl p-6 animate-[slideUp_0.2s_ease]"
-=======
         className="bg-[#16161a] border border-[#2a2a33] rounded-xl p-6 animate-[slideUp_0.2s_ease] max-w-lg"
->>>>>>> Stashed changes
       >
         <h2 className="text-base font-medium text-[#eaeaea] mb-6 leading-relaxed">
           {question.question}

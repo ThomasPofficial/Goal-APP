@@ -41,67 +41,6 @@ export default async function DashboardPage() {
     },
   });
 
-<<<<<<< Updated upstream
-  const hasProfile = !!(profile?.displayName && profile.traitLinks.length > 0);
-  const hasQuiz = !!profile?.geniusType;
-  const hasProject = !!activeProject;
-  const onboardingComplete = hasProfile && hasQuiz && hasProject;
-
-  let peerTraitsByUser: Record<
-    string,
-    { name: string; category: string; count: number }[]
-  > = {};
-
-  if (activeProject) {
-    const endorsements = await prisma.peerEndorsement.findMany({
-      where: { projectId: activeProject.id, completedAt: { not: null } },
-      include: { traits: { include: { trait: true } } },
-    });
-    for (const e of endorsements) {
-      if (!peerTraitsByUser[e.endorseeId]) peerTraitsByUser[e.endorseeId] = [];
-      for (const t of e.traits) {
-        const ex = peerTraitsByUser[e.endorseeId].find(
-          (x) => x.name === t.trait.name
-        );
-        if (ex) ex.count++;
-        else
-          peerTraitsByUser[e.endorseeId].push({
-            name: t.trait.name,
-            category: t.trait.category,
-            count: 1,
-          });
-      }
-    }
-  }
-
-  const projectMembers = activeProject
-    ? activeProject.members.map((m) => ({
-        memberId: m.id,
-        userId: m.userId,
-        role: m.role,
-        profile: m.user.profile
-          ? {
-              displayName: m.user.profile.displayName,
-              headline: m.user.profile.headline,
-              avatarUrl: m.user.profile.avatarUrl,
-              strengthSummary: m.user.profile.strengthSummary,
-              geniusType: m.user.profile.geniusType as GeniusType | null,
-              selfTraits: m.user.profile.traitLinks.map((l) => ({
-                name: l.trait.name,
-                category: l.trait.category as TraitCategory,
-              })),
-              peerTraits: (peerTraitsByUser[m.userId] ?? [])
-                .sort((a, b) => b.count - a.count)
-                .map((t) => ({
-                  name: t.name,
-                  category: t.category as TraitCategory,
-                  endorseCount: t.count,
-                })),
-            }
-          : null,
-      }))
-    : [];
-=======
   const spaces = (profile?.teamMemberships ?? []).map((m) => {
     const convo = m.team.conversation[0];
     const lastRead = convo?.participants[0]?.lastReadAt;
@@ -109,7 +48,6 @@ export default async function DashboardPage() {
     const hasUnread = lastMsg && (!lastRead || lastMsg > lastRead);
     return { id: m.team.id, name: m.team.name, hasUnread: !!hasUnread };
   });
->>>>>>> Stashed changes
 
   return (
     <DashboardClient
