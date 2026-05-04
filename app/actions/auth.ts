@@ -81,8 +81,9 @@ export async function requestPasswordReset(
 
     return { success: true };
   } catch (err) {
-    console.error("[requestPasswordReset] Unexpected error:", err);
-    return { error: "Something went wrong. Please try again." };
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error("[requestPasswordReset] Unexpected error:", msg);
+    return { error: msg };
   }
 }
 
