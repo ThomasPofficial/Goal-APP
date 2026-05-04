@@ -9,13 +9,19 @@ export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState("");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setError("");
     setLoading(true);
-    await requestPasswordReset(email);
+    const result = await requestPasswordReset(email);
     setLoading(false);
-    setSubmitted(true);
+    if ("error" in result) {
+      setError(result.error);
+    } else {
+      setSubmitted(true);
+    }
   }
 
   return (
@@ -60,6 +66,12 @@ export default function ForgotPasswordPage() {
               className="w-full bg-[#131315] border border-[#1c1c20] rounded-md px-3 py-2.5 text-sm text-[#eaeaea] placeholder:text-[#58586a] focus:outline-none focus:border-[#c9a84c80] focus:shadow-[0_0_0_1px_rgba(201,168,76,0.2)]"
             />
           </div>
+
+          {error && (
+            <p className="text-sm text-[#f87171] bg-[#f8717115] border border-[#f8717130] rounded-md px-3 py-2">
+              {error}
+            </p>
+          )}
 
           <button
             type="submit"
