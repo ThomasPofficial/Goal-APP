@@ -18,6 +18,9 @@ function isGated(pathname: string) {
 export default auth((req) => {
   const { pathname } = req.nextUrl;
 
+  // Require an actual user id — req.auth can be truthy-but-empty in NextAuth v5 beta
+  const isLoggedIn = !!(req.auth?.user?.id);
+
   const isPublic =
     pathname.startsWith("/login") ||
     pathname.startsWith("/register") ||
@@ -27,20 +30,20 @@ export default auth((req) => {
     pathname.startsWith("/quiz") ||
     pathname.startsWith("/onboarding");
 
-  if (!req.auth && !isPublic) {
+  if (!isLoggedIn && !isPublic) {
     const loginUrl = new URL("/login", req.url);
     loginUrl.searchParams.set("callbackUrl", pathname);
     return NextResponse.redirect(loginUrl);
   }
 
-  if (req.auth) {
+  if (isLoggedIn) {
     if (pathname === "/login" || pathname === "/register") {
       return NextResponse.redirect(new URL("/dashboard", req.url));
     }
 
     if (isGated(pathname) && !skipsGate(pathname)) {
-      const geniusType = req.auth.user?.geniusType;
-      const onboardingComplete = req.auth.user?.onboardingComplete;
+      const geniusType = req.auth!.user?.geniusType;
+      const onboardingComplete = req.auth!.user?.onboardingComplete;
 
       if (!geniusType) {
         return NextResponse.redirect(new URL("/quiz", req.url));
