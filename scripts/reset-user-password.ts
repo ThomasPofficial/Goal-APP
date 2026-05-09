@@ -9,9 +9,7 @@ if (!email || !newPassword) {
   process.exit(1);
 }
 
-const prisma = new PrismaClient({
-  datasourceUrl: process.env.DATABASE_URL,
-});
+const prisma = new PrismaClient();
 
 async function main() {
   const user = await prisma.user.findUnique({ where: { email } });
