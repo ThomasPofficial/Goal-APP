@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense, useState } from "react";
-import { loginAction } from "@/app/actions/auth";
+import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Loader2 } from "lucide-react";
@@ -20,23 +20,17 @@ function LoginForm() {
     setError("");
     setLoading(true);
 
-    try {
-      const result = await loginAction(email, password);
-      if ("error" in result) {
-        setError(result.error);
-        setLoading(false);
-      } else {
-        window.location.href = "/dashboard";
-      }
-    } catch (err) {
-      // Next.js 16: re-thrown NEXT_REDIRECT reaches the client as an error.
-      // The session cookie is already set — just navigate.
-      if ((err as { digest?: string })?.digest?.startsWith("NEXT_REDIRECT")) {
-        window.location.href = "/dashboard";
-        return;
-      }
-      setError("Something went wrong. Please try again.");
+    const result = await signIn("credentials", {
+      email,
+      password,
+      redirect: false,
+    });
+
+    if (!result || result.error) {
+      setError("Invalid email or password.");
       setLoading(false);
+    } else {
+      window.location.href = "/dashboard";
     }
   }
 
