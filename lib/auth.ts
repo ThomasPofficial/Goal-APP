@@ -61,6 +61,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
+    async redirect({ url, baseUrl }) {
+      const pub =
+        process.env.NEXT_PUBLIC_AUTH_URL ||
+        process.env.AUTH_URL ||
+        process.env.NEXTAUTH_URL ||
+        baseUrl;
+      if (url.startsWith("/")) return `${pub}${url}`;
+      if (url.startsWith(pub)) return url;
+      return pub;
+    },
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
