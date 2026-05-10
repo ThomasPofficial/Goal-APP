@@ -16,7 +16,11 @@ export async function proxy(req: NextRequest) {
     pathname.startsWith("/quiz") ||
     pathname.startsWith("/onboarding");
 
-  const base = process.env.AUTH_URL ?? req.nextUrl.origin;
+  const base =
+    process.env.NEXT_PUBLIC_AUTH_URL ||
+    process.env.AUTH_URL ||
+    process.env.NEXTAUTH_URL ||
+    `${req.headers.get("x-forwarded-proto") ?? req.nextUrl.protocol.replace(":", "")}://${req.headers.get("x-forwarded-host") ?? req.nextUrl.host}`;
 
   if (!token && !isPublic) {
     return NextResponse.redirect(new URL("/login", base));
