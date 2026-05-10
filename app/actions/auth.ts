@@ -13,21 +13,17 @@ export async function loginAction(
 ): Promise<{ error: string } | { success: true }> {
   try {
     await signIn("credentials", { email, password, redirectTo: "/dashboard" });
+    return { success: true };
   } catch (error) {
-    const digest = (error as { digest?: string })?.digest ?? "";
-    if (digest.startsWith("NEXT_REDIRECT")) {
-      const redirectUrl = digest.split(";")[2] ?? "";
-      if (redirectUrl.includes("/dashboard")) {
-        return { success: true };
-      }
-      return { error: "Invalid email or password." };
+    // Re-throw redirect errors — Next.js handles these as client navigation
+    if ((error as { digest?: string })?.digest?.startsWith("NEXT_REDIRECT")) {
+      throw error;
     }
     if (error instanceof AuthError) {
       return { error: "Invalid email or password." };
     }
     return { error: "Something went wrong. Please try again." };
   }
-  return { success: true };
 }
 
 export async function requestPasswordReset(
