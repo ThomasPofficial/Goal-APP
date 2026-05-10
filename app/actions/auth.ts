@@ -15,9 +15,9 @@ export async function loginAction(
     await signIn("credentials", { email, password, redirectTo: "/dashboard" });
     return { success: true };
   } catch (error) {
-    // Re-throw redirect errors — Next.js handles these as client navigation
+    // Any NEXT_REDIRECT means auth succeeded — return success and let client navigate
     if ((error as { digest?: string })?.digest?.startsWith("NEXT_REDIRECT")) {
-      throw error;
+      return { success: true };
     }
     if (error instanceof AuthError) {
       return { error: "Invalid email or password." };
