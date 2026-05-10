@@ -28,7 +28,13 @@ function LoginForm() {
       } else {
         window.location.href = "/dashboard";
       }
-    } catch {
+    } catch (err) {
+      // Next.js 16: re-thrown NEXT_REDIRECT reaches the client as an error.
+      // The session cookie is already set — just navigate.
+      if ((err as { digest?: string })?.digest?.startsWith("NEXT_REDIRECT")) {
+        window.location.href = "/dashboard";
+        return;
+      }
       setError("Something went wrong. Please try again.");
       setLoading(false);
     }

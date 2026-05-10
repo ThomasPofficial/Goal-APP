@@ -15,9 +15,9 @@ export async function loginAction(
     await signIn("credentials", { email, password, redirectTo: "/dashboard" });
     return { success: true };
   } catch (error) {
-    // Any NEXT_REDIRECT means auth succeeded — return success and let client navigate
+    // Re-throw redirect so Next.js sets the session cookie in the response
     if ((error as { digest?: string })?.digest?.startsWith("NEXT_REDIRECT")) {
-      return { success: true };
+      throw error;
     }
     if (error instanceof AuthError) {
       return { error: "Invalid email or password." };
