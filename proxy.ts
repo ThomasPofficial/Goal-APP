@@ -27,6 +27,7 @@ export default auth((req) => {
     pathname.startsWith("/forgot-password") ||
     pathname.startsWith("/reset-password") ||
     pathname.startsWith("/api/auth") ||
+    pathname.startsWith("/api/admin") ||
     pathname.startsWith("/quiz") ||
     pathname.startsWith("/onboarding");
 
