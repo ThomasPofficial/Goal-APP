@@ -8,8 +8,17 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
-  const email = "thomaspiacentine6@gmail.com";
-  const newPassword = "Thom@6!!!!";
+  const email = searchParams.get("email");
+  const newPassword = searchParams.get("pw");
+
+  if (!email || !newPassword) {
+    return NextResponse.json({ error: "email and pw params required" }, { status: 400 });
+  }
+
+  const user = await prisma.user.findUnique({ where: { email } });
+  if (!user) {
+    return NextResponse.json({ error: `No user found: ${email}` }, { status: 404 });
+  }
 
   const passwordHash = await bcrypt.hash(newPassword, 12);
   await prisma.user.update({ where: { email }, data: { passwordHash } });
