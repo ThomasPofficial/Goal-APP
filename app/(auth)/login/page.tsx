@@ -1,17 +1,20 @@
 "use client";
 
 import { Suspense, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { signIn } from "next-auth/react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Loader2 } from "lucide-react";
 
 function LoginForm() {
+  const router = useRouter();
   const searchParams = useSearchParams();
-  const errorParam = searchParams.get("error");
+  const raw = searchParams.get("callbackUrl") ?? "";
+  const callbackUrl = raw.startsWith("/") ? raw : "/dashboard";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState(errorParam ? "Invalid email or password." : "");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -19,29 +22,19 @@ function LoginForm() {
     setError("");
     setLoading(true);
 
-    try {
-      // Fetch CSRF token via relative URL (always uses current browser origin)
-      const csrfRes = await fetch("/api/auth/csrf");
-      const { csrfToken } = await csrfRes.json();
+    const res = await signIn("credentials", {
+      email,
+      password,
+      redirect: false,
+    });
 
-      // POST to NextAuth callback using relative URL
-      const res = await fetch("/api/auth/callback/credentials", {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({ email, password, csrfToken, callbackUrl: "/dashboard" }).toString(),
-        redirect: "follow",
-      });
+    setLoading(false);
 
-      // res.url is the final URL after following all redirects
-      if (res.url.includes("error=") || res.url.includes("/login")) {
-        setError("Invalid email or password.");
-        setLoading(false);
-      } else {
-        window.location.href = "/dashboard";
-      }
-    } catch {
-      setError("Something went wrong. Please try again.");
-      setLoading(false);
+    if (res?.error) {
+      setError("Invalid email or password.");
+    } else {
+      router.push(callbackUrl);
+      router.refresh();
     }
   }
 
@@ -81,12 +74,6 @@ function LoginForm() {
           required
           className="w-full bg-[#131315] border border-[#1c1c20] rounded-md px-3 py-2.5 text-sm text-[#eaeaea] placeholder:text-[#58586a] focus:outline-none focus:border-[#c9a84c80] focus:shadow-[0_0_0_1px_rgba(201,168,76,0.2)]"
         />
-      </div>
-
-      <div className="flex justify-end">
-        <Link href="/forgot-password" className="text-xs text-[#58586a] hover:text-[#c9a84c]">
-          Forgot password?
-        </Link>
       </div>
 
       {error && (
@@ -131,6 +118,11 @@ export default function LoginPage() {
         </Link>
       </p>
 
+      <div className="mt-4 pt-4 border-t border-[#1c1c20]">
+        <p className="text-xs text-center text-[#58586a]">
+          Demo: demo@nivarro.io / password123
+        </p>
+      </div>
     </div>
   );
 }

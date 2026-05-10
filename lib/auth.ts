@@ -61,32 +61,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
-    async jwt({ token, user, trigger, session }) {
+    async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-      }
-      // Always re-fetch if onboarding not yet complete (heals stale JWTs)
-      if (user || !token.onboardingComplete) {
-        const uid = (user?.id ?? token.id) as string;
-        if (uid) {
-          const profile = await prisma.profile.findUnique({
-            where: { userId: uid },
-            select: { geniusType: true, onboardingComplete: true },
-          });
-          token.geniusType = profile?.geniusType ?? null;
-          token.onboardingComplete = profile?.onboardingComplete ?? false;
-        }
-      }
-      if (trigger === "update" && session) {
-        if (session.geniusType !== undefined) token.geniusType = session.geniusType;
-        if (session.onboardingComplete !== undefined) token.onboardingComplete = session.onboardingComplete;
       }
       return token;
     },
     async session({ session, token }) {
-      session.user.id = token.id as string;
-      session.user.geniusType = (token.geniusType as string | null) ?? null;
-      session.user.onboardingComplete = (token.onboardingComplete as boolean) ?? false;
+      if (token?.id) {
+        session.user.id = token.id as string;
+      }
       return session;
     },
   },
