@@ -1,7 +1,6 @@
 "use client";
 
 import { Suspense, useState } from "react";
-import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Loader2 } from "lucide-react";
@@ -20,17 +19,29 @@ function LoginForm() {
     setError("");
     setLoading(true);
 
-    const result = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-    });
+    try {
+      // Fetch CSRF token via relative URL (always uses current browser origin)
+      const csrfRes = await fetch("/api/auth/csrf");
+      const { csrfToken } = await csrfRes.json();
 
-    if (!result || result.error) {
-      setError("Invalid email or password.");
+      // POST to NextAuth callback using relative URL
+      const res = await fetch("/api/auth/callback/credentials", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ email, password, csrfToken, callbackUrl: "/dashboard" }).toString(),
+        redirect: "follow",
+      });
+
+      // res.url is the final URL after following all redirects
+      if (res.url.includes("error=") || res.url.includes("/login")) {
+        setError("Invalid email or password.");
+        setLoading(false);
+      } else {
+        window.location.href = "/dashboard";
+      }
+    } catch {
+      setError("Something went wrong. Please try again.");
       setLoading(false);
-    } else {
-      window.location.href = "/dashboard";
     }
   }
 
