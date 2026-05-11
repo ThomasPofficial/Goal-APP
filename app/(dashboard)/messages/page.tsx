@@ -1,94 +1,65 @@
-import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
-import { redirect } from "next/navigation";
-import MessagesClient from "./MessagesClient";
+import { auth } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
+import { redirect } from 'next/navigation';
+import MessagesClient from './MessagesClient';
+import type { GeniusTypeKey } from '@/lib/geniusTypes';
 
-export const dynamic = "force-dynamic";
-
-export default async function MessagesPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ userId?: string; convoId?: string }>;
-}) {
+export default async function MessagesPage() {
   const session = await auth();
-  const myId = session?.user?.id ?? "";
-  const params = await searchParams;
+  if (!session?.user?.id) redirect('/login');
 
-  // Coming from a profile's Message button — create/find conversation then redirect
-  if (params.userId && myId) {
-    const recipientId = params.userId;
-    const existing = await prisma.conversation.findFirst({
-      where: {
-        AND: [
-          { participants: { some: { userId: myId } } },
-          { participants: { some: { userId: recipientId } } },
-        ],
-      },
-      include: { participants: { select: { userId: true } } },
-    });
-    let convoId: string;
-    if (existing && existing.participants.length === 2) {
-      convoId = existing.id;
-    } else {
-      const convo = await prisma.conversation.create({
-        data: {
-          participants: { createMany: { data: [{ userId: myId }, { userId: recipientId }] } },
-        },
-      });
-      convoId = convo.id;
-    }
-    redirect(`/messages?convoId=${convoId}`);
-  }
-
-  // convoId param: which conversation to open on load
-  const openConvoId = params.convoId ?? null;
+  const myProfile = await prisma.profile.findUnique({
+    where: { userId: session.user.id },
+    select: { id: true, displayName: true, avatarUrl: true, geniusType: true },
+  });
+  if (!myProfile) redirect('/onboarding');
 
   const conversations = await prisma.conversation.findMany({
-    where: { participants: { some: { userId: myId } } },
+    where: { participants: { some: { userId: session.user.id } } },
     include: {
       participants: {
         include: {
-          user: { include: { profile: true } },
+          user: {
+            include: {
+              profile: { select: { id: true, displayName: true, avatarUrl: true, geniusType: true, handle: true } },
+            },
+          },
         },
       },
-      messages: {
-        orderBy: { createdAt: "desc" },
-        take: 1,
-        include: {
-          sender: { select: { id: true } },
-        },
-      },
+      messages: { orderBy: { createdAt: 'desc' }, take: 1 },
+      team: { select: { id: true, name: true } },
     },
-    orderBy: { updatedAt: "desc" },
+    orderBy: { updatedAt: 'desc' },
   });
 
-  // Format conversations for display
-  const formatted = conversations.map((c) => {
-    const otherParticipant = c.participants.find((p) => p.userId !== myId);
-    const lastMessage = c.messages[0];
-    return {
-      id: c.id,
-      otherUser: {
-        id: otherParticipant?.userId ?? "",
-        name: otherParticipant?.user.profile?.displayName ?? otherParticipant?.user.name ?? "Unknown",
-        avatarUrl: otherParticipant?.user.profile?.avatarUrl ?? null,
-      },
-      lastMessage: lastMessage
-        ? {
-            content: lastMessage.content,
-            isMe: lastMessage.sender.id === myId,
-            createdAt: lastMessage.createdAt.toISOString(),
-          }
+  const serialized = conversations.map((c) => ({
+    id: c.id,
+    type: c.type,
+    name: null as string | null,
+    teamId: c.teamId,
+    teamName: c.team?.name ?? null,
+    updatedAt: c.updatedAt.toISOString(),
+    lastMessage: c.messages[0]
+      ? { body: c.messages[0].content, createdAt: c.messages[0].createdAt.toISOString() }
+      : null,
+    participants: c.participants.map((p) => ({
+      id: p.id,
+      userId: p.userId,
+      profile: p.user.profile
+        ? { ...p.user.profile, geniusType: p.user.profile.geniusType as GeniusTypeKey | null }
         : null,
-      updatedAt: c.updatedAt.toISOString(),
-    };
-  });
+    })),
+  }));
 
   return (
     <MessagesClient
-      initialConversations={formatted}
-      currentUserId={myId}
-      openConvoId={openConvoId}
+      conversations={serialized}
+      myUserId={session.user.id}
+      myProfileId={myProfile.id}
+      myProfile={{
+        ...myProfile,
+        geniusType: myProfile.geniusType as GeniusTypeKey | null,
+      }}
     />
   );
 }
