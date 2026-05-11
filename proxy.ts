@@ -1,10 +1,16 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { getToken } from "next-auth/jwt";
 
-export async function proxy(req: NextRequest) {
-  const token = await getToken({ req, secret: process.env.AUTH_SECRET });
+const PUBLIC_URL =
+  process.env.NEXT_PUBLIC_AUTH_URL ?? "https://goal-app-3.onrender.com";
+
+export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
+
+  // NextAuth v5 sets this cookie in prod (HTTPS) or without __Secure- in dev
+  const hasSession =
+    req.cookies.has("__Secure-authjs.session-token") ||
+    req.cookies.has("authjs.session-token");
 
   const isPublic =
     pathname.startsWith("/login") ||
@@ -16,23 +22,17 @@ export async function proxy(req: NextRequest) {
     pathname.startsWith("/quiz") ||
     pathname.startsWith("/onboarding");
 
-  const base =
-    process.env.NEXT_PUBLIC_AUTH_URL ||
-    process.env.AUTH_URL ||
-    process.env.NEXTAUTH_URL ||
-    `${req.headers.get("x-forwarded-proto") ?? req.nextUrl.protocol.replace(":", "")}://${req.headers.get("x-forwarded-host") ?? req.nextUrl.host}`;
-
-  if (!token && !isPublic) {
-    return NextResponse.redirect(new URL("/login", base));
+  if (!hasSession && !isPublic) {
+    return NextResponse.redirect(new URL("/login", PUBLIC_URL));
   }
 
-  if (token && (pathname === "/login" || pathname === "/register")) {
-    return NextResponse.redirect(new URL("/dashboard", base));
+  if (hasSession && (pathname === "/login" || pathname === "/register")) {
+    return NextResponse.redirect(new URL("/dashboard", PUBLIC_URL));
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|public/).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|public/).*)" ],
 };
