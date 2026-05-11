@@ -1,15 +1,15 @@
 import { handlers } from "@/lib/auth";
-import type { NextRequest } from "next/server";
+import { NextRequest } from "next/server";
 
 const publicUrl = new URL(
   process.env.NEXT_PUBLIC_AUTH_URL ?? "https://goal-app-3.onrender.com"
 );
 
-function withPublicHost(req: NextRequest): Request {
+function withPublicHost(req: NextRequest): NextRequest {
   const headers = new Headers(req.headers);
   headers.set("x-forwarded-host", publicUrl.host);
   headers.set("x-forwarded-proto", publicUrl.protocol.replace(":", ""));
-  return new Request(req as unknown as Request, { headers });
+  return new NextRequest(req, { headers });
 }
 
 export function GET(req: NextRequest) {
