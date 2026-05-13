@@ -2,6 +2,7 @@ services:
   - type: web
     name: nivarro
     env: node
+    autoDeploy: true
     buildCommand: npm install; npm run build
     startCommand: node scripts/start.js
     envVars:
