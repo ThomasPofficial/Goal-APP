@@ -103,3 +103,39 @@ input:focus, textarea:focus, select:focus {
 a, button {
   transition: color 120ms ease, background-color 120ms ease, border-color 120ms ease, opacity 120ms ease;
 }
+
+/* ── Override legacy hardcoded Tailwind colors with CSS variables ── */
+/* This converts old grey-black palette to navy palette without touching every file */
+.bg-\[#080809\], .bg-\[#0f0f11\], .bg-\[#0d0d0e\] { background-color: var(--bg) !important; }
+.bg-\[#16161a\], .bg-\[#0d0d0e\] { background-color: var(--surface) !important; }
+.bg-\[#1e1e24\], .bg-\[#131315\] { background-color: var(--surface2) !important; }
+.bg-\[#2a2a33\] { background-color: var(--surface3) !important; }
+.bg-\[#c9a84c\] { background-color: var(--gold) !important; }
+.bg-\[#e3c06a\] { background-color: var(--gold-light) !important; }
+
+.text-\[#e8e8ec\], .text-\[#eaeaea\] { color: var(--text) !important; }
+.text-\[#9898a8\], .text-\[#909098\] { color: var(--text2) !important; }
+.text-\[#5a5a6a\], .text-\[#58586a\] { color: var(--muted) !important; }
+.text-\[#c9a84c\] { color: var(--gold) !important; }
+.text-\[#e3c06a\] { color: var(--gold-light) !important; }
+.text-\[#3a3a44\] { color: var(--muted) !important; }
+.text-\[#0f0f11\], .text-\[#080809\] { color: var(--n-bg) !important; }
+
+.border-\[#2a2a33\] { border-color: var(--border-md) !important; }
+.border-\[#1e1e24\], .border-\[#1c1c20\] { border-color: var(--border) !important; }
+.border-\[#c9a84c\] { border-color: var(--gold) !important; }
+
+.hover\:bg-\[#1e1e24\]:hover, .hover\:bg-\[#16161a\]:hover { background-color: var(--surface2) !important; }
+.hover\:bg-\[#c9a84c\]:hover { background-color: var(--gold) !important; }
+.hover\:bg-\[#e3c06a\]:hover { background-color: var(--gold-light) !important; }
+.hover\:border-\[#c9a84c\]:hover { border-color: var(--gold) !important; }
+.hover\:text-\[#c9a84c\]:hover { color: var(--gold) !important; }
+.hover\:text-\[#e3c06a\]:hover { color: var(--gold-light) !important; }
+.hover\:text-\[#9898a8\]:hover { color: var(--text2) !important; }
+.hover\:text-\[#e8e8ec\]:hover { color: var(--text) !important; }
+
+.placeholder-\[#5a5a6a\]::placeholder, .placeholder-\[#58586a\]::placeholder { color: var(--muted) !important; }
+
+.divide-\[#2a2a33\] > * + * { border-color: var(--border-md) !important; }
+
+.focus\:border-\[#c9a84c\]:focus { border-color: var(--gold) !important; }
