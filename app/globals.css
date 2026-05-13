@@ -2,94 +2,104 @@
 @variant dark (&:is(.dark *));
 
 :root {
-  --sidebar-width: 240px;
-  --sidebar-width-collapsed: 64px;
-  --topbar-height: 56px;
-  --card-gap: 16px;
-  --transition-fast: 120ms ease;
-  --transition-base: 200ms ease;
+  --gold: #C9A84C;
+  --gold-light: #E8D08A;
+  --gold-dim: #8A5F10;
+  --gold-glow: rgba(201,168,76,0.18);
 
-  /* Nivarro dark scholarly palette */
-  --color-base: #080809;
-  --color-surface: #0d0d0e;
-  --color-elevated: #131315;
-  --color-border: #1c1c20;
-  --color-text-primary: #eaeaea;
-  --color-text-secondary: #909098;
-  --color-text-muted: #58586a;
-  --color-amber: #c9a84c;
-  --color-amber-light: #e3c06a;
+  /* NIGHT (default) */
+  --n-bg:      #04070F;
+  --n-bg2:     #070C18;
+  --n-surface: #0A1020;
+  --n-surface2:#0F1830;
+  --n-surface3:#141F3A;
+  --n-border:  rgba(201,168,76,0.1);
+  --n-border-md: rgba(201,168,76,0.22);
+  --n-text:    #F0EDE4;
+  --n-text2:   #B8B0A0;
+  --n-muted:   #5A5448;
+
+  /* Active (night default) */
+  --bg:        var(--n-bg);
+  --bg2:       var(--n-bg2);
+  --surface:   var(--n-surface);
+  --surface2:  var(--n-surface2);
+  --surface3:  var(--n-surface3);
+  --border:    var(--n-border);
+  --border-md: var(--n-border-md);
+  --text:      var(--n-text);
+  --text2:     var(--n-text2);
+  --muted:     var(--n-muted);
 }
 
-body {
-  font-family: var(--font-body, system-ui, -apple-system, sans-serif);
+body.day {
+  --bg:        #F2EFE8;
+  --bg2:       #E8E4DA;
+  --surface:   #FFFFFF;
+  --surface2:  #F5F2EB;
+  --surface3:  #EDE9DF;
+  --border:    rgba(60,45,20,0.14);
+  --border-md: rgba(60,45,20,0.26);
+  --text:      #0F0D0A;
+  --text2:     #2A2520;
+  --muted:     #5A5040;
 }
 
-* {
+*, *::before, *::after {
   box-sizing: border-box;
 }
 
-html,
-body {
-  background-color: #080809;
-  color: #eaeaea;
-  font-family: system-ui, -apple-system, sans-serif;
-  min-height: 100%;
-  margin: 0;
-  padding: 0;
+html {
+  scroll-behavior: smooth;
 }
 
-/* Scrollbar styling */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+html, body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body, 'DM Sans', system-ui, sans-serif);
+  -webkit-font-smoothing: antialiased;
+  transition: background 0.4s, color 0.4s;
 }
-::-webkit-scrollbar-track {
-  background: #0d0d0e;
-}
-::-webkit-scrollbar-thumb {
-  background: #1c1c20;
-  border-radius: 3px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #28282e;
-}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--bg2); }
+::-webkit-scrollbar-thumb { background: var(--border-md); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--gold-dim); }
 
 /* Selection */
 ::selection {
-  background: rgba(201, 168, 76, 0.25);
-  color: #eaeaea;
+  background: rgba(201,168,76,0.25);
+  color: var(--text);
 }
 
-/* Focus visible only for keyboard nav */
+/* Focus */
 :focus-visible {
-  outline: 2px solid rgba(201, 168, 76, 0.6);
+  outline: 1.5px solid rgba(201,168,76,0.6);
   outline-offset: 2px;
 }
 
-/* Input reset */
-input,
-textarea,
-select {
-  background-color: #131315;
-  color: #eaeaea;
-  border: 1px solid #1c1c20;
+/* Inputs */
+input, textarea, select {
+  background: var(--surface2);
+  color: var(--text);
+  border: 1px solid var(--border-md);
   border-radius: 6px;
   padding: 0.5rem 0.75rem;
-  transition: border-color var(--transition-fast);
+  font-family: var(--font-body, sans-serif);
+  transition: border-color 120ms ease, box-shadow 120ms ease;
 }
 
-input:focus,
-textarea:focus,
-select:focus {
+input:focus, textarea:focus, select:focus {
   outline: none;
-  border-color: rgba(201, 168, 76, 0.5);
-  box-shadow: 0 0 0 1px rgba(201, 168, 76, 0.2);
+  border-color: var(--gold);
+  box-shadow: 0 0 0 1px rgba(201,168,76,0.2);
 }
 
-/* Smooth transitions */
-a,
-button {
-  transition: color var(--transition-fast), background-color var(--transition-fast),
-    border-color var(--transition-fast), opacity var(--transition-fast);
+/* Transitions */
+a, button {
+  transition: color 120ms ease, background-color 120ms ease, border-color 120ms ease, opacity 120ms ease;
 }
