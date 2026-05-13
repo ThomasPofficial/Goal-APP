@@ -258,12 +258,11 @@ export default function MessagesClient({ conversations: initialConvs, myUserId, 
   };
 
   const handleNewConv = async (convId: string) => {
-    // Reload conversations list then select the new one
-    const res = await fetch(`/api/conversations/${convId}/messages`);
+    setActiveId(convId);
+    const res = await fetch("/api/conversations");
     if (res.ok) {
-      // Fetch updated conversation list
-      router.refresh();
-      setActiveId(convId);
+      const data = await res.json();
+      setConversations(data.conversations ?? []);
     }
   };
 
@@ -283,9 +282,7 @@ export default function MessagesClient({ conversations: initialConvs, myUserId, 
           onClose={() => setShowNewMsg(false)}
           onOpen={(convId) => {
             setShowNewMsg(false);
-            setActiveId(convId);
-            // Optimistically add conversation if not in list, then reload
-            router.refresh();
+            handleNewConv(convId);
           }}
         />
       )}
