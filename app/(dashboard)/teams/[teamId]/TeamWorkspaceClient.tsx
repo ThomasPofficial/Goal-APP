@@ -90,6 +90,7 @@ export default function TeamWorkspaceClient({
 
   // Socket
   useEffect(() => {
+    if (!socket) return;
     socket.connect();
     socket.emit("join_team_room", { teamId: team.id });
     socket.on("team_message_receive", (msg: ChatMessage) => {
@@ -117,7 +118,7 @@ export default function TeamWorkspaceClient({
     const content = msgInput.trim();
     setSending(true);
     setMsgInput("");
-    socket.emit("team_message_send", { teamId: team.id, content });
+    socket?.emit("team_message_send", { teamId: team.id, content });
     await fetch(`/api/teams/${team.id}/messages`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
