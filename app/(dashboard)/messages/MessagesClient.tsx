@@ -114,6 +114,7 @@ export default function MessagesClient({ conversations: initialConvs, myUserId, 
     socket.emit("join_conversation", activeId);
 
     const handler = (msg: Message) => {
+      if (msg.senderId === myUserId) return; // already added optimistically
       setMessages((prev) => [...prev, msg]);
       setConversations((prev) =>
         prev.map((c) =>
@@ -129,7 +130,7 @@ export default function MessagesClient({ conversations: initialConvs, myUserId, 
       socket.off("conversation_message", handler);
       socket.emit("leave_conversation", activeId);
     };
-  }, [socket, activeId]);
+  }, [socket, activeId, myUserId]);
 
   const sendMessage = async () => {
     if (!input.trim() || !activeId || sending) return;
@@ -137,11 +138,23 @@ export default function MessagesClient({ conversations: initialConvs, myUserId, 
     setInput("");
     setSending(true);
     try {
-      await fetch(`/api/conversations/${activeId}/messages`, {
+      const res = await fetch(`/api/conversations/${activeId}/messages`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ content: body }),
       });
+      if (res.ok) {
+        const data = await res.json();
+        const msg: Message = data.message;
+        setMessages((prev) => [...prev, msg]);
+        setConversations((prev) =>
+          prev.map((c) =>
+            c.id === activeId
+              ? { ...c, lastMessage: { body: msg.content, createdAt: msg.createdAt }, updatedAt: msg.createdAt }
+              : c
+          )
+        );
+      }
     } finally {
       setSending(false);
     }
