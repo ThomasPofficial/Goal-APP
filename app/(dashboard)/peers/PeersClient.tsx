@@ -177,7 +177,7 @@ export default function PeersClient() {
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {[1,2,3,4,5,6].map((i) => (
               <div key={i} className="h-40 rounded-xl bg-[#16161a] animate-pulse" />
             ))}
@@ -188,7 +188,7 @@ export default function PeersClient() {
             <p className="text-sm text-[#9898a8]">No peers found.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {peers.map((peer) => (
               <StudentCard
                 key={peer.id}
