@@ -14,26 +14,17 @@ interface AccountMenuProps {
   geniusType?: GeniusType | null;
 }
 
-export default function AccountMenu({
-  userName,
-  userEmail,
-  geniusType,
-}: AccountMenuProps) {
+export default function AccountMenu({ userName, userEmail, geniusType }: AccountMenuProps) {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const initials = getInitials(userName ?? "?");
   const genius = geniusType ? GENIUS_TYPE_INFO[geniusType] : null;
 
-  // Close on click outside or Escape
   useEffect(() => {
     function handleOutside(e: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) setOpen(false);
     }
-    function handleEscape(e: KeyboardEvent) {
-      if (e.key === "Escape") setOpen(false);
-    }
+    function handleEscape(e: KeyboardEvent) { if (e.key === "Escape") setOpen(false); }
     if (open) {
       document.addEventListener("mousedown", handleOutside);
       document.addEventListener("keydown", handleEscape);
@@ -44,100 +35,93 @@ export default function AccountMenu({
     };
   }, [open]);
 
+  const avatarStyle = {
+    width: 32, height: 32, borderRadius: "50%",
+    background: "rgba(201,168,76,0.12)",
+    color: "var(--gold)",
+    fontSize: 12, fontWeight: 700,
+    display: "flex", alignItems: "center", justifyContent: "center",
+    border: "1px solid rgba(201,168,76,0.25)",
+    flexShrink: 0,
+  };
+
   return (
-    <div ref={containerRef} className="relative px-3 pb-4 pt-3 border-t border-[#1c1c20]">
-      {/* Popup panel — renders above the button */}
+    <div ref={containerRef} className="relative px-3 pb-4 pt-3" style={{ borderTop: "1px solid var(--border)" }}>
       {open && (
-        <div className="absolute bottom-full left-3 right-3 mb-2 bg-[#131315] border border-[#1c1c20] rounded-xl shadow-[0_24px_48px_rgba(0,0,0,0.6)] p-4 animate-[fadeIn_0.15s_ease] z-50">
-          {/* User info */}
-          <div className="flex items-center gap-3 mb-4 pb-4 border-b border-[#1c1c20]">
-            <div className="w-10 h-10 rounded-full bg-[#c9a84c20] text-[#c9a84c] text-sm font-bold flex items-center justify-center ring-1 ring-[#c9a84c30] flex-shrink-0">
-              {initials}
-            </div>
+        <div
+          className="absolute bottom-full left-3 right-3 mb-2 rounded-xl p-4 z-50"
+          style={{
+            background: "var(--surface)",
+            border: "1px solid var(--border-md)",
+            boxShadow: "0 24px 48px rgba(0,0,0,0.5)",
+            animation: "fadeIn 0.15s ease",
+          }}
+        >
+          <div className="flex items-center gap-3 mb-4 pb-4" style={{ borderBottom: "1px solid var(--border)" }}>
+            <div style={{ ...avatarStyle, width: 40, height: 40, fontSize: 14 }}>{initials}</div>
             <div className="min-w-0">
-              <div className="text-sm font-semibold text-[#eaeaea] truncate">
+              <div className="text-sm font-semibold truncate" style={{ color: "var(--text)", fontFamily: "var(--font-display, sans-serif)" }}>
                 {userName ?? "Your Account"}
               </div>
-              {userEmail && (
-                <div className="text-xs text-[#58586a] truncate">{userEmail}</div>
-              )}
+              {userEmail && <div className="text-xs truncate" style={{ color: "var(--muted)" }}>{userEmail}</div>}
             </div>
           </div>
 
-          {/* Genius type */}
-          {genius ? (
-            <div className="mb-4 pb-4 border-b border-[#1c1c20]">
-              <div className="text-[10px] text-[#58586a] uppercase tracking-wider mb-1.5">
-                Genius Type
-              </div>
+          <div className="mb-4 pb-4" style={{ borderBottom: "1px solid var(--border)" }}>
+            {genius ? (
               <div
                 className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold"
-                style={{
-                  backgroundColor: `${genius.color}18`,
-                  color: genius.color,
-                  border: `1px solid ${genius.color}30`,
-                }}
+                style={{ background: `${genius.color}18`, color: genius.color, border: `1px solid ${genius.color}30` }}
               >
-                <span>{genius.icon}</span>
-                {genius.label}
+                <span>{genius.icon}</span>{genius.label}
               </div>
-            </div>
-          ) : (
-            <div className="mb-4 pb-4 border-b border-[#1c1c20]">
-              <Link
-                href="/quiz"
-                onClick={() => setOpen(false)}
-                className="text-xs text-[#c9a84c] hover:text-[#e3c06a]"
-              >
+            ) : (
+              <Link href="/quiz" onClick={() => setOpen(false)} className="text-xs" style={{ color: "var(--gold)" }}>
                 Take the Genius Quiz →
               </Link>
-            </div>
-          )}
+            )}
+          </div>
 
-          {/* Actions */}
           <div className="space-y-0.5">
             <Link
               href="/profile"
               onClick={() => setOpen(false)}
-              className="flex items-center gap-2.5 px-2 py-2 rounded-md text-sm text-[#909098] hover:text-[#eaeaea] hover:bg-[#1c1c20] transition-colors"
+              className="flex items-center gap-2.5 px-2 py-2 rounded-md text-sm transition-colors"
+              style={{ color: "var(--text2)" }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.background = "var(--surface2)"; (e.currentTarget as HTMLAnchorElement).style.color = "var(--text)"; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.background = "transparent"; (e.currentTarget as HTMLAnchorElement).style.color = "var(--text2)"; }}
             >
-              <User className="w-4 h-4 flex-shrink-0" />
-              Edit Profile
+              <User className="w-4 h-4 flex-shrink-0" />Edit Profile
             </Link>
             <button
               onClick={() => signOut({ callbackUrl: "/login" })}
-              className="w-full flex items-center gap-2.5 px-2 py-2 rounded-md text-sm text-[#909098] hover:text-[#f87171] hover:bg-[#f8717110] transition-colors"
+              className="w-full flex items-center gap-2.5 px-2 py-2 rounded-md text-sm transition-colors"
+              style={{ color: "var(--text2)" }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(248,113,113,0.08)"; (e.currentTarget as HTMLButtonElement).style.color = "#f87171"; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "transparent"; (e.currentTarget as HTMLButtonElement).style.color = "var(--text2)"; }}
             >
-              <LogOut className="w-4 h-4 flex-shrink-0" />
-              Sign out
+              <LogOut className="w-4 h-4 flex-shrink-0" />Sign out
             </button>
           </div>
         </div>
       )}
 
-      {/* Trigger button */}
       <button
         onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-center gap-3 px-2 py-2.5 rounded-lg hover:bg-[#13131580] transition-colors group"
+        className="w-full flex items-center gap-3 px-2 py-2.5 rounded-lg transition-colors"
+        onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "var(--surface2)"; }}
+        onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}
       >
-        <div className="w-8 h-8 rounded-full bg-[#c9a84c20] text-[#c9a84c] text-xs font-bold flex items-center justify-center ring-1 ring-[#c9a84c30] flex-shrink-0">
-          {initials}
-        </div>
+        <div style={avatarStyle}>{initials}</div>
         <div className="flex-1 min-w-0 text-left">
-          <div className="text-xs font-medium text-[#eaeaea] truncate">
+          <div className="text-xs font-medium truncate" style={{ color: "var(--text)", fontFamily: "var(--font-display, sans-serif)" }}>
             {userName ?? "Account"}
           </div>
           {genius && (
-            <div className="text-[10px] truncate" style={{ color: genius.color }}>
-              {genius.icon} {genius.label}
-            </div>
+            <div className="text-[10px] truncate" style={{ color: genius.color }}>{genius.icon} {genius.label}</div>
           )}
         </div>
-        <ChevronUp
-          className={`w-3.5 h-3.5 text-[#58586a] flex-shrink-0 transition-transform duration-150 ${
-            open ? "rotate-0" : "rotate-180"
-          }`}
-        />
+        <ChevronUp className={`w-3.5 h-3.5 flex-shrink-0 transition-transform duration-150 ${open ? "rotate-0" : "rotate-180"}`} style={{ color: "var(--muted)" }} />
       </button>
     </div>
   );
