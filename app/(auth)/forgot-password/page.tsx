@@ -25,50 +25,46 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="bg-[#0d0d0e] border border-[#1c1c20] rounded-xl p-8 shadow-[0_24px_48px_rgba(0,0,0,0.6)]">
+    <div className="rounded-xl p-8" style={{ background: "var(--surface)", border: "1px solid var(--border-md)", boxShadow: "0 32px 64px rgba(0,0,0,0.5)" }}>
       <div className="mb-8 text-center">
-        <div className="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-[#c9a84c] mb-4">
-          <span className="text-[#080809] font-bold text-lg">N</span>
+        <div className="inline-flex items-center justify-center w-10 h-10 rounded-lg mb-4" style={{ background: "var(--gold)" }}>
+          <span className="font-black text-lg" style={{ color: "#04070F", fontFamily: "var(--font-display, sans-serif)" }}>N</span>
         </div>
-        <h1 className="text-xl font-semibold text-[#eaeaea]">Reset password</h1>
-        <p className="text-sm text-[#909098] mt-1">
+        <h1 className="text-xl font-semibold" style={{ color: "var(--text)", fontFamily: "var(--font-display, sans-serif)" }}>Reset password</h1>
+        <p className="text-sm mt-1" style={{ color: "var(--text2)" }}>
           Enter your email and we&apos;ll send a reset link
         </p>
       </div>
 
       {submitted ? (
         <div className="text-center space-y-4">
-          <p className="text-sm text-[#909098]">
+          <p className="text-sm" style={{ color: "var(--text2)" }}>
             If an account exists for{" "}
-            <span className="text-[#eaeaea]">{email}</span>, you&apos;ll
-            receive a reset link shortly.
+            <span style={{ color: "var(--text)" }}>{email}</span>, you&apos;ll receive a reset link shortly.
           </p>
-          <Link href="/login" className="text-sm text-[#c9a84c] hover:text-[#e3c06a]">
+          <Link href="/login" style={{ color: "var(--gold)" }} className="text-sm">
             Back to sign in
           </Link>
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label
-              htmlFor="email"
-              className="block text-xs font-medium text-[#909098] mb-1.5 uppercase tracking-wider"
-            >
+            <label className="block text-xs font-semibold mb-1.5 uppercase tracking-widest" style={{ color: "var(--muted)", fontFamily: "var(--font-display, sans-serif)" }}>
               Email
             </label>
             <input
-              id="email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
               required
-              className="w-full bg-[#131315] border border-[#1c1c20] rounded-md px-3 py-2.5 text-sm text-[#eaeaea] placeholder:text-[#58586a] focus:outline-none focus:border-[#c9a84c80] focus:shadow-[0_0_0_1px_rgba(201,168,76,0.2)]"
+              className="w-full text-sm"
+              style={{ background: "var(--surface2)", color: "var(--text)", border: "1px solid var(--border-md)", borderRadius: "6px", padding: "10px 14px" }}
             />
           </div>
 
           {error && (
-            <p className="text-sm text-[#f87171] bg-[#f8717115] border border-[#f8717130] rounded-md px-3 py-2">
+            <p className="text-sm px-3 py-2 rounded-md" style={{ color: "#f87171", background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.2)" }}>
               {error}
             </p>
           )}
@@ -76,16 +72,15 @@ export default function ForgotPasswordPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full flex items-center justify-center gap-2 bg-[#c9a84c] hover:bg-[#e3c06a] text-[#080809] font-semibold text-sm rounded-md py-2.5 transition-colors disabled:opacity-60 disabled:cursor-not-allowed mt-2"
+            className="w-full flex items-center justify-center gap-2 font-bold text-sm rounded-md py-2.5 mt-2 disabled:opacity-60 disabled:cursor-not-allowed uppercase tracking-widest"
+            style={{ background: "var(--gold)", color: "#04070F", fontFamily: "var(--font-display, sans-serif)", letterSpacing: "0.1em" }}
           >
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
             {loading ? "Sending..." : "Send reset link"}
           </button>
 
-          <p className="text-center text-sm text-[#58586a]">
-            <Link href="/login" className="text-[#c9a84c] hover:text-[#e3c06a]">
-              Back to sign in
-            </Link>
+          <p className="text-center text-sm">
+            <Link href="/login" style={{ color: "var(--gold)" }}>Back to sign in</Link>
           </p>
         </form>
       )}
