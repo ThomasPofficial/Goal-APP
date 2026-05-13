@@ -51,6 +51,7 @@ interface Props {
   myUserId: string;
   myProfileId: string;
   myProfile: MyProfile;
+  initialOpenId?: string | null;
 }
 
 function convDisplayName(conv: ConvSummary, myUserId: string): string {
@@ -75,10 +76,10 @@ function convAvatar(conv: ConvSummary, myUserId: string) {
   return { src: null, displayName: conv.name ?? "G", geniusType: null as GeniusTypeKey | null };
 }
 
-export default function MessagesClient({ conversations: initialConvs, myUserId, myProfileId, myProfile }: Props) {
+export default function MessagesClient({ conversations: initialConvs, myUserId, myProfileId, myProfile, initialOpenId }: Props) {
   const socket = useSocket();
   const [conversations, setConversations] = useState<ConvSummary[]>(initialConvs);
-  const [activeId, setActiveId] = useState<string | null>(initialConvs[0]?.id ?? null);
+  const [activeId, setActiveId] = useState<string | null>(initialOpenId ?? initialConvs[0]?.id ?? null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [loadingMsgs, setLoadingMsgs] = useState(false);
   const [input, setInput] = useState("");
