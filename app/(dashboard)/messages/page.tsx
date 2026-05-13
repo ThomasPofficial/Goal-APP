@@ -4,7 +4,11 @@ import { redirect } from 'next/navigation';
 import MessagesClient from './MessagesClient';
 import type { GeniusTypeKey } from '@/lib/geniusTypes';
 
-export default async function MessagesPage() {
+export default async function MessagesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ dm?: string; group?: string; open?: string }>;
+}) {
   const session = await auth();
   if (!session?.user?.id) redirect('/login');
 
@@ -13,6 +17,39 @@ export default async function MessagesPage() {
     select: { id: true, displayName: true, avatarUrl: true, geniusType: true },
   });
   if (!myProfile) redirect('/onboarding');
+
+  const params = await searchParams;
+
+  // If ?dm=userId, find or create a DM and redirect to ?open=convId
+  if (params.dm && params.dm !== session.user.id) {
+    const targetUserId = params.dm;
+    const allIds = [session.user.id, targetUserId];
+
+    const existing = await prisma.conversation.findFirst({
+      where: {
+        type: 'DIRECT',
+        AND: allIds.map((uid) => ({ participants: { some: { userId: uid } } })),
+      },
+      include: { participants: true },
+    });
+
+    const conv = existing && existing.participants.length === 2
+      ? existing
+      : await prisma.conversation.create({
+          data: {
+            type: 'DIRECT',
+            participants: { create: allIds.map((userId) => ({ userId })) },
+          },
+          include: { participants: true },
+        });
+
+    redirect(`/messages?open=${conv.id}`);
+  }
+
+  // If ?group=convId, just set the open param
+  if (params.group) {
+    redirect(`/messages?open=${params.group}`);
+  }
 
   const conversations = await prisma.conversation.findMany({
     where: { participants: { some: { userId: session.user.id } } },
@@ -51,6 +88,8 @@ export default async function MessagesPage() {
     })),
   }));
 
+  const initialOpenId = params.open ?? serialized[0]?.id ?? null;
+
   return (
     <MessagesClient
       conversations={serialized}
@@ -60,6 +99,7 @@ export default async function MessagesPage() {
         ...myProfile,
         geniusType: myProfile.geniusType as GeniusTypeKey | null,
       }}
+      initialOpenId={initialOpenId}
     />
   );
 }
