@@ -1,16 +1,14 @@
 "use client";
 
 import { Suspense, useState } from "react";
-import { signIn } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Loader2 } from "lucide-react";
+import { loginAction } from "@/app/actions/auth";
 
 function LoginForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
-  const raw = searchParams.get("callbackUrl") ?? "";
-  const callbackUrl = raw.startsWith("/") ? raw : "/dashboard";
+  const callbackUrl = searchParams.get("callbackUrl") ?? "/dashboard";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -21,13 +19,19 @@ function LoginForm() {
     e.preventDefault();
     setError("");
     setLoading(true);
-    const res = await signIn("credentials", { email, password, redirect: false });
-    setLoading(false);
-    if (res?.error) {
-      setError("Invalid email or password.");
-    } else {
-      router.push(callbackUrl);
-      router.refresh();
+    try {
+      const result = await loginAction(email, password);
+      if (result && "error" in result) {
+        setError(result.error);
+        setLoading(false);
+      }
+      // On success, loginAction throws NEXT_REDIRECT — browser navigates automatically
+    } catch (err: unknown) {
+      // Re-thrown NEXT_REDIRECT errors are expected — let them bubble
+      const digest = (err as { digest?: string })?.digest ?? "";
+      if (digest.startsWith("NEXT_REDIRECT")) throw err;
+      setError("Something went wrong. Please try again.");
+      setLoading(false);
     }
   }
 
@@ -62,17 +66,17 @@ function LoginForm() {
         />
       </div>
 
-      {error && (
-        <p className="text-sm px-3 py-2 rounded-md" style={{ color: "#f87171", background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.2)" }}>
-          {error}
-        </p>
-      )}
-
       <div className="flex justify-end">
         <Link href="/forgot-password" className="text-xs" style={{ color: "var(--gold)" }}>
           Forgot password?
         </Link>
       </div>
+
+      {error && (
+        <p className="text-sm px-3 py-2 rounded-md" style={{ color: "#f87171", background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.2)" }}>
+          {error}
+        </p>
+      )}
 
       <button
         type="submit"
@@ -122,12 +126,6 @@ export default function LoginPage() {
           Create one
         </Link>
       </p>
-
-      <div className="mt-4 pt-4" style={{ borderTop: "1px solid var(--border)" }}>
-        <p className="text-xs text-center" style={{ color: "var(--muted)" }}>
-          Demo: demo@nivarro.io / password123
-        </p>
-      </div>
     </div>
   );
 }
