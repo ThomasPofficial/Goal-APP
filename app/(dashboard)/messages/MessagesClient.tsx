@@ -199,6 +199,7 @@ export default function MessagesClient({ conversations: initialConvs, myUserId, 
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [showNewMsg, setShowNewMsg] = useState(false);
+  const [showThread, setShowThread] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const activeConv = conversations.find((c) => c.id === activeId) ?? null;
@@ -283,6 +284,7 @@ export default function MessagesClient({ conversations: initialConvs, myUserId, 
           onOpen={(convId) => {
             setShowNewMsg(false);
             handleNewConv(convId);
+            setShowThread(true);
           }}
         />
       )}
@@ -290,7 +292,7 @@ export default function MessagesClient({ conversations: initialConvs, myUserId, 
       <div className="flex overflow-hidden rounded-xl" style={{ height: "calc(100vh - 4rem)", border: "1px solid var(--border-md)" }}>
 
         {/* ── Conversation list ─────────────────────── */}
-        <div className="w-64 flex flex-col shrink-0" style={{ background: "var(--n-bg2)", borderRight: "1px solid var(--border)" }}>
+        <div className={`${showThread ? "hidden md:flex" : "flex"} w-full md:w-64 flex-col shrink-0`} style={{ background: "var(--n-bg2)", borderRight: "1px solid var(--border)" }}>
           <div className="flex items-center justify-between px-4 py-3.5" style={{ borderBottom: "1px solid var(--border)" }}>
             <h2 className="text-sm font-bold uppercase tracking-widest" style={{ color: "var(--text)", fontFamily: "var(--font-display, sans-serif)" }}>
               Messages
@@ -330,7 +332,7 @@ export default function MessagesClient({ conversations: initialConvs, myUserId, 
                     return (
                       <button
                         key={conv.id}
-                        onClick={() => setActiveId(conv.id)}
+                        onClick={() => { setActiveId(conv.id); setShowThread(true); }}
                         className="w-full flex items-center gap-3 py-2.5 text-left transition-colors"
                         style={{
                           background: isActive ? "rgba(201,168,76,0.08)" : "transparent",
@@ -357,9 +359,16 @@ export default function MessagesClient({ conversations: initialConvs, myUserId, 
 
         {/* ── Thread ───────────────────────────────────── */}
         {activeConv ? (
-          <div className="flex-1 flex flex-col min-w-0" style={{ background: "var(--bg)" }}>
+          <div className={`flex-1 flex-col min-w-0 ${showThread ? "flex" : "hidden md:flex"}`} style={{ background: "var(--bg)" }}>
             {/* Header */}
             <div className="h-14 flex items-center px-5 gap-3 shrink-0" style={{ background: "var(--surface)", borderBottom: "1px solid var(--border)" }}>
+              <button
+                onClick={() => setShowThread(false)}
+                className="md:hidden mr-1 flex items-center gap-1 text-sm"
+                style={{ color: "var(--text2)" }}
+              >
+                <span style={{ fontSize: 18 }}>←</span>
+              </button>
               {(() => { const av = convAvatar(activeConv, myUserId); return <Avatar src={av.src} displayName={av.displayName} geniusType={av.geniusType} size={30} />; })()}
               <div>
                 <p className="text-sm font-semibold" style={{ color: "var(--text)", fontFamily: "var(--font-display, sans-serif)" }}>
@@ -435,7 +444,7 @@ export default function MessagesClient({ conversations: initialConvs, myUserId, 
             </div>
           </div>
         ) : (
-          <div className="flex-1 flex flex-col items-center justify-center gap-4" style={{ background: "var(--bg)" }}>
+          <div className={`flex-1 flex-col items-center justify-center gap-4 ${showThread ? "flex" : "hidden md:flex"}`} style={{ background: "var(--bg)" }}>
             <div
               className="w-16 h-16 rounded-2xl flex items-center justify-center"
               style={{ background: "rgba(201,168,76,0.08)", border: "1px solid var(--border-md)" }}
