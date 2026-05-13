@@ -9,10 +9,11 @@ import crypto from "crypto";
 
 export async function loginAction(
   email: string,
-  password: string
+  password: string,
+  redirectTo = "/dashboard"
 ): Promise<{ error: string } | { success: true }> {
   try {
-    await signIn("credentials", { email, password, redirectTo: "/dashboard" });
+    await signIn("credentials", { email, password, redirectTo });
     return { success: true };
   } catch (error) {
     // Re-throw redirect so Next.js sets the session cookie in the response
