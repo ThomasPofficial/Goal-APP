@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { X } from "lucide-react";
 import AccountMenu from "./AccountMenu";
 import { cn } from "@/lib/utils";
 import type { GeniusType } from "@/data/traits";
@@ -18,37 +19,48 @@ interface SidebarProps {
   userName?: string | null;
   userEmail?: string | null;
   geniusType?: GeniusType | null;
+  mobileOpen?: boolean;
+  onMobileClose?: () => void;
 }
 
-export default function Sidebar({ userName, userEmail, geniusType }: SidebarProps) {
+export default function Sidebar({ userName, userEmail, geniusType, mobileOpen = false, onMobileClose }: SidebarProps) {
   const pathname = usePathname();
 
   return (
     <aside
-      className="fixed left-0 top-0 h-full w-[220px] flex flex-col z-40"
+      className={cn(
+        "fixed left-0 top-0 h-full w-[220px] flex flex-col z-40 transition-transform duration-300",
+        mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+      )}
       style={{
         background: "var(--n-bg2)",
         borderRight: "1px solid var(--border-md)",
       }}
     >
-      {/* Logo */}
       <div
-        className="flex items-center px-5 h-14 flex-shrink-0"
+        className="flex items-center justify-between px-5 h-14 flex-shrink-0"
         style={{ borderBottom: "1px solid var(--border)" }}
       >
         <span
           className="text-xl font-black tracking-widest uppercase"
           style={{
-            fontFamily: "var(--font-display, 'Syne', sans-serif)",
+            fontFamily: "var(--font-display, 'Cormorant Garamond', sans-serif)",
             color: "var(--gold)",
             letterSpacing: "0.15em",
           }}
         >
           NIVARRO
         </span>
+        <button
+          onClick={onMobileClose}
+          className="md:hidden w-7 h-7 flex items-center justify-center rounded-md"
+          style={{ color: "var(--muted)" }}
+          aria-label="Close menu"
+        >
+          <X className="w-4 h-4" />
+        </button>
       </div>
 
-      {/* Navigation */}
       <nav className="flex-1 px-3 py-5 space-y-0.5 overflow-y-auto">
         <p
           className="px-3 mb-3 text-[10px] font-semibold uppercase tracking-widest"
@@ -65,6 +77,7 @@ export default function Sidebar({ userName, userEmail, geniusType }: SidebarProp
             <Link
               key={href}
               href={href}
+              onClick={onMobileClose}
               className={cn(
                 "flex items-center px-3 py-2 rounded-md text-sm font-medium transition-all border-l-2",
               )}
@@ -93,7 +106,6 @@ export default function Sidebar({ userName, userEmail, geniusType }: SidebarProp
         })}
       </nav>
 
-      {/* Account section */}
       <AccountMenu
         userName={userName}
         userEmail={userEmail}
