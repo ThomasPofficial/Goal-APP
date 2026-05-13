@@ -90,9 +90,9 @@ export default function DashboardClient({ profile, spaces, traitsDone }: { profi
   const FILTERS = ["ALL", "INTERNSHIP", "FELLOWSHIP", "COMPETITION", "ACCELERATOR", "BOOTCAMP", "RESEARCH"];
 
   return (
-    <div className="flex gap-6 min-h-0">
+    <div className="flex flex-col sm:flex-row gap-6 min-h-0">
       {/* Left panel */}
-      <div className="w-[280px] flex-shrink-0 space-y-4">
+      <div className="w-full sm:w-[280px] sm:flex-shrink-0 space-y-4">
 
         {/* Identity */}
         <div style={{ ...card, padding: "20px" }}>
