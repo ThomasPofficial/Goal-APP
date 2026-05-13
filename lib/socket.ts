@@ -1,5 +1,5 @@
 import { io, type Socket } from 'socket.io-client'
-import { useEffect, useRef } from 'react'
+import { useEffect, useState } from 'react'
 
 let _socket: Socket | null = null
 
@@ -14,9 +14,9 @@ export function getSocket(): Socket | null {
 }
 
 export function useSocket(): Socket | null {
-  const ref = useRef<Socket | null>(null)
+  const [socket, setSocket] = useState<Socket | null>(null)
   useEffect(() => {
-    ref.current = getSocket()
+    setSocket(getSocket())
   }, [])
-  return ref.current
+  return socket
 }
