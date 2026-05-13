@@ -125,7 +125,7 @@ export default function OrgsClient() {
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {[1,2,3,4,5,6].map((i) => (
             <div key={i} className="h-52 rounded-xl bg-[#16161a] animate-pulse" />
           ))}
@@ -136,7 +136,7 @@ export default function OrgsClient() {
           <p className="text-sm text-[#9898a8]">No organizations found.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {orgs.map((org) => (
             <OrgCard key={org.id} org={org} />
           ))}
