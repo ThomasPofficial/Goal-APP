@@ -7,17 +7,17 @@
   --gold-dim: #8A5F10;
   --gold-glow: rgba(201,168,76,0.18);
 
-  /* NIGHT (default) */
-  --n-bg:      #04070F;
-  --n-bg2:     #070C18;
-  --n-surface: #0A1020;
-  --n-surface2:#0F1830;
-  --n-surface3:#141F3A;
-  --n-border:  rgba(201,168,76,0.1);
-  --n-border-md: rgba(201,168,76,0.22);
-  --n-text:    #F0EDE4;
-  --n-text2:   #B8B0A0;
-  --n-muted:   #5A5448;
+  /* NIGHT (default) — more separated surfaces for visibility */
+  --n-bg:       #05080F;
+  --n-bg2:      #090E1A;
+  --n-surface:  #0D1525;
+  --n-surface2: #111C32;
+  --n-surface3: #162038;
+  --n-border:   rgba(201,168,76,0.12);
+  --n-border-md:rgba(201,168,76,0.28);
+  --n-text:     #EAE8E0;
+  --n-text2:    #8A8898;
+  --n-muted:    #5A5570;
 
   /* Active (night default) */
   --bg:        var(--n-bg);
