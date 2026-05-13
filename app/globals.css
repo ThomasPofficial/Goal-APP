@@ -21,6 +21,10 @@
   --color-amber-light: #e3c06a;
 }
 
+body {
+  font-family: var(--font-body, system-ui, -apple-system, sans-serif);
+}
+
 * {
   box-sizing: border-box;
 }
