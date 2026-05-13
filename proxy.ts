@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 const PUBLIC_URL =
-  process.env.NEXT_PUBLIC_AUTH_URL ?? "https://goal-app-3.onrender.com";
+  process.env.NEXT_PUBLIC_AUTH_URL ?? "https://nivarro.co";
 
 export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
