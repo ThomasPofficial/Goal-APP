@@ -139,3 +139,11 @@ a, button {
 .divide-\[#2a2a33\] > * + * { border-color: var(--border-md) !important; }
 
 .focus\:border-\[#c9a84c\]:focus { border-color: var(--gold) !important; }
+
+/* Alpha-channel hex variants */
+.bg-\[#16161a80\], .hover\:bg-\[#1e1e2480\]:hover { background-color: var(--surface2) !important; }
+.bg-\[#c9a84c10\], .bg-\[#c9a84c08\], .bg-\[#c9a84c15\] { background-color: rgba(201,168,76,0.07) !important; }
+.border-\[#c9a84c30\] { border-color: rgba(201,168,76,0.2) !important; }
+.border-\[#c9a84c60\] { border-color: rgba(201,168,76,0.4) !important; }
+.bg-\[#3a3a44\] { background-color: var(--surface3) !important; }
+.text-\[#3a3a44\] { color: var(--muted) !important; }
