@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import Sidebar from "@/components/layout/Sidebar";
+import SidebarShell from "@/components/layout/SidebarShell";
 import type { GeniusType } from "@/data/traits";
 
 export default async function DashboardLayout({
@@ -14,7 +14,6 @@ export default async function DashboardLayout({
     redirect("/login");
   }
 
-  // Fetch genius type so the sidebar account menu can show it
   const profile = await prisma.profile.findUnique({
     where: { userId: session.user.id },
     select: { displayName: true, geniusType: true },
@@ -22,13 +21,13 @@ export default async function DashboardLayout({
 
   return (
     <div className="min-h-screen" style={{ background: "var(--bg)" }}>
-      <Sidebar
+      <SidebarShell
         userName={profile?.displayName ?? session.user.name}
         userEmail={session.user.email}
         geniusType={(profile?.geniusType as GeniusType | null) ?? null}
       />
-      <main className="pl-[220px] min-h-screen">
-        <div className="max-w-6xl mx-auto px-6 py-8">{children}</div>
+      <main className="md:pl-[220px] min-h-screen pt-14 md:pt-0">
+        <div className="max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-8">{children}</div>
       </main>
     </div>
   );
