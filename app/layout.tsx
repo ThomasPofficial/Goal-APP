@@ -1,20 +1,13 @@
 import type { Metadata } from "next";
-import { Syne, Instrument_Serif, DM_Sans, DM_Mono } from "next/font/google";
+import { Cormorant_Garamond, DM_Sans, DM_Mono } from "next/font/google";
 import "./globals.css";
 import SessionProvider from "@/components/providers/SessionProvider";
 
-const syne = Syne({
+const cormorant = Cormorant_Garamond({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
-  variable: "--font-display",
-  display: "swap",
-});
-
-const instrumentSerif = Instrument_Serif({
-  subsets: ["latin"],
-  weight: ["400"],
+  weight: ["300", "400", "500", "600"],
   style: ["normal", "italic"],
-  variable: "--font-serif",
+  variable: "--font-display",
   display: "swap",
 });
 
@@ -44,7 +37,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${syne.variable} ${instrumentSerif.variable} ${dmSans.variable} ${dmMono.variable}`}>
+    <html lang="en" className={`${cormorant.variable} ${dmSans.variable} ${dmMono.variable}`}>
       <body className="antialiased" style={{ background: "var(--bg)", color: "var(--text)" }}>
         <SessionProvider>{children}</SessionProvider>
       </body>
