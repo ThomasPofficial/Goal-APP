@@ -114,7 +114,7 @@ export default function MessagesClient({ conversations: initialConvs, myUserId, 
     socket.emit("join_conversation", activeId);
 
     const handler = (msg: Message) => {
-      if (msg.senderId === myUserId) return; // already added optimistically
+      if (msg.senderId === myUserId) return;
       setMessages((prev) => [...prev, msg]);
       setConversations((prev) =>
         prev.map((c) =>
@@ -176,23 +176,39 @@ export default function MessagesClient({ conversations: initialConvs, myUserId, 
   ].filter((s) => s.items.length > 0);
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] overflow-hidden rounded-xl border border-[#2a2a33]">
-
-      {/* ── Sidebar ─────────────────────────────────────────── */}
-      <div className="w-64 border-r border-[#2a2a33] bg-[#16161a] flex flex-col shrink-0">
-        <div className="px-4 py-3.5 border-b border-[#2a2a33]">
-          <h2 className="text-sm font-semibold text-[#e8e8ec]">Messages</h2>
+    <div
+      className="flex overflow-hidden rounded-xl"
+      style={{
+        height: "calc(100vh - 4rem)",
+        border: "1px solid var(--border-md)",
+      }}
+    >
+      {/* ── Conversation list ─────────────────────────────────── */}
+      <div
+        className="w-64 flex flex-col shrink-0"
+        style={{ background: "var(--n-bg2)", borderRight: "1px solid var(--border)" }}
+      >
+        <div className="px-4 py-3.5" style={{ borderBottom: "1px solid var(--border)" }}>
+          <h2
+            className="text-sm font-bold uppercase tracking-widest"
+            style={{ color: "var(--text)", fontFamily: "var(--font-display, sans-serif)" }}
+          >
+            Messages
+          </h2>
         </div>
 
         <div className="flex-1 overflow-y-auto">
           {sections.length === 0 ? (
-            <div className="p-6 text-center text-[#5a5a6a] text-xs">
+            <div className="p-6 text-center text-xs" style={{ color: "var(--muted)" }}>
               No conversations yet.
             </div>
           ) : (
             sections.map(({ label, items }) => (
               <div key={label}>
-                <p className="px-4 pt-4 pb-1 text-[10px] font-semibold text-[#5a5a6a] uppercase tracking-widest">
+                <p
+                  className="px-4 pt-4 pb-1 text-[10px] font-semibold uppercase tracking-widest"
+                  style={{ color: "var(--muted)", fontFamily: "var(--font-display, sans-serif)" }}
+                >
                   {label}
                 </p>
                 {items.map((conv) => {
@@ -203,19 +219,20 @@ export default function MessagesClient({ conversations: initialConvs, myUserId, 
                     <button
                       key={conv.id}
                       onClick={() => setActiveId(conv.id)}
-                      className={`w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors ${
-                        isActive
-                          ? "bg-[#c9a84c15] border-l-2 border-[#c9a84c] pl-[10px]"
-                          : "hover:bg-[#1e1e24] border-l-2 border-transparent"
-                      }`}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors"
+                      style={{
+                        background: isActive ? "rgba(201,168,76,0.08)" : "transparent",
+                        borderLeft: `2px solid ${isActive ? "var(--gold)" : "transparent"}`,
+                        paddingLeft: isActive ? "10px" : "12px",
+                      }}
                     >
                       <Avatar src={av.src} displayName={av.displayName} geniusType={av.geniusType} size={34} />
                       <div className="flex-1 min-w-0">
-                        <p className={`text-sm font-medium truncate ${isActive ? "text-[#e8e8ec]" : "text-[#9898a8]"}`}>
+                        <p className="text-sm font-medium truncate" style={{ color: isActive ? "var(--text)" : "var(--text2)" }}>
                           {name}
                         </p>
                         {conv.lastMessage && (
-                          <p className="text-xs text-[#5a5a6a] truncate">
+                          <p className="text-xs truncate" style={{ color: "var(--muted)" }}>
                             {conv.lastMessage.body}
                           </p>
                         )}
@@ -229,18 +246,21 @@ export default function MessagesClient({ conversations: initialConvs, myUserId, 
         </div>
       </div>
 
-      {/* ── Thread ──────────────────────────────────────────── */}
+      {/* ── Thread ──────────────────────────────────────────────── */}
       {activeConv ? (
-        <div className="flex-1 flex flex-col min-w-0 bg-[#0f0f11]">
+        <div className="flex-1 flex flex-col min-w-0" style={{ background: "var(--bg)" }}>
 
           {/* Header */}
-          <div className="h-14 border-b border-[#2a2a33] bg-[#16161a] flex items-center px-5 gap-3 shrink-0">
+          <div
+            className="h-14 flex items-center px-5 gap-3 shrink-0"
+            style={{ background: "var(--surface)", borderBottom: "1px solid var(--border)" }}
+          >
             {(() => {
               const av = convAvatar(activeConv, myUserId);
               return <Avatar src={av.src} displayName={av.displayName} geniusType={av.geniusType} size={30} />;
             })()}
             <div>
-              <p className="text-sm font-semibold text-[#e8e8ec]">
+              <p className="text-sm font-semibold" style={{ color: "var(--text)", fontFamily: "var(--font-display, sans-serif)" }}>
                 {convDisplayName(activeConv, myUserId)}
               </p>
               {activeConv.type === "DIRECT" && (() => {
@@ -256,10 +276,10 @@ export default function MessagesClient({ conversations: initialConvs, myUserId, 
           <div className="flex-1 overflow-y-auto px-5 py-4">
             {loadingMsgs ? (
               <div className="flex items-center justify-center h-full">
-                <div className="w-5 h-5 border-2 border-[#c9a84c] border-t-transparent rounded-full animate-spin" />
+                <div className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: "var(--gold)", borderTopColor: "transparent" }} />
               </div>
             ) : messages.length === 0 ? (
-              <div className="flex items-center justify-center h-full text-[#5a5a6a] text-sm">
+              <div className="flex items-center justify-center h-full text-sm" style={{ color: "var(--muted)" }}>
                 No messages yet — say hello!
               </div>
             ) : (
@@ -267,7 +287,7 @@ export default function MessagesClient({ conversations: initialConvs, myUserId, 
                 {messages.map((msg, i) => {
                   const isMe = msg.senderId === myUserId;
                   const grouped = messages[i - 1]?.senderId === msg.senderId;
-                  const bubbleBg = isMe ? (myGT?.color ?? "#c9a84c") : "#1e1e24";
+                  const bubbleBg = isMe ? (myGT?.color ?? "var(--gold)") : "var(--surface2)";
 
                   return (
                     <div
@@ -275,7 +295,10 @@ export default function MessagesClient({ conversations: initialConvs, myUserId, 
                       className={`flex gap-2 ${isMe ? "flex-row-reverse" : ""} ${grouped ? "mt-0.5" : "mt-3"}`}
                     >
                       {!grouped && !isMe && (
-                        <div className="w-7 h-7 rounded-full bg-[#2a2a33] flex items-center justify-center text-xs font-medium text-[#9898a8] shrink-0">
+                        <div
+                          className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium shrink-0"
+                          style={{ background: "var(--surface3)", color: "var(--text2)" }}
+                        >
                           {msg.sender?.name?.[0] ?? "?"}
                         </div>
                       )}
@@ -283,9 +306,9 @@ export default function MessagesClient({ conversations: initialConvs, myUserId, 
                       <div
                         className="max-w-[70%] px-3.5 py-2 rounded-2xl text-sm leading-relaxed"
                         style={{
-                          backgroundColor: bubbleBg,
-                          color: isMe ? "#0f0f11" : "#e8e8ec",
-                          border: isMe ? "none" : "1px solid #2a2a33",
+                          background: bubbleBg,
+                          color: isMe ? "#04070F" : "var(--text)",
+                          border: isMe ? "none" : "1px solid var(--border)",
                         }}
                       >
                         {msg.content}
@@ -299,7 +322,7 @@ export default function MessagesClient({ conversations: initialConvs, myUserId, 
           </div>
 
           {/* Input */}
-          <div className="border-t border-[#2a2a33] bg-[#16161a] p-3 shrink-0">
+          <div className="p-3 shrink-0" style={{ background: "var(--surface)", borderTop: "1px solid var(--border)" }}>
             <div className="flex items-end gap-2">
               <textarea
                 value={input}
@@ -307,25 +330,35 @@ export default function MessagesClient({ conversations: initialConvs, myUserId, 
                 onKeyDown={handleKeyDown}
                 rows={1}
                 placeholder="Message..."
-                className="flex-1 resize-none rounded-xl border border-[#2a2a33] bg-[#1e1e24] text-[#e8e8ec] placeholder-[#5a5a6a] px-4 py-2.5 text-sm focus:outline-none focus:border-[#c9a84c] transition-colors max-h-32 overflow-y-auto"
+                className="flex-1 resize-none rounded-xl text-sm focus:outline-none transition-colors max-h-32 overflow-y-auto"
+                style={{
+                  background: "var(--surface2)",
+                  color: "var(--text)",
+                  border: "1px solid var(--border-md)",
+                  padding: "10px 16px",
+                }}
+                onFocus={(e) => { e.currentTarget.style.borderColor = "var(--gold)"; }}
+                onBlur={(e) => { e.currentTarget.style.borderColor = "var(--border-md)"; }}
               />
               <button
                 onClick={sendMessage}
                 disabled={!input.trim() || sending}
-                className="p-2.5 bg-[#c9a84c] hover:bg-[#e3c06a] text-[#0f0f11] rounded-xl transition-colors disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
-                title="Send"
+                className="p-2.5 rounded-xl transition-colors disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
+                style={{ background: "var(--gold)", color: "#04070F" }}
               >
                 <Send className="w-4 h-4" />
               </button>
             </div>
-            <p className="text-xs text-[#3a3a44] mt-1.5 pl-1">Enter to send · Shift+Enter for newline</p>
+            <p className="text-xs mt-1.5 pl-1" style={{ color: "var(--muted)" }}>
+              Enter to send · Shift+Enter for newline
+            </p>
           </div>
         </div>
       ) : (
-        <div className="flex-1 flex items-center justify-center bg-[#0f0f11]">
+        <div className="flex-1 flex items-center justify-center" style={{ background: "var(--bg)" }}>
           <div className="text-center">
             <p className="text-4xl mb-3">💬</p>
-            <p className="text-sm text-[#5a5a6a]">Select a conversation</p>
+            <p className="text-sm" style={{ color: "var(--muted)" }}>Select a conversation</p>
           </div>
         </div>
       )}
