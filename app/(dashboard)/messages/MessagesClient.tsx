@@ -1,12 +1,13 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { useSocket } from "@/lib/socket";
 import Avatar from "@/components/ui/Avatar";
 import GeniusTypeBadge from "@/components/ui/GeniusTypeBadge";
 import type { GeniusTypeKey } from "@/lib/geniusTypes";
 import { GENIUS_TYPES } from "@/lib/geniusTypes";
-import { Send } from "lucide-react";
+import { Send, Plus, X, Search } from "lucide-react";
 
 interface Participant {
   id: string;
@@ -46,6 +47,15 @@ interface MyProfile {
   geniusType: GeniusTypeKey | null;
 }
 
+interface PeerResult {
+  id: string;
+  userId: string;
+  displayName: string;
+  avatarUrl: string | null;
+  geniusType: string | null;
+  handle: string | null;
+}
+
 interface Props {
   conversations: ConvSummary[];
   myUserId: string;
@@ -76,14 +86,119 @@ function convAvatar(conv: ConvSummary, myUserId: string) {
   return { src: null, displayName: conv.name ?? "G", geniusType: null as GeniusTypeKey | null };
 }
 
+// ── New Message Modal ─────────────────────────────────────────────────────────
+
+function NewMessageModal({ myUserId, onClose, onOpen }: {
+  myUserId: string;
+  onClose: () => void;
+  onOpen: (convId: string) => void;
+}) {
+  const [q, setQ] = useState("");
+  const [results, setResults] = useState<PeerResult[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => { inputRef.current?.focus(); }, []);
+
+  useEffect(() => {
+    if (!q.trim()) { setResults([]); return; }
+    const t = setTimeout(async () => {
+      setLoading(true);
+      try {
+        const res = await fetch(`/api/peers?q=${encodeURIComponent(q)}`);
+        const data = await res.json();
+        setResults((data.peers ?? []).slice(0, 8));
+      } finally { setLoading(false); }
+    }, 250);
+    return () => clearTimeout(t);
+  }, [q]);
+
+  const startDM = async (userId: string) => {
+    if (creating) return;
+    setCreating(true);
+    try {
+      const res = await fetch("/api/conversations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ participantIds: [userId], type: "DIRECT" }),
+      });
+      const data = await res.json();
+      if (data.conversation?.id) {
+        onOpen(data.conversation.id);
+        onClose();
+      }
+    } finally { setCreating(false); }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(0,0,0,0.6)" }} onClick={onClose}>
+      <div
+        className="w-full max-w-md rounded-2xl overflow-hidden"
+        style={{ background: "var(--surface)", border: "1px solid var(--border-md)", boxShadow: "0 32px 64px rgba(0,0,0,0.5)" }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center gap-3 px-4 py-3" style={{ borderBottom: "1px solid var(--border)" }}>
+          <Search className="w-4 h-4 flex-shrink-0" style={{ color: "var(--muted)" }} />
+          <input
+            ref={inputRef}
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Search by name or handle…"
+            className="flex-1 text-sm bg-transparent focus:outline-none"
+            style={{ color: "var(--text)", border: "none", padding: 0 }}
+          />
+          <button onClick={onClose}><X className="w-4 h-4" style={{ color: "var(--muted)" }} /></button>
+        </div>
+
+        <div className="max-h-72 overflow-y-auto">
+          {loading && (
+            <div className="flex items-center justify-center py-8">
+              <div className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: "var(--gold)", borderTopColor: "transparent" }} />
+            </div>
+          )}
+          {!loading && q && results.length === 0 && (
+            <p className="text-center text-sm py-8" style={{ color: "var(--muted)" }}>No users found</p>
+          )}
+          {!loading && !q && (
+            <p className="text-center text-xs py-8" style={{ color: "var(--muted)" }}>Type a name to search</p>
+          )}
+          {results.map((peer) => (
+            <button
+              key={peer.id}
+              onClick={() => startDM(peer.userId)}
+              disabled={creating}
+              className="w-full flex items-center gap-3 px-4 py-3 text-left transition-colors disabled:opacity-50"
+              style={{ borderBottom: "1px solid var(--border)" }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "var(--surface2)"; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}
+            >
+              <Avatar src={peer.avatarUrl} displayName={peer.displayName} geniusType={peer.geniusType as GeniusTypeKey | null} size={36} />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium truncate" style={{ color: "var(--text)", fontFamily: "var(--font-display, sans-serif)" }}>{peer.displayName}</p>
+                {peer.handle && <p className="text-xs truncate" style={{ color: "var(--muted)" }}>@{peer.handle}</p>}
+              </div>
+              {peer.geniusType && <GeniusTypeBadge geniusType={peer.geniusType as GeniusTypeKey} size="sm" />}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Main Component ────────────────────────────────────────────────────────────
+
 export default function MessagesClient({ conversations: initialConvs, myUserId, myProfileId, myProfile, initialOpenId }: Props) {
   const socket = useSocket();
+  const router = useRouter();
   const [conversations, setConversations] = useState<ConvSummary[]>(initialConvs);
   const [activeId, setActiveId] = useState<string | null>(initialOpenId ?? initialConvs[0]?.id ?? null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [loadingMsgs, setLoadingMsgs] = useState(false);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
+  const [showNewMsg, setShowNewMsg] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const activeConv = conversations.find((c) => c.id === activeId) ?? null;
@@ -96,41 +211,24 @@ export default function MessagesClient({ conversations: initialConvs, myUserId, 
         const data = await res.json();
         setMessages(data.messages ?? []);
       }
-    } finally {
-      setLoadingMsgs(false);
-    }
+    } finally { setLoadingMsgs(false); }
   }, []);
 
-  useEffect(() => {
-    if (!activeId) return;
-    loadMessages(activeId);
-  }, [activeId, loadMessages]);
-
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  useEffect(() => { if (!activeId) return; loadMessages(activeId); }, [activeId, loadMessages]);
+  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
 
   useEffect(() => {
     if (!socket || !activeId) return;
     socket.emit("join_conversation", activeId);
-
     const handler = (msg: Message) => {
       if (msg.senderId === myUserId) return;
       setMessages((prev) => [...prev, msg]);
-      setConversations((prev) =>
-        prev.map((c) =>
-          c.id === activeId
-            ? { ...c, lastMessage: { body: msg.content, createdAt: msg.createdAt }, updatedAt: msg.createdAt }
-            : c
-        )
-      );
+      setConversations((prev) => prev.map((c) =>
+        c.id === activeId ? { ...c, lastMessage: { body: msg.content, createdAt: msg.createdAt }, updatedAt: msg.createdAt } : c
+      ));
     };
-
     socket.on("conversation_message", handler);
-    return () => {
-      socket.off("conversation_message", handler);
-      socket.emit("leave_conversation", activeId);
-    };
+    return () => { socket.off("conversation_message", handler); socket.emit("leave_conversation", activeId); };
   }, [socket, activeId, myUserId]);
 
   const sendMessage = async () => {
@@ -148,23 +246,24 @@ export default function MessagesClient({ conversations: initialConvs, myUserId, 
         const data = await res.json();
         const msg: Message = data.message;
         setMessages((prev) => [...prev, msg]);
-        setConversations((prev) =>
-          prev.map((c) =>
-            c.id === activeId
-              ? { ...c, lastMessage: { body: msg.content, createdAt: msg.createdAt }, updatedAt: msg.createdAt }
-              : c
-          )
-        );
+        setConversations((prev) => prev.map((c) =>
+          c.id === activeId ? { ...c, lastMessage: { body: msg.content, createdAt: msg.createdAt }, updatedAt: msg.createdAt } : c
+        ));
       }
-    } finally {
-      setSending(false);
-    }
+    } finally { setSending(false); }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+  };
+
+  const handleNewConv = async (convId: string) => {
+    // Reload conversations list then select the new one
+    const res = await fetch(`/api/conversations/${convId}/messages`);
+    if (res.ok) {
+      // Fetch updated conversation list
+      router.refresh();
+      setActiveId(convId);
     }
   };
 
@@ -177,192 +276,189 @@ export default function MessagesClient({ conversations: initialConvs, myUserId, 
   ].filter((s) => s.items.length > 0);
 
   return (
-    <div
-      className="flex overflow-hidden rounded-xl"
-      style={{
-        height: "calc(100vh - 4rem)",
-        border: "1px solid var(--border-md)",
-      }}
-    >
-      {/* ── Conversation list ─────────────────────────────────── */}
-      <div
-        className="w-64 flex flex-col shrink-0"
-        style={{ background: "var(--n-bg2)", borderRight: "1px solid var(--border)" }}
-      >
-        <div className="px-4 py-3.5" style={{ borderBottom: "1px solid var(--border)" }}>
-          <h2
-            className="text-sm font-bold uppercase tracking-widest"
-            style={{ color: "var(--text)", fontFamily: "var(--font-display, sans-serif)" }}
-          >
-            Messages
-          </h2>
-        </div>
+    <>
+      {showNewMsg && (
+        <NewMessageModal
+          myUserId={myUserId}
+          onClose={() => setShowNewMsg(false)}
+          onOpen={(convId) => {
+            setShowNewMsg(false);
+            setActiveId(convId);
+            // Optimistically add conversation if not in list, then reload
+            router.refresh();
+          }}
+        />
+      )}
 
-        <div className="flex-1 overflow-y-auto">
-          {sections.length === 0 ? (
-            <div className="p-6 text-center text-xs" style={{ color: "var(--muted)" }}>
-              No conversations yet.
-            </div>
-          ) : (
-            sections.map(({ label, items }) => (
-              <div key={label}>
-                <p
-                  className="px-4 pt-4 pb-1 text-[10px] font-semibold uppercase tracking-widest"
-                  style={{ color: "var(--muted)", fontFamily: "var(--font-display, sans-serif)" }}
-                >
-                  {label}
-                </p>
-                {items.map((conv) => {
-                  const av = convAvatar(conv, myUserId);
-                  const name = convDisplayName(conv, myUserId);
-                  const isActive = conv.id === activeId;
-                  return (
-                    <button
-                      key={conv.id}
-                      onClick={() => setActiveId(conv.id)}
-                      className="w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors"
-                      style={{
-                        background: isActive ? "rgba(201,168,76,0.08)" : "transparent",
-                        borderLeft: `2px solid ${isActive ? "var(--gold)" : "transparent"}`,
-                        paddingLeft: isActive ? "10px" : "12px",
-                      }}
-                    >
-                      <Avatar src={av.src} displayName={av.displayName} geniusType={av.geniusType} size={34} />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate" style={{ color: isActive ? "var(--text)" : "var(--text2)" }}>
-                          {name}
-                        </p>
-                        {conv.lastMessage && (
-                          <p className="text-xs truncate" style={{ color: "var(--muted)" }}>
-                            {conv.lastMessage.body}
-                          </p>
-                        )}
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            ))
-          )}
-        </div>
-      </div>
+      <div className="flex overflow-hidden rounded-xl" style={{ height: "calc(100vh - 4rem)", border: "1px solid var(--border-md)" }}>
 
-      {/* ── Thread ──────────────────────────────────────────────── */}
-      {activeConv ? (
-        <div className="flex-1 flex flex-col min-w-0" style={{ background: "var(--bg)" }}>
-
-          {/* Header */}
-          <div
-            className="h-14 flex items-center px-5 gap-3 shrink-0"
-            style={{ background: "var(--surface)", borderBottom: "1px solid var(--border)" }}
-          >
-            {(() => {
-              const av = convAvatar(activeConv, myUserId);
-              return <Avatar src={av.src} displayName={av.displayName} geniusType={av.geniusType} size={30} />;
-            })()}
-            <div>
-              <p className="text-sm font-semibold" style={{ color: "var(--text)", fontFamily: "var(--font-display, sans-serif)" }}>
-                {convDisplayName(activeConv, myUserId)}
-              </p>
-              {activeConv.type === "DIRECT" && (() => {
-                const other = activeConv.participants.find((p) => p.userId !== myUserId);
-                return other?.profile?.geniusType ? (
-                  <GeniusTypeBadge geniusType={other.profile.geniusType} size="sm" />
-                ) : null;
-              })()}
-            </div>
+        {/* ── Conversation list ─────────────────────── */}
+        <div className="w-64 flex flex-col shrink-0" style={{ background: "var(--n-bg2)", borderRight: "1px solid var(--border)" }}>
+          <div className="flex items-center justify-between px-4 py-3.5" style={{ borderBottom: "1px solid var(--border)" }}>
+            <h2 className="text-sm font-bold uppercase tracking-widest" style={{ color: "var(--text)", fontFamily: "var(--font-display, sans-serif)" }}>
+              Messages
+            </h2>
+            <button
+              onClick={() => setShowNewMsg(true)}
+              className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors"
+              style={{ background: "var(--gold)", color: "#04070F" }}
+              title="New message"
+            >
+              <Plus className="w-4 h-4" />
+            </button>
           </div>
 
-          {/* Messages */}
-          <div className="flex-1 overflow-y-auto px-5 py-4">
-            {loadingMsgs ? (
-              <div className="flex items-center justify-center h-full">
-                <div className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: "var(--gold)", borderTopColor: "transparent" }} />
-              </div>
-            ) : messages.length === 0 ? (
-              <div className="flex items-center justify-center h-full text-sm" style={{ color: "var(--muted)" }}>
-                No messages yet — say hello!
+          <div className="flex-1 overflow-y-auto">
+            {sections.length === 0 ? (
+              <div className="p-6 text-center">
+                <p className="text-xs mb-3" style={{ color: "var(--muted)" }}>No conversations yet.</p>
+                <button
+                  onClick={() => setShowNewMsg(true)}
+                  className="text-xs font-semibold px-4 py-2 rounded-lg transition-colors"
+                  style={{ background: "var(--gold)", color: "#04070F", fontFamily: "var(--font-display, sans-serif)" }}
+                >
+                  Start a conversation
+                </button>
               </div>
             ) : (
-              <div className="space-y-1">
-                {messages.map((msg, i) => {
-                  const isMe = msg.senderId === myUserId;
-                  const grouped = messages[i - 1]?.senderId === msg.senderId;
-                  const bubbleBg = isMe ? (myGT?.color ?? "var(--gold)") : "var(--surface2)";
-
-                  return (
-                    <div
-                      key={msg.id}
-                      className={`flex gap-2 ${isMe ? "flex-row-reverse" : ""} ${grouped ? "mt-0.5" : "mt-3"}`}
-                    >
-                      {!grouped && !isMe && (
-                        <div
-                          className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium shrink-0"
-                          style={{ background: "var(--surface3)", color: "var(--text2)" }}
-                        >
-                          {msg.sender?.name?.[0] ?? "?"}
-                        </div>
-                      )}
-                      {(grouped || isMe) && <div className="w-7 shrink-0" />}
-                      <div
-                        className="max-w-[70%] px-3.5 py-2 rounded-2xl text-sm leading-relaxed"
+              sections.map(({ label, items }) => (
+                <div key={label}>
+                  <p className="px-4 pt-4 pb-1 text-[10px] font-semibold uppercase tracking-widest" style={{ color: "var(--muted)", fontFamily: "var(--font-display, sans-serif)" }}>
+                    {label}
+                  </p>
+                  {items.map((conv) => {
+                    const av = convAvatar(conv, myUserId);
+                    const name = convDisplayName(conv, myUserId);
+                    const isActive = conv.id === activeId;
+                    return (
+                      <button
+                        key={conv.id}
+                        onClick={() => setActiveId(conv.id)}
+                        className="w-full flex items-center gap-3 py-2.5 text-left transition-colors"
                         style={{
-                          background: bubbleBg,
-                          color: isMe ? "#04070F" : "var(--text)",
-                          border: isMe ? "none" : "1px solid var(--border)",
+                          background: isActive ? "rgba(201,168,76,0.08)" : "transparent",
+                          borderLeft: `2px solid ${isActive ? "var(--gold)" : "transparent"}`,
+                          paddingLeft: isActive ? "10px" : "12px",
+                          paddingRight: "12px",
                         }}
                       >
-                        {msg.content}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+                        <Avatar src={av.src} displayName={av.displayName} geniusType={av.geniusType} size={34} />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate" style={{ color: isActive ? "var(--text)" : "var(--text2)" }}>{name}</p>
+                          {conv.lastMessage && (
+                            <p className="text-xs truncate" style={{ color: "var(--muted)" }}>{conv.lastMessage.body}</p>
+                          )}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              ))
             )}
-            <div ref={bottomRef} />
           </div>
+        </div>
 
-          {/* Input */}
-          <div className="p-3 shrink-0" style={{ background: "var(--surface)", borderTop: "1px solid var(--border)" }}>
-            <div className="flex items-end gap-2">
-              <textarea
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                rows={1}
-                placeholder="Message..."
-                className="flex-1 resize-none rounded-xl text-sm focus:outline-none transition-colors max-h-32 overflow-y-auto"
-                style={{
-                  background: "var(--surface2)",
-                  color: "var(--text)",
-                  border: "1px solid var(--border-md)",
-                  padding: "10px 16px",
-                }}
-                onFocus={(e) => { e.currentTarget.style.borderColor = "var(--gold)"; }}
-                onBlur={(e) => { e.currentTarget.style.borderColor = "var(--border-md)"; }}
-              />
+        {/* ── Thread ───────────────────────────────────── */}
+        {activeConv ? (
+          <div className="flex-1 flex flex-col min-w-0" style={{ background: "var(--bg)" }}>
+            {/* Header */}
+            <div className="h-14 flex items-center px-5 gap-3 shrink-0" style={{ background: "var(--surface)", borderBottom: "1px solid var(--border)" }}>
+              {(() => { const av = convAvatar(activeConv, myUserId); return <Avatar src={av.src} displayName={av.displayName} geniusType={av.geniusType} size={30} />; })()}
+              <div>
+                <p className="text-sm font-semibold" style={{ color: "var(--text)", fontFamily: "var(--font-display, sans-serif)" }}>
+                  {convDisplayName(activeConv, myUserId)}
+                </p>
+                {activeConv.type === "DIRECT" && (() => {
+                  const other = activeConv.participants.find((p) => p.userId !== myUserId);
+                  return other?.profile?.geniusType ? <GeniusTypeBadge geniusType={other.profile.geniusType} size="sm" /> : null;
+                })()}
+              </div>
+            </div>
+
+            {/* Messages */}
+            <div className="flex-1 overflow-y-auto px-5 py-4">
+              {loadingMsgs ? (
+                <div className="flex items-center justify-center h-full">
+                  <div className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: "var(--gold)", borderTopColor: "transparent" }} />
+                </div>
+              ) : messages.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-full gap-2">
+                  <p className="text-2xl">👋</p>
+                  <p className="text-sm" style={{ color: "var(--muted)" }}>Say hello to start the conversation</p>
+                </div>
+              ) : (
+                <div className="space-y-1">
+                  {messages.map((msg, i) => {
+                    const isMe = msg.senderId === myUserId;
+                    const grouped = messages[i - 1]?.senderId === msg.senderId;
+                    const bubbleBg = isMe ? (myGT?.color ?? "var(--gold)") : "var(--surface2)";
+                    return (
+                      <div key={msg.id} className={`flex gap-2 ${isMe ? "flex-row-reverse" : ""} ${grouped ? "mt-0.5" : "mt-3"}`}>
+                        {!grouped && !isMe && (
+                          <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium shrink-0" style={{ background: "var(--surface3)", color: "var(--text2)" }}>
+                            {msg.sender?.name?.[0] ?? "?"}
+                          </div>
+                        )}
+                        {(grouped || isMe) && <div className="w-7 shrink-0" />}
+                        <div className="max-w-[70%] px-3.5 py-2 rounded-2xl text-sm leading-relaxed" style={{ background: bubbleBg, color: isMe ? "#04070F" : "var(--text)", border: isMe ? "none" : "1px solid var(--border)" }}>
+                          {msg.content}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+              <div ref={bottomRef} />
+            </div>
+
+            {/* Input */}
+            <div className="p-3 shrink-0" style={{ background: "var(--surface)", borderTop: "1px solid var(--border)" }}>
+              <div className="flex items-end gap-2">
+                <textarea
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  rows={1}
+                  placeholder="Message…"
+                  className="flex-1 resize-none rounded-xl text-sm focus:outline-none transition-colors max-h-32 overflow-y-auto"
+                  style={{ background: "var(--surface2)", color: "var(--text)", border: "1px solid var(--border-md)", padding: "10px 16px" }}
+                  onFocus={(e) => { e.currentTarget.style.borderColor = "var(--gold)"; }}
+                  onBlur={(e) => { e.currentTarget.style.borderColor = "var(--border-md)"; }}
+                />
+                <button
+                  onClick={sendMessage}
+                  disabled={!input.trim() || sending}
+                  className="p-2.5 rounded-xl transition-colors disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
+                  style={{ background: "var(--gold)", color: "#04070F" }}
+                >
+                  <Send className="w-4 h-4" />
+                </button>
+              </div>
+              <p className="text-xs mt-1.5 pl-1" style={{ color: "var(--muted)" }}>Enter to send · Shift+Enter for newline</p>
+            </div>
+          </div>
+        ) : (
+          <div className="flex-1 flex flex-col items-center justify-center gap-4" style={{ background: "var(--bg)" }}>
+            <div
+              className="w-16 h-16 rounded-2xl flex items-center justify-center"
+              style={{ background: "rgba(201,168,76,0.08)", border: "1px solid var(--border-md)" }}
+            >
+              <Send className="w-7 h-7" style={{ color: "var(--gold)" }} />
+            </div>
+            <div className="text-center">
+              <p className="text-sm font-semibold mb-1" style={{ color: "var(--text)", fontFamily: "var(--font-display, sans-serif)" }}>No conversation selected</p>
+              <p className="text-xs mb-4" style={{ color: "var(--muted)" }}>Pick one from the list or start a new one</p>
               <button
-                onClick={sendMessage}
-                disabled={!input.trim() || sending}
-                className="p-2.5 rounded-xl transition-colors disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
-                style={{ background: "var(--gold)", color: "#04070F" }}
+                onClick={() => setShowNewMsg(true)}
+                className="text-sm font-bold px-5 py-2.5 rounded-lg uppercase tracking-widest"
+                style={{ background: "var(--gold)", color: "#04070F", fontFamily: "var(--font-display, sans-serif)" }}
               >
-                <Send className="w-4 h-4" />
+                New Message
               </button>
             </div>
-            <p className="text-xs mt-1.5 pl-1" style={{ color: "var(--muted)" }}>
-              Enter to send · Shift+Enter for newline
-            </p>
           </div>
-        </div>
-      ) : (
-        <div className="flex-1 flex items-center justify-center" style={{ background: "var(--bg)" }}>
-          <div className="text-center">
-            <p className="text-4xl mb-3">💬</p>
-            <p className="text-sm" style={{ color: "var(--muted)" }}>Select a conversation</p>
-          </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </>
   );
 }
