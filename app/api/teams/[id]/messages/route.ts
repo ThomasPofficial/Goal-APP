@@ -5,6 +5,8 @@ import { z } from "zod";
 
 const schema = z.object({ body: z.string().min(1).max(4000) });
 
+export const MSG_LIMIT_SUBMITTED = 20;
+
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
   if (!session?.user?.id) {
@@ -28,6 +30,18 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   let convo = await prisma.conversation.findFirst({ where: { teamId, type: "TEAM" } });
   if (!convo) {
     convo = await prisma.conversation.create({ data: { type: "TEAM", teamId } });
+  }
+
+  // Enforce message limit for teams with a pending application
+  const team = await prisma.team.findUnique({ where: { id: teamId }, select: { status: true } });
+  if (team?.status === "SUBMITTED") {
+    const count = await prisma.message.count({ where: { conversationId: convo.id } });
+    if (count >= MSG_LIMIT_SUBMITTED) {
+      return NextResponse.json(
+        { error: "Message limit reached while application is pending.", limitReached: true },
+        { status: 403 }
+      );
+    }
   }
 
   const message = await prisma.message.create({

@@ -57,15 +57,30 @@ const NOTE_COLORS: Record<string, { bg: string; text: string }> = {
   white: { bg: "#ffffff", text: "#1e293b" },
 };
 
+const MSG_LIMIT = 20;
+
+interface ApplicationSummary {
+  id: string;
+  status: string;
+  submittedAt: string;
+  orgProject: { id: string; title: string; orgId: string; org: { id: string; name: string } };
+}
+
 export default function TeamWorkspaceClient({
-  team, myProfileId, myGeniusType, myUserId,
+  team, applications, msgCount: initialMsgCount, myProfileId, myGeniusType, myUserId,
 }: {
-  team: TeamData; myProfileId: string; myGeniusType: GeniusTypeKey | null; myUserId: string;
+  team: TeamData;
+  applications: ApplicationSummary[];
+  msgCount: number;
+  myProfileId: string;
+  myGeniusType: GeniusTypeKey | null;
+  myUserId: string;
 }) {
-  const [tab, setTab] = useState<"chat" | "board">("chat");
+  const [tab, setTab] = useState<"chat" | "board" | "applications">("chat");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [msgInput, setMsgInput] = useState("");
   const [sending, setSending] = useState(false);
+  const [sentCount, setSentCount] = useState(0);
   const [cards, setCards] = useState<NoteboardCard[]>([]);
   const [addingCard, setAddingCard] = useState<"NOTE" | "TASK" | "CHECKLIST" | null>(null);
   const [membersExpanded, setMembersExpanded] = useState(true);
@@ -113,17 +128,23 @@ export default function TeamWorkspaceClient({
     chatBottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  const msgCount = initialMsgCount + sentCount;
+  const isSubmitted = team.status === "SUBMITTED";
+  const limitReached = isSubmitted && msgCount >= MSG_LIMIT;
+  const msgsRemaining = isSubmitted ? Math.max(0, MSG_LIMIT - msgCount) : null;
+
   const sendMessage = async () => {
-    if (!msgInput.trim() || sending) return;
+    if (!msgInput.trim() || sending || limitReached) return;
     const content = msgInput.trim();
     setSending(true);
     setMsgInput("");
     socket?.emit("team_message_send", { teamId: team.id, content });
-    await fetch(`/api/teams/${team.id}/messages`, {
+    const res = await fetch(`/api/teams/${team.id}/messages`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ body: content }),
     });
+    if (res.ok) setSentCount((c) => c + 1);
     setSending(false);
   };
 
@@ -131,24 +152,41 @@ export default function TeamWorkspaceClient({
 
   return (
     <div className="flex flex-col h-[calc(100vh-8rem)]">
-      {/* ── Application status banner ─────────────────────────────────────── */}
-      {team.status === "ACTIVE" && (
+      {/* ── Status / message-limit banner ────────────────────────────────── */}
+      {team.status === "ACTIVE" && applications.length === 0 && (
         <div className="mb-4 flex items-center gap-3 px-4 py-3 rounded-xl bg-[#111C32] border border-[rgba(201,168,76,0.12)]">
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-[#8A8898]">No active application</p>
             <p className="text-xs text-[#5A5570]">
-              Browse org projects and apply to unlock the full platform.{" "}
+              Browse org projects and apply to unlock full messaging.{" "}
               <Link href="/orgs" className="text-[#c9a84c] hover:underline">Browse orgs →</Link>
             </p>
           </div>
         </div>
       )}
-      {team.status === "SUBMITTED" && (
+      {isSubmitted && !limitReached && msgsRemaining !== null && (
         <div className="mb-4 flex items-center gap-3 px-4 py-3 rounded-xl bg-blue-950/40 border border-blue-500/20">
           <div className="w-2 h-2 rounded-full bg-blue-400 animate-pulse flex-shrink-0" />
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-blue-300">Application under review</p>
-            <p className="text-xs text-blue-400/70">The org is reviewing your team&apos;s application.</p>
+            <p className="text-sm font-medium text-blue-300">
+              Application under review — limited chat
+            </p>
+            <p className="text-xs text-blue-400/70">
+              You have <span className="font-semibold text-blue-300">{msgsRemaining} message{msgsRemaining !== 1 ? "s" : ""}</span> remaining while your application is pending. Full chat unlocks on acceptance.{" "}
+              <button onClick={() => setTab("applications")} className="text-[#c9a84c] hover:underline">View applications →</button>
+            </p>
+          </div>
+        </div>
+      )}
+      {isSubmitted && limitReached && (
+        <div className="mb-4 flex items-center gap-3 px-4 py-3 rounded-xl bg-amber-950/40 border border-amber-500/30">
+          <div className="w-2 h-2 rounded-full bg-amber-400 flex-shrink-0" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-amber-300">Message limit reached</p>
+            <p className="text-xs text-amber-400/70">
+              You&apos;ve used all {MSG_LIMIT} messages available while your application is pending. Chat unlocks fully once accepted. You can still{" "}
+              <Link href="/orgs" className="text-[#c9a84c] hover:underline">apply to more orgs →</Link>
+            </p>
           </div>
         </div>
       )}
@@ -229,18 +267,26 @@ export default function TeamWorkspaceClient({
         )}
       </div>
 
-      {/* ── Mobile tabs ───────────────────────────────────────────────────── */}
-      <div className="flex gap-3 mb-4 lg:hidden">
-        {(["chat", "board"] as const).map((t) => (
+      {/* ── Tabs ──────────────────────────────────────────────────────────── */}
+      <div className="flex gap-2 mb-4 flex-wrap">
+        {(["chat", "board", "applications"] as const).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
             className={cn(
-              "px-4 py-1.5 rounded-full text-sm font-medium border transition-colors capitalize",
-              tab === t ? "bg-[#c9a84c] border-[#c9a84c] text-[#0f0f11]" : "border-[#2a2a33] text-[#9898a8]"
+              "px-4 py-1.5 rounded-full text-sm font-medium border transition-colors",
+              tab === t ? "bg-[#c9a84c] border-[#c9a84c] text-[#0f0f11]" : "border-[#2a2a33] text-[#9898a8] hover:border-[#c9a84c]/40"
             )}
           >
-            {t === "board" ? "Noteboard" : "Chat"}
+            {t === "board" ? "Noteboard" : t === "applications" ? `Applications${applications.length ? ` · ${applications.length}` : ""}` : "Chat"}
+            {t === "chat" && isSubmitted && (
+              <span className={cn(
+                "ml-1.5 text-[10px] font-semibold px-1.5 py-0.5 rounded-full",
+                limitReached ? "bg-amber-900/60 text-amber-300" : "bg-blue-900/60 text-blue-300"
+              )}>
+                {limitReached ? "Full" : `${msgsRemaining} left`}
+              </span>
+            )}
           </button>
         ))}
       </div>
@@ -248,7 +294,7 @@ export default function TeamWorkspaceClient({
       {/* ── Main workspace ────────────────────────────────────────────────── */}
       <div className="flex gap-4 flex-1 min-h-0">
         {/* Chat */}
-        <div className={cn("flex flex-col flex-[3] min-w-0", tab === "board" ? "hidden lg:flex" : "flex")}>
+        <div className={cn("flex flex-col flex-[3] min-w-0", tab !== "chat" ? "hidden lg:flex" : "flex")}>
           <div className="flex-1 overflow-y-auto space-y-1 mb-3 pr-1">
             {messages.map((msg, i) => {
               const isMe = msg.sender.id === myUserId;
@@ -292,28 +338,83 @@ export default function TeamWorkspaceClient({
           </div>
 
           {/* Input */}
-          <div className="flex gap-2 items-end">
-            <textarea
-              value={msgInput}
-              onChange={(e) => setMsgInput(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
-              placeholder="Message the team…"
-              rows={1}
-              className="flex-1 resize-none rounded-xl border border-[#2a2a33] bg-[#16161a] text-sm text-[#e8e8ec] placeholder-[#5a5a6a] px-4 py-2.5 focus:outline-none focus:border-[#c9a84c] max-h-32 transition-colors"
-              style={{ fieldSizing: "content" } as React.CSSProperties}
-            />
-            <button
-              onClick={sendMessage}
-              disabled={!msgInput.trim() || sending}
-              className="p-2.5 rounded-xl bg-[#c9a84c] hover:bg-[#e3c06a] text-[#0f0f11] disabled:opacity-40 transition-colors flex-shrink-0"
-            >
-              <Send className="w-4 h-4" />
-            </button>
+          {limitReached ? (
+            <div className="flex items-center justify-center py-3 rounded-xl border border-amber-500/20 bg-amber-950/20">
+              <p className="text-xs text-amber-300 text-center">
+                Chat limit reached while application is pending.{" "}
+                <Link href="/orgs" className="text-[#c9a84c] hover:underline">Apply to another org →</Link>
+              </p>
+            </div>
+          ) : (
+            <div className="flex gap-2 items-end">
+              <textarea
+                value={msgInput}
+                onChange={(e) => setMsgInput(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
+                placeholder={isSubmitted ? `Message the team… (${msgsRemaining} left)` : "Message the team…"}
+                rows={1}
+                className="flex-1 resize-none rounded-xl border border-[#2a2a33] bg-[#16161a] text-sm text-[#e8e8ec] placeholder-[#5a5a6a] px-4 py-2.5 focus:outline-none focus:border-[#c9a84c] max-h-32 transition-colors"
+                style={{ fieldSizing: "content" } as React.CSSProperties}
+              />
+              <button
+                onClick={sendMessage}
+                disabled={!msgInput.trim() || sending}
+                className="p-2.5 rounded-xl bg-[#c9a84c] hover:bg-[#e3c06a] text-[#0f0f11] disabled:opacity-40 transition-colors flex-shrink-0"
+              >
+                <Send className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Applications tab */}
+        <div className={cn("flex-1 min-h-0 overflow-y-auto", tab === "applications" ? "block" : "hidden")}>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-xs font-semibold text-[#8A8898] uppercase tracking-wider">Your applications</p>
+              <Link href="/orgs" className="text-xs text-[#c9a84c] hover:underline">Browse more orgs →</Link>
+            </div>
+            {applications.length === 0 ? (
+              <div className="text-center py-12 text-sm text-[#5A5570]">
+                No applications yet.{" "}
+                <Link href="/orgs" className="text-[#c9a84c] hover:underline">Browse orgs to apply →</Link>
+              </div>
+            ) : (
+              applications.map((app) => (
+                <div key={app.id} className="bg-[#0D1525] border border-[rgba(201,168,76,0.12)] rounded-xl p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <Link
+                        href={`/orgs/${app.orgProject.orgId}/projects/${app.orgProject.id}`}
+                        className="font-medium text-sm text-[#EAE8E0] hover:text-[#c9a84c] transition-colors"
+                      >
+                        {app.orgProject.title}
+                      </Link>
+                      <p className="text-xs text-[#8A8898] mt-0.5">{app.orgProject.org.name}</p>
+                      <p className="text-xs text-[#5A5570] mt-1">
+                        Submitted {new Date(app.submittedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                      </p>
+                    </div>
+                    <span className={cn(
+                      "text-[10px] font-semibold px-2 py-1 rounded-full flex-shrink-0",
+                      app.status === "ACCEPTED" ? "bg-green-950 text-green-400" :
+                      app.status === "REJECTED" ? "bg-red-950/40 text-red-400" :
+                      app.status === "WITHDRAWN" ? "bg-[#1e1e24] text-[#5A5570]" :
+                      "bg-blue-950 text-blue-400"
+                    )}>
+                      {app.status === "PENDING" ? "Under review" :
+                       app.status === "ACCEPTED" ? "Accepted" :
+                       app.status === "REJECTED" ? "Not selected" : "Withdrawn"}
+                    </span>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
 
         {/* Noteboard */}
-        <div className={cn("flex flex-col flex-[2] min-w-0", tab === "chat" ? "hidden lg:flex" : "flex")}>
+        <div className={cn("flex flex-col flex-[2] min-w-0", tab !== "board" ? "hidden lg:flex" : "flex")}>
           <div className="flex items-center justify-between mb-3">
             <p className="text-xs font-semibold text-[#9898a8] uppercase tracking-wider">Noteboard</p>
             <div className="relative group">

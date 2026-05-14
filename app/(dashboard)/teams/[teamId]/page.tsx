@@ -21,23 +21,45 @@ export default async function TeamPage({ params }: { params: Promise<{ teamId: s
   });
   if (!membership) notFound();
 
-  const team = await prisma.team.findUnique({
-    where: { id: teamId },
-    include: {
-      members: {
-        include: {
-          profile: {
-            select: { id: true, userId: true, displayName: true, avatarUrl: true, geniusType: true, handle: true },
+  const [team, applications] = await Promise.all([
+    prisma.team.findUnique({
+      where: { id: teamId },
+      include: {
+        members: {
+          include: {
+            profile: {
+              select: { id: true, userId: true, displayName: true, avatarUrl: true, geniusType: true, handle: true },
+            },
+          },
+        },
+        org: { select: { id: true, name: true } },
+        conversation: { select: { id: true }, take: 1, orderBy: { createdAt: "asc" } },
+      },
+    }),
+    prisma.teamApplication.findMany({
+      where: { teamId },
+      include: {
+        orgProject: {
+          select: {
+            id: true,
+            title: true,
+            orgId: true,
+            org: { select: { id: true, name: true } },
           },
         },
       },
-      org: { select: { id: true, name: true } },
-      conversation: { select: { id: true }, take: 1, orderBy: { createdAt: "asc" } },
-    },
-  });
+      orderBy: { submittedAt: "desc" },
+    }),
+  ]);
   if (!team) notFound();
 
   const conversationId = team.conversation[0]?.id ?? null;
+
+  // Count messages for limit display
+  let msgCount = 0;
+  if (conversationId) {
+    msgCount = await prisma.message.count({ where: { conversationId } });
+  }
 
   return (
     <TeamWorkspaceClient
@@ -56,6 +78,18 @@ export default async function TeamPage({ params }: { params: Promise<{ teamId: s
             : null,
         })),
       }}
+      applications={applications.map((a) => ({
+        id: a.id,
+        status: a.status,
+        submittedAt: a.submittedAt.toISOString(),
+        orgProject: {
+          id: a.orgProject.id,
+          title: a.orgProject.title,
+          orgId: a.orgProject.orgId,
+          org: a.orgProject.org,
+        },
+      }))}
+      msgCount={msgCount}
       myProfileId={myProfile.id}
       myGeniusType={myProfile.geniusType as GeniusTypeKey | null}
       myUserId={session.user.id}
