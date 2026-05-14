@@ -30,7 +30,7 @@ export default {
           DEFAULT: "#C9A84C",
           light: "#E3C06A",
           dark: "#9E7D30",
-          subtle: "rgba(201,168,76,0.10)",
+          subtle: "rgba(74,128,240,0.10)",
         },
 
         // Trait category colors
@@ -69,8 +69,8 @@ export default {
       boxShadow: {
         card: "0 1px 3px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.24)",
         "card-hover":
-          "0 8px 24px rgba(0,0,0,0.5), 0 0 0 1px rgba(201,168,76,0.15)",
-        "amber-glow": "0 0 20px rgba(201,168,76,0.12)",
+          "0 8px 24px rgba(0,0,0,0.5), 0 0 0 1px rgba(74,128,240,0.15)",
+        "amber-glow": "0 0 20px rgba(74,128,240,0.12)",
         modal: "0 24px 48px rgba(0,0,0,0.6)",
       },
 

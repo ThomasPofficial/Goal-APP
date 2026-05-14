@@ -37,11 +37,11 @@ export default function AccountMenu({ userName, userEmail, geniusType }: Account
 
   const avatarStyle = {
     width: 32, height: 32, borderRadius: "50%",
-    background: "rgba(201,168,76,0.12)",
+    background: "rgba(74,128,240,0.12)",
     color: "var(--gold)",
     fontSize: 12, fontWeight: 700,
     display: "flex", alignItems: "center", justifyContent: "center",
-    border: "1px solid rgba(201,168,76,0.25)",
+    border: "1px solid rgba(74,128,240,0.25)",
     flexShrink: 0,
   };
 

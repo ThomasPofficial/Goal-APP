@@ -9,7 +9,7 @@ export default function AuthLayout({
       <div
         className="fixed inset-0 pointer-events-none"
         style={{
-          backgroundImage: `linear-gradient(rgba(201,168,76,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(201,168,76,0.04) 1px, transparent 1px)`,
+          backgroundImage: `linear-gradient(rgba(74,128,240,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(74,128,240,0.04) 1px, transparent 1px)`,
           backgroundSize: "80px 80px",
           maskImage: "radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%)",
         }}

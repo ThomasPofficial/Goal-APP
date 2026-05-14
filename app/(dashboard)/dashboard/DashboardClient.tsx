@@ -184,7 +184,7 @@ export default function DashboardClient({ profile, spaces, traitsDone }: { profi
       <div className="flex-1 min-w-0 space-y-4">
 
         {!traitsDone && (
-          <Link href="/quiz?tab=traits" className="flex items-center justify-between gap-3 rounded-xl px-4 py-3 transition-colors group" style={{ background: "rgba(201,168,76,0.06)", border: "1px solid rgba(201,168,76,0.2)" }}>
+          <Link href="/quiz?tab=traits" className="flex items-center justify-between gap-3 rounded-xl px-4 py-3 transition-colors group" style={{ background: "rgba(74,128,240,0.06)", border: "1px solid rgba(74,128,240,0.2)" }}>
             <div className="flex items-center gap-3">
               <span className="text-lg">✦</span>
               <div>

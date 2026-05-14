@@ -96,8 +96,8 @@ function RequestCard({
     <div className={cn(
       "bg-[#0D1525] border rounded-xl p-4 transition-opacity",
       status === "PENDING"
-        ? "border-[rgba(201,168,76,0.28)]"
-        : "border-[rgba(201,168,76,0.12)] opacity-60"
+        ? "border-[rgba(74,128,240,0.28)]"
+        : "border-[rgba(74,128,240,0.12)] opacity-60"
     )}>
       <div className="flex items-start gap-3">
         <Avatar
@@ -147,7 +147,7 @@ function RequestCard({
               </button>
               <button
                 onClick={() => onRespond(req.id, "DECLINED")}
-                className="px-4 py-1.5 rounded-lg border border-[rgba(201,168,76,0.12)] text-[#8A8898] text-xs hover:border-red-500/30 hover:text-red-400 transition-colors"
+                className="px-4 py-1.5 rounded-lg border border-[rgba(74,128,240,0.12)] text-[#8A8898] text-xs hover:border-red-500/30 hover:text-red-400 transition-colors"
               >
                 Decline
               </button>
