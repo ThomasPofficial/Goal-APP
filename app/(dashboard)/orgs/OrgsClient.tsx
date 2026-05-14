@@ -41,7 +41,6 @@ export default function OrgsClient() {
   const [debouncedQ, setDebouncedQ] = useState("");
   const [category, setCategory] = useState<string | null>(null);
   const [openOnly, setOpenOnly] = useState(false);
-  const [tab, setTab] = useState<"discover" | "mine">("discover");
 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedQ(q), 300);
@@ -67,24 +66,6 @@ export default function OrgsClient() {
 
   return (
     <div>
-      {/* Tabs */}
-      <div className="flex gap-4 mb-5 border-b border-[#2a2a33]">
-        {(["discover", "mine"] as const).map((t) => (
-          <button
-            key={t}
-            onClick={() => setTab(t)}
-            className={cn(
-              "pb-2.5 text-sm font-medium border-b-2 -mb-px transition-colors capitalize",
-              tab === t
-                ? "border-[#c9a84c] text-[#e8e8ec]"
-                : "border-transparent text-[#9898a8] hover:text-[#e8e8ec]"
-            )}
-          >
-            {t === "mine" ? "My organizations" : "Discover"}
-          </button>
-        ))}
-      </div>
-
       {/* Filter bar */}
       <div className="flex items-center gap-3 mb-5 flex-wrap">
         <div className="relative flex-1 min-w-[200px]">
@@ -93,7 +74,7 @@ export default function OrgsClient() {
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Search organizations…"
-            className="w-full pl-9 pr-4 py-2 rounded-lg border border-[#2a2a33] bg-[#16161a] text-sm text-[#e8e8ec] placeholder-[#5a5a6a] focus:outline-none focus:border-[#c9a84c]"
+            className="w-full pl-9 pr-4 py-2 rounded-lg border border-[#2a2a33] bg-[#16161a] text-sm text-[#e8e8ec] placeholder-[#5a5a6a] focus:outline-none focus:border-[#4a80f0]"
           />
         </div>
         <div className="flex gap-1.5 flex-wrap">
@@ -118,7 +99,7 @@ export default function OrgsClient() {
             type="checkbox"
             checked={openOnly}
             onChange={(e) => setOpenOnly(e.target.checked)}
-            className="accent-[#c9a84c]"
+            className="accent-[#4a80f0]"
           />
           Open only
         </label>
@@ -147,11 +128,11 @@ export default function OrgsClient() {
 }
 
 function OrgCard({ org }: { org: Org }) {
-  const color = org.accentColor ?? CATEGORY_COLORS[org.category] ?? "#c9a84c";
+  const color = org.accentColor ?? CATEGORY_COLORS[org.category] ?? "#4a80f0";
 
   return (
     <Link href={`/orgs/${org.id}`} className="block group">
-      <div className="bg-[#16161a] border border-[#2a2a33] rounded-xl overflow-hidden hover:border-[#c9a84c] transition-all">
+      <div className="bg-[#16161a] border border-[#2a2a33] rounded-xl overflow-hidden hover:border-[#4a80f0] transition-all">
         {/* Banner */}
         <div
           className="h-20 flex items-end px-4 pb-3"
