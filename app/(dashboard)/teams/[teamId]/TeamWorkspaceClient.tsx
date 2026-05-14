@@ -131,6 +131,37 @@ export default function TeamWorkspaceClient({
 
   return (
     <div className="flex flex-col h-[calc(100vh-8rem)]">
+      {/* ── Application status banner ─────────────────────────────────────── */}
+      {team.status === "ACTIVE" && (
+        <div className="mb-4 flex items-center gap-3 px-4 py-3 rounded-xl bg-[#111C32] border border-[rgba(201,168,76,0.12)]">
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-[#8A8898]">No active application</p>
+            <p className="text-xs text-[#5A5570]">
+              Browse org projects and apply to unlock the full platform.{" "}
+              <Link href="/orgs" className="text-[#c9a84c] hover:underline">Browse orgs →</Link>
+            </p>
+          </div>
+        </div>
+      )}
+      {team.status === "SUBMITTED" && (
+        <div className="mb-4 flex items-center gap-3 px-4 py-3 rounded-xl bg-blue-950/40 border border-blue-500/20">
+          <div className="w-2 h-2 rounded-full bg-blue-400 animate-pulse flex-shrink-0" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-blue-300">Application under review</p>
+            <p className="text-xs text-blue-400/70">The org is reviewing your team&apos;s application.</p>
+          </div>
+        </div>
+      )}
+      {team.status === "ACCEPTED" && (
+        <div className="mb-4 flex items-center gap-3 px-4 py-3 rounded-xl bg-green-950/40 border border-green-500/20">
+          <div className="w-2 h-2 rounded-full bg-green-400 flex-shrink-0" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-green-300">Accepted — you&apos;re in!</p>
+            <p className="text-xs text-green-400/70">Your team has been accepted. Full workspace unlocked.</p>
+          </div>
+        </div>
+      )}
+
       {/* ── Header ────────────────────────────────────────────────────────── */}
       <div className="flex items-start justify-between mb-4 pb-4 border-b border-[#2a2a33]">
         <div>
@@ -145,6 +176,7 @@ export default function TeamWorkspaceClient({
                 "text-[10px] font-semibold px-1.5 py-0.5 rounded",
                 team.status === "ACTIVE" ? "bg-green-950 text-green-400" :
                 team.status === "SUBMITTED" ? "bg-blue-950 text-blue-400" :
+                team.status === "ACCEPTED" ? "bg-green-950 text-green-400" :
                 "bg-[#1e1e24] text-[#9898a8]"
               )}
             >

@@ -8,7 +8,7 @@ export default async function OrgDetailPage({ params }: { params: Promise<{ orgI
   const session = await auth();
   const { orgId } = await params;
 
-  const [org, myProfile] = await Promise.all([
+  const [org, projects, myProfile] = await Promise.all([
     prisma.org.findUnique({
       where: { id: orgId },
       include: {
@@ -22,6 +22,19 @@ export default async function OrgDetailPage({ params }: { params: Promise<{ orgI
             },
           },
         },
+      },
+    }),
+    prisma.orgProject.findMany({
+      where: { orgId },
+      orderBy: { createdAt: "asc" },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        openSpots: true,
+        requiredSkills: true,
+        deadline: true,
+        status: true,
       },
     }),
     session?.user?.id
@@ -60,6 +73,10 @@ export default async function OrgDetailPage({ params }: { params: Promise<{ orgI
           })),
         })),
       }}
+      projects={projects.map((p) => ({
+        ...p,
+        deadline: p.deadline?.toISOString() ?? null,
+      }))}
       myProfileId={myProfile?.id ?? null}
       myTeamId={myOrgTeam?.id ?? null}
     />

@@ -13,6 +13,7 @@ const navItems = [
   { href: "/orgs", label: "Orgs" },
   { href: "/teams", label: "Teams" },
   { href: "/messages", label: "Messages" },
+  { href: "/notifications", label: "Notifications" },
 ];
 
 interface SidebarProps {
