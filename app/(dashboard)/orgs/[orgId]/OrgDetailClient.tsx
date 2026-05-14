@@ -39,15 +39,25 @@ interface OrgDetail {
   }[];
 }
 
+interface OrgProjectSummary {
+  id: string;
+  title: string;
+  description: string | null;
+  openSpots: number;
+  requiredSkills: string;
+  deadline: string | null;
+  status: string;
+}
+
 const CATEGORY_COLORS: Record<string, string> = {
   ACCELERATOR: "#F59E0B", FELLOWSHIP: "#6366F1", INTERNSHIP: "#14B8A6",
   COMPETITION: "#F97316", BOOTCAMP: "#8B5CF6", RESEARCH: "#06B6D4", CLUB: "#10B981",
 };
 
 export default function OrgDetailClient({
-  org, myProfileId, myTeamId,
+  org, projects, myProfileId, myTeamId,
 }: {
-  org: OrgDetail; myProfileId: string | null; myTeamId: string | null;
+  org: OrgDetail; projects: OrgProjectSummary[]; myProfileId: string | null; myTeamId: string | null;
 }) {
   const [saved, setSaved] = useState(false);
   const [applyStep, setApplyStep] = useState<0 | 1 | 2 | 3>(0);
@@ -131,6 +141,44 @@ export default function OrgDetailClient({
               Team size: <span className="font-medium">{org.minTeamSize}–{org.maxTeamSize}</span>
             </div>
           </div>
+
+          {projects.length > 0 && (
+            <div>
+              <h2 className="text-sm font-semibold text-[#e8e8ec] mb-3">Open Projects</h2>
+              <div className="space-y-2">
+                {projects.map((proj) => {
+                  const skills: string[] = JSON.parse(proj.requiredSkills || "[]");
+                  return (
+                    <Link
+                      key={proj.id}
+                      href={`/orgs/${org.id}/projects/${proj.id}`}
+                      className="block bg-[#16161a] border border-[#2a2a33] hover:border-[#c9a84c]/40 rounded-lg p-3 transition-colors group"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm text-[#e8e8ec] group-hover:text-[#c9a84c] transition-colors">{proj.title}</p>
+                          {proj.description && (
+                            <p className="text-xs text-[#9898a8] mt-0.5 line-clamp-2">{proj.description}</p>
+                          )}
+                          {skills.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-1.5">
+                              {skills.slice(0, 4).map((s) => (
+                                <span key={s} className="text-[10px] px-1.5 py-0.5 rounded-full bg-[#1e1e24] text-[#9898a8] border border-[#2a2a33]">{s}</span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                        <div className="text-right flex-shrink-0">
+                          <p className="text-xs font-semibold text-[#c9a84c]">{proj.openSpots}</p>
+                          <p className="text-[10px] text-[#5a5a6a]">open spots</p>
+                        </div>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {org.opportunities.length > 0 && (
             <div>
