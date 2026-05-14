@@ -44,7 +44,7 @@ export default function SidebarShell({ userName, userEmail, geniusType }: Props)
       {/* Overlay — mobile only */}
       {mobileOpen && (
         <div
-          className="md:hidden fixed inset-0 z-40"
+          className="md:hidden fixed inset-0 z-30"
           style={{ background: "rgba(0,0,0,0.6)" }}
           onClick={() => setMobileOpen(false)}
         />

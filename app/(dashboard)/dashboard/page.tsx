@@ -12,6 +12,7 @@ export default async function DashboardPage() {
   const profile = await prisma.profile.findUnique({
     where: { userId },
     select: {
+      id: true,
       displayName: true,
       handle: true,
       avatarUrl: true,
@@ -22,6 +23,7 @@ export default async function DashboardPage() {
       savedOpportunities: { select: { id: true } },
       teamMemberships: {
         select: {
+          teamId: true,
           team: {
             select: {
               id: true,
@@ -49,6 +51,15 @@ export default async function DashboardPage() {
     return { id: m.team.id, name: m.team.name, hasUnread: !!hasUnread };
   });
 
+  const hasTeam = (profile?.teamMemberships?.length ?? 0) > 0;
+  const hasApplied = hasTeam && profile?.id
+    ? (await prisma.teamApplication.count({
+        where: { team: { members: { some: { profileId: profile.id } } } },
+      })) > 0
+    : false;
+
+  const traitsDone = (profile?.traitLinks?.length ?? 0) > 0;
+
   return (
     <DashboardClient
       profile={{
@@ -61,7 +72,13 @@ export default async function DashboardPage() {
         savedCount: profile?.savedOpportunities.length ?? 0,
       }}
       spaces={spaces}
-      traitsDone={(profile?.traitLinks?.length ?? 0) > 0}
+      traitsDone={traitsDone}
+      tutorial={{
+        hasGeniusType: !!profile?.geniusType,
+        traitsDone,
+        hasTeam,
+        hasApplied,
+      }}
     />
   );
 }
