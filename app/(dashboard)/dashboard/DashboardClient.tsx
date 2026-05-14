@@ -6,6 +6,7 @@ import { format } from "date-fns";
 import { ExternalLink, ChevronRight, Save } from "lucide-react";
 import Avatar from "@/components/ui/Avatar";
 import GeniusTypeBadge from "@/components/ui/GeniusTypeBadge";
+import TutorialWidget from "@/components/ui/TutorialWidget";
 import { GENIUS_TYPES } from "@/lib/geniusTypes";
 import type { GeniusTypeKey } from "@/lib/geniusTypes";
 
@@ -20,6 +21,13 @@ interface ProfileData {
 }
 
 interface SpaceRow { id: string; name: string; hasUnread: boolean; }
+
+interface TutorialData {
+  hasGeniusType: boolean;
+  traitsDone: boolean;
+  hasTeam: boolean;
+  hasApplied: boolean;
+}
 
 interface TickerItem {
   id: string; title: string; category: string; deadline: string | null;
@@ -42,7 +50,7 @@ const card = {
   background: "var(--surface)", border: "1px solid var(--border-md)", borderRadius: "12px",
 };
 
-export default function DashboardClient({ profile, spaces, traitsDone }: { profile: ProfileData; spaces: SpaceRow[]; traitsDone: boolean }) {
+export default function DashboardClient({ profile, spaces, traitsDone, tutorial }: { profile: ProfileData; spaces: SpaceRow[]; traitsDone: boolean; tutorial: TutorialData }) {
   const [activeFilter, setActiveFilter] = useState("ALL");
   const [opportunities, setOpportunities] = useState<OppCard[]>([]);
   const [ticker, setTicker] = useState<TickerItem[]>([]);
@@ -182,6 +190,8 @@ export default function DashboardClient({ profile, spaces, traitsDone }: { profi
 
       {/* Right column */}
       <div className="flex-1 min-w-0 space-y-4">
+
+        <TutorialWidget {...tutorial} />
 
         {!traitsDone && (
           <Link href="/quiz?tab=traits" className="flex items-center justify-between gap-3 rounded-xl px-4 py-3 transition-colors group" style={{ background: "rgba(74,128,240,0.06)", border: "1px solid rgba(74,128,240,0.2)" }}>

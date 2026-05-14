@@ -21,16 +21,18 @@ export default function AccountMenu({ userName, userEmail, geniusType }: Account
   const genius = geniusType ? GENIUS_TYPE_INFO[geniusType] : null;
 
   useEffect(() => {
-    function handleOutside(e: MouseEvent) {
+    function handleOutside(e: MouseEvent | TouchEvent) {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) setOpen(false);
     }
     function handleEscape(e: KeyboardEvent) { if (e.key === "Escape") setOpen(false); }
     if (open) {
-      document.addEventListener("mousedown", handleOutside);
+      document.addEventListener("mousedown", handleOutside as EventListener);
+      document.addEventListener("touchstart", handleOutside as EventListener, { passive: true });
       document.addEventListener("keydown", handleEscape);
     }
     return () => {
-      document.removeEventListener("mousedown", handleOutside);
+      document.removeEventListener("mousedown", handleOutside as EventListener);
+      document.removeEventListener("touchstart", handleOutside as EventListener);
       document.removeEventListener("keydown", handleEscape);
     };
   }, [open]);
