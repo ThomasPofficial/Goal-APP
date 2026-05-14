@@ -335,7 +335,7 @@ export default function MessagesClient({ conversations: initialConvs, myUserId, 
                         onClick={() => { setActiveId(conv.id); setShowThread(true); }}
                         className="w-full flex items-center gap-3 py-2.5 text-left transition-colors"
                         style={{
-                          background: isActive ? "rgba(201,168,76,0.08)" : "transparent",
+                          background: isActive ? "rgba(74,128,240,0.08)" : "transparent",
                           borderLeft: `2px solid ${isActive ? "var(--gold)" : "transparent"}`,
                           paddingLeft: isActive ? "10px" : "12px",
                           paddingRight: "12px",
@@ -447,7 +447,7 @@ export default function MessagesClient({ conversations: initialConvs, myUserId, 
           <div className={`flex-1 flex-col items-center justify-center gap-4 ${showThread ? "flex" : "hidden md:flex"}`} style={{ background: "var(--bg)" }}>
             <div
               className="w-16 h-16 rounded-2xl flex items-center justify-center"
-              style={{ background: "rgba(201,168,76,0.08)", border: "1px solid var(--border-md)" }}
+              style={{ background: "rgba(74,128,240,0.08)", border: "1px solid var(--border-md)" }}
             >
               <Send className="w-7 h-7" style={{ color: "var(--gold)" }} />
             </div>

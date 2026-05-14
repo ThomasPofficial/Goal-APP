@@ -154,7 +154,7 @@ export default function TeamWorkspaceClient({
     <div className="flex flex-col h-[calc(100vh-8rem)]">
       {/* ── Status / message-limit banner ────────────────────────────────── */}
       {team.status === "ACTIVE" && applications.length === 0 && (
-        <div className="mb-4 flex items-center gap-3 px-4 py-3 rounded-xl bg-[#111C32] border border-[rgba(201,168,76,0.12)]">
+        <div className="mb-4 flex items-center gap-3 px-4 py-3 rounded-xl bg-[#111C32] border border-[rgba(74,128,240,0.12)]">
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-[#8A8898]">No active application</p>
             <p className="text-xs text-[#5A5570]">
@@ -381,7 +381,7 @@ export default function TeamWorkspaceClient({
               </div>
             ) : (
               applications.map((app) => (
-                <div key={app.id} className="bg-[#0D1525] border border-[rgba(201,168,76,0.12)] rounded-xl p-4">
+                <div key={app.id} className="bg-[#0D1525] border border-[rgba(74,128,240,0.12)] rounded-xl p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">
                       <Link

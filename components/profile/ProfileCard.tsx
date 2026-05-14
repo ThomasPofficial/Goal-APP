@@ -31,7 +31,7 @@ export default function ProfileCard({
   const initials = getInitials(profile.displayName);
 
   return (
-    <div className="group bg-[#0d0d0e] border border-[#1c1c20] rounded-[10px] p-5 flex flex-col gap-4 shadow-[0_1px_3px_rgba(0,0,0,0.4)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.5),0_0_0_1px_rgba(201,168,76,0.15)] hover:border-[#28282e] transition-all duration-200">
+    <div className="group bg-[#0d0d0e] border border-[#1c1c20] rounded-[10px] p-5 flex flex-col gap-4 shadow-[0_1px_3px_rgba(0,0,0,0.4)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.5),0_0_0_1px_rgba(74,128,240,0.15)] hover:border-[#28282e] transition-all duration-200">
       {/* Header: Avatar + Name */}
       <div className="flex items-start gap-3">
         <div className="w-12 h-12 rounded-full flex-shrink-0 flex items-center justify-center text-sm font-bold bg-[#c9a84c20] text-[#c9a84c] ring-1 ring-[#c9a84c30]">

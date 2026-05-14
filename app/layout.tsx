@@ -1,13 +1,19 @@
 import type { Metadata } from "next";
-import { Cormorant_Garamond, DM_Sans, DM_Mono } from "next/font/google";
+import { Special_Elite, Syne_Mono, DM_Sans, DM_Mono } from "next/font/google";
 import "./globals.css";
 import SessionProvider from "@/components/providers/SessionProvider";
 
-const cormorant = Cormorant_Garamond({
+const specialElite = Special_Elite({
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600"],
-  style: ["normal", "italic"],
+  weight: ["400"],
   variable: "--font-display",
+  display: "swap",
+});
+
+const syneMono = Syne_Mono({
+  subsets: ["latin"],
+  weight: ["400"],
+  variable: "--font-accent",
   display: "swap",
 });
 
@@ -37,7 +43,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${cormorant.variable} ${dmSans.variable} ${dmMono.variable}`}>
+    <html lang="en" className={`${specialElite.variable} ${syneMono.variable} ${dmSans.variable} ${dmMono.variable}`}>
       <body className="antialiased" style={{ background: "var(--bg)", color: "var(--text)" }}>
         <SessionProvider>{children}</SessionProvider>
       </body>

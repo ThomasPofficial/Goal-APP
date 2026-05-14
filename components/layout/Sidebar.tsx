@@ -45,7 +45,7 @@ export default function Sidebar({ userName, userEmail, geniusType, mobileOpen = 
         <span
           className="text-xl font-black tracking-widest uppercase"
           style={{
-            fontFamily: "var(--font-display, 'Cormorant Garamond', sans-serif)",
+            fontFamily: "var(--font-display, 'Special Elite', sans-serif)",
             color: "var(--gold)",
             letterSpacing: "0.15em",
           }}
@@ -84,14 +84,14 @@ export default function Sidebar({ userName, userEmail, geniusType, mobileOpen = 
               )}
               style={{
                 borderLeftColor: active ? "var(--gold)" : "transparent",
-                background: active ? "rgba(201,168,76,0.07)" : "transparent",
+                background: active ? "rgba(74,128,240,0.07)" : "transparent",
                 color: active ? "var(--gold)" : "var(--text2)",
                 fontFamily: "var(--font-body, sans-serif)",
               }}
               onMouseEnter={(e) => {
                 if (!active) {
                   (e.currentTarget as HTMLAnchorElement).style.color = "var(--text)";
-                  (e.currentTarget as HTMLAnchorElement).style.background = "rgba(201,168,76,0.04)";
+                  (e.currentTarget as HTMLAnchorElement).style.background = "rgba(74,128,240,0.04)";
                 }
               }}
               onMouseLeave={(e) => {
