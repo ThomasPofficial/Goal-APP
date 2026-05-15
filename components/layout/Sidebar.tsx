@@ -106,11 +106,13 @@ export default function Sidebar({ userName, userEmail, geniusType, mobileOpen = 
         })}
       </nav>
 
-      <AccountMenu
-        userName={userName}
-        userEmail={userEmail}
-        geniusType={geniusType}
-      />
+      <div className="md:pb-0 pb-[60px]">
+        <AccountMenu
+          userName={userName}
+          userEmail={userEmail}
+          geniusType={geniusType}
+        />
+      </div>
     </aside>
   );
 }
