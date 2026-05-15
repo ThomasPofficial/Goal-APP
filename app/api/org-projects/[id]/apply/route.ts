@@ -33,18 +33,27 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   });
   if (existing) return NextResponse.json({ error: "Already applied" }, { status: 409 });
 
+  const orgProject = await prisma.orgProject.findUnique({
+    where: { id: orgProjectId },
+    include: { org: { select: { autoAccept: true } } },
+  });
+  if (!orgProject) return NextResponse.json({ error: "Project not found" }, { status: 404 });
+
+  const autoAccept = orgProject.org.autoAccept;
+
   const application = await prisma.teamApplication.create({
     data: {
       teamId: parsed.data.teamId,
       orgProjectId,
       whyJoin: parsed.data.whyJoin,
+      ...(autoAccept ? { status: "ACCEPTED", decidedAt: new Date() } : {}),
     },
   });
 
   await prisma.team.update({
     where: { id: parsed.data.teamId },
-    data: { status: "SUBMITTED" },
+    data: { status: autoAccept ? "ACCEPTED" : "SUBMITTED" },
   });
 
-  return NextResponse.json({ application }, { status: 201 });
+  return NextResponse.json({ application, autoAccepted: autoAccept }, { status: 201 });
 }
