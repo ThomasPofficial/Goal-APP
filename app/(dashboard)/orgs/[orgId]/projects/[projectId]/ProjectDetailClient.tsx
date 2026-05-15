@@ -71,15 +71,12 @@ export default function ProjectDetailClient({ project, myProfileId, existingAppl
     return () => clearTimeout(t);
   }, [search]);
 
-  // Dummy teamId used for recruit flow (recruit still requires an existing team)
-  const [recruitTeamId, setRecruitTeamId] = useState("");
-
   const sendRecruit = async (toProfileId: string) => {
-    if (!recruitTeamId || !myProfileId) return;
+    if (!myProfileId) return;
     await fetch(`/api/org-projects/${project.id}/recruit`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ toProfileId, teamId: recruitTeamId, message: recruitMsg }),
+      body: JSON.stringify({ toProfileId, message: recruitMsg }),
     });
     setSentTo((prev) => new Set(prev).add(toProfileId));
     setRecruitingId(null);
@@ -228,12 +225,6 @@ export default function ProjectDetailClient({ project, myProfileId, existingAppl
                           placeholder="Optional message…"
                           rows={2}
                           className="w-full text-xs resize-none rounded-lg border border-[rgba(74,128,240,0.28)] bg-[#111C32] text-[#EAE8E0] placeholder-[#5A5570] px-2 py-1.5 focus:outline-none"
-                        />
-                        <input
-                          value={recruitTeamId}
-                          onChange={(e) => setRecruitTeamId(e.target.value)}
-                          placeholder="Your team ID"
-                          className="w-full text-xs rounded-lg border border-[rgba(74,128,240,0.12)] bg-[#111C32] text-[#EAE8E0] px-2 py-1.5 focus:outline-none"
                         />
                         <div className="flex gap-1">
                           <button

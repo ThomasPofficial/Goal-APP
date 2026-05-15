@@ -5,7 +5,6 @@ import { z } from "zod";
 
 const schema = z.object({
   toProfileId: z.string(),
-  teamId: z.string(),
   message: z.string().max(500).optional(),
 });
 
@@ -20,14 +19,40 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
   const myProfile = await prisma.profile.findUnique({
     where: { userId: session.user.id },
-    select: { id: true },
+    select: { id: true, displayName: true },
   });
   if (!myProfile) return NextResponse.json({ error: "No profile" }, { status: 404 });
 
-  const membership = await prisma.teamMember.findFirst({
-    where: { teamId: parsed.data.teamId, profileId: myProfile.id },
+  const orgProject = await prisma.orgProject.findUnique({
+    where: { id: orgProjectId },
+    include: { org: { select: { id: true } } },
   });
-  if (!membership) return NextResponse.json({ error: "Not on team" }, { status: 403 });
+  if (!orgProject) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+  // Auto-find the user's team for this org, or create a solo one
+  let team = await prisma.team.findFirst({
+    where: {
+      orgId: orgProject.org.id,
+      members: { some: { profileId: myProfile.id } },
+    },
+  });
+
+  if (!team) {
+    team = await prisma.team.create({
+      data: {
+        name: `${myProfile.displayName}'s Team`,
+        orgId: orgProject.org.id,
+        createdById: session.user.id,
+        members: { create: { profileId: myProfile.id, role: "ADMIN" } },
+        conversation: {
+          create: {
+            type: "TEAM",
+            participants: { create: { userId: session.user.id } },
+          },
+        },
+      },
+    });
+  }
 
   const existing = await prisma.recruitmentRequest.findUnique({
     where: {
@@ -45,7 +70,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       orgProjectId,
       fromProfileId: myProfile.id,
       toProfileId: parsed.data.toProfileId,
-      teamId: parsed.data.teamId,
+      teamId: team.id,
       message: parsed.data.message,
     },
   });
