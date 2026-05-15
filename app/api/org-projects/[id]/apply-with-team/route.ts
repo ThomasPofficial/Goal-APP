@@ -41,6 +41,16 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   const { memberProfileIds, whyJoin } = parsed.data;
   const autoAccept = orgProject.org.autoAccept;
 
+  // Resolve userIds for selected teammates so they get conversation access
+  const memberProfiles = memberProfileIds.length
+    ? await prisma.profile.findMany({
+        where: { id: { in: memberProfileIds } },
+        select: { id: true, userId: true },
+      })
+    : [];
+
+  const allUserIds = [session.user.id, ...memberProfiles.map((p) => p.userId)];
+
   const team = await prisma.team.create({
     data: {
       name: `${myProfile.displayName}'s Team`,
@@ -52,7 +62,14 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
           ...memberProfileIds.map((pid) => ({ profileId: pid, role: "MEMBER" as const })),
         ],
       },
-      conversation: { create: { type: "TEAM" } },
+      conversation: {
+        create: {
+          type: "TEAM",
+          participants: {
+            create: allUserIds.map((userId) => ({ userId })),
+          },
+        },
+      },
     },
   });
 
