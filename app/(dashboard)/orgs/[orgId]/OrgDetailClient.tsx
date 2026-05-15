@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { format, differenceInDays } from "date-fns";
-import { ExternalLink, Save, Users, Calendar, MapPin } from "lucide-react";
+import { format, differenceInDays, formatDistanceToNow } from "date-fns";
+import { ExternalLink, Save, Users, MapPin, CheckCircle2, XCircle, Clock } from "lucide-react";
 import Avatar from "@/components/ui/Avatar";
 import GeniusTypeBadge from "@/components/ui/GeniusTypeBadge";
 import type { GeniusTypeKey } from "@/lib/geniusTypes";
@@ -49,18 +49,39 @@ interface OrgProjectSummary {
   status: string;
 }
 
+interface AdminApplication {
+  id: string;
+  status: string;
+  submittedAt: string;
+  orgProject: { id: string; title: string };
+  team: {
+    id: string;
+    name: string;
+    members: {
+      id: string;
+      role: string;
+      profile: { id: string; displayName: string; avatarUrl: string | null; geniusType: GeniusTypeKey | null; handle: string | null } | null;
+    }[];
+  };
+}
+
 const CATEGORY_COLORS: Record<string, string> = {
   ACCELERATOR: "#F59E0B", FELLOWSHIP: "#6366F1", INTERNSHIP: "#14B8A6",
   COMPETITION: "#F97316", BOOTCAMP: "#8B5CF6", RESEARCH: "#06B6D4", CLUB: "#10B981",
 };
 
 export default function OrgDetailClient({
-  org, projects, myProfileId, myTeamId,
+  org, projects, myProfileId, myTeamId, isAdmin, applications,
 }: {
   org: OrgDetail; projects: OrgProjectSummary[]; myProfileId: string | null; myTeamId: string | null;
+  isAdmin: boolean; applications: AdminApplication[];
 }) {
   const [saved, setSaved] = useState(false);
   const [applyStep, setApplyStep] = useState<0 | 1 | 2 | 3>(0);
+  const [adminTab, setAdminTab] = useState<"overview" | "applications">("overview");
+  const [appStatuses, setAppStatuses] = useState<Record<string, string>>(
+    () => Object.fromEntries(applications.map((a) => [a.id, a.status]))
+  );
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
   const [whyJoin, setWhyJoin] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -101,7 +122,35 @@ export default function OrgDetailClient({
         </div>
       </div>
 
-      <div className="flex gap-6">
+      {/* Admin tab switcher */}
+      {isAdmin && (
+        <div className="flex gap-1 mb-5 border-b" style={{ borderColor: "var(--border)" }}>
+          {(["overview", "applications"] as const).map((t) => (
+            <button
+              key={t}
+              onClick={() => setAdminTab(t)}
+              className="pb-2.5 px-1 text-sm font-medium border-b-2 -mb-px transition-colors capitalize"
+              style={{
+                borderBottomColor: adminTab === t ? "var(--blue)" : "transparent",
+                color: adminTab === t ? "var(--text)" : "var(--text2)",
+              }}
+            >
+              {t === "applications" ? `Applications${applications.length ? ` (${applications.length})` : ""}` : "Overview"}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Admin: applications review panel */}
+      {isAdmin && adminTab === "applications" && (
+        <AdminApplicationsPanel
+          applications={applications}
+          statuses={appStatuses}
+          onDecision={(id, status) => setAppStatuses((prev) => ({ ...prev, [id]: status }))}
+        />
+      )}
+
+      <div className={cn("flex gap-6", isAdmin && adminTab === "applications" && "hidden")}>
         {/* ── Left content ─────────────────────────────────────── */}
         <div className="flex-1 min-w-0 space-y-6">
           {org.description && (
@@ -276,6 +325,138 @@ export default function OrgDetailClient({
             </button>
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+function AdminApplicationsPanel({
+  applications, statuses, onDecision,
+}: {
+  applications: AdminApplication[];
+  statuses: Record<string, string>;
+  onDecision: (id: string, status: string) => void;
+}) {
+  const decide = async (id: string, status: "ACCEPTED" | "REJECTED") => {
+    onDecision(id, status);
+    await fetch(`/api/team-applications/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status }),
+    });
+  };
+
+  if (applications.length === 0) {
+    return (
+      <div className="text-center py-16 rounded-xl" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
+        <Clock className="w-7 h-7 mx-auto mb-3" style={{ color: "var(--muted)" }} />
+        <p className="text-sm font-medium" style={{ color: "var(--text2)" }}>No applications yet</p>
+        <p className="text-xs mt-1" style={{ color: "var(--muted)" }}>Applications from teams will appear here</p>
+      </div>
+    );
+  }
+
+  const pending = applications.filter((a) => statuses[a.id] === "PENDING");
+  const decided = applications.filter((a) => statuses[a.id] !== "PENDING");
+
+  return (
+    <div className="space-y-6 mb-6">
+      {pending.length > 0 && (
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: "var(--text2)", fontFamily: "var(--font-mono, monospace)" }}>
+            Pending · {pending.length}
+          </p>
+          <div className="space-y-3">
+            {pending.map((app) => (
+              <ApplicationCard key={app.id} app={app} status={statuses[app.id]} onDecide={decide} />
+            ))}
+          </div>
+        </div>
+      )}
+      {decided.length > 0 && (
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: "var(--text2)", fontFamily: "var(--font-mono, monospace)" }}>
+            Decided · {decided.length}
+          </p>
+          <div className="space-y-3">
+            {decided.map((app) => (
+              <ApplicationCard key={app.id} app={app} status={statuses[app.id]} onDecide={decide} />
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ApplicationCard({
+  app, status, onDecide,
+}: {
+  app: AdminApplication;
+  status: string;
+  onDecide: (id: string, s: "ACCEPTED" | "REJECTED") => void;
+}) {
+  return (
+    <div
+      className="rounded-xl p-4"
+      style={{
+        background: "var(--surface)",
+        border: `1px solid ${status === "ACCEPTED" ? "rgba(74,222,128,0.25)" : status === "REJECTED" ? "rgba(248,113,113,0.2)" : "var(--border-md)"}`,
+        opacity: status !== "PENDING" ? 0.7 : 1,
+      }}
+    >
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
+            <Link href={`/teams/${app.team.id}`} className="font-semibold text-sm hover:underline" style={{ color: "var(--text)" }}>
+              {app.team.name}
+            </Link>
+            <span className="text-xs px-1.5 py-0.5 rounded" style={{ background: "rgba(74,128,240,0.1)", color: "var(--blue)", fontFamily: "var(--font-mono, monospace)" }}>
+              {app.orgProject.title}
+            </span>
+            <span className="text-xs" style={{ color: "var(--muted)" }}>
+              {formatDistanceToNow(new Date(app.submittedAt), { addSuffix: true })}
+            </span>
+          </div>
+          <div className="flex flex-wrap gap-2 mt-2">
+            {app.team.members.map((m) => m.profile && (
+              <div key={m.id} className="flex items-center gap-1.5">
+                <Avatar src={m.profile.avatarUrl} name={m.profile.displayName} geniusType={m.profile.geniusType} size={22} />
+                <span className="text-xs" style={{ color: "var(--text2)" }}>{m.profile.displayName}</span>
+                {m.profile.geniusType && <GeniusTypeBadge type={m.profile.geniusType} size="sm" />}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {status === "PENDING" ? (
+          <div className="flex gap-2 flex-shrink-0">
+            <button
+              onClick={() => onDecide(app.id, "ACCEPTED")}
+              className="flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors"
+              style={{ background: "rgba(74,222,128,0.12)", color: "#4ade80", border: "1px solid rgba(74,222,128,0.25)" }}
+            >
+              <CheckCircle2 className="w-3.5 h-3.5" /> Accept
+            </button>
+            <button
+              onClick={() => onDecide(app.id, "REJECTED")}
+              className="flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors"
+              style={{ background: "rgba(248,113,113,0.08)", color: "#f87171", border: "1px solid rgba(248,113,113,0.2)" }}
+            >
+              <XCircle className="w-3.5 h-3.5" /> Reject
+            </button>
+          </div>
+        ) : (
+          <span
+            className="text-xs font-semibold px-2.5 py-1 rounded-full flex-shrink-0"
+            style={{
+              background: status === "ACCEPTED" ? "rgba(74,222,128,0.12)" : "rgba(248,113,113,0.08)",
+              color: status === "ACCEPTED" ? "#4ade80" : "#f87171",
+            }}
+          >
+            {status === "ACCEPTED" ? "Accepted" : "Rejected"}
+          </span>
+        )}
       </div>
     </div>
   );
