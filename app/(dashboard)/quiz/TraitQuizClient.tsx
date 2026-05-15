@@ -124,7 +124,7 @@ export default function TraitQuizClient({ alreadyCompleted, existingTraits, exis
     return (
       <div className="max-w-lg mx-auto py-12 text-center">
         <div className="bg-[#0d0d0e] border border-[#1c1c20] rounded-xl p-10">
-          <Loader2 className="w-8 h-8 text-[#c9a84c] animate-spin mx-auto mb-4" />
+          <Loader2 className="w-8 h-8 text-[#4a80f0] animate-spin mx-auto mb-4" />
           <h2 className="text-sm font-semibold text-[#eaeaea] mb-2">
             Analyzing your answers
           </h2>
@@ -141,11 +141,11 @@ export default function TraitQuizClient({ alreadyCompleted, existingTraits, exis
     return (
       <div className="max-w-lg mx-auto py-8">
         <div className="bg-[#0d0d0e] border border-[#1c1c20] rounded-xl overflow-hidden">
-          <div className="h-1 w-full bg-gradient-to-r from-[#7B61FF] via-[#c9a84c] to-[#4ECDC4]" />
+          <div className="h-1 w-full bg-gradient-to-r from-[#7B61FF] via-[#4a80f0] to-[#4ECDC4]" />
 
           <div className="p-6">
             <div className="flex items-center gap-2 mb-5">
-              <Sparkles className="w-4 h-4 text-[#c9a84c]" />
+              <Sparkles className="w-4 h-4 text-[#4a80f0]" />
               <span className="text-xs font-semibold text-[#909098] uppercase tracking-wider">
                 Your Recommended Traits
               </span>
@@ -214,7 +214,7 @@ export default function TraitQuizClient({ alreadyCompleted, existingTraits, exis
                 </div>
                 <button
                   onClick={() => router.push("/profile")}
-                  className="w-full flex items-center justify-center gap-2 bg-[#c9a84c] hover:bg-[#e3c06a] text-[#080809] font-semibold rounded-md py-2.5 text-sm transition-colors"
+                  className="w-full flex items-center justify-center gap-2 bg-[#4a80f0] hover:bg-[#6a9fff] text-[#080809] font-semibold rounded-md py-2.5 text-sm transition-colors"
                 >
                   View Profile
                   <ArrowRight className="w-4 h-4" />
@@ -231,7 +231,7 @@ export default function TraitQuizClient({ alreadyCompleted, existingTraits, exis
                 <button
                   onClick={handleApply}
                   disabled={applying}
-                  className="w-full flex items-center justify-center gap-2 bg-[#c9a84c] hover:bg-[#e3c06a] text-[#080809] font-semibold rounded-md py-2.5 text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full flex items-center justify-center gap-2 bg-[#4a80f0] hover:bg-[#6a9fff] text-[#080809] font-semibold rounded-md py-2.5 text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {applying ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
@@ -273,7 +273,7 @@ export default function TraitQuizClient({ alreadyCompleted, existingTraits, exis
     return (
       <div className="max-w-lg mx-auto py-8">
         <div className="bg-[#0d0d0e] border border-[#1c1c20] rounded-xl overflow-hidden">
-          <div className="h-1 w-full bg-gradient-to-r from-[#7B61FF] via-[#c9a84c] to-[#4ECDC4]" />
+          <div className="h-1 w-full bg-gradient-to-r from-[#7B61FF] via-[#4a80f0] to-[#4ECDC4]" />
           <div className="p-6">
             <div className="flex items-center gap-2 mb-5">
               <CheckCircle2 className="w-4 h-4 text-[#4ADE80]" />
@@ -325,7 +325,7 @@ export default function TraitQuizClient({ alreadyCompleted, existingTraits, exis
             <div className="space-y-2">
               <button
                 onClick={() => router.push("/profile")}
-                className="w-full flex items-center justify-center gap-2 bg-[#c9a84c] hover:bg-[#e3c06a] text-[#080809] font-semibold rounded-md py-2.5 text-sm transition-colors"
+                className="w-full flex items-center justify-center gap-2 bg-[#4a80f0] hover:bg-[#6a9fff] text-[#080809] font-semibold rounded-md py-2.5 text-sm transition-colors"
               >
                 View Profile
                 <ArrowRight className="w-4 h-4" />
@@ -373,7 +373,7 @@ export default function TraitQuizClient({ alreadyCompleted, existingTraits, exis
         </div>
         <div className="h-1 bg-[#1c1c20] rounded-full overflow-hidden">
           <div
-            className="h-full bg-[#c9a84c] rounded-full transition-all duration-300"
+            className="h-full bg-[#4a80f0] rounded-full transition-all duration-300"
             style={{ width: `${progress}%` }}
           />
         </div>
@@ -392,9 +392,9 @@ export default function TraitQuizClient({ alreadyCompleted, existingTraits, exis
                 key={cluster}
                 className={`h-1 rounded-full transition-all duration-300 ${
                   allAnswered
-                    ? "bg-[#c9a84c]"
+                    ? "bg-[#4a80f0]"
                     : isCurrent
-                    ? "bg-[#c9a84c60]"
+                    ? "bg-[#4a80f060]"
                     : "bg-[#1c1c20]"
                 }`}
                 style={{ width: `${100 / clusters.length - 2}%` }}
@@ -421,14 +421,14 @@ export default function TraitQuizClient({ alreadyCompleted, existingTraits, exis
               onClick={() => setSelected(i)}
               className={`w-full text-left px-4 py-3.5 rounded-lg border text-sm leading-relaxed transition-all ${
                 selected === i
-                  ? "border-[#c9a84c] bg-[#c9a84c10] text-[#eaeaea]"
+                  ? "border-[#4a80f0] bg-[#4a80f010] text-[#eaeaea]"
                   : "border-[#1c1c20] text-[#909098] hover:border-[#28282e] hover:text-[#eaeaea] hover:bg-[#131315]"
               }`}
             >
               <span
                 className={`inline-flex items-center justify-center w-5 h-5 rounded-full border text-xs mr-3 flex-shrink-0 align-middle ${
                   selected === i
-                    ? "border-[#c9a84c] bg-[#c9a84c] text-[#080809]"
+                    ? "border-[#4a80f0] bg-[#4a80f0] text-[#080809]"
                     : "border-[#28282e]"
                 }`}
               >
@@ -461,7 +461,7 @@ export default function TraitQuizClient({ alreadyCompleted, existingTraits, exis
           <button
             onClick={handleNext}
             disabled={selected === null}
-            className="flex items-center gap-2 bg-[#c9a84c] hover:bg-[#e3c06a] text-[#080809] font-semibold text-sm rounded-md px-5 py-2.5 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 bg-[#4a80f0] hover:bg-[#6a9fff] text-[#080809] font-semibold text-sm rounded-md px-5 py-2.5 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {isLastQuestion ? "Analyze my traits" : "Next"}
             <ArrowRight className="w-4 h-4" />

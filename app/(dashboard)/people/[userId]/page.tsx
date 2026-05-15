@@ -47,7 +47,7 @@ export default async function PersonProfilePage({
         {/* Header */}
         <div className="p-6 border-b border-[#1c1c20]">
           <div className="flex items-start gap-4">
-            <div className="w-16 h-16 rounded-full flex-shrink-0 flex items-center justify-center text-lg font-bold bg-[#c9a84c20] text-[#c9a84c] ring-2 ring-[#c9a84c30]">
+            <div className="w-16 h-16 rounded-full flex-shrink-0 flex items-center justify-center text-lg font-bold bg-[#4a80f020] text-[#4a80f0] ring-2 ring-[#4a80f030]">
               {profile.avatarUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -70,7 +70,7 @@ export default async function PersonProfilePage({
                 <div className="flex gap-2 mt-3">
                   <Link
                     href={`/messages?userId=${userId}`}
-                    className="text-xs font-medium px-3 py-1.5 bg-[#c9a84c] hover:bg-[#e3c06a] text-[#080809] rounded-md transition-colors"
+                    className="text-xs font-medium px-3 py-1.5 bg-[#4a80f0] hover:bg-[#6a9fff] text-[#080809] rounded-md transition-colors"
                   >
                     Message
                   </Link>

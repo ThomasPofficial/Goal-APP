@@ -110,7 +110,7 @@ function RequestCard({
           <div className="flex items-center gap-2 flex-wrap">
             <Link
               href={`/profile/${req.fromProfile.handle ?? req.fromProfile.id}`}
-              className="font-medium text-sm text-[#EAE8E0] hover:text-[#c9a84c] transition-colors"
+              className="font-medium text-sm text-[#EAE8E0] hover:text-[#4a80f0] transition-colors"
             >
               {req.fromProfile.displayName}
             </Link>
@@ -123,10 +123,10 @@ function RequestCard({
           </div>
           <p className="text-xs text-[#8A8898] mt-0.5">
             Invited you to join{" "}
-            <span className="text-[#c9a84c]">{req.team.name}</span> for{" "}
+            <span className="text-[#4a80f0]">{req.team.name}</span> for{" "}
             <Link
               href={`/orgs/${req.orgProject.orgId}/projects/${req.orgProject.id}`}
-              className="text-[#c9a84c] hover:underline"
+              className="text-[#4a80f0] hover:underline"
             >
               {req.orgProject.title}
             </Link>{" "}
@@ -141,7 +141,7 @@ function RequestCard({
             <div className="flex gap-2 mt-3">
               <button
                 onClick={() => onRespond(req.id, "ACCEPTED")}
-                className="px-4 py-1.5 rounded-lg bg-[#c9a84c] text-[#05080F] text-xs font-semibold hover:bg-[#e3c06a] transition-colors"
+                className="px-4 py-1.5 rounded-lg bg-[#4a80f0] text-[#05080F] text-xs font-semibold hover:bg-[#6a9fff] transition-colors"
               >
                 Accept
               </button>

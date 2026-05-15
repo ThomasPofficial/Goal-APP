@@ -199,7 +199,7 @@ export default function SmartSearch({ allTraits }: Props) {
             onClick={() => setGenius("")}
             className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
               !geniusType
-                ? "bg-[#c9a84c] text-[#080809]"
+                ? "bg-[#4a80f0] text-[#080809]"
                 : "bg-[#131315] text-[#909098] hover:text-[#eaeaea] border border-[#1c1c20]"
             }`}
           >
@@ -474,7 +474,7 @@ function SearchResultCard({ result }: { result: SearchResult }) {
 
       {/* Header */}
       <div className="flex items-start gap-3">
-        <div className="w-12 h-12 rounded-full flex-shrink-0 flex items-center justify-center text-sm font-bold bg-[#c9a84c20] text-[#c9a84c] ring-1 ring-[#c9a84c30]">
+        <div className="w-12 h-12 rounded-full flex-shrink-0 flex items-center justify-center text-sm font-bold bg-[#4a80f020] text-[#4a80f0] ring-1 ring-[#4a80f030]">
           {result.avatarUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -545,7 +545,7 @@ function SearchResultCard({ result }: { result: SearchResult }) {
 
       {/* Match reason */}
       <div className="mt-auto pt-1 space-y-2">
-        <p className="text-[11px] text-[#c9a84c] bg-[#c9a84c10] border border-[#c9a84c20] rounded px-2 py-1 leading-relaxed">
+        <p className="text-[11px] text-[#4a80f0] bg-[#4a80f010] border border-[#4a80f020] rounded px-2 py-1 leading-relaxed">
           {result.matchReason}
         </p>
 

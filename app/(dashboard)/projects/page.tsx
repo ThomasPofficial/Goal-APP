@@ -30,7 +30,7 @@ export default async function ProjectsPage() {
         </div>
         <Link
           href="/projects/new"
-          className="inline-flex items-center gap-1.5 text-sm font-medium bg-[#c9a84c] hover:bg-[#e3c06a] text-[#080809] rounded-md px-4 py-2 transition-colors"
+          className="inline-flex items-center gap-1.5 text-sm font-medium bg-[#4a80f0] hover:bg-[#6a9fff] text-[#080809] rounded-md px-4 py-2 transition-colors"
         >
           <Plus className="w-4 h-4" />
           New Project
@@ -45,7 +45,7 @@ export default async function ProjectsPage() {
           </p>
           <Link
             href="/projects/new"
-            className="text-sm text-[#c9a84c] hover:text-[#e3c06a]"
+            className="text-sm text-[#4a80f0] hover:text-[#6a9fff]"
           >
             Create your first project →
           </Link>
@@ -109,17 +109,17 @@ function ProjectRow({
     >
       <div
         className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
-          isCompleted ? "bg-[#4ADE8015]" : "bg-[#c9a84c15]"
+          isCompleted ? "bg-[#4ADE8015]" : "bg-[#4a80f015]"
         }`}
       >
         {isCompleted ? (
           <Check className="w-4 h-4 text-[#4ADE80]" />
         ) : (
-          <FolderOpen className="w-4 h-4 text-[#c9a84c]" />
+          <FolderOpen className="w-4 h-4 text-[#4a80f0]" />
         )}
       </div>
       <div className="flex-1 min-w-0">
-        <div className="text-sm font-semibold text-[#eaeaea] truncate group-hover:text-[#c9a84c] transition-colors">
+        <div className="text-sm font-semibold text-[#eaeaea] truncate group-hover:text-[#4a80f0] transition-colors">
           {project.name}
           {isOwner && (
             <span className="ml-2 text-[10px] text-[#58586a] font-normal">

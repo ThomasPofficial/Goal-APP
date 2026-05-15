@@ -46,11 +46,10 @@ export default function Sidebar({ userName, userEmail, geniusType, mobileOpen = 
           className="text-xl font-black tracking-widest uppercase"
           style={{
             fontFamily: "var(--font-display, 'Special Elite', sans-serif)",
-            color: "var(--gold)",
             letterSpacing: "0.15em",
           }}
         >
-          NIVARRO
+          <span style={{ color: "var(--text)" }}>Ni</span><span style={{ color: "var(--blue)" }}>varro</span>
         </span>
         <button
           onClick={onMobileClose}

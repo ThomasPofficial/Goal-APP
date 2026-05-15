@@ -111,7 +111,7 @@ export default function QuizClient({ alreadyCompleted, existingType }: Props) {
             <div className="space-y-2">
               <button
                 onClick={() => router.push("/quiz?tab=traits")}
-                className="w-full flex items-center justify-center gap-2 bg-[#c9a84c] hover:bg-[#e3c06a] text-[#0f0f11] font-semibold rounded-md py-2.5 text-sm transition-colors"
+                className="w-full flex items-center justify-center gap-2 bg-[#4a80f0] hover:bg-[#6a9fff] text-[#0f0f11] font-semibold rounded-md py-2.5 text-sm transition-colors"
               >
                 Next: Take Traits Quiz
                 <ArrowRight className="w-4 h-4" />
@@ -162,7 +162,7 @@ export default function QuizClient({ alreadyCompleted, existingType }: Props) {
         </div>
         <div className="h-1 bg-[#1c1c20] rounded-full overflow-hidden">
           <div
-            className="h-full bg-[#c9a84c] rounded-full transition-all duration-300"
+            className="h-full bg-[#4a80f0] rounded-full transition-all duration-300"
             style={{ width: `${progress}%` }}
           />
         </div>
@@ -184,14 +184,14 @@ export default function QuizClient({ alreadyCompleted, existingType }: Props) {
               onClick={() => handleSelect(option.type)}
               className={`w-full text-left px-4 py-3.5 rounded-lg border text-sm leading-relaxed transition-all ${
                 selected === option.type
-                  ? "border-[#c9a84c] bg-[#c9a84c10] text-[#eaeaea]"
+                  ? "border-[#4a80f0] bg-[#4a80f010] text-[#eaeaea]"
                   : "border-[#1c1c20] text-[#909098] hover:border-[#28282e] hover:text-[#eaeaea] hover:bg-[#131315]"
               }`}
             >
               <span
                 className={`inline-flex items-center justify-center w-5 h-5 rounded-full border text-xs mr-3 flex-shrink-0 align-middle ${
                   selected === option.type
-                    ? "border-[#c9a84c] bg-[#c9a84c] text-[#080809]"
+                    ? "border-[#4a80f0] bg-[#4a80f0] text-[#080809]"
                     : "border-[#28282e]"
                 }`}
               >
@@ -206,7 +206,7 @@ export default function QuizClient({ alreadyCompleted, existingType }: Props) {
           <button
             onClick={handleNext}
             disabled={!selected || saving}
-            className="flex items-center gap-2 bg-[#c9a84c] hover:bg-[#e3c06a] text-[#080809] font-semibold text-sm rounded-md px-5 py-2.5 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 bg-[#4a80f0] hover:bg-[#6a9fff] text-[#080809] font-semibold text-sm rounded-md px-5 py-2.5 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {saving ? (
               <Loader2 className="w-4 h-4 animate-spin" />

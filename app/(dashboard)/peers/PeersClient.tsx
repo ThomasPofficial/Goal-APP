@@ -138,8 +138,8 @@ export default function PeersClient() {
                 className={cn(
                   "w-10 h-8 rounded-lg text-xs font-medium border transition-all",
                   selectedGrades.includes(g)
-                    ? "bg-[#c9a84c] border-[#c9a84c] text-[#0f0f11]"
-                    : "border-[#2a2a33] text-[#9898a8] hover:border-[#c9a84c]"
+                    ? "bg-[#4a80f0] border-[#4a80f0] text-[#0f0f11]"
+                    : "border-[#2a2a33] text-[#9898a8] hover:border-[#4a80f0]"
                 )}
               >
                 {g}
@@ -151,7 +151,7 @@ export default function PeersClient() {
         {activeFilters > 0 && (
           <button
             onClick={() => { setSelectedTypes([]); setSelectedGrades([]); }}
-            className="text-xs text-[#5a5a6a] hover:text-[#c9a84c] transition-colors"
+            className="text-xs text-[#5a5a6a] hover:text-[#4a80f0] transition-colors"
           >
             Clear all filters
           </button>
@@ -167,7 +167,7 @@ export default function PeersClient() {
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Search by name, handle, or school…"
-            className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-[#2a2a33] bg-[#16161a] text-sm text-[#e8e8ec] placeholder-[#5a5a6a] focus:outline-none focus:border-[#c9a84c] transition-colors"
+            className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-[#2a2a33] bg-[#16161a] text-sm text-[#e8e8ec] placeholder-[#5a5a6a] focus:outline-none focus:border-[#4a80f0] transition-colors"
           />
           {q && (
             <button onClick={() => setQ("")} className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -215,7 +215,7 @@ export default function PeersClient() {
       {/* ── Group FAB ─────────────────────────────────────────── */}
       <button
         onClick={() => setShowGroupModal(true)}
-        className="fixed bottom-8 right-8 w-12 h-12 rounded-full bg-[#c9a84c] hover:bg-[#e3c06a] text-[#0f0f11] flex items-center justify-center shadow-lg transition-colors z-30"
+        className="fixed bottom-8 right-8 w-12 h-12 rounded-full bg-[#4a80f0] hover:bg-[#6a9fff] text-[#0f0f11] flex items-center justify-center shadow-lg transition-colors z-30"
         title="Start group conversation"
       >
         <Plus className="w-5 h-5" />
@@ -240,14 +240,14 @@ function StudentCard({
 }) {
   return (
     <div
-      className="bg-[#16161a] border border-[#2a2a33] rounded-xl p-4 cursor-pointer hover:border-[#c9a84c] transition-all relative group"
+      className="bg-[#16161a] border border-[#2a2a33] rounded-xl p-4 cursor-pointer hover:border-[#4a80f0] transition-all relative group"
       onClick={onClick}
     >
       <button
         onClick={(e) => { e.stopPropagation(); onSave(); }}
         className={cn(
           "absolute top-3 right-3 p-1 rounded transition-colors",
-          saved ? "text-[#c9a84c]" : "text-[#2a2a33] group-hover:text-[#5a5a6a]"
+          saved ? "text-[#4a80f0]" : "text-[#2a2a33] group-hover:text-[#5a5a6a]"
         )}
       >
         <Heart className="w-4 h-4" fill={saved ? "currentColor" : "none"} />
@@ -346,7 +346,7 @@ function StudentPanel({
         <div className="space-y-2">
           <Link
             href={`/messages?dm=${peer.userId}`}
-            className="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg bg-[#c9a84c] hover:bg-[#e3c06a] text-[#0f0f11] text-sm font-semibold transition-colors"
+            className="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg bg-[#4a80f0] hover:bg-[#6a9fff] text-[#0f0f11] text-sm font-semibold transition-colors"
           >
             Message
           </Link>
@@ -355,8 +355,8 @@ function StudentPanel({
             className={cn(
               "flex items-center justify-center gap-2 w-full py-2.5 rounded-lg border text-sm font-medium transition-colors",
               saved
-                ? "border-[#c9a84c] text-[#c9a84c] bg-[#c9a84c10]"
-                : "border-[#2a2a33] text-[#9898a8] hover:border-[#c9a84c] hover:text-[#c9a84c]"
+                ? "border-[#4a80f0] text-[#4a80f0] bg-[#4a80f010]"
+                : "border-[#2a2a33] text-[#9898a8] hover:border-[#4a80f0] hover:text-[#4a80f0]"
             )}
           >
             <Heart className="w-4 h-4" fill={saved ? "currentColor" : "none"} />
@@ -436,7 +436,7 @@ function GroupConversationModal({ peers, onClose }: { peers: Peer[]; onClose: ()
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Search peers…"
-            className="w-full px-3 py-2 text-sm rounded-lg border border-[#2a2a33] bg-transparent text-[#e8e8ec] placeholder-[#5a5a6a] focus:outline-none focus:border-[#c9a84c]"
+            className="w-full px-3 py-2 text-sm rounded-lg border border-[#2a2a33] bg-transparent text-[#e8e8ec] placeholder-[#5a5a6a] focus:outline-none focus:border-[#4a80f0]"
           />
           <div className="mt-2 max-h-48 overflow-y-auto space-y-1">
             {filtered.slice(0, 20).map((p) => (
@@ -457,7 +457,7 @@ function GroupConversationModal({ peers, onClose }: { peers: Peer[]; onClose: ()
           <button
             onClick={start}
             disabled={selected.length === 0 || creating}
-            className="w-full py-2.5 rounded-lg text-sm font-semibold bg-[#c9a84c] hover:bg-[#e3c06a] text-[#0f0f11] transition-colors disabled:opacity-40"
+            className="w-full py-2.5 rounded-lg text-sm font-semibold bg-[#4a80f0] hover:bg-[#6a9fff] text-[#0f0f11] transition-colors disabled:opacity-40"
           >
             {creating ? "Starting…" : `Start conversation${selected.length > 0 ? ` with ${selected.length}` : ""}`}
           </button>

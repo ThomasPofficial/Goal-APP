@@ -107,7 +107,7 @@ export default function ProfileClient({ profile, isOwn }: Props) {
           {isOwn && (
             <button
               onClick={() => setEditing(true)}
-              className="shrink-0 px-4 py-2 text-sm font-medium rounded-lg border border-[#2a2a33] text-[#9898a8] hover:border-[#c9a84c] hover:text-[#c9a84c] transition-colors"
+              className="shrink-0 px-4 py-2 text-sm font-medium rounded-lg border border-[#2a2a33] text-[#9898a8] hover:border-[#4a80f0] hover:text-[#4a80f0] transition-colors"
             >
               Edit
             </button>
@@ -132,9 +132,9 @@ export default function ProfileClient({ profile, isOwn }: Props) {
                 key={tag}
                 className="px-3 py-1 rounded-full text-sm"
                 style={{
-                  backgroundColor: `${gt?.color ?? "#c9a84c"}18`,
-                  color: gt?.color ?? "#c9a84c",
-                  border: `1px solid ${gt?.color ?? "#c9a84c"}30`,
+                  backgroundColor: `${gt?.color ?? "#4a80f0"}18`,
+                  color: gt?.color ?? "#4a80f0",
+                  border: `1px solid ${gt?.color ?? "#4a80f0"}30`,
                 }}
               >
                 {tag}
@@ -160,7 +160,7 @@ export default function ProfileClient({ profile, isOwn }: Props) {
                 <span className="px-2 py-0.5 bg-[#7B61FF15] text-[#7B61FF] border border-[#7B61FF30] rounded-full text-xs">First-gen</span>
               )}
               {profile.isHomeschooled && (
-                <span className="px-2 py-0.5 bg-[#c9a84c15] text-[#c9a84c] border border-[#c9a84c30] rounded-full text-xs">Homeschooled</span>
+                <span className="px-2 py-0.5 bg-[#4a80f015] text-[#4a80f0] border border-[#4a80f030] rounded-full text-xs">Homeschooled</span>
               )}
               {profile.isInternational && (
                 <span className="px-2 py-0.5 bg-[#45B7D115] text-[#45B7D1] border border-[#45B7D130] rounded-full text-xs">International</span>
@@ -192,7 +192,7 @@ export default function ProfileClient({ profile, isOwn }: Props) {
                   type="text"
                   value={form.displayName}
                   onChange={(e) => setForm((f) => ({ ...f, displayName: e.target.value }))}
-                  className="w-full rounded-lg border border-[#2a2a33] bg-[#1e1e24] text-[#e8e8ec] px-3 py-2 text-sm focus:outline-none focus:border-[#c9a84c] transition-colors"
+                  className="w-full rounded-lg border border-[#2a2a33] bg-[#1e1e24] text-[#e8e8ec] px-3 py-2 text-sm focus:outline-none focus:border-[#4a80f0] transition-colors"
                 />
               </div>
 
@@ -203,7 +203,7 @@ export default function ProfileClient({ profile, isOwn }: Props) {
                   onChange={(e) => setForm((f) => ({ ...f, currentFocus: e.target.value }))}
                   rows={3}
                   maxLength={120}
-                  className="w-full rounded-lg border border-[#2a2a33] bg-[#1e1e24] text-[#e8e8ec] placeholder-[#5a5a6a] px-3 py-2 text-sm focus:outline-none focus:border-[#c9a84c] resize-none transition-colors"
+                  className="w-full rounded-lg border border-[#2a2a33] bg-[#1e1e24] text-[#e8e8ec] placeholder-[#5a5a6a] px-3 py-2 text-sm focus:outline-none focus:border-[#4a80f0] resize-none transition-colors"
                 />
                 <p className="text-right text-xs text-[#5a5a6a] mt-1">{form.currentFocus.length}/120</p>
               </div>
@@ -217,8 +217,8 @@ export default function ProfileClient({ profile, isOwn }: Props) {
                       onClick={() => setForm((f) => ({ ...f, grade: f.grade === g.value ? null : g.value }))}
                       className={`px-3 py-1 rounded-full text-xs border transition-colors ${
                         form.grade === g.value
-                          ? "bg-[#c9a84c] text-[#0f0f11] border-[#c9a84c] font-semibold"
-                          : "border-[#2a2a33] text-[#9898a8] hover:border-[#c9a84c] hover:text-[#c9a84c]"
+                          ? "bg-[#4a80f0] text-[#0f0f11] border-[#4a80f0] font-semibold"
+                          : "border-[#2a2a33] text-[#9898a8] hover:border-[#4a80f0] hover:text-[#4a80f0]"
                       }`}
                     >
                       {g.label}
@@ -233,7 +233,7 @@ export default function ProfileClient({ profile, isOwn }: Props) {
                   type="text"
                   value={form.schoolName}
                   onChange={(e) => setForm((f) => ({ ...f, schoolName: e.target.value }))}
-                  className="w-full rounded-lg border border-[#2a2a33] bg-[#1e1e24] text-[#e8e8ec] px-3 py-2 text-sm focus:outline-none focus:border-[#c9a84c] transition-colors"
+                  className="w-full rounded-lg border border-[#2a2a33] bg-[#1e1e24] text-[#e8e8ec] px-3 py-2 text-sm focus:outline-none focus:border-[#4a80f0] transition-colors"
                 />
               </div>
 
@@ -248,7 +248,7 @@ export default function ProfileClient({ profile, isOwn }: Props) {
                       type="checkbox"
                       checked={form[key as keyof typeof form] as boolean}
                       onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.checked }))}
-                      className="w-4 h-4 accent-[#c9a84c]"
+                      className="w-4 h-4 accent-[#4a80f0]"
                     />
                     <span className="text-sm text-[#9898a8] group-hover:text-[#e8e8ec] transition-colors">{label}</span>
                   </label>
@@ -270,7 +270,7 @@ export default function ProfileClient({ profile, isOwn }: Props) {
               <button
                 onClick={saveProfile}
                 disabled={saving}
-                className="flex-1 py-2.5 rounded-lg bg-[#c9a84c] hover:bg-[#e3c06a] text-[#0f0f11] text-sm font-semibold disabled:opacity-50 transition-colors"
+                className="flex-1 py-2.5 rounded-lg bg-[#4a80f0] hover:bg-[#6a9fff] text-[#0f0f11] text-sm font-semibold disabled:opacity-50 transition-colors"
               >
                 {saving ? "Saving…" : "Save Changes"}
               </button>
