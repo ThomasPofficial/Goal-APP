@@ -50,6 +50,29 @@ export default async function OrgDetailPage({ params }: { params: Promise<{ orgI
 
   if (!org) notFound();
 
+  const isAdmin = org.createdById === session?.user?.id;
+
+  const applications = isAdmin
+    ? await prisma.teamApplication.findMany({
+        where: { orgProject: { orgId } },
+        orderBy: { submittedAt: "desc" },
+        include: {
+          orgProject: { select: { id: true, title: true } },
+          team: {
+            include: {
+              members: {
+                include: {
+                  profile: {
+                    select: { id: true, displayName: true, avatarUrl: true, geniusType: true, handle: true },
+                  },
+                },
+              },
+            },
+          },
+        },
+      })
+    : [];
+
   const myTeamIds = new Set(myProfile?.teamMemberships.map((m) => m.teamId) ?? []);
   const myOrgTeam = org.teams.find((t) => myTeamIds.has(t.id));
 
@@ -79,6 +102,24 @@ export default async function OrgDetailPage({ params }: { params: Promise<{ orgI
       }))}
       myProfileId={myProfile?.id ?? null}
       myTeamId={myOrgTeam?.id ?? null}
+      isAdmin={isAdmin}
+      applications={applications.map((a) => ({
+        id: a.id,
+        status: a.status,
+        submittedAt: a.submittedAt.toISOString(),
+        orgProject: a.orgProject,
+        team: {
+          id: a.team.id,
+          name: a.team.name,
+          members: a.team.members.map((m) => ({
+            id: m.id,
+            role: m.role,
+            profile: m.profile
+              ? { ...m.profile, geniusType: m.profile.geniusType as GeniusTypeKey | null }
+              : null,
+          })),
+        },
+      }))}
     />
   );
 }
