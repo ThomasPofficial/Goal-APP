@@ -338,6 +338,7 @@ model Org {
   format           String?
   location         String?
   stipend          String?
+  autoAccept       Boolean     @default(false)
   createdAt        DateTime    @default(now())
   createdById      String
 
