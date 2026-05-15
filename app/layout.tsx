@@ -32,7 +32,7 @@ const dmMono = DM_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "nivarro.co",
+  title: "Nivarro — Build your team",
   description:
     "A platform for ambitious people to connect, understand each other's strengths, and build effective teams.",
 };
