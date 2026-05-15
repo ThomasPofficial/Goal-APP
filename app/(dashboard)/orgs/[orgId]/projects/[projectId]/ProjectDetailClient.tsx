@@ -58,7 +58,7 @@ export default function ProjectDetailClient({
   const [applied, setApplied] = useState<{ id: string; status: string; teamId: string } | null>(existingApplication);
 
   const requiredSkills: string[] = JSON.parse(project.requiredSkills || "[]");
-  const accentColor = project.org.accentColor ?? "#c9a84c";
+  const accentColor = project.org.accentColor ?? "#4a80f0";
 
   const search = useCallback(async () => {
     setLoading(true);
@@ -107,7 +107,7 @@ export default function ProjectDetailClient({
     <div className="max-w-4xl space-y-6">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-[#8A8898]">
-        <Link href={`/orgs/${project.orgId}`} className="flex items-center gap-1 hover:text-[#c9a84c] transition-colors">
+        <Link href={`/orgs/${project.orgId}`} className="flex items-center gap-1 hover:text-[#4a80f0] transition-colors">
           <ArrowLeft className="w-4 h-4" /> {project.org.name}
         </Link>
         <span>/</span>
@@ -125,7 +125,7 @@ export default function ProjectDetailClient({
             {requiredSkills.length > 0 && (
               <div className="flex flex-wrap gap-1.5 mt-3">
                 {requiredSkills.map((s) => (
-                  <span key={s} className="text-xs px-2 py-0.5 rounded-full border border-[rgba(74,128,240,0.28)] text-[#c9a84c]">{s}</span>
+                  <span key={s} className="text-xs px-2 py-0.5 rounded-full border border-[rgba(74,128,240,0.28)] text-[#4a80f0]">{s}</span>
                 ))}
               </div>
             )}
@@ -194,7 +194,7 @@ export default function ProjectDetailClient({
                     <div className="flex items-center gap-2 flex-wrap">
                       <Link
                         href={`/profile/${scholar.handle ?? scholar.id}`}
-                        className="font-medium text-sm text-[#EAE8E0] hover:text-[#c9a84c] transition-colors"
+                        className="font-medium text-sm text-[#EAE8E0] hover:text-[#4a80f0] transition-colors"
                       >
                         {scholar.displayName}
                       </Link>
@@ -247,7 +247,7 @@ export default function ProjectDetailClient({
                           </button>
                           <button
                             onClick={() => sendRecruit(scholar.id)}
-                            className="flex-1 text-xs py-1 rounded-lg bg-[#c9a84c] text-[#05080F] font-semibold"
+                            className="flex-1 text-xs py-1 rounded-lg bg-[#4a80f0] text-[#05080F] font-semibold"
                           >
                             Send
                           </button>
@@ -256,7 +256,7 @@ export default function ProjectDetailClient({
                     ) : myProfileId && scholar.id !== myProfileId ? (
                       <button
                         onClick={() => setRecruitingId(scholar.id)}
-                        className="flex items-center gap-1 text-xs font-medium text-[#c9a84c] hover:text-[#e3c06a] border border-[rgba(74,128,240,0.28)] px-2.5 py-1.5 rounded-lg transition-colors"
+                        className="flex items-center gap-1 text-xs font-medium text-[#4a80f0] hover:text-[#6a9fff] border border-[rgba(74,128,240,0.28)] px-2.5 py-1.5 rounded-lg transition-colors"
                       >
                         <UserPlus className="w-3.5 h-3.5" /> Recruit
                       </button>
@@ -293,7 +293,7 @@ export default function ProjectDetailClient({
                 </p>
                 <Link
                   href={`/teams/${applied.teamId}`}
-                  className="block text-xs text-[#c9a84c] hover:underline mt-2"
+                  className="block text-xs text-[#4a80f0] hover:underline mt-2"
                 >
                   View team workspace →
                 </Link>
@@ -301,7 +301,7 @@ export default function ProjectDetailClient({
             ) : myTeams.length === 0 ? (
               <div className="text-center py-4">
                 <p className="text-xs text-[#8A8898] mb-2">You need a team to apply.</p>
-                <Link href="/teams" className="text-xs text-[#c9a84c] hover:underline">
+                <Link href="/teams" className="text-xs text-[#4a80f0] hover:underline">
                   Create or join a team →
                 </Link>
               </div>
@@ -334,7 +334,7 @@ export default function ProjectDetailClient({
                 <button
                   onClick={handleApply}
                   disabled={applying || !applyTeamId}
-                  className="w-full py-2.5 rounded-lg bg-[#c9a84c] hover:bg-[#e3c06a] text-[#05080F] text-sm font-semibold disabled:opacity-40 transition-colors"
+                  className="w-full py-2.5 rounded-lg bg-[#4a80f0] hover:bg-[#6a9fff] text-[#05080F] text-sm font-semibold disabled:opacity-40 transition-colors"
                 >
                   {applying ? "Submitting…" : "Submit Application"}
                 </button>

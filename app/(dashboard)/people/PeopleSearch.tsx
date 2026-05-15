@@ -87,7 +87,7 @@ export default function PeopleSearch({
             }}
             className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
               !selectedCategory
-                ? "bg-[#c9a84c] text-[#080809]"
+                ? "bg-[#4a80f0] text-[#080809]"
                 : "bg-[#131315] text-[#909098] hover:text-[#eaeaea] border border-[#1c1c20]"
             }`}
           >
@@ -103,7 +103,7 @@ export default function PeopleSearch({
               }}
               className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
                 selectedCategory === cat
-                  ? "bg-[#c9a84c] text-[#080809]"
+                  ? "bg-[#4a80f0] text-[#080809]"
                   : "bg-[#131315] text-[#909098] hover:text-[#eaeaea] border border-[#1c1c20]"
               }`}
             >

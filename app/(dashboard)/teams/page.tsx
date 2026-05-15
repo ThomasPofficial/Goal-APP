@@ -54,7 +54,7 @@ export default async function TeamsPage() {
           </p>
           <Link
             href="/orgs"
-            className="mt-6 inline-block px-5 py-2.5 bg-[#c9a84c] hover:bg-[#e3c06a] text-[#0f0f11] rounded-lg text-sm font-medium transition-colors"
+            className="mt-6 inline-block px-5 py-2.5 bg-[#4a80f0] hover:bg-[#6a9fff] text-[#0f0f11] rounded-lg text-sm font-medium transition-colors"
           >
             Browse Orgs
           </Link>
@@ -65,7 +65,7 @@ export default async function TeamsPage() {
             <Link
               key={team.id}
               href={`/teams/${team.id}`}
-              className="block bg-[#16161a] border border-[#2a2a33] rounded-xl p-5 hover:border-[#c9a84c] transition-all"
+              className="block bg-[#16161a] border border-[#2a2a33] rounded-xl p-5 hover:border-[#4a80f0] transition-all"
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">

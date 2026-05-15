@@ -159,7 +159,7 @@ export default function TeamWorkspaceClient({
             <p className="text-sm font-medium text-[#8A8898]">No active application</p>
             <p className="text-xs text-[#5A5570]">
               Browse org projects and apply to unlock full messaging.{" "}
-              <Link href="/orgs" className="text-[#c9a84c] hover:underline">Browse orgs →</Link>
+              <Link href="/orgs" className="text-[#4a80f0] hover:underline">Browse orgs →</Link>
             </p>
           </div>
         </div>
@@ -173,7 +173,7 @@ export default function TeamWorkspaceClient({
             </p>
             <p className="text-xs text-blue-400/70">
               You have <span className="font-semibold text-blue-300">{msgsRemaining} message{msgsRemaining !== 1 ? "s" : ""}</span> remaining while your application is pending. Full chat unlocks on acceptance.{" "}
-              <button onClick={() => setTab("applications")} className="text-[#c9a84c] hover:underline">View applications →</button>
+              <button onClick={() => setTab("applications")} className="text-[#4a80f0] hover:underline">View applications →</button>
             </p>
           </div>
         </div>
@@ -185,7 +185,7 @@ export default function TeamWorkspaceClient({
             <p className="text-sm font-medium text-amber-300">Message limit reached</p>
             <p className="text-xs text-amber-400/70">
               You&apos;ve used all {MSG_LIMIT} messages available while your application is pending. Chat unlocks fully once accepted. You can still{" "}
-              <Link href="/orgs" className="text-[#c9a84c] hover:underline">apply to more orgs →</Link>
+              <Link href="/orgs" className="text-[#4a80f0] hover:underline">apply to more orgs →</Link>
             </p>
           </div>
         </div>
@@ -205,7 +205,7 @@ export default function TeamWorkspaceClient({
         <div>
           <div className="flex items-center gap-2 mb-0.5">
             {team.org && (
-              <Link href={`/orgs/${team.org.id}`} className="text-xs text-[#5a5a6a] hover:text-[#c9a84c] transition-colors flex items-center gap-1">
+              <Link href={`/orgs/${team.org.id}`} className="text-xs text-[#5a5a6a] hover:text-[#4a80f0] transition-colors flex items-center gap-1">
                 {team.org.name} <ExternalLink className="w-3 h-3" />
               </Link>
             )}
@@ -260,7 +260,7 @@ export default function TeamWorkspaceClient({
               <div key={m.id} className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-[#16161a] border border-[#2a2a33]">
                 <Avatar src={m.profile?.avatarUrl} name={m.profile?.displayName} geniusType={m.profile?.geniusType} size="xs" />
                 <span className="text-xs text-[#e8e8ec]">{m.profile?.displayName}</span>
-                {m.role === "ADMIN" && <span className="text-[10px] text-[#c9a84c] font-semibold">Admin</span>}
+                {m.role === "ADMIN" && <span className="text-[10px] text-[#4a80f0] font-semibold">Admin</span>}
               </div>
             ))}
           </div>
@@ -275,7 +275,7 @@ export default function TeamWorkspaceClient({
             onClick={() => setTab(t)}
             className={cn(
               "px-4 py-1.5 rounded-full text-sm font-medium border transition-colors",
-              tab === t ? "bg-[#c9a84c] border-[#c9a84c] text-[#0f0f11]" : "border-[#2a2a33] text-[#9898a8] hover:border-[#c9a84c]/40"
+              tab === t ? "bg-[#4a80f0] border-[#4a80f0] text-[#0f0f11]" : "border-[#2a2a33] text-[#9898a8] hover:border-[#4a80f0]/40"
             )}
           >
             {t === "board" ? "Noteboard" : t === "applications" ? `Applications${applications.length ? ` · ${applications.length}` : ""}` : "Chat"}
@@ -342,7 +342,7 @@ export default function TeamWorkspaceClient({
             <div className="flex items-center justify-center py-3 rounded-xl border border-amber-500/20 bg-amber-950/20">
               <p className="text-xs text-amber-300 text-center">
                 Chat limit reached while application is pending.{" "}
-                <Link href="/orgs" className="text-[#c9a84c] hover:underline">Apply to another org →</Link>
+                <Link href="/orgs" className="text-[#4a80f0] hover:underline">Apply to another org →</Link>
               </p>
             </div>
           ) : (
@@ -353,13 +353,13 @@ export default function TeamWorkspaceClient({
                 onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
                 placeholder={isSubmitted ? `Message the team… (${msgsRemaining} left)` : "Message the team…"}
                 rows={1}
-                className="flex-1 resize-none rounded-xl border border-[#2a2a33] bg-[#16161a] text-sm text-[#e8e8ec] placeholder-[#5a5a6a] px-4 py-2.5 focus:outline-none focus:border-[#c9a84c] max-h-32 transition-colors"
+                className="flex-1 resize-none rounded-xl border border-[#2a2a33] bg-[#16161a] text-sm text-[#e8e8ec] placeholder-[#5a5a6a] px-4 py-2.5 focus:outline-none focus:border-[#4a80f0] max-h-32 transition-colors"
                 style={{ fieldSizing: "content" } as React.CSSProperties}
               />
               <button
                 onClick={sendMessage}
                 disabled={!msgInput.trim() || sending}
-                className="p-2.5 rounded-xl bg-[#c9a84c] hover:bg-[#e3c06a] text-[#0f0f11] disabled:opacity-40 transition-colors flex-shrink-0"
+                className="p-2.5 rounded-xl bg-[#4a80f0] hover:bg-[#6a9fff] text-[#0f0f11] disabled:opacity-40 transition-colors flex-shrink-0"
               >
                 <Send className="w-4 h-4" />
               </button>
@@ -372,12 +372,12 @@ export default function TeamWorkspaceClient({
           <div className="space-y-3">
             <div className="flex items-center justify-between mb-4">
               <p className="text-xs font-semibold text-[#8A8898] uppercase tracking-wider">Your applications</p>
-              <Link href="/orgs" className="text-xs text-[#c9a84c] hover:underline">Browse more orgs →</Link>
+              <Link href="/orgs" className="text-xs text-[#4a80f0] hover:underline">Browse more orgs →</Link>
             </div>
             {applications.length === 0 ? (
               <div className="text-center py-12 text-sm text-[#5A5570]">
                 No applications yet.{" "}
-                <Link href="/orgs" className="text-[#c9a84c] hover:underline">Browse orgs to apply →</Link>
+                <Link href="/orgs" className="text-[#4a80f0] hover:underline">Browse orgs to apply →</Link>
               </div>
             ) : (
               applications.map((app) => (
@@ -386,7 +386,7 @@ export default function TeamWorkspaceClient({
                     <div className="flex-1 min-w-0">
                       <Link
                         href={`/orgs/${app.orgProject.orgId}/projects/${app.orgProject.id}`}
-                        className="font-medium text-sm text-[#EAE8E0] hover:text-[#c9a84c] transition-colors"
+                        className="font-medium text-sm text-[#EAE8E0] hover:text-[#4a80f0] transition-colors"
                       >
                         {app.orgProject.title}
                       </Link>
@@ -418,7 +418,7 @@ export default function TeamWorkspaceClient({
           <div className="flex items-center justify-between mb-3">
             <p className="text-xs font-semibold text-[#9898a8] uppercase tracking-wider">Noteboard</p>
             <div className="relative group">
-              <button className="flex items-center gap-1 text-xs font-medium text-[#c9a84c] hover:text-[#e3c06a] transition-colors">
+              <button className="flex items-center gap-1 text-xs font-medium text-[#4a80f0] hover:text-[#6a9fff] transition-colors">
                 <Plus className="w-3.5 h-3.5" /> Add
               </button>
               <div className="absolute right-0 top-full mt-1 bg-[#1e1e24] border border-[#2a2a33] rounded-lg shadow-lg py-1 z-10 hidden group-focus-within:block min-w-[120px]">
@@ -501,7 +501,7 @@ function AddCardForm({
   };
 
   return (
-    <div className="bg-[#16161a] border border-[#c9a84c] rounded-xl p-3 space-y-2">
+    <div className="bg-[#16161a] border border-[#4a80f0] rounded-xl p-3 space-y-2">
       <div className="flex items-center justify-between">
         <span className="text-xs font-semibold text-[#9898a8] uppercase">{type.toLowerCase()}</span>
         <button onClick={onCancel}><X className="w-3.5 h-3.5 text-[#5a5a6a]" /></button>
@@ -521,7 +521,7 @@ function AddCardForm({
               <button
                 key={key}
                 onClick={() => setNoteColor(key)}
-                className={cn("w-5 h-5 rounded-full border-2", noteColor === key ? "border-[#c9a84c]" : "border-transparent")}
+                className={cn("w-5 h-5 rounded-full border-2", noteColor === key ? "border-[#4a80f0]" : "border-transparent")}
                 style={{ background: val.bg }}
               />
             ))}
@@ -549,13 +549,13 @@ function AddCardForm({
               />
             </div>
           ))}
-          <button onClick={() => setCheckItems((p) => [...p, { id: crypto.randomUUID(), text: "", checked: false }])} className="text-[11px] text-[#c9a84c]">+ Add item</button>
+          <button onClick={() => setCheckItems((p) => [...p, { id: crypto.randomUUID(), text: "", checked: false }])} className="text-[11px] text-[#4a80f0]">+ Add item</button>
         </>
       )}
 
       <div className="flex justify-end gap-2 pt-1">
         <button onClick={onCancel} className="text-xs text-[#5a5a6a]">Cancel</button>
-        <button onClick={save} disabled={saving} className="text-xs font-semibold text-[#0f0f11] bg-[#c9a84c] hover:bg-[#e3c06a] px-3 py-1 rounded-lg disabled:opacity-40">
+        <button onClick={save} disabled={saving} className="text-xs font-semibold text-[#0f0f11] bg-[#4a80f0] hover:bg-[#6a9fff] px-3 py-1 rounded-lg disabled:opacity-40">
           {saving ? "Saving…" : "Add"}
         </button>
       </div>
@@ -644,7 +644,7 @@ function NoteCard({ card, teamId, members, myProfileId, onUpdate }: {
         <p className="text-xs font-semibold text-[#e8e8ec] mb-2">{optimistic.title}</p>
         {total > 0 && (
           <div className="w-full h-1 bg-[#2a2a33] rounded-full mb-2 overflow-hidden">
-            <div className="h-full bg-[#c9a84c] rounded-full transition-all" style={{ width: `${(checked / total) * 100}%` }} />
+            <div className="h-full bg-[#4a80f0] rounded-full transition-all" style={{ width: `${(checked / total) * 100}%` }} />
           </div>
         )}
         <div className="space-y-1">
@@ -654,7 +654,7 @@ function NoteCard({ card, teamId, members, myProfileId, onUpdate }: {
                 type="checkbox"
                 checked={item.checked}
                 onChange={() => toggleItem(item.id)}
-                className="w-3.5 h-3.5 accent-[#c9a84c]"
+                className="w-3.5 h-3.5 accent-[#4a80f0]"
               />
               <span className={cn("text-xs", item.checked ? "line-through text-[#5a5a6a]" : "text-[#e8e8ec]")}>
                 {item.text}

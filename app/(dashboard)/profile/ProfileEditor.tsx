@@ -186,7 +186,7 @@ export default function ProfileEditor({ initialProfile, allTraits }: Props) {
             <span
               className={`text-xs font-medium ${
                 selectedTraitIds.length >= MAX_TRAITS
-                  ? "text-[#c9a84c]"
+                  ? "text-[#4a80f0]"
                   : "text-[#58586a]"
               }`}
             >
@@ -288,7 +288,7 @@ export default function ProfileEditor({ initialProfile, allTraits }: Props) {
           <button
             type="submit"
             disabled={saving || !displayName}
-            className="flex items-center gap-2 bg-[#c9a84c] hover:bg-[#e3c06a] text-[#080809] font-semibold text-sm rounded-md px-5 py-2.5 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 bg-[#4a80f0] hover:bg-[#6a9fff] text-[#080809] font-semibold text-sm rounded-md px-5 py-2.5 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
             {saving ? "Saving..." : saved ? "Saved!" : "Save profile"}

@@ -66,7 +66,7 @@ export default function OrgDetailClient({
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
-  const accentColor = org.accentColor ?? CATEGORY_COLORS[org.category] ?? "#c9a84c";
+  const accentColor = org.accentColor ?? CATEGORY_COLORS[org.category] ?? "#4a80f0";
   const daysLeft = org.deadline ? differenceInDays(new Date(org.deadline), new Date()) : null;
   const isClosed = org.status === "CLOSED";
 
@@ -152,11 +152,11 @@ export default function OrgDetailClient({
                     <Link
                       key={proj.id}
                       href={`/orgs/${org.id}/projects/${proj.id}`}
-                      className="block bg-[#16161a] border border-[#2a2a33] hover:border-[#c9a84c]/40 rounded-lg p-3 transition-colors group"
+                      className="block bg-[#16161a] border border-[#2a2a33] hover:border-[#4a80f0]/40 rounded-lg p-3 transition-colors group"
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium text-sm text-[#e8e8ec] group-hover:text-[#c9a84c] transition-colors">{proj.title}</p>
+                          <p className="font-medium text-sm text-[#e8e8ec] group-hover:text-[#4a80f0] transition-colors">{proj.title}</p>
                           {proj.description && (
                             <p className="text-xs text-[#9898a8] mt-0.5 line-clamp-2">{proj.description}</p>
                           )}
@@ -169,7 +169,7 @@ export default function OrgDetailClient({
                           )}
                         </div>
                         <div className="text-right flex-shrink-0">
-                          <p className="text-xs font-semibold text-[#c9a84c]">{proj.openSpots}</p>
+                          <p className="text-xs font-semibold text-[#4a80f0]">{proj.openSpots}</p>
                           <p className="text-[10px] text-[#5a5a6a]">open spots</p>
                         </div>
                       </div>
@@ -230,13 +230,13 @@ export default function OrgDetailClient({
               <div className="text-center py-2">
                 <p className="text-sm font-semibold text-green-600 dark:text-green-400">Application submitted!</p>
                 {myTeamId && (
-                  <Link href={`/teams/${myTeamId}`} className="text-xs text-[#c9a84c] mt-1 block">View application →</Link>
+                  <Link href={`/teams/${myTeamId}`} className="text-xs text-[#4a80f0] mt-1 block">View application →</Link>
                 )}
               </div>
             ) : myTeamId ? (
               <Link
                 href={`/teams/${myTeamId}`}
-                className="flex items-center justify-center gap-1 w-full py-2.5 rounded-lg bg-[#c9a84c] hover:bg-[#e3c06a] text-[#0f0f11] text-sm font-semibold transition-colors"
+                className="flex items-center justify-center gap-1 w-full py-2.5 rounded-lg bg-[#4a80f0] hover:bg-[#6a9fff] text-[#0f0f11] text-sm font-semibold transition-colors"
               >
                 Open workspace <ExternalLink className="w-3.5 h-3.5" />
               </Link>
@@ -244,7 +244,7 @@ export default function OrgDetailClient({
               <button
                 onClick={() => !isClosed && setApplyStep(1)}
                 disabled={isClosed}
-                className="w-full py-2.5 rounded-lg text-sm font-semibold bg-[#c9a84c] hover:bg-[#e3c06a] text-[#0f0f11] transition-colors disabled:opacity-40"
+                className="w-full py-2.5 rounded-lg text-sm font-semibold bg-[#4a80f0] hover:bg-[#6a9fff] text-[#0f0f11] transition-colors disabled:opacity-40"
               >
                 {isClosed ? "Applications closed" : "Apply with your team"}
               </button>
@@ -267,8 +267,8 @@ export default function OrgDetailClient({
               className={cn(
                 "flex items-center justify-center gap-1.5 w-full py-2 rounded-lg border text-xs font-medium mt-2 transition-colors",
                 saved
-                  ? "border-[#c9a84c] text-[#c9a84c]"
-                  : "border-[#2a2a33] text-[#9898a8] hover:border-[#c9a84c] hover:text-[#c9a84c]"
+                  ? "border-[#4a80f0] text-[#4a80f0]"
+                  : "border-[#2a2a33] text-[#9898a8] hover:border-[#4a80f0] hover:text-[#4a80f0]"
               )}
             >
               <Save className="w-3.5 h-3.5" fill={saved ? "currentColor" : "none"} />
@@ -293,7 +293,7 @@ function ApplicationFlow({
     <div className="space-y-3">
       <div className="flex gap-1">
         {[1, 2, 3].map((s) => (
-          <div key={s} className={cn("flex-1 h-1 rounded-full", step >= s ? "bg-[#c9a84c]" : "bg-[#2a2a33]")} />
+          <div key={s} className={cn("flex-1 h-1 rounded-full", step >= s ? "bg-[#4a80f0]" : "bg-[#2a2a33]")} />
         ))}
       </div>
 
@@ -304,12 +304,12 @@ function ApplicationFlow({
             value={selectedTeamId ?? ""}
             onChange={(e) => setSelectedTeamId(e.target.value)}
             placeholder="Team ID (or select from /teams)"
-            className="w-full text-xs px-2 py-1.5 rounded border border-[#2a2a33] bg-transparent text-[#e8e8ec] focus:outline-none focus:border-[#c9a84c]"
+            className="w-full text-xs px-2 py-1.5 rounded border border-[#2a2a33] bg-transparent text-[#e8e8ec] focus:outline-none focus:border-[#4a80f0]"
           />
           <button
             onClick={() => selectedTeamId && setStep(2)}
             disabled={!selectedTeamId}
-            className="mt-2 w-full py-2 rounded-lg text-xs font-semibold bg-[#c9a84c] hover:bg-[#e3c06a] text-[#0f0f11] disabled:opacity-40"
+            className="mt-2 w-full py-2 rounded-lg text-xs font-semibold bg-[#4a80f0] hover:bg-[#6a9fff] text-[#0f0f11] disabled:opacity-40"
           >
             Next →
           </button>
@@ -322,11 +322,11 @@ function ApplicationFlow({
             value={whyJoin}
             onChange={(e) => setWhyJoin(e.target.value)}
             rows={4}
-            className="w-full text-xs px-2 py-1.5 rounded border border-[#2a2a33] bg-transparent text-[#e8e8ec] resize-none focus:outline-none focus:border-[#c9a84c]"
+            className="w-full text-xs px-2 py-1.5 rounded border border-[#2a2a33] bg-transparent text-[#e8e8ec] resize-none focus:outline-none focus:border-[#4a80f0]"
           />
           <div className="flex gap-2 mt-2">
             <button onClick={() => setStep(1)} className="flex-1 py-2 rounded-lg text-xs border border-[#2a2a33] text-[#9898a8]">← Back</button>
-            <button onClick={() => whyJoin.trim() && setStep(3)} disabled={!whyJoin.trim()} className="flex-1 py-2 rounded-lg text-xs font-semibold bg-[#c9a84c] hover:bg-[#e3c06a] text-[#0f0f11] disabled:opacity-40">Review →</button>
+            <button onClick={() => whyJoin.trim() && setStep(3)} disabled={!whyJoin.trim()} className="flex-1 py-2 rounded-lg text-xs font-semibold bg-[#4a80f0] hover:bg-[#6a9fff] text-[#0f0f11] disabled:opacity-40">Review →</button>
           </div>
         </div>
       )}
@@ -336,7 +336,7 @@ function ApplicationFlow({
           <p className="text-xs text-[#9898a8] line-clamp-3 bg-[#1e1e24] rounded p-2 mb-2">{whyJoin}</p>
           <div className="flex gap-2">
             <button onClick={() => setStep(2)} className="flex-1 py-2 rounded-lg text-xs border border-[#2a2a33] text-[#9898a8]">← Back</button>
-            <button onClick={onSubmit} disabled={submitting} className="flex-1 py-2 rounded-lg text-xs font-semibold bg-[#c9a84c] hover:bg-[#e3c06a] text-[#0f0f11] disabled:opacity-40">
+            <button onClick={onSubmit} disabled={submitting} className="flex-1 py-2 rounded-lg text-xs font-semibold bg-[#4a80f0] hover:bg-[#6a9fff] text-[#0f0f11] disabled:opacity-40">
               {submitting ? "Submitting…" : "Submit"}
             </button>
           </div>

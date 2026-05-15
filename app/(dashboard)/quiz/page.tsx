@@ -58,7 +58,7 @@ export default async function QuizPage(props: {
           href="/quiz?tab=genius"
           className={`flex-1 flex items-center justify-center gap-2 text-sm font-medium rounded-md px-4 py-2.5 transition-colors ${
             tab === "genius"
-              ? "bg-[#c9a84c] text-[#0f0f11]"
+              ? "bg-[#4a80f0] text-[#0f0f11]"
               : "text-[#9898a8] hover:text-[#e8e8ec]"
           }`}
         >
@@ -72,7 +72,7 @@ export default async function QuizPage(props: {
           href="/quiz?tab=traits"
           className={`flex-1 flex items-center justify-center gap-2 text-sm font-medium rounded-md px-4 py-2.5 transition-colors ${
             tab === "traits"
-              ? "bg-[#c9a84c] text-[#0f0f11]"
+              ? "bg-[#4a80f0] text-[#0f0f11]"
               : "text-[#9898a8] hover:text-[#e8e8ec]"
           }`}
         >

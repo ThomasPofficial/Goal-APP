@@ -85,7 +85,7 @@ export default function OnboardingClient({ geniusType }: { geniusType: GeniusTyp
               onChange={(e) => setFocus(e.target.value.slice(0, 120))}
               placeholder={placeholder}
               rows={3}
-              className="w-full resize-none rounded-lg border border-gray-200 dark:border-[#2a2a33] bg-white dark:bg-[#16161a] text-gray-900 dark:text-[#e8e8ec] placeholder-gray-400 dark:placeholder-[#5a5a6a] px-4 py-3 text-sm focus:outline-none focus:border-[#c9a84c] transition-colors"
+              className="w-full resize-none rounded-lg border border-gray-200 dark:border-[#2a2a33] bg-white dark:bg-[#16161a] text-gray-900 dark:text-[#e8e8ec] placeholder-gray-400 dark:placeholder-[#5a5a6a] px-4 py-3 text-sm focus:outline-none focus:border-[#4a80f0] transition-colors"
             />
             <p className="text-right text-xs text-gray-400 dark:text-[#5a5a6a] mt-1">
               {focus.length}/120
@@ -100,7 +100,7 @@ export default function OnboardingClient({ geniusType }: { geniusType: GeniusTyp
             </button>
             <button
               onClick={() => setStep(3)}
-              className="px-6 py-2.5 rounded-lg text-sm font-semibold bg-[#c9a84c] hover:bg-[#e3c06a] text-[#0f0f11] transition-colors"
+              className="px-6 py-2.5 rounded-lg text-sm font-semibold bg-[#4a80f0] hover:bg-[#6a9fff] text-[#0f0f11] transition-colors"
             >
               Continue →
             </button>
@@ -182,11 +182,11 @@ export default function OnboardingClient({ geniusType }: { geniusType: GeniusTyp
                 onChange={(e) => setFreeform(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && addFreeform()}
                 placeholder="Add your own…"
-                className="flex-1 rounded-lg border border-dashed border-gray-300 dark:border-[#2a2a33] bg-transparent px-3 py-1.5 text-sm text-gray-900 dark:text-[#e8e8ec] placeholder-gray-400 dark:placeholder-[#5a5a6a] focus:outline-none focus:border-[#c9a84c]"
+                className="flex-1 rounded-lg border border-dashed border-gray-300 dark:border-[#2a2a33] bg-transparent px-3 py-1.5 text-sm text-gray-900 dark:text-[#e8e8ec] placeholder-gray-400 dark:placeholder-[#5a5a6a] focus:outline-none focus:border-[#4a80f0]"
               />
               <button
                 onClick={addFreeform}
-                className="text-sm text-[#c9a84c] hover:text-[#e3c06a] transition-colors"
+                className="text-sm text-[#4a80f0] hover:text-[#6a9fff] transition-colors"
               >
                 Add
               </button>
@@ -220,7 +220,7 @@ export default function OnboardingClient({ geniusType }: { geniusType: GeniusTyp
             <button
               onClick={() => setStep(4)}
               disabled={selectedInterests.length === 0}
-              className="px-6 py-2.5 rounded-lg text-sm font-semibold bg-[#c9a84c] hover:bg-[#e3c06a] text-[#0f0f11] transition-colors disabled:opacity-40"
+              className="px-6 py-2.5 rounded-lg text-sm font-semibold bg-[#4a80f0] hover:bg-[#6a9fff] text-[#0f0f11] transition-colors disabled:opacity-40"
             >
               Continue →
             </button>
@@ -294,7 +294,7 @@ export default function OnboardingClient({ geniusType }: { geniusType: GeniusTyp
             value={schoolName}
             onChange={(e) => setSchoolName(e.target.value)}
             placeholder="Westlake High School"
-            className="mt-1.5 w-full rounded-lg border border-gray-200 dark:border-[#2a2a33] bg-white dark:bg-[#16161a] text-gray-900 dark:text-[#e8e8ec] placeholder-gray-400 dark:placeholder-[#5a5a6a] px-3 py-2 text-sm focus:outline-none focus:border-[#c9a84c] transition-colors"
+            className="mt-1.5 w-full rounded-lg border border-gray-200 dark:border-[#2a2a33] bg-white dark:bg-[#16161a] text-gray-900 dark:text-[#e8e8ec] placeholder-gray-400 dark:placeholder-[#5a5a6a] px-3 py-2 text-sm focus:outline-none focus:border-[#4a80f0] transition-colors"
           />
         </div>
 
@@ -311,7 +311,7 @@ export default function OnboardingClient({ geniusType }: { geniusType: GeniusTyp
                 type="checkbox"
                 checked={val}
                 onChange={(e) => setter(e.target.checked)}
-                className="w-4 h-4 rounded accent-[#c9a84c]"
+                className="w-4 h-4 rounded accent-[#4a80f0]"
               />
               <span className="text-sm text-gray-700 dark:text-[#e8e8ec]">{label}</span>
             </label>
@@ -325,7 +325,7 @@ export default function OnboardingClient({ geniusType }: { geniusType: GeniusTyp
         <button
           onClick={handleComplete}
           disabled={!grade || saving}
-          className="w-full py-3 rounded-lg font-semibold text-sm bg-[#c9a84c] hover:bg-[#e3c06a] text-[#0f0f11] transition-colors disabled:opacity-40"
+          className="w-full py-3 rounded-lg font-semibold text-sm bg-[#4a80f0] hover:bg-[#6a9fff] text-[#0f0f11] transition-colors disabled:opacity-40"
         >
           {saving ? "Setting up your profile…" : "Complete setup →"}
         </button>

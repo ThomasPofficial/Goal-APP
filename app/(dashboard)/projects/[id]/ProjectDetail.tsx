@@ -175,7 +175,7 @@ export default function ProjectDetail({
                 className={`text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0 ${
                   isCompleted
                     ? "bg-[#4ADE8020] text-[#4ADE80]"
-                    : "bg-[#c9a84c20] text-[#c9a84c]"
+                    : "bg-[#4a80f020] text-[#4a80f0]"
                 }`}
               >
                 {isCompleted ? "Completed" : "Active"}
