@@ -60,7 +60,12 @@ export async function POST(req: Request) {
       orgId: parsed.data.orgId,
       createdById: session.user.id,
       members: { create: { profileId: myProfile.id, role: "ADMIN" } },
-      conversation: { create: { type: "TEAM" } },
+      conversation: {
+        create: {
+          type: "TEAM",
+          participants: { create: { userId: session.user.id } },
+        },
+      },
     },
     include: { members: true, conversation: true },
   });

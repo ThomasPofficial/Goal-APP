@@ -96,7 +96,10 @@ export default function AccountMenu({ userName, userEmail, geniusType }: Account
               <User className="w-4 h-4 flex-shrink-0" />Edit Profile
             </Link>
             <button
-              onClick={() => signOut({ callbackUrl: "/login" })}
+              onPointerDown={(e) => {
+                e.preventDefault();
+                signOut({ callbackUrl: "/login" });
+              }}
               className="w-full flex items-center gap-2.5 px-2 py-2 rounded-md text-sm transition-colors"
               style={{ color: "var(--text2)" }}
               onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(248,113,113,0.08)"; (e.currentTarget as HTMLButtonElement).style.color = "#f87171"; }}
