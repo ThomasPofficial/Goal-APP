@@ -16,7 +16,7 @@ export default async function ProjectDetailPage({
   const project = await prisma.orgProject.findUnique({
     where: { id: projectId },
     include: {
-      org: { select: { id: true, name: true, accentColor: true } },
+      org: { select: { id: true, name: true, accentColor: true, maxTeamSize: true } },
     },
   });
 
@@ -27,20 +27,12 @@ export default async function ProjectDetailPage({
     select: { id: true },
   });
 
-  let myTeams: { id: string; name: string }[] = [];
-  if (myProfile) {
-    const memberships = await prisma.teamMember.findMany({
-      where: { profileId: myProfile.id },
-      include: { team: { select: { id: true, name: true, status: true } } },
-    });
-    myTeams = memberships
-      .filter((m) => m.team.status === "ACTIVE" || m.team.status === "SUBMITTED")
-      .map((m) => ({ id: m.team.id, name: m.team.name }));
-  }
-
-  const existingApplication = myTeams.length
+  const existingApplication = myProfile
     ? await prisma.teamApplication.findFirst({
-        where: { orgProjectId: projectId, teamId: { in: myTeams.map((t) => t.id) } },
+        where: {
+          orgProjectId: projectId,
+          team: { members: { some: { profileId: myProfile.id } } },
+        },
         select: { id: true, status: true, teamId: true },
       })
     : null;
@@ -53,7 +45,6 @@ export default async function ProjectDetailPage({
         createdAt: project.createdAt.toISOString(),
       }}
       myProfileId={myProfile?.id ?? null}
-      myTeams={myTeams}
       existingApplication={existingApplication}
     />
   );

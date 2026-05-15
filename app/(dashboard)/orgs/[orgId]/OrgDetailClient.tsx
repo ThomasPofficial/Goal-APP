@@ -77,32 +77,13 @@ export default function OrgDetailClient({
   isAdmin: boolean; applications: AdminApplication[];
 }) {
   const [saved, setSaved] = useState(false);
-  const [applyStep, setApplyStep] = useState<0 | 1 | 2 | 3>(0);
   const [adminTab, setAdminTab] = useState<"overview" | "applications">("overview");
   const [appStatuses, setAppStatuses] = useState<Record<string, string>>(
     () => Object.fromEntries(applications.map((a) => [a.id, a.status]))
   );
-  const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
-  const [whyJoin, setWhyJoin] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
 
   const accentColor = org.accentColor ?? CATEGORY_COLORS[org.category] ?? "#4a80f0";
   const daysLeft = org.deadline ? differenceInDays(new Date(org.deadline), new Date()) : null;
-  const isClosed = org.status === "CLOSED";
-
-  const handleApply = async () => {
-    if (!selectedTeamId || !whyJoin.trim()) return;
-    setSubmitting(true);
-    await fetch(`/api/orgs/${org.id}/apply`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ teamId: selectedTeamId, whyJoin }),
-    });
-    setSubmitting(false);
-    setSubmitted(true);
-    setApplyStep(0);
-  };
 
   return (
     <div>
@@ -192,7 +173,7 @@ export default function OrgDetailClient({
           </div>
 
           {projects.length > 0 && (
-            <div>
+            <div id="projects">
               <h2 className="text-sm font-semibold text-[#e8e8ec] mb-3">Open Projects</h2>
               <div className="space-y-2">
                 {projects.map((proj) => {
@@ -275,40 +256,24 @@ export default function OrgDetailClient({
               </span>
             </div>
 
-            {submitted ? (
-              <div className="text-center py-2">
-                <p className="text-sm font-semibold text-green-600 dark:text-green-400">Application submitted!</p>
-                {myTeamId && (
-                  <Link href={`/teams/${myTeamId}`} className="text-xs text-[#4a80f0] mt-1 block">View application →</Link>
-                )}
-              </div>
-            ) : myTeamId ? (
+            {myTeamId ? (
               <Link
                 href={`/teams/${myTeamId}`}
                 className="flex items-center justify-center gap-1 w-full py-2.5 rounded-lg bg-[#4a80f0] hover:bg-[#6a9fff] text-[#0f0f11] text-sm font-semibold transition-colors"
               >
                 Open workspace <ExternalLink className="w-3.5 h-3.5" />
               </Link>
-            ) : applyStep === 0 ? (
-              <button
-                onClick={() => !isClosed && setApplyStep(1)}
-                disabled={isClosed}
-                className="w-full py-2.5 rounded-lg text-sm font-semibold bg-[#4a80f0] hover:bg-[#6a9fff] text-[#0f0f11] transition-colors disabled:opacity-40"
+            ) : projects.length > 0 ? (
+              <a
+                href="#projects"
+                className="w-full py-2.5 rounded-lg text-sm font-semibold bg-[#4a80f0] hover:bg-[#6a9fff] text-[#0f0f11] transition-colors text-center block"
               >
-                {isClosed ? "Applications closed" : "Apply with your team"}
-              </button>
+                View open projects ↓
+              </a>
             ) : (
-              <ApplicationFlow
-                step={applyStep}
-                setStep={setApplyStep}
-                orgId={org.id}
-                selectedTeamId={selectedTeamId}
-                setSelectedTeamId={setSelectedTeamId}
-                whyJoin={whyJoin}
-                setWhyJoin={setWhyJoin}
-                submitting={submitting}
-                onSubmit={handleApply}
-              />
+              <p className="text-xs text-center py-2" style={{ color: "var(--muted)" }}>
+                No open projects yet.
+              </p>
             )}
 
             <button
@@ -462,67 +427,3 @@ function ApplicationCard({
   );
 }
 
-function ApplicationFlow({
-  step, setStep, orgId, selectedTeamId, setSelectedTeamId, whyJoin, setWhyJoin, submitting, onSubmit,
-}: {
-  step: 1 | 2 | 3; setStep: (s: 1 | 2 | 3) => void;
-  orgId: string; selectedTeamId: string | null; setSelectedTeamId: (id: string) => void;
-  whyJoin: string; setWhyJoin: (s: string) => void;
-  submitting: boolean; onSubmit: () => void;
-}) {
-  return (
-    <div className="space-y-3">
-      <div className="flex gap-1">
-        {[1, 2, 3].map((s) => (
-          <div key={s} className={cn("flex-1 h-1 rounded-full", step >= s ? "bg-[#4a80f0]" : "bg-[#2a2a33]")} />
-        ))}
-      </div>
-
-      {step === 1 && (
-        <div>
-          <p className="text-xs font-semibold text-[#9898a8] mb-2">Select your team</p>
-          <input
-            value={selectedTeamId ?? ""}
-            onChange={(e) => setSelectedTeamId(e.target.value)}
-            placeholder="Team ID (or select from /teams)"
-            className="w-full text-xs px-2 py-1.5 rounded border border-[#2a2a33] bg-transparent text-[#e8e8ec] focus:outline-none focus:border-[#4a80f0]"
-          />
-          <button
-            onClick={() => selectedTeamId && setStep(2)}
-            disabled={!selectedTeamId}
-            className="mt-2 w-full py-2 rounded-lg text-xs font-semibold bg-[#4a80f0] hover:bg-[#6a9fff] text-[#0f0f11] disabled:opacity-40"
-          >
-            Next →
-          </button>
-        </div>
-      )}
-      {step === 2 && (
-        <div>
-          <p className="text-xs font-semibold text-[#9898a8] mb-2">Why do you want to join?</p>
-          <textarea
-            value={whyJoin}
-            onChange={(e) => setWhyJoin(e.target.value)}
-            rows={4}
-            className="w-full text-xs px-2 py-1.5 rounded border border-[#2a2a33] bg-transparent text-[#e8e8ec] resize-none focus:outline-none focus:border-[#4a80f0]"
-          />
-          <div className="flex gap-2 mt-2">
-            <button onClick={() => setStep(1)} className="flex-1 py-2 rounded-lg text-xs border border-[#2a2a33] text-[#9898a8]">← Back</button>
-            <button onClick={() => whyJoin.trim() && setStep(3)} disabled={!whyJoin.trim()} className="flex-1 py-2 rounded-lg text-xs font-semibold bg-[#4a80f0] hover:bg-[#6a9fff] text-[#0f0f11] disabled:opacity-40">Review →</button>
-          </div>
-        </div>
-      )}
-      {step === 3 && (
-        <div>
-          <p className="text-xs font-semibold text-[#9898a8] mb-1">Review & submit</p>
-          <p className="text-xs text-[#9898a8] line-clamp-3 bg-[#1e1e24] rounded p-2 mb-2">{whyJoin}</p>
-          <div className="flex gap-2">
-            <button onClick={() => setStep(2)} className="flex-1 py-2 rounded-lg text-xs border border-[#2a2a33] text-[#9898a8]">← Back</button>
-            <button onClick={onSubmit} disabled={submitting} className="flex-1 py-2 rounded-lg text-xs font-semibold bg-[#4a80f0] hover:bg-[#6a9fff] text-[#0f0f11] disabled:opacity-40">
-              {submitting ? "Submitting…" : "Submit"}
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
