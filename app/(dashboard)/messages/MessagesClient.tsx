@@ -343,7 +343,7 @@ export default function MessagesClient({ conversations: initialConvs, myUserId, 
                       >
                         <Avatar src={av.src} displayName={av.displayName} geniusType={av.geniusType} size={34} />
                         <div className="flex-1 min-w-0">
-                          <p className="truncate" style={{ fontFamily: "var(--font-display, serif)", fontSize: 16, fontWeight: 600, color: isActive ? "#f0f8ff" : "#deeeff" }}>{name}</p>
+                          <p className="truncate" style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 16, fontWeight: 600, color: isActive ? "#f0f8ff" : "#deeeff" }}>{name}</p>
                           {conv.lastMessage && (
                             <p className="text-xs truncate" style={{ color: "var(--text2)", fontWeight: 500 }}>{conv.lastMessage.body}</p>
                           )}
@@ -371,7 +371,7 @@ export default function MessagesClient({ conversations: initialConvs, myUserId, 
               </button>
               {(() => { const av = convAvatar(activeConv, myUserId); return <Avatar src={av.src} displayName={av.displayName} geniusType={av.geniusType} size={30} />; })()}
               <div>
-                <p style={{ fontFamily: "var(--font-display, serif)", fontSize: 22, fontWeight: 500, letterSpacing: "-0.3px", color: "#f0f8ff", lineHeight: 1.1 }}>
+                <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 22, fontWeight: 500, letterSpacing: "-0.3px", color: "#f0f8ff", lineHeight: 1.1 }}>
                   {convDisplayName(activeConv, myUserId)}
                 </p>
                 {activeConv.type === "DIRECT" && (() => {
