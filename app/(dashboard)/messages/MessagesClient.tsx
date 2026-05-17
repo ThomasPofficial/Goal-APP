@@ -343,9 +343,9 @@ export default function MessagesClient({ conversations: initialConvs, myUserId, 
                       >
                         <Avatar src={av.src} displayName={av.displayName} geniusType={av.geniusType} size={34} />
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate" style={{ color: isActive ? "var(--text)" : "var(--text2)" }}>{name}</p>
+                          <p className="truncate" style={{ fontFamily: "var(--font-display, serif)", fontSize: 16, fontWeight: 600, color: isActive ? "#f0f8ff" : "#deeeff" }}>{name}</p>
                           {conv.lastMessage && (
-                            <p className="text-xs truncate" style={{ color: "var(--muted)" }}>{conv.lastMessage.body}</p>
+                            <p className="text-xs truncate" style={{ color: "var(--text2)", fontWeight: 500 }}>{conv.lastMessage.body}</p>
                           )}
                         </div>
                       </button>
@@ -371,7 +371,7 @@ export default function MessagesClient({ conversations: initialConvs, myUserId, 
               </button>
               {(() => { const av = convAvatar(activeConv, myUserId); return <Avatar src={av.src} displayName={av.displayName} geniusType={av.geniusType} size={30} />; })()}
               <div>
-                <p className="text-sm font-semibold" style={{ color: "var(--text)", fontFamily: "var(--font-display, sans-serif)" }}>
+                <p style={{ fontFamily: "var(--font-display, serif)", fontSize: 22, fontWeight: 500, letterSpacing: "-0.3px", color: "#f0f8ff", lineHeight: 1.1 }}>
                   {convDisplayName(activeConv, myUserId)}
                 </p>
                 {activeConv.type === "DIRECT" && (() => {
@@ -397,7 +397,6 @@ export default function MessagesClient({ conversations: initialConvs, myUserId, 
                   {messages.map((msg, i) => {
                     const isMe = msg.senderId === myUserId;
                     const grouped = messages[i - 1]?.senderId === msg.senderId;
-                    const bubbleBg = isMe ? (myGT?.color ?? "var(--gold)") : "var(--surface2)";
                     return (
                       <div key={msg.id} className={`flex gap-2 ${isMe ? "flex-row-reverse" : ""} ${grouped ? "mt-0.5" : "mt-3"}`}>
                         {!grouped && !isMe && (
@@ -406,7 +405,24 @@ export default function MessagesClient({ conversations: initialConvs, myUserId, 
                           </div>
                         )}
                         {(grouped || isMe) && <div className="w-7 shrink-0" />}
-                        <div className="max-w-[70%] px-3.5 py-2 rounded-2xl text-sm leading-relaxed" style={{ background: bubbleBg, color: isMe ? "#04070F" : "var(--text)", border: isMe ? "none" : "1px solid var(--border)" }}>
+                        <div
+                          className="max-w-[70%] px-3.5 py-2.5 text-sm leading-relaxed"
+                          style={isMe ? {
+                            background: "linear-gradient(135deg, #0a3ea0, #1060d8)",
+                            color: "#ffffff",
+                            borderRadius: "13px 13px 3px 13px",
+                            boxShadow: "0 4px 20px rgba(16,96,216,0.5)",
+                            fontFamily: "var(--font-body, sans-serif)",
+                            fontWeight: 500,
+                          } : {
+                            background: "#0e2448",
+                            color: "#d8eeff",
+                            borderRadius: "13px 13px 13px 3px",
+                            border: "1px solid #1e3a68",
+                            fontFamily: "var(--font-body, sans-serif)",
+                            fontWeight: 500,
+                          }}
+                        >
                           {msg.content}
                         </div>
                       </div>
@@ -435,7 +451,7 @@ export default function MessagesClient({ conversations: initialConvs, myUserId, 
                   onClick={sendMessage}
                   disabled={!input.trim() || sending}
                   className="p-2.5 rounded-xl transition-colors disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
-                  style={{ background: "var(--gold)", color: "#04070F" }}
+                  style={{ background: "linear-gradient(135deg, #0a3ea0, #1060d8)", color: "#fff", boxShadow: "0 4px 16px rgba(16,96,216,0.5)" }}
                 >
                   <Send className="w-4 h-4" />
                 </button>

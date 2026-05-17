@@ -43,13 +43,15 @@ export default function Sidebar({ userName, userEmail, geniusType, mobileOpen = 
         style={{ borderBottom: "1px solid var(--border)" }}
       >
         <span
-          className="text-xl font-black tracking-widest uppercase"
           style={{
-            fontFamily: "var(--font-display, 'Special Elite', sans-serif)",
-            letterSpacing: "0.15em",
+            fontFamily: "var(--font-display, 'Cormorant Garamond', serif)",
+            fontSize: 26,
+            fontWeight: 500,
+            letterSpacing: "-0.3px",
+            color: "#f0f8ff",
           }}
         >
-          <span style={{ color: "var(--text)" }}>Ni</span><span style={{ color: "var(--blue)" }}>varro</span>
+          Nivarro
         </span>
         <button
           onClick={onMobileClose}

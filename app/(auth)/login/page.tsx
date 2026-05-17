@@ -81,8 +81,8 @@ function LoginForm() {
       <button
         type="submit"
         disabled={loading}
-        className="w-full flex items-center justify-center gap-2 font-bold text-sm rounded-md py-2.5 mt-2 disabled:opacity-60 disabled:cursor-not-allowed uppercase tracking-widest"
-        style={{ background: "var(--gold)", color: "#04070F", fontFamily: "var(--font-display, sans-serif)", letterSpacing: "0.1em" }}
+        className="w-full flex items-center justify-center gap-2 text-sm py-2.5 mt-2 disabled:opacity-60 disabled:cursor-not-allowed"
+        style={{ background: "linear-gradient(135deg, #0a3ea0, #1060d8)", color: "#fff", fontFamily: "var(--font-body, sans-serif)", fontWeight: 700, borderRadius: 10, boxShadow: "0 4px 20px rgba(16,96,216,0.45)", border: "none" }}
       >
         {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
         {loading ? "Signing in..." : "Sign in"}
@@ -102,15 +102,12 @@ export default function LoginPage() {
       }}
     >
       <div className="mb-8 text-center">
-        <div
-          className="inline-flex items-center justify-center w-10 h-10 rounded-lg mb-4"
-          style={{ background: "var(--gold)" }}
-        >
-          <span className="font-black text-lg" style={{ color: "#04070F", fontFamily: "var(--font-display, sans-serif)" }}>N</span>
-        </div>
-        <h1 className="text-xl font-semibold" style={{ color: "var(--text)", fontFamily: "var(--font-display, sans-serif)" }}>
-          Welcome back
+        <h1 style={{ fontFamily: "var(--font-display, serif)", fontSize: 32, fontWeight: 500, letterSpacing: "-0.5px", color: "#f0f8ff", marginBottom: 4 }}>
+          Nivarro
         </h1>
+        <h2 className="text-lg" style={{ color: "var(--text)", fontFamily: "var(--font-body, sans-serif)", fontWeight: 600 }}>
+          Welcome back
+        </h2>
         <p className="text-sm mt-1" style={{ color: "var(--text2)" }}>
           Sign in to your Nivarro account
         </p>
