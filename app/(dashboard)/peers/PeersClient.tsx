@@ -212,14 +212,6 @@ export default function PeersClient() {
         />
       )}
 
-      {/* ── Group FAB ─────────────────────────────────────────── */}
-      <button
-        onClick={() => setShowGroupModal(true)}
-        className="fixed bottom-8 right-8 w-12 h-12 rounded-full bg-[#4a80f0] hover:bg-[#6a9fff] text-[#0f0f11] flex items-center justify-center shadow-lg transition-colors z-30"
-        title="Start group conversation"
-      >
-        <Plus className="w-5 h-5" />
-      </button>
 
       {showGroupModal && (
         <GroupConversationModal
