@@ -44,7 +44,7 @@ export default function Sidebar({ userName, userEmail, geniusType, mobileOpen = 
       >
         <span
           style={{
-            fontFamily: "var(--font-display, 'Cormorant Garamond', serif)",
+            fontFamily: "'Cormorant Garamond', serif",
             fontSize: 26,
             fontWeight: 500,
             letterSpacing: "-0.3px",
