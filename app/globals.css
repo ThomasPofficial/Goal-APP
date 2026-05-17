@@ -2,11 +2,11 @@
 @variant dark (&:is(.dark *));
 
 :root {
-  /* ── Blue accent (replaces gold entirely) ── */
-  --blue:        #4A80F0;
-  --blue-bright: #6A9FFF;
-  --blue-dim:    #1A2E5A;
-  --blue-glow:   rgba(74,128,240,0.18);
+  /* ── Blue accent ── */
+  --blue:        #1060d8;
+  --blue-bright: #2878f0;
+  --blue-dim:    #102644;
+  --blue-glow:   rgba(16,96,216,0.5);
 
   /* ── Gold alias → blue (keeps existing var(--gold) refs working) ── */
   --gold:        var(--blue);
@@ -15,16 +15,16 @@
   --gold-glow:   var(--blue-glow);
 
   /* ── Night mode surfaces ── */
-  --n-bg:       #07090F;
-  --n-bg2:      #0A0D18;
-  --n-surface:  #0D1120;
-  --n-surface2: #111828;
-  --n-surface3: #162038;
-  --n-border:   rgba(255,255,255,0.07);
-  --n-border-md:rgba(74,128,240,0.25);
-  --n-text:     #FFFFFF;
-  --n-text2:    #A8A8B8;
-  --n-muted:    #4A4A5A;
+  --n-bg:       #030609;
+  --n-bg2:      #060d1a;
+  --n-surface:  #060d1a;
+  --n-surface2: #0c1a2e;
+  --n-surface3: #102644;
+  --n-border:   #142436;
+  --n-border-md:rgba(16,96,216,0.3);
+  --n-text:     #e4eeff;
+  --n-text2:    #8ab0d8;
+  --n-muted:    #5a7898;
 
   /* ── Active (night default) ── */
   --bg:        var(--n-bg);
@@ -71,7 +71,7 @@ html, body {
   min-height: 100%;
   background: var(--bg);
   color: var(--text);
-  font-family: var(--font-body, 'DM Sans', system-ui, sans-serif);
+  font-family: var(--font-body, 'Plus Jakarta Sans', system-ui, sans-serif);
   -webkit-font-smoothing: antialiased;
   transition: background 0.4s, color 0.4s;
 }
