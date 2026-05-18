@@ -346,6 +346,7 @@ model Org {
   createdById          String
   // Paid tier & visual identity
   isPaid               Boolean     @default(false)
+  apiKey               String?     @unique
   logoLetter           String?
   logoBg               String?
   logoColor            String?
