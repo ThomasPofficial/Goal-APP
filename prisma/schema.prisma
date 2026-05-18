@@ -113,6 +113,9 @@ model Profile {
   teamMemberships      TeamMember[]
   sentRecruitments     RecruitmentRequest[] @relation("SentRecruitments")
   receivedRecruitments RecruitmentRequest[] @relation("ReceivedRecruitments")
+  workflowSession      WorkflowSession?
+  algorithmQuotas      AlgorithmQuota[]
+  orgReviews           OrgReview[]
 }
 
 enum GeniusType {
@@ -322,29 +325,44 @@ enum OrgStatus {
 }
 
 model Org {
-  id               String      @id @default(cuid())
-  name             String
-  tagline          String?
-  description      String?
-  whatWeSeek       String?
-  category         OrgCategory
-  status           OrgStatus   @default(OPEN)
-  heroUrl          String?
-  accentColor      String?
-  minTeamSize      Int         @default(1)
-  maxTeamSize      Int         @default(5)
-  gradeEligibility String?
-  deadline         DateTime?
-  format           String?
-  location         String?
-  stipend          String?
-  autoAccept       Boolean     @default(false)
-  createdAt        DateTime    @default(now())
-  createdById      String
+  id                   String      @id @default(cuid())
+  name                 String
+  tagline              String?
+  description          String?
+  whatWeSeek           String?
+  category             OrgCategory
+  status               OrgStatus   @default(OPEN)
+  heroUrl              String?
+  accentColor          String?
+  minTeamSize          Int         @default(1)
+  maxTeamSize          Int         @default(5)
+  gradeEligibility     String?
+  deadline             DateTime?
+  format               String?
+  location             String?
+  stipend              String?
+  autoAccept           Boolean     @default(false)
+  createdAt            DateTime    @default(now())
+  createdById          String
+  // Paid tier & visual identity
+  isPaid               Boolean     @default(false)
+  logoLetter           String?
+  logoBg               String?
+  logoColor            String?
+  bannerGradient       String?
+  founded              String?
+  website              String?
+  orgType              String?
+  values               String      @default("[]")
+  socialProof          String?
+  focusTags            String      @default("[]")
+  memberCount          Int?
+  headquartersLocation String?
 
   opportunities Opportunity[]
   teams         Team[]
   projects      OrgProject[]
+  reviews       OrgReview[]
 }
 
 model Opportunity {
@@ -422,6 +440,7 @@ model Team {
   conversation        Conversation[]
   recruitmentRequests RecruitmentRequest[]
   teamApplications    TeamApplication[]
+  workflowSession     WorkflowSession?
 }
 
 model TeamMember {
@@ -471,19 +490,30 @@ enum OrgProjectStatus {
 }
 
 model OrgProject {
-  id             String           @id @default(cuid())
-  orgId          String
-  title          String
-  description    String?
-  openSpots      Int              @default(1)
-  requiredSkills String           @default("[]")
-  deadline       DateTime?
-  status         OrgProjectStatus @default(OPEN)
-  createdAt      DateTime         @default(now())
+  id                   String           @id @default(cuid())
+  orgId                String
+  title                String
+  description          String?
+  shortDescription     String?
+  fullDescription      String?
+  openSpots            Int              @default(1)
+  requiredSkills       String           @default("[]")
+  preferredGeniusTypes String           @default("[]")
+  roles                String           @default("[]")
+  hoursPerWeek         String?
+  duration             String?
+  format               String?
+  progressPercent      Int              @default(0)
+  deadline             DateTime?
+  status               OrgProjectStatus @default(OPEN)
+  createdAt            DateTime         @default(now())
 
   org              Org                  @relation(fields: [orgId], references: [id], onDelete: Cascade)
   recruitmentReqs  RecruitmentRequest[]
   teamApplications TeamApplication[]
+  reviews          OrgReview[]
+  algorithmQuotas  AlgorithmQuota[]
+  workflowSessions WorkflowSession[]
 }
 
 enum RecruitmentStatus {
@@ -530,4 +560,60 @@ model TeamApplication {
   orgProject OrgProject @relation(fields: [orgProjectId], references: [id], onDelete: Cascade)
 
   @@unique([teamId, orgProjectId])
+}
+
+// ─────────────────────────────────────────────
+// ORG REVIEWS (written by org about scholar)
+// ─────────────────────────────────────────────
+
+model OrgReview {
+  id           String   @id @default(cuid())
+  orgId        String
+  orgProjectId String
+  profileId    String
+  body         String
+  deadline     DateTime
+  createdAt    DateTime @default(now())
+
+  org        Org        @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  orgProject OrgProject @relation(fields: [orgProjectId], references: [id], onDelete: Cascade)
+  profile    Profile    @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([orgProjectId, profileId])
+}
+
+// ─────────────────────────────────────────────
+// WORKFLOW SESSION (one active workflow per scholar)
+// ─────────────────────────────────────────────
+
+model WorkflowSession {
+  id           String   @id @default(cuid())
+  profileId    String   @unique
+  orgProjectId String
+  step         Int      @default(1)
+  teamId       String?  @unique
+  rosterLocked Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  profile    Profile    @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  orgProject OrgProject @relation(fields: [orgProjectId], references: [id], onDelete: Cascade)
+  team       Team?      @relation(fields: [teamId], references: [id])
+}
+
+// ─────────────────────────────────────────────
+// ALGORITHM QUOTA (daily recommendation cap)
+// ─────────────────────────────────────────────
+
+model AlgorithmQuota {
+  id           String @id @default(cuid())
+  profileId    String
+  orgProjectId String
+  date         String
+  usedCount    Int    @default(0)
+
+  profile    Profile    @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  orgProject OrgProject @relation(fields: [orgProjectId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, orgProjectId, date])
 }
