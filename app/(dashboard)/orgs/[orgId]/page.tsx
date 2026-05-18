@@ -31,8 +31,12 @@ export default async function OrgDetailPage({ params }: { params: Promise<{ orgI
         id: true,
         title: true,
         description: true,
+        shortDescription: true,
         openSpots: true,
         requiredSkills: true,
+        preferredGeniusTypes: true,
+        hoursPerWeek: true,
+        duration: true,
         deadline: true,
         status: true,
       },
@@ -98,6 +102,10 @@ export default async function OrgDetailPage({ params }: { params: Promise<{ orgI
       }}
       projects={projects.map((p) => ({
         ...p,
+        shortDescription: p.shortDescription ?? null,
+        preferredGeniusTypes: p.preferredGeniusTypes ?? "[]",
+        hoursPerWeek: p.hoursPerWeek ?? null,
+        duration: p.duration ?? null,
         deadline: p.deadline?.toISOString() ?? null,
       }))}
       myProfileId={myProfile?.id ?? null}

@@ -26,6 +26,19 @@ interface OrgDetail {
   format: string | null;
   location: string | null;
   stipend: string | null;
+  // Visual identity
+  logoLetter: string | null;
+  logoBg: string | null;
+  logoColor: string | null;
+  bannerGradient: string | null;
+  founded: string | null;
+  website: string | null;
+  orgType: string | null;
+  values: string;
+  socialProof: string | null;
+  focusTags: string;
+  memberCount: number | null;
+  headquartersLocation: string | null;
   opportunities: { id: string; title: string; description: string | null; deadline: string | null }[];
   teams: {
     id: string;
@@ -43,8 +56,12 @@ interface OrgProjectSummary {
   id: string;
   title: string;
   description: string | null;
+  shortDescription: string | null;
   openSpots: number;
   requiredSkills: string;
+  preferredGeniusTypes: string;
+  hoursPerWeek: string | null;
+  duration: string | null;
   deadline: string | null;
   status: string;
 }
@@ -82,23 +99,58 @@ export default function OrgDetailClient({
     () => Object.fromEntries(applications.map((a) => [a.id, a.status]))
   );
 
-  const accentColor = org.accentColor ?? CATEGORY_COLORS[org.category] ?? "#4a80f0";
+  const accentColor = org.accentColor ?? CATEGORY_COLORS[org.category] ?? "#1060d8";
   const daysLeft = org.deadline ? differenceInDays(new Date(org.deadline), new Date()) : null;
+  const values: string[] = JSON.parse(org.values || "[]");
+  const focusTags: string[] = JSON.parse(org.focusTags || "[]");
+
+  const bannerBg = org.heroUrl
+    ? `url(${org.heroUrl}) center/cover`
+    : org.bannerGradient
+    ? org.bannerGradient
+    : `linear-gradient(135deg, ${accentColor}30 0%, #030609 100%)`;
 
   return (
     <div>
-      {/* Hero */}
+      {/* Hero banner */}
       <div
-        className="h-48 rounded-xl mb-6 flex items-end p-6"
-        style={{ background: org.heroUrl ? `url(${org.heroUrl}) center/cover` : `linear-gradient(135deg, ${accentColor}40, ${accentColor}10)` }}
+        className="h-44 rounded-xl mb-0 relative overflow-hidden"
+        style={{ background: bannerBg }}
       >
-        <div className="flex items-end gap-4">
-          <div className="w-16 h-16 rounded-xl border-4 border-[#0f0f11] flex items-center justify-center text-2xl font-bold text-white" style={{ background: accentColor }}>
-            {org.name[0]}
-          </div>
-          <div>
-            <p className="font-bold text-xl text-white drop-shadow">{org.name}</p>
-            {org.tagline && <p className="text-sm text-white/80">{org.tagline}</p>}
+        <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, transparent 40%, rgba(3,6,9,0.85) 100%)" }} />
+      </div>
+
+      {/* Org identity row */}
+      <div className="flex items-end gap-4 px-1 -mt-8 mb-6 relative z-10">
+        <div
+          className="w-16 h-16 rounded-xl border-4 flex items-center justify-center text-2xl font-bold flex-shrink-0"
+          style={{
+            background: org.logoBg ?? accentColor,
+            color: org.logoColor ?? "#fff",
+            borderColor: "#030609",
+            fontFamily: "'Cormorant Garamond', serif",
+          }}
+        >
+          {org.logoLetter ?? org.name[0]}
+        </div>
+        <div className="pb-1">
+          <p
+            className="font-semibold text-xl"
+            style={{ color: "#f0f8ff", fontFamily: "'Cormorant Garamond', serif" }}
+          >
+            {org.name}
+          </p>
+          {org.tagline && <p className="text-sm" style={{ color: "#8ab0d8" }}>{org.tagline}</p>}
+          <div className="flex flex-wrap gap-1.5 mt-1">
+            {focusTags.map((tag) => (
+              <span
+                key={tag}
+                className="text-[10px] px-1.5 py-0.5 rounded-full"
+                style={{ background: "rgba(16,96,216,0.12)", border: "1px solid rgba(16,96,216,0.25)", color: "#6A9FFF" }}
+              >
+                {tag}
+              </span>
+            ))}
           </div>
         </div>
       </div>
@@ -134,42 +186,73 @@ export default function OrgDetailClient({
       <div className={cn("flex gap-6", isAdmin && adminTab === "applications" && "hidden")}>
         {/* ── Left content ─────────────────────────────────────── */}
         <div className="flex-1 min-w-0 space-y-6">
+          {org.socialProof && (
+            <div
+              className="rounded-lg px-4 py-3 text-sm italic"
+              style={{
+                background: "rgba(16,96,216,0.06)",
+                border: "1px solid rgba(16,96,216,0.18)",
+                color: "#8ab0d8",
+                fontFamily: "'Cormorant Garamond', serif",
+                fontSize: 15,
+              }}
+            >
+              {org.socialProof}
+            </div>
+          )}
+
           {org.description && (
             <div>
-              <h2 className="text-sm font-semibold text-[#e8e8ec] mb-2">About</h2>
-              <p className="text-sm text-[#9898a8] leading-relaxed">{org.description}</p>
+              <h2 className="text-sm font-semibold mb-2" style={{ color: "#d8eeff" }}>About</h2>
+              <p className="text-sm leading-relaxed" style={{ color: "#8ab0d8" }}>{org.description}</p>
+            </div>
+          )}
+
+          {values.length > 0 && (
+            <div>
+              <h2 className="text-sm font-semibold mb-2" style={{ color: "#d8eeff" }}>Values</h2>
+              <div className="flex flex-wrap gap-1.5">
+                {values.map((v) => (
+                  <span key={v} className="text-xs px-2.5 py-1 rounded-full" style={{ background: "var(--surface2)", border: "1px solid var(--border)", color: "#8ab0d8" }}>
+                    {v}
+                  </span>
+                ))}
+              </div>
             </div>
           )}
 
           {org.whatWeSeek && (
             <div className="border-l-4 pl-4 py-2" style={{ borderColor: accentColor }}>
-              <h3 className="text-xs font-semibold text-[#9898a8] uppercase tracking-wider mb-1">What we're looking for</h3>
-              <p className="text-sm text-[#9898a8] leading-relaxed">{org.whatWeSeek}</p>
+              <h3 className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: "#5a7898" }}>What we&apos;re looking for</h3>
+              <p className="text-sm leading-relaxed" style={{ color: "#8ab0d8" }}>{org.whatWeSeek}</p>
             </div>
           )}
 
-          <div className="grid grid-cols-2 gap-3 text-sm">
-            {org.format && (
-              <div className="flex items-center gap-2 text-[#9898a8]">
-                <MapPin className="w-4 h-4 text-[#5a5a6a]" />
-                {org.format}
+          <div className="grid grid-cols-2 gap-3 text-sm" style={{ color: "#8ab0d8" }}>
+            {org.orgType && <div><span style={{ color: "#5a7898" }}>Type: </span>{org.orgType}</div>}
+            {org.founded && <div><span style={{ color: "#5a7898" }}>Founded: </span>{org.founded}</div>}
+            {org.memberCount && <div><span style={{ color: "#5a7898" }}>Members: </span>{org.memberCount.toLocaleString()}</div>}
+            {org.headquartersLocation && (
+              <div className="flex items-center gap-1.5">
+                <MapPin className="w-3.5 h-3.5 flex-shrink-0" style={{ color: "#5a7898" }} />
+                {org.headquartersLocation}
               </div>
             )}
-            {org.location && (
-              <div className="flex items-center gap-2 text-[#9898a8]">
-                <MapPin className="w-4 h-4 text-[#5a5a6a]" />
-                {org.location}
-              </div>
-            )}
-            {org.stipend && (
-              <div className="text-[#9898a8]">
-                <span className="font-medium">Stipend: </span>{org.stipend}
-              </div>
-            )}
-            <div className="flex items-center gap-2 text-[#9898a8]">
-              <Users className="w-4 h-4 text-[#5a5a6a]" />
+            {org.format && <div className="flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5 flex-shrink-0" style={{ color: "#5a7898" }} />{org.format}</div>}
+            {org.location && <div style={{ color: "#8ab0d8" }}>{org.location}</div>}
+            {org.stipend && <div><span style={{ color: "#5a7898" }}>Stipend: </span>{org.stipend}</div>}
+            <div className="flex items-center gap-1.5">
+              <Users className="w-3.5 h-3.5 flex-shrink-0" style={{ color: "#5a7898" }} />
               Team size: <span className="font-medium">{org.minTeamSize}–{org.maxTeamSize}</span>
             </div>
+            {org.website && (
+              <div>
+                <a href={`https://${org.website.replace(/^https?:\/\//, "")}`} target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-1 hover:underline" style={{ color: "#4a80f0" }}>
+                  <ExternalLink className="w-3.5 h-3.5" /> {org.website}
+                </a>
+              </div>
+            )}
           </div>
 
           {projects.length > 0 && (
@@ -178,29 +261,50 @@ export default function OrgDetailClient({
               <div className="space-y-2">
                 {projects.map((proj) => {
                   const skills: string[] = JSON.parse(proj.requiredSkills || "[]");
+                  const preferred: string[] = JSON.parse(proj.preferredGeniusTypes || "[]");
                   return (
                     <Link
                       key={proj.id}
                       href={`/orgs/${org.id}/projects/${proj.id}`}
-                      className="block bg-[#16161a] border border-[#2a2a33] hover:border-[#4a80f0]/40 rounded-lg p-3 transition-colors group"
+                      className="block rounded-lg p-3 transition-colors group"
+                      style={{
+                        background: "var(--surface)",
+                        border: "1px solid var(--border-md)",
+                      }}
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium text-sm text-[#e8e8ec] group-hover:text-[#4a80f0] transition-colors">{proj.title}</p>
-                          {proj.description && (
-                            <p className="text-xs text-[#9898a8] mt-0.5 line-clamp-2">{proj.description}</p>
+                          <p
+                            className="font-medium text-sm group-hover:text-[#4a80f0] transition-colors"
+                            style={{ color: "#d8eeff", fontFamily: "'Cormorant Garamond', serif", fontSize: 15 }}
+                          >
+                            {proj.title}
+                          </p>
+                          {(proj.shortDescription ?? proj.description) && (
+                            <p className="text-xs mt-0.5 line-clamp-2" style={{ color: "#8ab0d8" }}>
+                              {proj.shortDescription ?? proj.description}
+                            </p>
                           )}
+                          <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                            {proj.hoursPerWeek && <span className="text-[10px]" style={{ color: "#5a7898" }}>⏱ {proj.hoursPerWeek}</span>}
+                            {proj.duration && <span className="text-[10px]" style={{ color: "#5a7898" }}>📅 {proj.duration}</span>}
+                          </div>
                           {skills.length > 0 && (
                             <div className="flex flex-wrap gap-1 mt-1.5">
                               {skills.slice(0, 4).map((s) => (
-                                <span key={s} className="text-[10px] px-1.5 py-0.5 rounded-full bg-[#1e1e24] text-[#9898a8] border border-[#2a2a33]">{s}</span>
+                                <span key={s} className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: "var(--surface2)", border: "1px solid var(--border)", color: "#8ab0d8" }}>{s}</span>
                               ))}
+                            </div>
+                          )}
+                          {preferred.length > 0 && (
+                            <div className="flex items-center gap-1 mt-1.5">
+                              {preferred.map((t) => <GeniusTypeBadge key={t} type={t as GeniusTypeKey} size="sm" />)}
                             </div>
                           )}
                         </div>
                         <div className="text-right flex-shrink-0">
-                          <p className="text-xs font-semibold text-[#4a80f0]">{proj.openSpots}</p>
-                          <p className="text-[10px] text-[#5a5a6a]">open spots</p>
+                          <p className="text-xs font-semibold" style={{ color: accentColor }}>{proj.openSpots}</p>
+                          <p className="text-[10px]" style={{ color: "#5a7898" }}>open spots</p>
                         </div>
                       </div>
                     </Link>
