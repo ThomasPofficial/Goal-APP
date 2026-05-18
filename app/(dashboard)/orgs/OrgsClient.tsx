@@ -19,6 +19,11 @@ interface Org {
   maxTeamSize: number;
   gradeEligibility: string | null;
   deadline: string | null;
+  logoLetter: string | null;
+  logoBg: string | null;
+  logoColor: string | null;
+  bannerGradient: string | null;
+  focusTags: string;
   _count: { teams: number };
 }
 
@@ -128,50 +133,79 @@ export default function OrgsClient() {
 }
 
 function OrgCard({ org }: { org: Org }) {
-  const color = org.accentColor ?? CATEGORY_COLORS[org.category] ?? "#4a80f0";
+  const color = org.accentColor ?? CATEGORY_COLORS[org.category] ?? "#1060d8";
+  const bannerBg = org.heroUrl
+    ? `url(${org.heroUrl}) center/cover`
+    : org.bannerGradient
+    ? org.bannerGradient
+    : `linear-gradient(135deg, ${color}25 0%, #030609 100%)`;
+
+  const focusTags: string[] = (() => { try { return JSON.parse(org.focusTags || "[]"); } catch { return []; } })();
 
   return (
     <Link href={`/orgs/${org.id}`} className="block group">
-      <div className="bg-[#16161a] border border-[#2a2a33] rounded-xl overflow-hidden hover:border-[#4a80f0] transition-all">
+      <div
+        className="rounded-xl overflow-hidden transition-all"
+        style={{
+          background: "var(--surface)",
+          border: "1px solid var(--border-md)",
+        }}
+      >
         {/* Banner */}
-        <div
-          className="h-20 flex items-end px-4 pb-3"
-          style={{ background: org.heroUrl ? `url(${org.heroUrl}) center/cover` : `linear-gradient(135deg, ${color}30, ${color}10)` }}
-        >
+        <div className="h-20 relative" style={{ background: bannerBg }}>
+          <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, transparent 50%, rgba(6,13,26,0.9) 100%)" }} />
           <div
-            className="w-10 h-10 rounded-lg border-2 border-[#16161a] flex items-center justify-center text-sm font-bold text-white"
-            style={{ background: color }}
+            className="absolute bottom-3 left-4 w-10 h-10 rounded-lg border-2 flex items-center justify-center text-sm font-bold"
+            style={{
+              background: org.logoBg ?? color,
+              color: org.logoColor ?? "#fff",
+              borderColor: "var(--surface)",
+              fontFamily: "'Cormorant Garamond', serif",
+              fontSize: 16,
+            }}
           >
-            {org.name[0]}
+            {org.logoLetter ?? org.name[0]}
           </div>
         </div>
 
-        <div className="p-4">
-          <div className="flex items-start justify-between gap-2 mb-1">
-            <p className="font-semibold text-sm text-[#e8e8ec] truncate">{org.name}</p>
+        <div className="p-4 pt-3">
+          <div className="flex items-start justify-between gap-2 mb-0.5">
+            <p
+              className="font-semibold text-sm truncate"
+              style={{ color: "#d8eeff", fontFamily: "'Cormorant Garamond', serif", fontSize: 15 }}
+            >
+              {org.name}
+            </p>
             <span
               className={cn(
                 "flex-shrink-0 text-[10px] font-semibold px-1.5 py-0.5 rounded",
                 org.status === "OPEN" ? "bg-green-950 text-green-400" :
                 org.status === "ROLLING" ? "bg-blue-950 text-blue-400" :
-                "bg-[#1e1e24] text-[#9898a8]"
+                "bg-[#0c1a2e] text-[#5a7898]"
               )}
             >
               {org.status}
             </span>
           </div>
-          <span
-            className="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded mb-2 inline-block"
-            style={{ color, background: `${color}20` }}
-          >
-            {org.category}
-          </span>
-          {org.description && (
-            <p className="text-xs text-[#9898a8] line-clamp-2 leading-relaxed">
-              {org.description}
+          {org.tagline && (
+            <p className="text-[11px] line-clamp-1 mb-1.5" style={{ color: "#5a7898" }}>
+              {org.tagline}
             </p>
           )}
-          <div className="flex items-center gap-3 mt-3 text-[11px] text-[#5a5a6a]">
+          {focusTags.length > 0 ? (
+            <div className="flex flex-wrap gap-1 mb-2">
+              {focusTags.slice(0, 3).map((tag) => (
+                <span key={tag} className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: "rgba(16,96,216,0.1)", border: "1px solid rgba(16,96,216,0.2)", color: "#6A9FFF" }}>
+                  {tag}
+                </span>
+              ))}
+            </div>
+          ) : org.description ? (
+            <p className="text-xs line-clamp-2 leading-relaxed mb-2" style={{ color: "#8ab0d8" }}>
+              {org.description}
+            </p>
+          ) : null}
+          <div className="flex items-center gap-3 text-[11px]" style={{ color: "#5a7898" }}>
             <span>Team {org.minTeamSize}–{org.maxTeamSize}</span>
             {org.deadline && <span>Due {format(new Date(org.deadline), "MMM d")}</span>}
           </div>
