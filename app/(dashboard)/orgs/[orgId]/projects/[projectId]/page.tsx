@@ -18,6 +18,7 @@ export default async function ProjectDetailPage({
     include: {
       org: { select: { id: true, name: true, accentColor: true, maxTeamSize: true } },
     },
+    // Select new fields explicitly
   });
 
   if (!project || project.orgId !== orgId) notFound();
@@ -27,25 +28,42 @@ export default async function ProjectDetailPage({
     select: { id: true },
   });
 
-  const existingApplication = myProfile
-    ? await prisma.teamApplication.findFirst({
-        where: {
-          orgProjectId: projectId,
-          team: { members: { some: { profileId: myProfile.id } } },
-        },
-        select: { id: true, status: true, teamId: true },
-      })
-    : null;
+  const [existingApplication, workflowSession] = await Promise.all([
+    myProfile
+      ? prisma.teamApplication.findFirst({
+          where: {
+            orgProjectId: projectId,
+            team: { members: { some: { profileId: myProfile.id } } },
+          },
+          select: { id: true, status: true, teamId: true },
+        })
+      : null,
+    myProfile
+      ? prisma.workflowSession.findUnique({
+          where: { profileId: myProfile.id },
+          select: { step: true, orgProjectId: true, rosterLocked: true },
+        })
+      : null,
+  ]);
+
+  const activeWorkflowStep =
+    workflowSession?.orgProjectId === projectId ? workflowSession.step : null;
 
   return (
     <ProjectDetailClient
       project={{
         ...project,
+        shortDescription: project.shortDescription ?? null,
+        fullDescription: project.fullDescription ?? null,
+        preferredGeniusTypes: project.preferredGeniusTypes ?? "[]",
+        hoursPerWeek: project.hoursPerWeek ?? null,
+        duration: project.duration ?? null,
         deadline: project.deadline?.toISOString() ?? null,
         createdAt: project.createdAt.toISOString(),
       }}
       myProfileId={myProfile?.id ?? null}
       existingApplication={existingApplication}
+      activeWorkflowStep={activeWorkflowStep}
     />
   );
 }
