@@ -454,8 +454,15 @@ export default function ProjectDetailClient({
           </div>
         </div>
 
-        {/* Apply Panel */}
+        {/* Roster Panel — shown in team-building step */}
         <div className="space-y-4">
+          {isInTeamStep && (
+            <RosterPanel
+              sentTo={sentTo}
+              candidates={[...algorithmCandidates, ...scholars]}
+              openSpots={project.openSpots}
+            />
+          )}
           <h2 className="text-sm font-semibold uppercase tracking-wider" style={{ color: "#d8eeff" }}>Apply</h2>
           <div
             className="rounded-xl p-4 sticky top-6"
@@ -661,6 +668,112 @@ function ScholarCard({
             </div>
           ))}
         </div>
+      )}
+    </div>
+  );
+}
+
+// ── Roster Panel ───────────────────────────────────────────────────────────────
+
+const GENIUS_ORDER: GeniusTypeKey[] = ["DYNAMO", "BLAZE", "TEMPO", "STEEL"];
+
+interface RosterPanelProps {
+  sentTo: Set<string>;
+  candidates: Scholar[];
+  openSpots: number;
+}
+
+function RosterPanel({ sentTo, candidates, openSpots }: RosterPanelProps) {
+  const recruited = candidates.filter((c) => sentTo.has(c.id));
+  const spotsLeft = Math.max(0, openSpots - recruited.length);
+
+  // Count genius types in roster
+  const typeCounts: Record<string, number> = {};
+  for (const s of recruited) {
+    if (s.geniusType) typeCounts[s.geniusType] = (typeCounts[s.geniusType] ?? 0) + 1;
+  }
+
+  const typesPresent = new Set(recruited.map((s) => s.geniusType).filter(Boolean));
+  const isBalanced = typesPresent.size >= 3 && recruited.length >= 2;
+
+  if (recruited.length === 0 && spotsLeft === openSpots) {
+    return (
+      <div
+        className="rounded-xl p-4"
+        style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
+      >
+        <h3 className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: "#5a7898" }}>Your Roster</h3>
+        <p className="text-xs" style={{ color: "#3a5878" }}>
+          Send recruitment requests to build your team. Recruited scholars appear here.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className="rounded-xl p-4 space-y-3"
+      style={{ background: "var(--surface)", border: "1px solid var(--border-md)" }}
+    >
+      <div className="flex items-center justify-between">
+        <h3 className="text-xs font-semibold uppercase tracking-wider" style={{ color: "#5a7898" }}>Your Roster</h3>
+        <span className="text-[11px]" style={{ color: spotsLeft === 0 ? "#4ade80" : "#5a7898" }}>
+          {recruited.length}/{openSpots} recruited
+        </span>
+      </div>
+
+      {/* Coverage bar */}
+      <div>
+        <div className="flex gap-0.5 h-2 rounded-full overflow-hidden" style={{ background: "var(--surface2)" }}>
+          {GENIUS_ORDER.map((g) => {
+            const count = typeCounts[g] ?? 0;
+            if (count === 0) return null;
+            const pct = (count / openSpots) * 100;
+            return (
+              <div
+                key={g}
+                style={{ width: `${pct}%`, background: GENIUS_TYPES[g].color, opacity: 0.85 }}
+              />
+            );
+          })}
+        </div>
+        <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+          {GENIUS_ORDER.map((g) => {
+            const count = typeCounts[g] ?? 0;
+            if (count === 0) return null;
+            return (
+              <span key={g} className="flex items-center gap-1 text-[10px]" style={{ color: GENIUS_TYPES[g].color }}>
+                {GENIUS_TYPES[g].emoji} {GENIUS_TYPES[g].label} ×{count}
+              </span>
+            );
+          })}
+        </div>
+      </div>
+
+      {isBalanced && (
+        <div
+          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold"
+          style={{ background: "rgba(74,222,128,0.08)", border: "1px solid rgba(74,222,128,0.2)", color: "#4ade80" }}
+        >
+          <CheckCircle2 className="w-3.5 h-3.5" /> Well-balanced team
+        </div>
+      )}
+
+      {/* Recruited scholars */}
+      <div className="space-y-1.5">
+        {recruited.map((s) => (
+          <div key={s.id} className="flex items-center gap-2">
+            <Avatar src={s.avatarUrl} name={s.displayName} geniusType={s.geniusType} size={24} />
+            <span className="text-xs flex-1 min-w-0 truncate" style={{ color: "#d8eeff" }}>{s.displayName}</span>
+            {s.geniusType && <GeniusTypeBadge type={s.geniusType} size="sm" />}
+          </div>
+        ))}
+      </div>
+
+      {spotsLeft > 0 && (
+        <p className="text-[11px]" style={{ color: "#3a5878" }}>
+          {spotsLeft} spot{spotsLeft !== 1 ? "s" : ""} remaining
+        </p>
       )}
     </div>
   );
