@@ -78,8 +78,12 @@ export async function GET(req: Request) {
       ...(category ? { category } : {}),
       ...(openOnly ? { status: "OPEN" as OrgStatus } : {}),
     },
-    include: {
-      opportunities: { select: { id: true }, take: 1 },
+    select: {
+      id: true, name: true, tagline: true, description: true, category: true,
+      status: true, heroUrl: true, accentColor: true, minTeamSize: true,
+      maxTeamSize: true, gradeEligibility: true, deadline: true,
+      logoLetter: true, logoBg: true, logoColor: true, bannerGradient: true,
+      focusTags: true,
       _count: { select: { teams: true } },
     },
     orderBy: { createdAt: "desc" },
