@@ -19,14 +19,14 @@ async function main() {
   }
   console.log(`Seeded ${TRAITS.length} traits.`);
 
+  // Use a placeholder createdById — the first user in the DB, or a fixed cuid
+  const firstUser = await prisma.user.findFirst({ orderBy: { createdAt: "asc" } });
+  const creatorId = firstUser?.id ?? "seed-placeholder";
+
   // Seed the Nivarro Team demo org (idempotent)
   const existing = await prisma.org.findFirst({ where: { name: "Nivarro Team" } });
   if (!existing) {
     console.log("Seeding Nivarro Team org...");
-
-    // Use a placeholder createdById — the first user in the DB, or a fixed cuid
-    const firstUser = await prisma.user.findFirst({ orderBy: { createdAt: "asc" } });
-    const creatorId = firstUser?.id ?? "seed-placeholder";
 
     const org = await prisma.org.create({
       data: {

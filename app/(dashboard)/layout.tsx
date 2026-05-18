@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import SidebarShell from "@/components/layout/SidebarShell";
+import WorkflowBar from "@/components/ui/WorkflowBar";
 import type { GeniusType } from "@/data/traits";
 
 export default async function DashboardLayout({
@@ -27,7 +28,10 @@ export default async function DashboardLayout({
         geniusType={(profile?.geniusType as GeniusType | null) ?? null}
       />
       <main className="md:pl-[220px] min-h-screen pt-14 pb-[60px] md:pt-0 md:pb-0">
-        <div className="max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-8">{children}</div>
+        <div className="max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-8">
+          <WorkflowBar />
+          {children}
+        </div>
       </main>
     </div>
   );
