@@ -2,9 +2,18 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { format } from "date-fns";
 import Avatar from "@/components/ui/Avatar";
 import GeniusTypeBadge from "@/components/ui/GeniusTypeBadge";
 import { GENIUS_TYPES, type GeniusTypeKey } from "@/lib/geniusTypes";
+
+interface OwnReview {
+  id: string;
+  body: string;
+  createdAt: string;
+  org: { name: string; logoLetter: string | null; logoBg: string | null; logoColor: string | null };
+  orgProject: { title: string };
+}
 
 interface ProfileData {
   id: string;
@@ -26,9 +35,10 @@ interface Props {
   profile: ProfileData;
   isOwn: boolean;
   myProfile: (Omit<ProfileData, "secondaryGeniusType"> & { geniusType: GeniusTypeKey | null }) | null;
+  ownReviews?: OwnReview[];
 }
 
-export default function ProfileClient({ profile, isOwn }: Props) {
+export default function ProfileClient({ profile, isOwn, ownReviews = [] }: Props) {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({
@@ -167,6 +177,51 @@ export default function ProfileClient({ profile, isOwn }: Props) {
               )}
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Reviews — own profile only, Gate A */}
+      {isOwn && ownReviews.length > 0 && (
+        <div className="mb-6">
+          <h2 className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: "#5a7898" }}>
+            Your Reviews
+          </h2>
+          <div className="space-y-3">
+            {ownReviews.map((r) => (
+              <div
+                key={r.id}
+                className="rounded-xl p-4"
+                style={{ background: "var(--surface)", border: "1px solid var(--border-md)" }}
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  {r.org.logoLetter && (
+                    <div
+                      className="w-6 h-6 rounded-md flex items-center justify-center text-[11px] font-bold flex-shrink-0"
+                      style={{ background: r.org.logoBg ?? "#0A1E52", color: r.org.logoColor ?? "#6A9FFF" }}
+                    >
+                      {r.org.logoLetter}
+                    </div>
+                  )}
+                  <span className="text-xs font-semibold" style={{ color: "#8ab0d8" }}>{r.org.name}</span>
+                  <span className="text-[11px]" style={{ color: "#5a7898" }}>· {r.orgProject.title}</span>
+                  <span className="ml-auto text-[10px]" style={{ color: "#5a7898" }}>{format(new Date(r.createdAt), "MMM d, yyyy")}</span>
+                </div>
+                <p className="text-sm leading-relaxed" style={{ color: "#c8ddf0", fontFamily: "'Cormorant Garamond', serif", fontSize: 15 }}>{r.body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {isOwn && ownReviews.length === 0 && (
+        <div
+          className="mb-6 rounded-xl p-5 text-center"
+          style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
+        >
+          <p className="text-sm font-medium" style={{ color: "#5a7898" }}>No reviews yet</p>
+          <p className="text-xs mt-1" style={{ color: "#3a5878" }}>
+            Reviews appear here after you complete an org project. They&apos;re written by the org and visible only to you — and to teams recruiting via the algorithm.
+          </p>
         </div>
       )}
 

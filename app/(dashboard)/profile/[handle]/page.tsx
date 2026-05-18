@@ -40,11 +40,27 @@ export default async function ProfilePage({ params }: { params: Promise<{ handle
 
   const isOwnProfile = myProfile?.id === profile.id || (session?.user?.id && session.user.id === profile.userId);
 
+  // Gate A: scholars see their own reviews on their own profile
+  const ownReviews = isOwnProfile
+    ? await prisma.orgReview.findMany({
+        where: { profileId: profile.id },
+        orderBy: { createdAt: "desc" },
+        select: {
+          id: true,
+          body: true,
+          createdAt: true,
+          org: { select: { name: true, logoLetter: true, logoBg: true, logoColor: true } },
+          orgProject: { select: { title: true } },
+        },
+      })
+    : [];
+
   return (
     <ProfileClient
       profile={{ ...profile, geniusType: profile.geniusType as GeniusTypeKey | null, secondaryGeniusType: profile.secondaryGeniusType as GeniusTypeKey | null }}
       isOwn={!!isOwnProfile}
       myProfile={myProfile ? { ...myProfile, geniusType: myProfile.geniusType as GeniusTypeKey | null } : null}
+      ownReviews={ownReviews.map((r) => ({ ...r, createdAt: r.createdAt.toISOString() }))}
     />
   );
 }
