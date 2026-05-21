@@ -1,25 +1,16 @@
 import { prisma } from "@/lib/prisma";
+import { requireAgentAuth } from "@/lib/agent-auth";
 import { NextResponse } from "next/server";
 
-async function resolveOrgFromApiKey(req: Request) {
-  const authHeader = req.headers.get("Authorization") ?? "";
-  const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : "";
-  if (!token) return null;
-  return prisma.org.findUnique({ where: { apiKey: token } });
-}
-
-// GET /api/agent/project/:id/candidates
-// Today's algorithm recommendations for a project, with reviews visible.
-// Daily cap is enforced by the formula (spots remaining × 2) per call.
-// Requires paid org API key.
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
-  const org = await resolveOrgFromApiKey(req);
-  if (!org) return NextResponse.json({ error: "Unauthorized — valid paid org API key required" }, { status: 401 });
-  if (!org.isPaid) return NextResponse.json({ error: "Paid org tier required" }, { status: 403 });
+  const auth = await requireAgentAuth(req);
+  if (!auth.ok) return auth.response;
 
   const { id: orgProjectId } = await params;
 
-  const project = await prisma.orgProject.findFirst({ where: { id: orgProjectId, orgId: org.id } });
+  const project = await prisma.orgProject.findFirst({
+    where: { id: orgProjectId, orgId: auth.orgId },
+  });
   if (!project) return NextResponse.json({ error: "Project not found for this org" }, { status: 404 });
 
   const filledCount = await prisma.teamApplication.count({
@@ -29,7 +20,13 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
   const dailyCap = spotsRemaining * 2;
 
   if (dailyCap === 0) {
-    return NextResponse.json({ candidates: [], quota: { dailyCap: 0, resetsAt: nextMidnightUTC() }, exhausted: true });
+    const resetAt = new Date();
+    resetAt.setUTCHours(24, 0, 0, 0);
+    return NextResponse.json({
+      candidates: [],
+      quota: { dailyCap: 0, resetsAt: resetAt.toISOString() },
+      exhausted: true,
+    });
   }
 
   let preferredTypes: string[] = [];
@@ -77,15 +74,11 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       ]
     : candidates;
 
-  return NextResponse.json({
-    candidates: sorted,
-    quota: { dailyCap, resetsAt: nextMidnightUTC() },
-    exhausted: false,
-  });
-}
+  const resetAt = new Date();
+  resetAt.setUTCHours(24, 0, 0, 0);
 
-function nextMidnightUTC(): string {
-  const d = new Date();
-  d.setUTCHours(24, 0, 0, 0);
-  return d.toISOString();
+  return NextResponse.json(
+    { candidates: sorted, quota: { dailyCap, resetsAt: resetAt.toISOString() }, exhausted: false },
+    { headers: { "X-RateLimit-Remaining": String(auth.callsRemaining) } }
+  );
 }
