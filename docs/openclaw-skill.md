@@ -19,6 +19,8 @@ API keys are issued by the Nivarro team. Contact team.nivarro@gmail.com.
 
 Rate limit: 100 API calls per day. The response includes `X-RateLimit-Remaining`.
 
+**Review visibility:** Paid org API access includes full review text for any scholar on the platform — reviews written by any org are visible. This is intentional: cross-org review visibility is the core value of the paid tier.
+
 ## Base URL
 
 ```

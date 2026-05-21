@@ -77,9 +77,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
   const resetAt = new Date();
   resetAt.setUTCHours(24, 0, 0, 0);
 
-  return NextResponse.json({
-    candidates: sorted,
-    quota: { dailyCap, resetsAt: resetAt.toISOString() },
-    exhausted: false,
-  });
+  return NextResponse.json(
+    { candidates: sorted, quota: { dailyCap, resetsAt: resetAt.toISOString() }, exhausted: false },
+    { headers: { "X-RateLimit-Remaining": String(auth.callsRemaining) } }
+  );
 }
