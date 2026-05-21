@@ -2,19 +2,23 @@
 @variant dark (&:is(.dark *));
 
 /* ─────────────────────────────────────────
-   NIVARRO DESIGN TOKENS
-   Dark (default) → deep navy
-   Light (body.day) → clean white, YEL-inspired
+   FONT TOKENS
+   Single source of truth — every component
+   that refs these vars gets the right font.
 ───────────────────────────────────────── */
 
 :root {
+  --font-display: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-body:    'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-serif:   'Cormorant Garamond', Georgia, serif;
+  --font-mono:    'DM Mono', 'JetBrains Mono', monospace;
+
   /* ── Accent ── */
   --blue:        #3B82F6;
   --blue-bright: #60A5FA;
   --blue-dim:    #1E3A5F;
   --blue-glow:   rgba(59,130,246,0.35);
 
-  /* gold alias keeps existing var(--gold) refs working */
   --gold:        var(--blue);
   --gold-light:  var(--blue-bright);
   --gold-dim:    var(--blue-dim);
@@ -44,19 +48,26 @@
   --text2:     var(--n-text2);
   --muted:     var(--n-muted);
 
+  /* ── Glow system ── */
+  --glow-blue:        0 0 20px rgba(59,130,246,0.45), 0 0 6px rgba(59,130,246,0.25);
+  --glow-blue-strong: 0 0 36px rgba(59,130,246,0.65), 0 0 12px rgba(59,130,246,0.4);
+  --glow-blue-sm:     0 0 10px rgba(59,130,246,0.3);
+  --glow-card:        0 8px 32px rgba(59,130,246,0.12), 0 0 0 1px rgba(59,130,246,0.1);
+  --glow-text:        0 0 16px rgba(59,130,246,0.6);
+
   /* ── Radius & shadow ── */
   --radius-sm:  6px;
   --radius-md:  10px;
   --radius-lg:  16px;
-  --shadow-sm:  0 1px 3px rgba(0,0,0,0.5);
+  --shadow-sm:  0 1px 3px rgba(0,0,0,0.5), 0 1px 2px rgba(0,0,0,0.3);
   --shadow-md:  0 4px 16px rgba(0,0,0,0.45);
   --shadow-lg:  0 16px 48px rgba(0,0,0,0.6);
 }
 
 /* ─────────────────────────────────────────
-   LIGHT MODE — body.day
-   Clean white, high contrast, YEL-inspired
+   LIGHT MODE
 ───────────────────────────────────────── */
+
 body.day {
   --blue:        #1D4ED8;
   --blue-bright: #2563EB;
@@ -79,8 +90,15 @@ body.day {
   --text2:     #334155;
   --muted:     #64748B;
 
-  --shadow-sm:  0 1px 3px rgba(0,0,0,0.06);
-  --shadow-md:  0 4px 16px rgba(0,0,0,0.08);
+  /* Softer glows in light mode */
+  --glow-blue:        0 2px 12px rgba(29,78,216,0.2);
+  --glow-blue-strong: 0 4px 24px rgba(29,78,216,0.3);
+  --glow-blue-sm:     0 1px 6px rgba(29,78,216,0.14);
+  --glow-card:        0 8px 28px rgba(15,23,42,0.1);
+  --glow-text:        none;
+
+  --shadow-sm:  0 1px 3px rgba(0,0,0,0.07);
+  --shadow-md:  0 4px 16px rgba(0,0,0,0.09);
   --shadow-lg:  0 16px 48px rgba(0,0,0,0.12);
 }
 
@@ -88,13 +106,8 @@ body.day {
    BASE
 ───────────────────────────────────────── */
 
-*, *::before, *::after {
-  box-sizing: border-box;
-}
-
-html {
-  scroll-behavior: smooth;
-}
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
 
 html, body {
   margin: 0;
@@ -102,7 +115,7 @@ html, body {
   min-height: 100%;
   background: var(--bg);
   color: var(--text);
-  font-family: 'Plus Jakarta Sans', var(--font-body, 'DM Sans', system-ui, sans-serif);
+  font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
   transition: background 0.3s ease, color 0.3s ease;
 }
@@ -112,18 +125,19 @@ html, body {
 ───────────────────────────────────────── */
 
 h1, h2, h3, h4 {
-  font-family: 'Plus Jakarta Sans', var(--font-body, system-ui, sans-serif);
+  font-family: var(--font-display);
   font-weight: 800;
   letter-spacing: -0.025em;
   line-height: 1.15;
   color: var(--text);
+  margin: 0;
 }
 
-h1 { font-size: clamp(2rem, 4vw, 3rem); }
-h2 { font-size: clamp(1.4rem, 3vw, 2rem); }
-h3 { font-size: clamp(1.1rem, 2vw, 1.4rem); }
+h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); }
+h2 { font-size: clamp(1.3rem, 3vw, 1.9rem); }
+h3 { font-size: clamp(1.05rem, 2vw, 1.35rem); }
 
-p { line-height: 1.65; }
+p { line-height: 1.65; margin: 0; }
 
 /* ─────────────────────────────────────────
    SCROLLBAR
@@ -138,10 +152,7 @@ p { line-height: 1.65; }
    SELECTION & FOCUS
 ───────────────────────────────────────── */
 
-::selection {
-  background: rgba(59,130,246,0.2);
-  color: var(--text);
-}
+::selection { background: rgba(59,130,246,0.2); color: var(--text); }
 
 :focus-visible {
   outline: 2px solid var(--blue);
@@ -158,29 +169,22 @@ input, textarea, select {
   border: 1px solid var(--border-md);
   border-radius: var(--radius-sm);
   padding: 0.5rem 0.75rem;
-  font-family: var(--font-body, sans-serif);
+  font-family: var(--font-body);
   font-size: 0.875rem;
-  transition: border-color 120ms ease, box-shadow 120ms ease;
+  transition: border-color 150ms, box-shadow 150ms;
 }
 
-input::placeholder, textarea::placeholder {
-  color: var(--muted);
-}
+input::placeholder, textarea::placeholder { color: var(--muted); }
 
 input:focus, textarea:focus, select:focus {
   outline: none;
   border-color: var(--blue);
-  box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
 }
 
-/* ─────────────────────────────────────────
-   LINKS & BUTTONS
-───────────────────────────────────────── */
-
 a, button {
-  transition: color 120ms ease, background-color 120ms ease,
-              border-color 120ms ease, opacity 120ms ease,
-              box-shadow 120ms ease;
+  transition: color 120ms, background-color 120ms, border-color 120ms,
+              opacity 120ms, box-shadow 150ms;
 }
 
 /* ─────────────────────────────────────────
@@ -192,31 +196,161 @@ a, button {
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
-  transition: box-shadow 180ms ease, border-color 180ms ease;
+  transition: box-shadow 200ms, border-color 200ms, transform 200ms;
 }
 
 .card:hover {
-  border-color: var(--border-md);
-  box-shadow: var(--shadow-md);
+  border-color: rgba(59,130,246,0.2);
+  box-shadow: var(--glow-card);
+  transform: translateY(-1px);
+}
+
+body.day .card:hover {
+  border-color: rgba(15,23,42,0.14);
+  box-shadow: var(--glow-card);
+  transform: translateY(-1px);
 }
 
 /* ─────────────────────────────────────────
-   LEGACY HARDCODED COLOR OVERRIDES
-   Keeps old arbitrary Tailwind classes working
-   with the new token system.
+   GLOW UTILITIES
+   Use these class names in components for
+   consistent, mode-aware glow effects.
 ───────────────────────────────────────── */
 
-/* Backgrounds */
+.glow-blue  { box-shadow: var(--glow-blue); }
+.glow-blue:hover { box-shadow: var(--glow-blue-strong); }
+
+/* Nav item active state */
+.nav-active {
+  position: relative;
+}
+.nav-active::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 20%;
+  height: 60%;
+  width: 3px;
+  background: var(--blue);
+  border-radius: 0 3px 3px 0;
+  box-shadow: var(--glow-blue-sm);
+}
+
+/* Primary button — blue with glow */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1.1rem;
+  background: var(--blue);
+  color: #FFFFFF;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.875rem;
+  letter-spacing: -0.01em;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  box-shadow: var(--glow-blue-sm);
+  transition: box-shadow 150ms, transform 150ms, background 150ms;
+}
+
+.btn-primary:hover {
+  background: var(--blue-bright);
+  box-shadow: var(--glow-blue);
+  transform: translateY(-1px);
+}
+
+.btn-primary:active { transform: none; }
+
+/* Ghost button */
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.45rem 1rem;
+  background: transparent;
+  color: var(--text2);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.875rem;
+  letter-spacing: -0.01em;
+  border: 1px solid var(--border-md);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: border-color 150ms, color 150ms, box-shadow 150ms;
+}
+
+.btn-ghost:hover {
+  border-color: var(--blue);
+  color: var(--blue);
+  box-shadow: var(--glow-blue-sm);
+}
+
+/* Logo wordmark glow */
+.logo-text {
+  font-family: var(--font-display);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+}
+
+.logo-accent {
+  color: var(--blue);
+  text-shadow: var(--glow-text);
+}
+
+/* Genius type badge glow on hover */
+.genius-badge {
+  transition: box-shadow 150ms, transform 150ms;
+}
+.genius-badge:hover {
+  transform: scale(1.04);
+}
+
+/* ─────────────────────────────────────────
+   COLOR COMPATIBILITY — dark-only hex values
+   Maps old hardcoded navy text colors to CSS
+   variables so light mode stays readable.
+───────────────────────────────────────── */
+
+/* #f0f8ff, #d8eeff — near-white blue text, invisible in light mode */
+[style*="color: rgb(240, 248, 255)"],
+[style*="color:#f0f8ff"],
+[style*='color: "#f0f8ff"'] { color: var(--text) !important; }
+
+[style*="color: rgb(216, 238, 255)"],
+[style*="color:#d8eeff"],
+[style*='color: "#d8eeff"'] { color: var(--text) !important; }
+
+/* #8ab0d8 — secondary blue text */
+[style*="color: rgb(138, 176, 216)"],
+[style*="color:#8ab0d8"],
+[style*='color: "#8ab0d8"'] { color: var(--text2) !important; }
+
+/* #5a7898 — muted navy text */
+[style*="color: rgb(90, 120, 152)"],
+[style*="color:#5a7898"],
+[style*='color: "#5a7898"'] { color: var(--muted) !important; }
+
+/* #6A9FFF — blue accent links */
+[style*="color: rgb(106, 159, 255)"],
+[style*="color:#6A9FFF"],
+[style*="color:#6a9fff"] { color: var(--blue-bright) !important; }
+
+/* ─────────────────────────────────────────
+   LEGACY TAILWIND ARBITRARY CLASS OVERRIDES
+───────────────────────────────────────── */
+
 .bg-\[#080809\], .bg-\[#0f0f11\], .bg-\[#0d0d0e\], .bg-\[#07090f\] { background-color: var(--bg) !important; }
 .bg-\[#16161a\], .bg-\[#0d0d0e\], .bg-\[#0d1525\], .bg-\[#090e1a\] { background-color: var(--surface) !important; }
 .bg-\[#1e1e24\], .bg-\[#131315\], .bg-\[#111c32\] { background-color: var(--surface2) !important; }
 .bg-\[#2a2a33\], .bg-\[#162038\] { background-color: var(--surface3) !important; }
 
-/* Accent backgrounds */
 .bg-\[#c9a84c\] { background-color: var(--blue) !important; }
 .bg-\[#e3c06a\] { background-color: var(--blue-bright) !important; }
 
-/* Text */
 .text-\[#e8e8ec\], .text-\[#eaeaea\], .text-\[#eae8e0\] { color: var(--text) !important; }
 .text-\[#9898a8\], .text-\[#909098\], .text-\[#8a8898\] { color: var(--text2) !important; }
 .text-\[#5a5a6a\], .text-\[#58586a\], .text-\[#5a5570\] { color: var(--muted) !important; }
@@ -225,12 +359,10 @@ a, button {
 .text-\[#3a3a44\] { color: var(--muted) !important; }
 .text-\[#0f0f11\], .text-\[#080809\], .text-\[#05080f\] { color: var(--n-bg) !important; }
 
-/* Borders */
 .border-\[#2a2a33\] { border-color: var(--border-md) !important; }
 .border-\[#1e1e24\], .border-\[#1c1c20\] { border-color: var(--border) !important; }
 .border-\[#c9a84c\] { border-color: var(--blue) !important; }
 
-/* Hover states */
 .hover\:bg-\[#1e1e24\]:hover, .hover\:bg-\[#16161a\]:hover { background-color: var(--surface2) !important; }
 .hover\:bg-\[#c9a84c\]:hover { background-color: var(--blue) !important; }
 .hover\:bg-\[#e3c06a\]:hover { background-color: var(--blue-bright) !important; }
@@ -240,38 +372,23 @@ a, button {
 .hover\:text-\[#9898a8\]:hover { color: var(--text2) !important; }
 .hover\:text-\[#e8e8ec\]:hover { color: var(--text) !important; }
 
-/* Placeholder */
 .placeholder-\[#5a5a6a\]::placeholder,
 .placeholder-\[#58586a\]::placeholder,
 .placeholder-\[#5a5570\]::placeholder { color: var(--muted) !important; }
 
-/* Dividers */
 .divide-\[#2a2a33\] > * + * { border-color: var(--border-md) !important; }
-
-/* Focus borders */
 .focus\:border-\[#c9a84c\]:focus { border-color: var(--blue) !important; }
 
-/* Alpha-channel hex variants */
 .bg-\[#16161a80\], .hover\:bg-\[#1e1e2480\]:hover { background-color: var(--surface2) !important; }
 .bg-\[#3a3a44\] { background-color: var(--surface3) !important; }
 
-/* Gold-tinted alpha backgrounds → blue-tinted */
-.bg-\[#c9a84c10\],
-.bg-\[#c9a84c08\],
-.bg-\[#c9a84c15\] { background-color: rgba(59,130,246,0.07) !important; }
-
+.bg-\[#c9a84c10\], .bg-\[#c9a84c08\], .bg-\[#c9a84c15\] { background-color: rgba(59,130,246,0.07) !important; }
 .border-\[#c9a84c30\] { border-color: rgba(59,130,246,0.2) !important; }
 .border-\[#c9a84c60\] { border-color: rgba(59,130,246,0.4) !important; }
-
-/* rgba(201,168,76,...) Tailwind arbitrary border values */
 .border-\[rgba\(201\2C 168\2C 76\2C 0\.12\)\] { border-color: rgba(59,130,246,0.15) !important; }
 .border-\[rgba\(201\2C 168\2C 76\2C 0\.28\)\] { border-color: rgba(59,130,246,0.28) !important; }
 .border-\[rgba\(201\2C 168\2C 76\2C 0\.4\)\]  { border-color: rgba(59,130,246,0.4) !important; }
-
-/* Hover border gold → blue */
 .hover\:border-\[rgba\(201\2C 168\2C 76\2C 0\.28\)\]:hover { border-color: rgba(59,130,246,0.4) !important; }
 .hover\:border-\[rgba\(201\2C 168\2C 76\2C 0\.4\)\]:hover  { border-color: rgba(59,130,246,0.5) !important; }
 .hover\:border-\[rgba\(201\2C 168\2C 76\2C 0\.12\)\]:hover { border-color: rgba(59,130,246,0.25) !important; }
-
-/* Focus border gold → blue */
 .focus\:border-\[rgba\(201\2C 168\2C 76\2C 0\.28\)\]:focus { border-color: rgba(59,130,246,0.5) !important; }

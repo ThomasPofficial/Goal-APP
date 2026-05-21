@@ -45,16 +45,8 @@ export default function Sidebar({ userName, userEmail, geniusType, mobileOpen = 
         style={{ height: 56, borderBottom: "1px solid var(--border)" }}
       >
         <Link href="/dashboard" onClick={onMobileClose} style={{ textDecoration: "none" }}>
-          <span
-            style={{
-              fontFamily: "'Plus Jakarta Sans', sans-serif",
-              fontSize: 18,
-              fontWeight: 900,
-              letterSpacing: "-0.04em",
-              color: "var(--text)",
-            }}
-          >
-            Ni<span style={{ color: "var(--blue)" }}>varro</span>
+          <span className="logo-text" style={{ fontSize: 18, color: "var(--text)" }}>
+            Ni<span className="logo-accent">varro</span>
           </span>
         </Link>
         <button
@@ -79,7 +71,7 @@ export default function Sidebar({ userName, userEmail, geniusType, mobileOpen = 
               key={href}
               href={href}
               onClick={onMobileClose}
-              className={cn("flex items-center px-3 py-2 rounded-md text-sm font-semibold transition-all")}
+              className={cn("flex items-center px-3 py-2 rounded-md text-sm font-semibold transition-all", active && "nav-active")}
               style={{
                 background: active ? "rgba(59,130,246,0.1)" : "transparent",
                 color: active ? "var(--blue)" : "var(--text2)",

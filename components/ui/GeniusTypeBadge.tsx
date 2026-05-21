@@ -23,7 +23,7 @@ export default function GeniusTypeBadge({ geniusType, type, size = "md", showEmo
 
   return (
     <span
-      className={`inline-flex items-center gap-1 rounded-full font-semibold ${sizeClasses[size]} ${className}`}
+      className={`genius-badge inline-flex items-center gap-1 rounded-full font-semibold ${sizeClasses[size]} ${className}`}
       style={{ backgroundColor: `${gt.color}22`, color: gt.color, border: `1px solid ${gt.color}55` }}
     >
       {showEmoji && <span>{gt.emoji}</span>}

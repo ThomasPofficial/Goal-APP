@@ -74,12 +74,13 @@ export default function OrgsClient() {
       {/* Filter bar */}
       <div className="flex items-center gap-3 mb-5 flex-wrap">
         <div className="relative flex-1 min-w-[200px]">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#5a5a6a]" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: "var(--muted)" }} />
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Search organizations…"
-            className="w-full pl-9 pr-4 py-2 rounded-lg border border-[#2a2a33] bg-[#16161a] text-sm text-[#e8e8ec] placeholder-[#5a5a6a] focus:outline-none focus:border-[#4a80f0]"
+            className="w-full pl-9 pr-4 py-2 rounded-lg border text-sm focus:outline-none"
+            style={{ borderColor: "var(--border-md)", background: "var(--surface2)", color: "var(--text)" }}
           />
         </div>
         <div className="flex gap-1.5 flex-wrap">
@@ -91,9 +92,9 @@ export default function OrgsClient() {
                 "px-2.5 py-1 rounded-full text-xs font-medium border transition-all",
                 category === c
                   ? "text-white border-transparent"
-                  : "border-[#2a2a33] text-[#9898a8] hover:border-[#3a3a44]"
+                  : "text-[#9898a8]"
               )}
-              style={category === c ? { background: CATEGORY_COLORS[c] } : undefined}
+              style={category === c ? { background: CATEGORY_COLORS[c] } : { borderColor: "var(--border-md)" }}
             >
               {c.charAt(0) + c.slice(1).toLowerCase()}
             </button>
@@ -145,7 +146,7 @@ function OrgCard({ org }: { org: Org }) {
   return (
     <Link href={`/orgs/${org.id}`} className="block group">
       <div
-        className="rounded-xl overflow-hidden transition-all"
+        className="card rounded-xl overflow-hidden"
         style={{
           background: "var(--surface)",
           border: "1px solid var(--border-md)",
@@ -172,7 +173,7 @@ function OrgCard({ org }: { org: Org }) {
           <div className="flex items-start justify-between gap-2 mb-0.5">
             <p
               className="font-semibold text-sm truncate"
-              style={{ color: "#d8eeff", fontFamily: "'Cormorant Garamond', serif", fontSize: 15 }}
+              style={{ color: "var(--text)", fontFamily: "var(--font-serif)", fontSize: 15 }}
             >
               {org.name}
             </p>
@@ -180,32 +181,35 @@ function OrgCard({ org }: { org: Org }) {
               className={cn(
                 "flex-shrink-0 text-[10px] font-semibold px-1.5 py-0.5 rounded",
                 org.status === "OPEN" ? "bg-green-950 text-green-400" :
-                org.status === "ROLLING" ? "bg-blue-950 text-blue-400" :
-                "bg-[#0c1a2e] text-[#5a7898]"
+                org.status === "ROLLING" ? "bg-blue-950 text-blue-400" : ""
               )}
+              style={org.status !== "OPEN" && org.status !== "ROLLING"
+                ? { background: "var(--surface3)", color: "var(--muted)" }
+                : undefined}
             >
               {org.status}
             </span>
+
           </div>
           {org.tagline && (
-            <p className="text-[11px] line-clamp-1 mb-1.5" style={{ color: "#5a7898" }}>
+            <p className="text-[11px] line-clamp-1 mb-1.5" style={{ color: "var(--muted)" }}>
               {org.tagline}
             </p>
           )}
           {focusTags.length > 0 ? (
             <div className="flex flex-wrap gap-1 mb-2">
               {focusTags.slice(0, 3).map((tag) => (
-                <span key={tag} className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: "rgba(16,96,216,0.1)", border: "1px solid rgba(16,96,216,0.2)", color: "#6A9FFF" }}>
+                <span key={tag} className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: "rgba(59,130,246,0.1)", border: "1px solid var(--border-md)", color: "var(--blue)" }}>
                   {tag}
                 </span>
               ))}
             </div>
           ) : org.description ? (
-            <p className="text-xs line-clamp-2 leading-relaxed mb-2" style={{ color: "#8ab0d8" }}>
+            <p className="text-xs line-clamp-2 leading-relaxed mb-2" style={{ color: "var(--text2)" }}>
               {org.description}
             </p>
           ) : null}
-          <div className="flex items-center gap-3 text-[11px]" style={{ color: "#5a7898" }}>
+          <div className="flex items-center gap-3 text-[11px]" style={{ color: "var(--muted)" }}>
             <span>Team {org.minTeamSize}–{org.maxTeamSize}</span>
             {org.deadline && <span>Due {format(new Date(org.deadline), "MMM d")}</span>}
           </div>
