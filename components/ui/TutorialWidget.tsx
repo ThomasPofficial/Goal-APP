@@ -1,33 +1,53 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { X, Check, ChevronRight, BookOpen } from "lucide-react";
 
 const STORAGE_KEY = "nivarro_tutorial_v1_dismissed";
 
-interface Step {
-  label: string;
-  description: string;
-  href: string;
-  done: boolean;
-}
-
-interface Props {
+interface TutorialState {
   hasGeniusType: boolean;
   traitsDone: boolean;
   hasTeam: boolean;
   hasApplied: boolean;
+  hasBrowsedOrgs: boolean;
 }
 
-export default function TutorialWidget({ hasGeniusType, traitsDone, hasTeam, hasApplied }: Props) {
+interface Props extends TutorialState {}
+
+export default function TutorialWidget(initialProps: Props) {
   const [dismissed, setDismissed] = useState(true);
   const [mounted, setMounted] = useState(false);
+  const [state, setState] = useState<TutorialState>(initialProps);
+
+  const refresh = useCallback(async () => {
+    try {
+      const res = await fetch("/api/tutorial-status");
+      if (res.ok) {
+        const data = await res.json();
+        setState(data);
+      }
+    } catch {}
+  }, []);
 
   useEffect(() => {
     setDismissed(localStorage.getItem(STORAGE_KEY) === "1");
     setMounted(true);
-  }, []);
+    refresh();
+
+    // Re-check whenever user tabs back in (after completing a step elsewhere)
+    const onFocus = () => refresh();
+    window.addEventListener("focus", onFocus);
+
+    // Periodic poll every 45s so progress updates without needing full page reload
+    const interval = setInterval(refresh, 45_000);
+
+    return () => {
+      window.removeEventListener("focus", onFocus);
+      clearInterval(interval);
+    };
+  }, [refresh]);
 
   const dismiss = () => {
     localStorage.setItem(STORAGE_KEY, "1");
@@ -36,7 +56,9 @@ export default function TutorialWidget({ hasGeniusType, traitsDone, hasTeam, has
 
   if (!mounted || dismissed) return null;
 
-  const steps: Step[] = [
+  const { hasGeniusType, traitsDone, hasTeam, hasApplied, hasBrowsedOrgs } = state;
+
+  const steps = [
     {
       label: "Set up your Genius profile",
       description: "Take the quiz to discover your type",
@@ -45,7 +67,7 @@ export default function TutorialWidget({ hasGeniusType, traitsDone, hasTeam, has
     },
     {
       label: "Add your traits",
-      description: "Tell the community what you're skilled at",
+      description: "Tell the community what you&apos;re skilled at",
       href: "/quiz?tab=traits",
       done: traitsDone,
     },
@@ -53,7 +75,7 @@ export default function TutorialWidget({ hasGeniusType, traitsDone, hasTeam, has
       label: "Browse organizations",
       description: "Find orgs posting open projects for teams",
       href: "/orgs",
-      done: false,
+      done: hasBrowsedOrgs,
     },
     {
       label: "Build or join a team",
@@ -63,7 +85,7 @@ export default function TutorialWidget({ hasGeniusType, traitsDone, hasTeam, has
     },
     {
       label: "Apply to an org project",
-      description: "Submit your team's application from a project page",
+      description: "Submit your team&apos;s application from a project page",
       href: "/orgs",
       done: hasApplied,
     },
@@ -92,7 +114,7 @@ export default function TutorialWidget({ hasGeniusType, traitsDone, hasTeam, has
               className="text-sm font-semibold"
               style={{ color: "var(--text)", fontFamily: "var(--font-display, sans-serif)" }}
             >
-              {allDone ? "You're all set!" : "Get started on Nivarro"}
+              {allDone ? "You&apos;re all set!" : "Get started on Nivarro"}
             </h2>
             <p className="text-[11px]" style={{ color: "var(--text2)" }}>
               {completedCount} of {steps.length} steps complete
@@ -148,13 +170,17 @@ export default function TutorialWidget({ hasGeniusType, traitsDone, hasTeam, has
               )}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium" style={{ color: step.done ? "var(--text2)" : "var(--text)" }}>
-                {step.label}
-              </p>
+              <p
+                className="text-sm font-medium"
+                style={{ color: step.done ? "var(--text2)" : "var(--text)" }}
+                dangerouslySetInnerHTML={{ __html: step.label }}
+              />
               {!step.done && (
-                <p className="text-xs" style={{ color: "var(--text2)" }}>
-                  {step.description}
-                </p>
+                <p
+                  className="text-xs"
+                  style={{ color: "var(--text2)" }}
+                  dangerouslySetInnerHTML={{ __html: step.description }}
+                />
               )}
             </div>
             {!step.done && (

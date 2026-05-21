@@ -292,7 +292,7 @@ export default function MessagesClient({ conversations: initialConvs, myUserId, 
       <div className="flex overflow-hidden rounded-xl" style={{ height: "calc(100vh - 4rem)", border: "1px solid var(--border-md)" }}>
 
         {/* ── Conversation list ─────────────────────── */}
-        <div className={`${showThread ? "hidden md:flex" : "flex"} w-full md:w-64 flex-col shrink-0`} style={{ background: "var(--n-bg2)", borderRight: "1px solid var(--border)" }}>
+        <div className={`${showThread ? "hidden md:flex" : "flex"} w-full md:w-64 flex-col shrink-0`} style={{ background: "var(--bg2)", borderRight: "1px solid var(--border)" }}>
           <div className="flex items-center justify-between px-4 py-3.5" style={{ borderBottom: "1px solid var(--border)" }}>
             <h2 className="text-sm font-bold uppercase tracking-widest" style={{ color: "var(--text)", fontFamily: "var(--font-display, sans-serif)" }}>
               Messages
@@ -343,7 +343,7 @@ export default function MessagesClient({ conversations: initialConvs, myUserId, 
                       >
                         <Avatar src={av.src} displayName={av.displayName} geniusType={av.geniusType} size={34} />
                         <div className="flex-1 min-w-0">
-                          <p className="truncate" style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 16, fontWeight: 600, color: isActive ? "#f0f8ff" : "#deeeff" }}>{name}</p>
+                          <p className="truncate" style={{ fontFamily: "var(--font-serif)", fontSize: 16, fontWeight: 600, color: isActive ? "var(--text)" : "var(--text2)" }}>{name}</p>
                           {conv.lastMessage && (
                             <p className="text-xs truncate" style={{ color: "var(--text2)", fontWeight: 500 }}>{conv.lastMessage.body}</p>
                           )}
@@ -371,7 +371,7 @@ export default function MessagesClient({ conversations: initialConvs, myUserId, 
               </button>
               {(() => { const av = convAvatar(activeConv, myUserId); return <Avatar src={av.src} displayName={av.displayName} geniusType={av.geniusType} size={30} />; })()}
               <div>
-                <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 22, fontWeight: 500, letterSpacing: "-0.3px", color: "#f0f8ff", lineHeight: 1.1 }}>
+                <p style={{ fontFamily: "var(--font-serif)", fontSize: 22, fontWeight: 500, letterSpacing: "-0.3px", color: "var(--text)", lineHeight: 1.1 }}>
                   {convDisplayName(activeConv, myUserId)}
                 </p>
                 {activeConv.type === "DIRECT" && (() => {
@@ -415,10 +415,10 @@ export default function MessagesClient({ conversations: initialConvs, myUserId, 
                             fontFamily: "var(--font-body, sans-serif)",
                             fontWeight: 500,
                           } : {
-                            background: "#0e2448",
-                            color: "#d8eeff",
+                            background: "var(--surface2)",
+                            color: "var(--text)",
                             borderRadius: "13px 13px 13px 3px",
-                            border: "1px solid #1e3a68",
+                            border: "1px solid var(--border-md)",
                             fontFamily: "var(--font-body, sans-serif)",
                             fontWeight: 500,
                           }}
