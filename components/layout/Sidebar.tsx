@@ -4,15 +4,16 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { X } from "lucide-react";
 import AccountMenu from "./AccountMenu";
+import ThemeToggle from "./ThemeToggle";
 import { cn } from "@/lib/utils";
 import type { GeniusType } from "@/data/traits";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard" },
-  { href: "/peers", label: "Peers" },
-  { href: "/orgs", label: "Orgs" },
-  { href: "/teams", label: "Teams" },
-  { href: "/messages", label: "Messages" },
+  { href: "/peers",     label: "Peers" },
+  { href: "/orgs",      label: "Orgs" },
+  { href: "/teams",     label: "Teams" },
+  { href: "/messages",  label: "Messages" },
   { href: "/notifications", label: "Notifications" },
 ];
 
@@ -35,41 +36,39 @@ export default function Sidebar({ userName, userEmail, geniusType, mobileOpen = 
       )}
       style={{
         background: "var(--n-bg2)",
-        borderRight: "1px solid var(--border-md)",
+        borderRight: "1px solid var(--border)",
       }}
     >
+      {/* Header — wordmark + close (mobile) */}
       <div
-        className="flex items-center justify-between px-5 h-14 flex-shrink-0"
-        style={{ borderBottom: "1px solid var(--border)" }}
+        className="flex items-center justify-between px-5 flex-shrink-0"
+        style={{ height: 56, borderBottom: "1px solid var(--border)" }}
       >
-        <span
-          style={{
-            fontFamily: "'Cormorant Garamond', serif",
-            fontSize: 26,
-            fontWeight: 500,
-            letterSpacing: "-0.3px",
-            color: "#f0f8ff",
-          }}
-        >
-          Nivarro
-        </span>
+        <Link href="/dashboard" onClick={onMobileClose} style={{ textDecoration: "none" }}>
+          <span
+            style={{
+              fontFamily: "'Plus Jakarta Sans', sans-serif",
+              fontSize: 18,
+              fontWeight: 900,
+              letterSpacing: "-0.04em",
+              color: "var(--text)",
+            }}
+          >
+            Ni<span style={{ color: "var(--blue)" }}>varro</span>
+          </span>
+        </Link>
         <button
           onClick={onMobileClose}
           className="md:hidden w-7 h-7 flex items-center justify-center rounded-md"
-          style={{ color: "var(--muted)" }}
+          style={{ color: "var(--muted)", background: "none", border: "none", cursor: "pointer" }}
           aria-label="Close menu"
         >
           <X className="w-4 h-4" />
         </button>
       </div>
 
-      <nav className="flex-1 px-3 py-5 space-y-0.5 overflow-y-auto">
-        <p
-          className="px-3 mb-3 text-[10px] font-semibold uppercase tracking-widest"
-          style={{ color: "var(--muted)", fontFamily: "var(--font-display, sans-serif)" }}
-        >
-          Navigation
-        </p>
+      {/* Nav */}
+      <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
         {navItems.map(({ href, label }) => {
           const active =
             href === "/dashboard"
@@ -80,19 +79,18 @@ export default function Sidebar({ userName, userEmail, geniusType, mobileOpen = 
               key={href}
               href={href}
               onClick={onMobileClose}
-              className={cn(
-                "flex items-center px-3 py-2 rounded-md text-sm font-medium transition-all border-l-2",
-              )}
+              className={cn("flex items-center px-3 py-2 rounded-md text-sm font-semibold transition-all")}
               style={{
-                borderLeftColor: active ? "var(--gold)" : "transparent",
-                background: active ? "rgba(74,128,240,0.07)" : "transparent",
-                color: active ? "var(--gold)" : "var(--text2)",
-                fontFamily: "var(--font-body, sans-serif)",
+                background: active ? "rgba(59,130,246,0.1)" : "transparent",
+                color: active ? "var(--blue)" : "var(--text2)",
+                fontFamily: "'Plus Jakarta Sans', var(--font-body, sans-serif)",
+                letterSpacing: "-0.01em",
+                textDecoration: "none",
               }}
               onMouseEnter={(e) => {
                 if (!active) {
                   (e.currentTarget as HTMLAnchorElement).style.color = "var(--text)";
-                  (e.currentTarget as HTMLAnchorElement).style.background = "rgba(74,128,240,0.04)";
+                  (e.currentTarget as HTMLAnchorElement).style.background = "var(--surface2)";
                 }
               }}
               onMouseLeave={(e) => {
@@ -108,7 +106,11 @@ export default function Sidebar({ userName, userEmail, geniusType, mobileOpen = 
         })}
       </nav>
 
-      <div className="md:pb-0 pb-[60px]">
+      {/* Footer — theme toggle + account */}
+      <div style={{ borderTop: "1px solid var(--border)" }} className="md:pb-0 pb-[60px]">
+        <div className="px-3 pt-2 pb-0">
+          <ThemeToggle />
+        </div>
         <AccountMenu
           userName={userName}
           userEmail={userEmail}

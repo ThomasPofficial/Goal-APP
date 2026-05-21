@@ -1,32 +1,38 @@
 @import "tailwindcss";
 @variant dark (&:is(.dark *));
 
-:root {
-  /* ── Blue accent ── */
-  --blue:        #1060d8;
-  --blue-bright: #2878f0;
-  --blue-dim:    #102644;
-  --blue-glow:   rgba(16,96,216,0.5);
+/* ─────────────────────────────────────────
+   NIVARRO DESIGN TOKENS
+   Dark (default) → deep navy
+   Light (body.day) → clean white, YEL-inspired
+───────────────────────────────────────── */
 
-  /* ── Gold alias → blue (keeps existing var(--gold) refs working) ── */
+:root {
+  /* ── Accent ── */
+  --blue:        #3B82F6;
+  --blue-bright: #60A5FA;
+  --blue-dim:    #1E3A5F;
+  --blue-glow:   rgba(59,130,246,0.35);
+
+  /* gold alias keeps existing var(--gold) refs working */
   --gold:        var(--blue);
   --gold-light:  var(--blue-bright);
   --gold-dim:    var(--blue-dim);
   --gold-glow:   var(--blue-glow);
 
-  /* ── Night mode surfaces ── */
-  --n-bg:       #030609;
-  --n-bg2:      #060d1a;
-  --n-surface:  #060d1a;
-  --n-surface2: #0c1a2e;
-  --n-surface3: #102644;
-  --n-border:   #142436;
-  --n-border-md:rgba(16,96,216,0.3);
-  --n-text:     #e4eeff;
-  --n-text2:    #8ab0d8;
-  --n-muted:    #5a7898;
+  /* ── Dark surfaces ── */
+  --n-bg:       #050A14;
+  --n-bg2:      #0A1628;
+  --n-surface:  #0F1F3C;
+  --n-surface2: #162840;
+  --n-surface3: #1E3455;
+  --n-border:   rgba(255,255,255,0.055);
+  --n-border-md:rgba(59,130,246,0.22);
+  --n-text:     #F0F4FF;
+  --n-text2:    #8FA8CC;
+  --n-muted:    #4A6080;
 
-  /* ── Active (night default) ── */
+  /* ── Active (dark default) ── */
   --bg:        var(--n-bg);
   --bg2:       var(--n-bg2);
   --surface:   var(--n-surface);
@@ -37,25 +43,50 @@
   --text:      var(--n-text);
   --text2:     var(--n-text2);
   --muted:     var(--n-muted);
+
+  /* ── Radius & shadow ── */
+  --radius-sm:  6px;
+  --radius-md:  10px;
+  --radius-lg:  16px;
+  --shadow-sm:  0 1px 3px rgba(0,0,0,0.5);
+  --shadow-md:  0 4px 16px rgba(0,0,0,0.45);
+  --shadow-lg:  0 16px 48px rgba(0,0,0,0.6);
 }
 
+/* ─────────────────────────────────────────
+   LIGHT MODE — body.day
+   Clean white, high contrast, YEL-inspired
+───────────────────────────────────────── */
 body.day {
-  --blue:        #1A4ED8;
-  --blue-bright: #2A5EE8;
-  --blue-dim:    #D0DFFB;
-  --blue-glow:   rgba(26,78,216,0.12);
+  --blue:        #1D4ED8;
+  --blue-bright: #2563EB;
+  --blue-dim:    #DBEAFE;
+  --blue-glow:   rgba(29,78,216,0.1);
 
-  --bg:        #F0EDE4;
-  --bg2:       #E8E4DA;
+  --gold:        var(--blue);
+  --gold-light:  var(--blue-bright);
+  --gold-dim:    var(--blue-dim);
+  --gold-glow:   var(--blue-glow);
+
+  --bg:        #FFFFFF;
+  --bg2:       #F4F6F9;
   --surface:   #FFFFFF;
-  --surface2:  #F5F2EB;
-  --surface3:  #EDE8DC;
-  --border:    rgba(0,0,0,0.08);
-  --border-md: rgba(26,78,216,0.22);
-  --text:      #0A0808;
-  --text2:     #3A3530;
-  --muted:     #5A5040;
+  --surface2:  #EEF1F6;
+  --surface3:  #E2E6EF;
+  --border:    rgba(15,23,42,0.08);
+  --border-md: rgba(15,23,42,0.14);
+  --text:      #0F172A;
+  --text2:     #334155;
+  --muted:     #64748B;
+
+  --shadow-sm:  0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md:  0 4px 16px rgba(0,0,0,0.08);
+  --shadow-lg:  0 16px 48px rgba(0,0,0,0.12);
 }
+
+/* ─────────────────────────────────────────
+   BASE
+───────────────────────────────────────── */
 
 *, *::before, *::after {
   box-sizing: border-box;
@@ -73,57 +104,115 @@ html, body {
   color: var(--text);
   font-family: 'Plus Jakarta Sans', var(--font-body, 'DM Sans', system-ui, sans-serif);
   -webkit-font-smoothing: antialiased;
-  transition: background 0.4s, color 0.4s;
+  transition: background 0.3s ease, color 0.3s ease;
 }
 
-/* Scrollbar */
-::-webkit-scrollbar { width: 5px; height: 5px; }
-::-webkit-scrollbar-track { background: var(--bg2); }
-::-webkit-scrollbar-thumb { background: var(--border-md); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: var(--blue-dim); }
+/* ─────────────────────────────────────────
+   TYPOGRAPHY
+───────────────────────────────────────── */
 
-/* Selection */
-::selection {
-  background: rgba(74,128,240,0.25);
+h1, h2, h3, h4 {
+  font-family: 'Plus Jakarta Sans', var(--font-body, system-ui, sans-serif);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
   color: var(--text);
 }
 
-/* Focus */
+h1 { font-size: clamp(2rem, 4vw, 3rem); }
+h2 { font-size: clamp(1.4rem, 3vw, 2rem); }
+h3 { font-size: clamp(1.1rem, 2vw, 1.4rem); }
+
+p { line-height: 1.65; }
+
+/* ─────────────────────────────────────────
+   SCROLLBAR
+───────────────────────────────────────── */
+
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-md); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+/* ─────────────────────────────────────────
+   SELECTION & FOCUS
+───────────────────────────────────────── */
+
+::selection {
+  background: rgba(59,130,246,0.2);
+  color: var(--text);
+}
+
 :focus-visible {
-  outline: 1.5px solid rgba(74,128,240,0.6);
+  outline: 2px solid var(--blue);
   outline-offset: 2px;
 }
 
-/* Inputs */
+/* ─────────────────────────────────────────
+   FORM ELEMENTS
+───────────────────────────────────────── */
+
 input, textarea, select {
   background: var(--surface2);
   color: var(--text);
   border: 1px solid var(--border-md);
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   padding: 0.5rem 0.75rem;
   font-family: var(--font-body, sans-serif);
+  font-size: 0.875rem;
   transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+input::placeholder, textarea::placeholder {
+  color: var(--muted);
 }
 
 input:focus, textarea:focus, select:focus {
   outline: none;
   border-color: var(--blue);
-  box-shadow: 0 0 0 1px rgba(74,128,240,0.2);
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
 }
 
-/* Transitions */
+/* ─────────────────────────────────────────
+   LINKS & BUTTONS
+───────────────────────────────────────── */
+
 a, button {
-  transition: color 120ms ease, background-color 120ms ease, border-color 120ms ease, opacity 120ms ease;
+  transition: color 120ms ease, background-color 120ms ease,
+              border-color 120ms ease, opacity 120ms ease,
+              box-shadow 120ms ease;
 }
 
-/* ── Override legacy hardcoded Tailwind colors with CSS variables ── */
+/* ─────────────────────────────────────────
+   CARDS
+───────────────────────────────────────── */
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 180ms ease, border-color 180ms ease;
+}
+
+.card:hover {
+  border-color: var(--border-md);
+  box-shadow: var(--shadow-md);
+}
+
+/* ─────────────────────────────────────────
+   LEGACY HARDCODED COLOR OVERRIDES
+   Keeps old arbitrary Tailwind classes working
+   with the new token system.
+───────────────────────────────────────── */
 
 /* Backgrounds */
 .bg-\[#080809\], .bg-\[#0f0f11\], .bg-\[#0d0d0e\], .bg-\[#07090f\] { background-color: var(--bg) !important; }
 .bg-\[#16161a\], .bg-\[#0d0d0e\], .bg-\[#0d1525\], .bg-\[#090e1a\] { background-color: var(--surface) !important; }
 .bg-\[#1e1e24\], .bg-\[#131315\], .bg-\[#111c32\] { background-color: var(--surface2) !important; }
 .bg-\[#2a2a33\], .bg-\[#162038\] { background-color: var(--surface3) !important; }
-/* Gold/blue button backgrounds */
+
+/* Accent backgrounds */
 .bg-\[#c9a84c\] { background-color: var(--blue) !important; }
 .bg-\[#e3c06a\] { background-color: var(--blue-bright) !important; }
 
@@ -165,25 +254,24 @@ a, button {
 /* Alpha-channel hex variants */
 .bg-\[#16161a80\], .hover\:bg-\[#1e1e2480\]:hover { background-color: var(--surface2) !important; }
 .bg-\[#3a3a44\] { background-color: var(--surface3) !important; }
-.text-\[#3a3a44\] { color: var(--muted) !important; }
 
 /* Gold-tinted alpha backgrounds → blue-tinted */
 .bg-\[#c9a84c10\],
 .bg-\[#c9a84c08\],
-.bg-\[#c9a84c15\] { background-color: rgba(74,128,240,0.07) !important; }
+.bg-\[#c9a84c15\] { background-color: rgba(59,130,246,0.07) !important; }
 
-.border-\[#c9a84c30\] { border-color: rgba(74,128,240,0.2) !important; }
-.border-\[#c9a84c60\] { border-color: rgba(74,128,240,0.4) !important; }
+.border-\[#c9a84c30\] { border-color: rgba(59,130,246,0.2) !important; }
+.border-\[#c9a84c60\] { border-color: rgba(59,130,246,0.4) !important; }
 
 /* rgba(201,168,76,...) Tailwind arbitrary border values */
-.border-\[rgba\(201\2C 168\2C 76\2C 0\.12\)\] { border-color: rgba(74,128,240,0.15) !important; }
-.border-\[rgba\(201\2C 168\2C 76\2C 0\.28\)\] { border-color: rgba(74,128,240,0.28) !important; }
-.border-\[rgba\(201\2C 168\2C 76\2C 0\.4\)\]  { border-color: rgba(74,128,240,0.4) !important; }
+.border-\[rgba\(201\2C 168\2C 76\2C 0\.12\)\] { border-color: rgba(59,130,246,0.15) !important; }
+.border-\[rgba\(201\2C 168\2C 76\2C 0\.28\)\] { border-color: rgba(59,130,246,0.28) !important; }
+.border-\[rgba\(201\2C 168\2C 76\2C 0\.4\)\]  { border-color: rgba(59,130,246,0.4) !important; }
 
 /* Hover border gold → blue */
-.hover\:border-\[rgba\(201\2C 168\2C 76\2C 0\.28\)\]:hover { border-color: rgba(74,128,240,0.4) !important; }
-.hover\:border-\[rgba\(201\2C 168\2C 76\2C 0\.4\)\]:hover  { border-color: rgba(74,128,240,0.5) !important; }
-.hover\:border-\[rgba\(201\2C 168\2C 76\2C 0\.12\)\]:hover { border-color: rgba(74,128,240,0.25) !important; }
+.hover\:border-\[rgba\(201\2C 168\2C 76\2C 0\.28\)\]:hover { border-color: rgba(59,130,246,0.4) !important; }
+.hover\:border-\[rgba\(201\2C 168\2C 76\2C 0\.4\)\]:hover  { border-color: rgba(59,130,246,0.5) !important; }
+.hover\:border-\[rgba\(201\2C 168\2C 76\2C 0\.12\)\]:hover { border-color: rgba(59,130,246,0.25) !important; }
 
 /* Focus border gold → blue */
-.focus\:border-\[rgba\(201\2C 168\2C 76\2C 0\.28\)\]:focus { border-color: rgba(74,128,240,0.5) !important; }
+.focus\:border-\[rgba\(201\2C 168\2C 76\2C 0\.28\)\]:focus { border-color: rgba(59,130,246,0.5) !important; }
