@@ -53,9 +53,9 @@ export default function WorkflowBar() {
     <div
       className="rounded-xl px-4 py-3 mb-6 flex items-center gap-3 flex-wrap"
       style={{
-        background: "linear-gradient(135deg, rgba(10,30,82,0.95) 0%, rgba(6,13,26,0.98) 100%)",
-        border: "1px solid rgba(16,96,216,0.35)",
-        boxShadow: "0 4px 24px rgba(16,96,216,0.15)",
+        background: "var(--surface)",
+        border: "1px solid var(--border-md)",
+        boxShadow: "var(--glow-card)",
       }}
     >
       {/* Step indicator */}
@@ -79,13 +79,13 @@ export default function WorkflowBar() {
                     : isDone
                     ? "1px solid rgba(16,96,216,0.3)"
                     : "1px solid rgba(255,255,255,0.08)",
-                  color: isActive ? "#6A9FFF" : isDone ? "#4a80f0" : "#5a7898",
+                  color: isActive ? "var(--blue)" : isDone ? "var(--blue)" : "var(--muted)",
                 }}
               >
                 {isDone ? "✓" : stepNum} {isActive ? <span className="hidden sm:inline">{s.label}</span> : null}
               </div>
               {i < STEPS.length - 1 && (
-                <ChevronRight className="w-3 h-3 flex-shrink-0" style={{ color: "#1e3a68" }} />
+                <ChevronRight className="w-3 h-3 flex-shrink-0" style={{ color: "var(--border-md)" }} />
               )}
             </div>
           );
@@ -94,8 +94,8 @@ export default function WorkflowBar() {
 
       {/* Project name */}
       <div className="flex-1 min-w-0">
-        <p className="text-[11px] truncate" style={{ color: "#5a7898" }}>Active workflow</p>
-        <p className="text-sm font-semibold truncate" style={{ color: "#d8eeff", fontFamily: "'Cormorant Garamond', serif" }}>
+        <p className="text-[11px] truncate" style={{ color: "var(--muted)" }}>Active workflow</p>
+        <p className="text-sm font-semibold truncate" style={{ color: "var(--text)", fontFamily: "var(--font-serif)" }}>
           {session.orgProject.title}
         </p>
       </div>
@@ -104,12 +104,7 @@ export default function WorkflowBar() {
       <div className="flex items-center gap-2 flex-shrink-0">
         <Link
           href={continueUrl}
-          className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
-          style={{
-            background: "linear-gradient(135deg, #0a3ea0, #1060d8)",
-            color: "#fff",
-            boxShadow: "0 2px 8px rgba(16,96,216,0.4)",
-          }}
+          className="btn-primary px-3 py-1.5 text-xs"
         >
           Continue →
         </Link>

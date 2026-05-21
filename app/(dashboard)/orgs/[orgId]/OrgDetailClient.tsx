@@ -136,17 +136,17 @@ export default function OrgDetailClient({
         <div className="pb-1">
           <p
             className="font-semibold text-xl"
-            style={{ color: "#f0f8ff", fontFamily: "'Cormorant Garamond', serif" }}
+            style={{ color: "var(--text)", fontFamily: "var(--font-serif)" }}
           >
             {org.name}
           </p>
-          {org.tagline && <p className="text-sm" style={{ color: "#8ab0d8" }}>{org.tagline}</p>}
+          {org.tagline && <p className="text-sm" style={{ color: "var(--text2)" }}>{org.tagline}</p>}
           <div className="flex flex-wrap gap-1.5 mt-1">
             {focusTags.map((tag) => (
               <span
                 key={tag}
                 className="text-[10px] px-1.5 py-0.5 rounded-full"
-                style={{ background: "rgba(16,96,216,0.12)", border: "1px solid rgba(16,96,216,0.25)", color: "#6A9FFF" }}
+                style={{ background: "rgba(59,130,246,0.1)", border: "1px solid var(--border-md)", color: "var(--blue)" }}
               >
                 {tag}
               </span>
@@ -191,8 +191,8 @@ export default function OrgDetailClient({
               className="rounded-lg px-4 py-3 text-sm italic"
               style={{
                 background: "rgba(16,96,216,0.06)",
-                border: "1px solid rgba(16,96,216,0.18)",
-                color: "#8ab0d8",
+                border: "1px solid var(--border-md)",
+                color: "var(--text2)",
                 fontFamily: "'Cormorant Garamond', serif",
                 fontSize: 15,
               }}
@@ -203,17 +203,17 @@ export default function OrgDetailClient({
 
           {org.description && (
             <div>
-              <h2 className="text-sm font-semibold mb-2" style={{ color: "#d8eeff" }}>About</h2>
-              <p className="text-sm leading-relaxed" style={{ color: "#8ab0d8" }}>{org.description}</p>
+              <h2 className="text-sm font-semibold mb-2" style={{ color: "var(--text)" }}>About</h2>
+              <p className="text-sm leading-relaxed" style={{ color: "var(--text2)" }}>{org.description}</p>
             </div>
           )}
 
           {values.length > 0 && (
             <div>
-              <h2 className="text-sm font-semibold mb-2" style={{ color: "#d8eeff" }}>Values</h2>
+              <h2 className="text-sm font-semibold mb-2" style={{ color: "var(--text)" }}>Values</h2>
               <div className="flex flex-wrap gap-1.5">
                 {values.map((v) => (
-                  <span key={v} className="text-xs px-2.5 py-1 rounded-full" style={{ background: "var(--surface2)", border: "1px solid var(--border)", color: "#8ab0d8" }}>
+                  <span key={v} className="text-xs px-2.5 py-1 rounded-full" style={{ background: "var(--surface2)", border: "1px solid var(--border)", color: "var(--text2)" }}>
                     {v}
                   </span>
                 ))}
@@ -223,32 +223,32 @@ export default function OrgDetailClient({
 
           {org.whatWeSeek && (
             <div className="border-l-4 pl-4 py-2" style={{ borderColor: accentColor }}>
-              <h3 className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: "#5a7898" }}>What we&apos;re looking for</h3>
-              <p className="text-sm leading-relaxed" style={{ color: "#8ab0d8" }}>{org.whatWeSeek}</p>
+              <h3 className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: "var(--muted)" }}>What we&apos;re looking for</h3>
+              <p className="text-sm leading-relaxed" style={{ color: "var(--text2)" }}>{org.whatWeSeek}</p>
             </div>
           )}
 
-          <div className="grid grid-cols-2 gap-3 text-sm" style={{ color: "#8ab0d8" }}>
-            {org.orgType && <div><span style={{ color: "#5a7898" }}>Type: </span>{org.orgType}</div>}
-            {org.founded && <div><span style={{ color: "#5a7898" }}>Founded: </span>{org.founded}</div>}
-            {org.memberCount && <div><span style={{ color: "#5a7898" }}>Members: </span>{org.memberCount.toLocaleString()}</div>}
+          <div className="grid grid-cols-2 gap-3 text-sm" style={{ color: "var(--text2)" }}>
+            {org.orgType && <div><span style={{ color: "var(--muted)" }}>Type: </span>{org.orgType}</div>}
+            {org.founded && <div><span style={{ color: "var(--muted)" }}>Founded: </span>{org.founded}</div>}
+            {org.memberCount && <div><span style={{ color: "var(--muted)" }}>Members: </span>{org.memberCount.toLocaleString()}</div>}
             {org.headquartersLocation && (
               <div className="flex items-center gap-1.5">
-                <MapPin className="w-3.5 h-3.5 flex-shrink-0" style={{ color: "#5a7898" }} />
+                <MapPin className="w-3.5 h-3.5 flex-shrink-0" style={{ color: "var(--muted)" }} />
                 {org.headquartersLocation}
               </div>
             )}
-            {org.format && <div className="flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5 flex-shrink-0" style={{ color: "#5a7898" }} />{org.format}</div>}
-            {org.location && <div style={{ color: "#8ab0d8" }}>{org.location}</div>}
-            {org.stipend && <div><span style={{ color: "#5a7898" }}>Stipend: </span>{org.stipend}</div>}
+            {org.format && <div className="flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5 flex-shrink-0" style={{ color: "var(--muted)" }} />{org.format}</div>}
+            {org.location && <div style={{ color: "var(--text2)" }}>{org.location}</div>}
+            {org.stipend && <div><span style={{ color: "var(--muted)" }}>Stipend: </span>{org.stipend}</div>}
             <div className="flex items-center gap-1.5">
-              <Users className="w-3.5 h-3.5 flex-shrink-0" style={{ color: "#5a7898" }} />
+              <Users className="w-3.5 h-3.5 flex-shrink-0" style={{ color: "var(--muted)" }} />
               Team size: <span className="font-medium">{org.minTeamSize}–{org.maxTeamSize}</span>
             </div>
             {org.website && (
               <div>
                 <a href={`https://${org.website.replace(/^https?:\/\//, "")}`} target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-1 hover:underline" style={{ color: "#4a80f0" }}>
+                  className="flex items-center gap-1 hover:underline" style={{ color: "var(--blue)" }}>
                   <ExternalLink className="w-3.5 h-3.5" /> {org.website}
                 </a>
               </div>
@@ -257,7 +257,7 @@ export default function OrgDetailClient({
 
           {projects.length > 0 && (
             <div id="projects">
-              <h2 className="text-sm font-semibold text-[#e8e8ec] mb-3">Open Projects</h2>
+              <h2 className="text-sm font-semibold mb-3" style={{ color: "var(--text)" }}>Open Projects</h2>
               <div className="space-y-2">
                 {projects.map((proj) => {
                   const skills: string[] = JSON.parse(proj.requiredSkills || "[]");
@@ -276,23 +276,23 @@ export default function OrgDetailClient({
                         <div className="flex-1 min-w-0">
                           <p
                             className="font-medium text-sm group-hover:text-[#4a80f0] transition-colors"
-                            style={{ color: "#d8eeff", fontFamily: "'Cormorant Garamond', serif", fontSize: 15 }}
+                            style={{ color: "var(--text)", fontFamily: "var(--font-serif)", fontSize: 15 }}
                           >
                             {proj.title}
                           </p>
                           {(proj.shortDescription ?? proj.description) && (
-                            <p className="text-xs mt-0.5 line-clamp-2" style={{ color: "#8ab0d8" }}>
+                            <p className="text-xs mt-0.5 line-clamp-2" style={{ color: "var(--text2)" }}>
                               {proj.shortDescription ?? proj.description}
                             </p>
                           )}
                           <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                            {proj.hoursPerWeek && <span className="text-[10px]" style={{ color: "#5a7898" }}>⏱ {proj.hoursPerWeek}</span>}
-                            {proj.duration && <span className="text-[10px]" style={{ color: "#5a7898" }}>📅 {proj.duration}</span>}
+                            {proj.hoursPerWeek && <span className="text-[10px]" style={{ color: "var(--muted)" }}>⏱ {proj.hoursPerWeek}</span>}
+                            {proj.duration && <span className="text-[10px]" style={{ color: "var(--muted)" }}>📅 {proj.duration}</span>}
                           </div>
                           {skills.length > 0 && (
                             <div className="flex flex-wrap gap-1 mt-1.5">
                               {skills.slice(0, 4).map((s) => (
-                                <span key={s} className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: "var(--surface2)", border: "1px solid var(--border)", color: "#8ab0d8" }}>{s}</span>
+                                <span key={s} className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: "var(--surface2)", border: "1px solid var(--border)", color: "var(--text2)" }}>{s}</span>
                               ))}
                             </div>
                           )}
@@ -304,7 +304,7 @@ export default function OrgDetailClient({
                         </div>
                         <div className="text-right flex-shrink-0">
                           <p className="text-xs font-semibold" style={{ color: accentColor }}>{proj.openSpots}</p>
-                          <p className="text-[10px]" style={{ color: "#5a7898" }}>open spots</p>
+                          <p className="text-[10px]" style={{ color: "var(--muted)" }}>open spots</p>
                         </div>
                       </div>
                     </Link>
@@ -316,16 +316,16 @@ export default function OrgDetailClient({
 
           {org.opportunities.length > 0 && (
             <div>
-              <h2 className="text-sm font-semibold text-[#e8e8ec] mb-3">Opportunities</h2>
+              <h2 className="text-sm font-semibold mb-3" style={{ color: "var(--text)" }}>Opportunities</h2>
               <div className="space-y-2">
                 {org.opportunities.map((opp) => (
-                  <div key={opp.id} className="bg-[#16161a] border border-[#2a2a33] rounded-lg p-3">
-                    <p className="font-medium text-sm text-[#e8e8ec]">{opp.title}</p>
+                  <div key={opp.id} className="rounded-lg p-3" style={{ background: "var(--surface2)", border: "1px solid var(--border-md)" }}>
+                    <p className="font-medium text-sm" style={{ color: "var(--text)" }}>{opp.title}</p>
                     {opp.description && (
-                      <p className="text-xs text-[#9898a8] mt-1 line-clamp-2">{opp.description}</p>
+                      <p className="text-xs mt-1 line-clamp-2" style={{ color: "var(--text2)" }}>{opp.description}</p>
                     )}
                     {opp.deadline && (
-                      <p className="text-xs text-[#5a5a6a] mt-1">Due {format(new Date(opp.deadline), "MMM d, yyyy")}</p>
+                      <p className="text-xs mt-1" style={{ color: "var(--muted)" }}>Due {format(new Date(opp.deadline), "MMM d, yyyy")}</p>
                     )}
                   </div>
                 ))}
@@ -336,12 +336,12 @@ export default function OrgDetailClient({
 
         {/* ── Right sidebar ─────────────────────────────────────── */}
         <div className="w-64 flex-shrink-0 space-y-4">
-          <div className="bg-[#16161a] border border-[#2a2a33] rounded-xl p-4 sticky top-6">
+          <div className="rounded-xl p-4 sticky top-6" style={{ background: "var(--surface)", border: "1px solid var(--border-md)", boxShadow: "var(--glow-card)" }}>
             {org.deadline && (
               <div className="text-center mb-4">
-                <p className="text-2xl font-bold text-[#e8e8ec]">{Math.max(0, daysLeft ?? 0)}</p>
-                <p className="text-xs text-[#5a5a6a]">days remaining</p>
-                <p className="text-xs text-[#9898a8] mt-1">
+                <p className="text-2xl font-bold" style={{ color: "var(--text)" }}>{Math.max(0, daysLeft ?? 0)}</p>
+                <p className="text-xs" style={{ color: "var(--muted)" }}>days remaining</p>
+                <p className="text-xs mt-1" style={{ color: "var(--text2)" }}>
                   Deadline: {format(new Date(org.deadline), "MMM d, yyyy")}
                 </p>
               </div>
@@ -363,14 +363,14 @@ export default function OrgDetailClient({
             {myTeamId ? (
               <Link
                 href={`/teams/${myTeamId}`}
-                className="flex items-center justify-center gap-1 w-full py-2.5 rounded-lg bg-[#4a80f0] hover:bg-[#6a9fff] text-[#0f0f11] text-sm font-semibold transition-colors"
+                className="btn-primary flex items-center justify-center gap-1 w-full py-2.5 text-sm"
               >
                 Open workspace <ExternalLink className="w-3.5 h-3.5" />
               </Link>
             ) : projects.length > 0 ? (
               <a
                 href="#projects"
-                className="w-full py-2.5 rounded-lg text-sm font-semibold bg-[#4a80f0] hover:bg-[#6a9fff] text-[#0f0f11] transition-colors text-center block"
+                className="btn-primary w-full py-2.5 text-sm text-center block"
               >
                 View open projects ↓
               </a>
@@ -386,7 +386,7 @@ export default function OrgDetailClient({
                 "flex items-center justify-center gap-1.5 w-full py-2 rounded-lg border text-xs font-medium mt-2 transition-colors",
                 saved
                   ? "border-[#4a80f0] text-[#4a80f0]"
-                  : "border-[#2a2a33] text-[#9898a8] hover:border-[#4a80f0] hover:text-[#4a80f0]"
+                  : "text-[#9898a8] hover:text-[#4a80f0]"
               )}
             >
               <Save className="w-3.5 h-3.5" fill={saved ? "currentColor" : "none"} />
