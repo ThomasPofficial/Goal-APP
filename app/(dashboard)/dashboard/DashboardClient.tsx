@@ -27,6 +27,7 @@ interface TutorialData {
   traitsDone: boolean;
   hasTeam: boolean;
   hasApplied: boolean;
+  hasBrowsedOrgs: boolean;
 }
 
 interface TickerItem {

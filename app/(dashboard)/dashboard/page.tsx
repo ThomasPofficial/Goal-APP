@@ -78,6 +78,7 @@ export default async function DashboardPage() {
         traitsDone,
         hasTeam,
         hasApplied,
+        hasBrowsedOrgs: hasTeam || hasApplied,
       }}
     />
   );
