@@ -1,21 +1,11 @@
 import { prisma } from "@/lib/prisma";
+import { requireAgentAuth } from "@/lib/agent-auth";
 import { NextResponse } from "next/server";
 import type { GeniusType, Prisma } from "@prisma/client";
 
-async function resolveOrgFromApiKey(req: Request) {
-  const authHeader = req.headers.get("Authorization") ?? "";
-  const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : "";
-  if (!token) return null;
-  return prisma.org.findUnique({ where: { apiKey: token } });
-}
-
-// POST /api/agent/search
-// Accepts freeform query OR structured filters. Returns ranked scholar list with reviews.
-// Requires paid org API key in Authorization: Bearer <key> header.
 export async function POST(req: Request) {
-  const org = await resolveOrgFromApiKey(req);
-  if (!org) return NextResponse.json({ error: "Unauthorized — valid paid org API key required" }, { status: 401 });
-  if (!org.isPaid) return NextResponse.json({ error: "Paid org tier required" }, { status: 403 });
+  const auth = await requireAgentAuth(req);
+  if (!auth.ok) return auth.response;
 
   const body = await req.json().catch(() => ({}));
   const { query, filters = {} } = body as {
@@ -81,13 +71,11 @@ export async function POST(req: Request) {
     orderBy: { createdAt: "desc" },
   });
 
-  // Apply minReviews filter post-query (easier than a Prisma _count filter)
   const minReviews = filters.minReviews ?? 0;
   const filtered = minReviews > 0
     ? scholars.filter((s) => s.orgReviews.length >= minReviews)
     : scholars;
 
-  // Sort: scholars with reviews first, then by review count desc
   const ranked = filtered.sort((a, b) => b.orgReviews.length - a.orgReviews.length);
 
   return NextResponse.json({ scholars: ranked, total: ranked.length });

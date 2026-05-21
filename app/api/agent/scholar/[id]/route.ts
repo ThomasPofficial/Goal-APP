@@ -1,19 +1,10 @@
 import { prisma } from "@/lib/prisma";
+import { requireAgentAuth } from "@/lib/agent-auth";
 import { NextResponse } from "next/server";
 
-async function resolveOrgFromApiKey(req: Request) {
-  const authHeader = req.headers.get("Authorization") ?? "";
-  const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : "";
-  if (!token) return null;
-  return prisma.org.findUnique({ where: { apiKey: token } });
-}
-
-// GET /api/agent/scholar/:id
-// Full scholar profile + all reviews. Requires paid org API key.
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
-  const org = await resolveOrgFromApiKey(req);
-  if (!org) return NextResponse.json({ error: "Unauthorized — valid paid org API key required" }, { status: 401 });
-  if (!org.isPaid) return NextResponse.json({ error: "Paid org tier required" }, { status: 403 });
+  const auth = await requireAgentAuth(req);
+  if (!auth.ok) return auth.response;
 
   const { id } = await params;
 
