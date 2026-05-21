@@ -78,5 +78,8 @@ export async function POST(req: Request) {
 
   const ranked = filtered.sort((a, b) => b.orgReviews.length - a.orgReviews.length);
 
-  return NextResponse.json({ scholars: ranked, total: ranked.length });
+  return NextResponse.json(
+    { scholars: ranked, total: ranked.length },
+    { headers: { "X-RateLimit-Remaining": String(auth.callsRemaining) } }
+  );
 }

@@ -9,7 +9,7 @@ function todayUTC(): string {
 const DAILY_LIMIT = 100;
 
 export type AgentAuthResult =
-  | { ok: true; orgId: string }
+  | { ok: true; orgId: string; callsRemaining: number }
   | { ok: false; response: NextResponse };
 
 export async function requireAgentAuth(req: Request): Promise<AgentAuthResult> {
@@ -79,5 +79,5 @@ export async function requireAgentAuth(req: Request): Promise<AgentAuthResult> {
     };
   }
 
-  return { ok: true, orgId: org.id };
+  return { ok: true, orgId: org.id, callsRemaining: Math.max(0, DAILY_LIMIT - log.callCount) };
 }

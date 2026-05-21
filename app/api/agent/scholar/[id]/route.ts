@@ -45,5 +45,5 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 
   if (!scholar) return NextResponse.json({ error: "Scholar not found" }, { status: 404 });
 
-  return NextResponse.json({ scholar });
+  return NextResponse.json({ scholar }, { headers: { "X-RateLimit-Remaining": String(auth.callsRemaining) } });
 }
