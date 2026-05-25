@@ -7,6 +7,7 @@ import { ExternalLink, ChevronRight, Save } from "lucide-react";
 import Avatar from "@/components/ui/Avatar";
 import GeniusTypeBadge from "@/components/ui/GeniusTypeBadge";
 import TutorialWidget from "@/components/ui/TutorialWidget";
+import WelcomeCard from "@/components/ui/WelcomeCard";
 import { GENIUS_TYPES } from "@/lib/geniusTypes";
 import type { GeniusTypeKey } from "@/lib/geniusTypes";
 
@@ -51,7 +52,7 @@ const card = {
   background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "0",
 };
 
-export default function DashboardClient({ profile, spaces, traitsDone, tutorial }: { profile: ProfileData; spaces: SpaceRow[]; traitsDone: boolean; tutorial: TutorialData }) {
+export default function DashboardClient({ profile, spaces, traitsDone, tutorialDismissed, tutorial }: { profile: ProfileData; spaces: SpaceRow[]; traitsDone: boolean; tutorialDismissed?: boolean; tutorial: TutorialData }) {
   const [activeFilter, setActiveFilter] = useState("ALL");
   const [opportunities, setOpportunities] = useState<OppCard[]>([]);
   const [ticker, setTicker] = useState<TickerItem[]>([]);
@@ -208,7 +209,8 @@ export default function DashboardClient({ profile, spaces, traitsDone, tutorial 
       {/* Right column */}
       <div className="flex-1 min-w-0 space-y-4">
 
-        <TutorialWidget {...tutorial} />
+        <WelcomeCard hasGeniusType={tutorial.hasGeniusType} />
+        <TutorialWidget {...tutorial} serverDismissed={tutorialDismissed} />
 
         {!traitsDone && (
           <Link href="/quiz?tab=traits" className="bracket-card flex items-center justify-between gap-3 px-4 py-3 transition-colors group" style={{ background: "rgba(74,128,240,0.06)", border: "1px solid rgba(74,128,240,0.12)" }}>

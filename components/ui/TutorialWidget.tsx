@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { X, Check, ChevronDown, ChevronRight, BookOpen, ArrowRight } from "lucide-react";
 
-const STORAGE_KEY = "nivarro_tutorial_v2_dismissed";
+const LS_KEY = "nv_tutorial_v3_dismissed";
 
 interface TutorialState {
   hasGeniusType: boolean;
@@ -23,9 +23,11 @@ interface Step {
   guide: string[];
 }
 
-interface Props extends TutorialState {}
+interface Props extends TutorialState {
+  serverDismissed?: boolean;
+}
 
-export default function TutorialWidget(initialProps: Props) {
+export default function TutorialWidget({ serverDismissed = false, ...initialProps }: Props) {
   const [dismissed, setDismissed] = useState(true);
   const [mounted, setMounted] = useState(false);
   const [state, setState] = useState<TutorialState>(initialProps);
@@ -34,31 +36,28 @@ export default function TutorialWidget(initialProps: Props) {
   const refresh = useCallback(async () => {
     try {
       const res = await fetch("/api/tutorial-status");
-      if (res.ok) {
-        const data = await res.json();
-        setState(data);
-      }
+      if (res.ok) setState(await res.json());
     } catch {}
   }, []);
 
   useEffect(() => {
-    setDismissed(localStorage.getItem(STORAGE_KEY) === "1");
+    const locallyDismissed = localStorage.getItem(LS_KEY) === "1";
+    setDismissed(serverDismissed || locallyDismissed);
     setMounted(true);
-    refresh();
 
-    const onFocus = () => refresh();
-    window.addEventListener("focus", onFocus);
-    const interval = setInterval(refresh, 45_000);
+    if (!serverDismissed && !locallyDismissed) {
+      refresh();
+      const onFocus = () => refresh();
+      window.addEventListener("focus", onFocus);
+      const iv = setInterval(refresh, 45_000);
+      return () => { window.removeEventListener("focus", onFocus); clearInterval(iv); };
+    }
+  }, [refresh, serverDismissed]);
 
-    return () => {
-      window.removeEventListener("focus", onFocus);
-      clearInterval(interval);
-    };
-  }, [refresh]);
-
-  const dismiss = () => {
-    localStorage.setItem(STORAGE_KEY, "1");
+  const dismiss = async () => {
+    localStorage.setItem(LS_KEY, "1");
     setDismissed(true);
+    try { await fetch("/api/tutorial/dismiss", { method: "POST" }); } catch {}
   };
 
   if (!mounted || dismissed) return null;
@@ -75,7 +74,7 @@ export default function TutorialWidget(initialProps: Props) {
       guide: [
         "Go to the Quiz page and answer the short personality-style questions.",
         "Be honest — there are no wrong answers. Your responses reveal how you think and work.",
-        "You'll receive a Genius Type (e.g., Architect, Connector, Builder) that appears on your public profile.",
+        "You'll receive a Genius Type (Dynamo, Blaze, Tempo, or Steel) that appears on your public profile.",
         "Orgs and teammates use your type to understand what role you'd play on a team.",
       ],
     },
@@ -87,7 +86,7 @@ export default function TutorialWidget(initialProps: Props) {
       done: traitsDone,
       guide: [
         "Head to the Traits tab on the Quiz page after completing your Genius Type.",
-        "Add 3–8 skills or strengths you'd bring to a team — e.g., \"Python\", \"UI Design\", \"Public Speaking\".",
+        "Add 3–8 skills or strengths you'd bring to a team — e.g. \"Python\", \"UI Design\", \"Public Speaking\".",
         "Pick things you're genuinely confident in, not just interested in.",
         "Org admins search for specific traits when looking for candidates, so be specific.",
       ],
@@ -102,7 +101,7 @@ export default function TutorialWidget(initialProps: Props) {
         "Visit the Orgs page to see all verified organizations accepting team applications.",
         "Read each org's mission and open projects to find ones that match your interests.",
         "Look at what Genius Types and traits they're seeking — compare with your own profile.",
-        "Save orgs you like to revisit them, or jump straight to a project page to apply.",
+        "Save orgs you like to revisit, or jump straight to a project page to apply.",
       ],
     },
     {
@@ -136,7 +135,6 @@ export default function TutorialWidget(initialProps: Props) {
   const completedCount = steps.filter((s) => s.done).length;
   const progress = (completedCount / steps.length) * 100;
   const allDone = completedCount === steps.length;
-
   const toggle = (i: number) => setExpanded(expanded === i ? null : i);
 
   return (
@@ -148,16 +146,13 @@ export default function TutorialWidget(initialProps: Props) {
       <div className="flex items-start justify-between gap-3 mb-3">
         <div className="flex items-center gap-2.5">
           <div
-            className="w-8 h-8 rounded-none flex items-center justify-center flex-shrink-0"
+            className="w-8 h-8 flex items-center justify-center flex-shrink-0"
             style={{ background: "rgba(74,128,240,0.12)", border: "1px solid rgba(74,128,240,0.2)" }}
           >
             <BookOpen className="w-4 h-4" style={{ color: "var(--blue)" }} />
           </div>
           <div>
-            <h2
-              className="text-sm font-semibold"
-              style={{ color: "var(--text)", fontFamily: "var(--font-display, sans-serif)" }}
-            >
+            <h2 className="text-sm font-semibold" style={{ color: "var(--text)", fontFamily: "var(--font-display, sans-serif)" }}>
               {allDone ? "You're all set!" : "Get started on Nivarro"}
             </h2>
             <p className="text-[11px]" style={{ color: "var(--text2)" }}>
@@ -177,11 +172,8 @@ export default function TutorialWidget(initialProps: Props) {
       </div>
 
       {/* Progress bar */}
-      <div className="h-1 rounded-full mb-4" style={{ background: "var(--border-md)" }}>
-        <div
-          className="h-1 rounded-full transition-all duration-500"
-          style={{ width: `${progress}%`, background: "var(--blue)" }}
-        />
+      <div className="h-1 mb-4" style={{ background: "var(--border-md)" }}>
+        <div className="h-1 transition-all duration-500" style={{ width: `${progress}%`, background: "var(--blue)" }} />
       </div>
 
       {/* Steps */}
@@ -192,7 +184,7 @@ export default function TutorialWidget(initialProps: Props) {
             <div key={i}>
               <button
                 onClick={() => !step.done && toggle(i)}
-                className="w-full flex items-center gap-3 rounded-none px-3 py-2.5 transition-colors text-left group"
+                className="w-full flex items-center gap-3 px-3 py-2.5 transition-colors text-left group"
                 style={{
                   background: step.done ? "transparent" : isOpen ? "var(--surface3)" : "var(--surface2)",
                   opacity: step.done ? 0.55 : 1,
@@ -200,33 +192,24 @@ export default function TutorialWidget(initialProps: Props) {
                 }}
               >
                 <div
-                  className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0"
+                  className="w-6 h-6 flex items-center justify-center flex-shrink-0"
                   style={{
                     background: step.done ? "rgba(74,128,240,0.15)" : "var(--surface3)",
-                    border: step.done
-                      ? "1px solid rgba(74,128,240,0.3)"
-                      : "1px solid var(--border-md)",
+                    border: step.done ? "1px solid rgba(74,128,240,0.3)" : "1px solid var(--border-md)",
                   }}
                 >
                   {step.done ? (
                     <Check className="w-3 h-3" style={{ color: "var(--blue)" }} />
                   ) : (
-                    <span className="text-[10px] font-bold" style={{ color: "var(--muted)" }}>
-                      {i + 1}
-                    </span>
+                    <span className="text-[10px] font-bold" style={{ color: "var(--muted)" }}>{i + 1}</span>
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p
-                    className="text-sm font-medium"
-                    style={{ color: step.done ? "var(--text2)" : "var(--text)" }}
-                  >
+                  <p className="text-sm font-medium" style={{ color: step.done ? "var(--text2)" : "var(--text)" }}>
                     {step.label}
                   </p>
                   {!step.done && !isOpen && (
-                    <p className="text-xs" style={{ color: "var(--text2)" }}>
-                      {step.description}
-                    </p>
+                    <p className="text-xs" style={{ color: "var(--text2)" }}>{step.description}</p>
                   )}
                 </div>
                 {!step.done && (
@@ -236,22 +219,16 @@ export default function TutorialWidget(initialProps: Props) {
                 )}
               </button>
 
-              {/* Expanded guide */}
               {isOpen && !step.done && (
                 <div
-                  className="mx-3 mb-1 rounded-none px-4 py-3"
+                  className="mx-3 mb-1 px-4 py-3"
                   style={{ background: "var(--surface2)", border: "1px solid var(--border-md)" }}
                 >
                   <ul className="space-y-2 mb-3">
                     {step.guide.map((line, j) => (
                       <li key={j} className="flex items-start gap-2">
-                        <span
-                          className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0"
-                          style={{ background: "var(--blue)" }}
-                        />
-                        <p className="text-xs leading-relaxed" style={{ color: "var(--text2)" }}>
-                          {line}
-                        </p>
+                        <span className="w-1.5 h-1.5 mt-1.5 flex-shrink-0" style={{ background: "var(--blue)", display: "block" }} />
+                        <p className="text-xs leading-relaxed" style={{ color: "var(--text2)" }}>{line}</p>
                       </li>
                     ))}
                   </ul>
