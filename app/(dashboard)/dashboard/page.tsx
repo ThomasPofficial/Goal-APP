@@ -43,13 +43,16 @@ export default async function DashboardPage() {
     },
   });
 
-  const spaces = (profile?.teamMemberships ?? []).map((m) => {
-    const convo = m.team.conversation[0];
-    const lastRead = convo?.participants[0]?.lastReadAt;
-    const lastMsg = convo?.messages[0]?.createdAt;
-    const hasUnread = lastMsg && (!lastRead || lastMsg > lastRead);
-    return { id: m.team.id, name: m.team.name, hasUnread: !!hasUnread };
-  });
+  const seenSpaces = new Set<string>();
+  const spaces = (profile?.teamMemberships ?? [])
+    .filter((m) => { if (seenSpaces.has(m.team.id)) return false; seenSpaces.add(m.team.id); return true; })
+    .map((m) => {
+      const convo = m.team.conversation[0];
+      const lastRead = convo?.participants[0]?.lastReadAt;
+      const lastMsg = convo?.messages[0]?.createdAt;
+      const hasUnread = lastMsg && (!lastRead || lastMsg > lastRead);
+      return { id: m.team.id, name: m.team.name, hasUnread: !!hasUnread };
+    });
 
   const hasTeam = (profile?.teamMemberships?.length ?? 0) > 0;
   const hasApplied = hasTeam && profile?.id

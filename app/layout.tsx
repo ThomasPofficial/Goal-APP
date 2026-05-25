@@ -1,26 +1,20 @@
 import type { Metadata } from "next";
-import { Special_Elite, Syne_Mono, DM_Sans, DM_Mono } from "next/font/google";
+import { Plus_Jakarta_Sans, Cormorant_Garamond, DM_Mono } from "next/font/google";
 import "./globals.css";
 import SessionProvider from "@/components/providers/SessionProvider";
 
-const specialElite = Special_Elite({
+const plusJakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  weight: ["400"],
+  weight: ["300", "400", "500", "600", "700", "800", "900"],
   variable: "--font-display",
   display: "swap",
 });
 
-const syneMono = Syne_Mono({
-  subsets: ["latin"],
-  weight: ["400"],
-  variable: "--font-accent",
-  display: "swap",
-});
-
-const dmSans = DM_Sans({
+const cormorant = Cormorant_Garamond({
   subsets: ["latin"],
   weight: ["300", "400", "500", "600"],
-  variable: "--font-body",
+  style: ["normal", "italic"],
+  variable: "--font-serif",
   display: "swap",
 });
 
@@ -43,11 +37,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${specialElite.variable} ${syneMono.variable} ${dmSans.variable} ${dmMono.variable}`}>
+    <html lang="en" className={`${plusJakarta.variable} ${cormorant.variable} ${dmMono.variable}`}>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
       </head>
       <body className="antialiased" style={{ background: "var(--bg)", color: "var(--text)" }}>
         {/* Inline script prevents flash of wrong theme on load */}

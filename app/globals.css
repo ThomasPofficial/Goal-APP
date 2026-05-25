@@ -9,7 +9,7 @@
 
 :root {
   --font-display: 'Plus Jakarta Sans', system-ui, sans-serif;
-  --font-body:    'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-body:    var(--font-display);
   --font-serif:   'Cormorant Garamond', Georgia, serif;
   --font-mono:    'DM Mono', 'JetBrains Mono', monospace;
 
@@ -25,16 +25,16 @@
   --gold-glow:   var(--blue-glow);
 
   /* ── Dark surfaces ── */
-  --n-bg:       #050A14;
-  --n-bg2:      #0A1628;
-  --n-surface:  #0F1F3C;
-  --n-surface2: #162840;
-  --n-surface3: #1E3455;
-  --n-border:   rgba(255,255,255,0.055);
-  --n-border-md:rgba(59,130,246,0.22);
-  --n-text:     #F0F4FF;
-  --n-text2:    #8FA8CC;
-  --n-muted:    #4A6080;
+  --n-bg:       #020407;
+  --n-bg2:      #040D1C;
+  --n-surface:  #081626;
+  --n-surface2: #0D1F35;
+  --n-surface3: #122744;
+  --n-border:   rgba(255,255,255,0.05);
+  --n-border-md:rgba(59,130,246,0.18);
+  --n-text:     #EEF2FF;
+  --n-text2:    #8AA4C8;
+  --n-muted:    #4A607E;
 
   /* ── Active (dark default) ── */
   --bg:        var(--n-bg);
@@ -56,9 +56,9 @@
   --glow-text:        0 0 16px rgba(59,130,246,0.6);
 
   /* ── Radius & shadow ── */
-  --radius-sm:  6px;
-  --radius-md:  10px;
-  --radius-lg:  16px;
+  --radius-sm:  3px;
+  --radius-md:  5px;
+  --radius-lg:  8px;
   --shadow-sm:  0 1px 3px rgba(0,0,0,0.5), 0 1px 2px rgba(0,0,0,0.3);
   --shadow-md:  0 4px 16px rgba(0,0,0,0.45);
   --shadow-lg:  0 16px 48px rgba(0,0,0,0.6);
@@ -211,6 +211,9 @@ body.day .card:hover {
   transform: translateY(-1px);
 }
 
+/* Minimal scrollbar */
+::-webkit-scrollbar { width: 3px; height: 3px; }
+
 /* ─────────────────────────────────────────
    GLOW UTILITIES
    Use these class names in components for
@@ -220,7 +223,7 @@ body.day .card:hover {
 .glow-blue  { box-shadow: var(--glow-blue); }
 .glow-blue:hover { box-shadow: var(--glow-blue-strong); }
 
-/* Nav item active state */
+/* Nav item active state — sharp left bar, no pill */
 .nav-active {
   position: relative;
 }
@@ -228,12 +231,10 @@ body.day .card:hover {
   content: "";
   position: absolute;
   left: 0;
-  top: 20%;
-  height: 60%;
-  width: 3px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
   background: var(--blue);
-  border-radius: 0 3px 3px 0;
-  box-shadow: var(--glow-blue-sm);
 }
 
 /* Primary button — blue with glow */
