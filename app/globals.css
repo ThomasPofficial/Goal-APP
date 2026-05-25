@@ -339,6 +339,24 @@ body.day .card:hover {
 [style*="color:#6A9FFF"],
 [style*="color:#6a9fff"] { color: var(--blue-bright) !important; }
 
+/* #c8ddf0 — near-white blue, invisible in light mode */
+[style*="color: rgb(200, 221, 240)"] { color: var(--text) !important; }
+
+/* #3a5878 — dark blue muted text */
+[style*="color: rgb(58, 88, 120)"] { color: var(--muted) !important; }
+
+/* ─────────────────────────────────────────
+   LIGHT MODE OVERRIDES
+   Fix colorScheme + inline dark bg surfaces
+───────────────────────────────────────── */
+
+/* Force date/time pickers to light styling in day mode */
+body.day input[type="date"],
+body.day input[type="time"],
+body.day input[type="datetime-local"] {
+  color-scheme: light;
+}
+
 /* ─────────────────────────────────────────
    LEGACY TAILWIND ARBITRARY CLASS OVERRIDES
 ───────────────────────────────────────── */
@@ -375,6 +393,13 @@ body.day .card:hover {
 .placeholder-\[#5a5a6a\]::placeholder,
 .placeholder-\[#58586a\]::placeholder,
 .placeholder-\[#5a5570\]::placeholder { color: var(--muted) !important; }
+
+/* Uppercase hex variants (case-sensitive class names) */
+.text-\[#EAE8E0\] { color: var(--text) !important; }
+.text-\[#5A5570\] { color: var(--muted) !important; }
+.text-\[#8A8898\] { color: var(--text2) !important; }
+.bg-\[#0D1525\] { background-color: var(--surface) !important; }
+.bg-\[#111C32\] { background-color: var(--surface2) !important; }
 
 .divide-\[#2a2a33\] > * + * { border-color: var(--border-md) !important; }
 .focus\:border-\[#c9a84c\]:focus { border-color: var(--blue) !important; }

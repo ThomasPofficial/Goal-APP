@@ -197,7 +197,7 @@ export default function ProjectDetailClient({
           <div className="flex-1 min-w-0">
             <h1
               className="text-2xl font-semibold mb-1"
-              style={{ color: "#f0f8ff", fontFamily: "'Cormorant Garamond', serif" }}
+              style={{ color: "var(--text)", fontFamily: "var(--font-serif)" }}
             >
               {project.title}
             </h1>
@@ -396,7 +396,7 @@ export default function ProjectDetailClient({
                       }
                       className={cn(
                         "px-3 py-1.5 rounded-full text-xs font-medium border transition-colors",
-                        geniusFilter === g ? "" : "border-[rgba(74,128,240,0.12)] text-[#8A8898] hover:border-[rgba(74,128,240,0.28)]"
+                        geniusFilter === g ? "" : "border-[rgba(74,128,240,0.12)] text-[var(--text2)] hover:border-[rgba(74,128,240,0.28)]"
                       )}
                     >
                       {g[0] + g.slice(1).toLowerCase()}
@@ -593,7 +593,7 @@ function ScholarCard({
           {scholar.traitLinks.length > 0 && (
             <div className="flex gap-1 mt-1 flex-wrap">
               {scholar.traitLinks.map((tl) => (
-                <span key={tl.trait.slug} className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: "#0c1a2e", color: "#8ab0d8" }}>
+                <span key={tl.trait.slug} className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: "var(--surface2)", color: "var(--text2)" }}>
                   {tl.trait.name}
                 </span>
               ))}
@@ -613,7 +613,7 @@ function ScholarCard({
                 placeholder="Optional message…"
                 rows={2}
                 className="w-full text-xs resize-none rounded-lg px-2 py-1.5 focus:outline-none"
-                style={{ border: "1px solid rgba(16,96,216,0.28)", background: "#0c1a2e", color: "#d8eeff" }}
+                style={{ border: "1px solid var(--border-md)", background: "var(--surface2)", color: "var(--text)" }}
               />
               <div className="flex gap-1">
                 <button
@@ -651,7 +651,7 @@ function ScholarCard({
       {showReviews && reviewsOpen && reviews.length > 0 && (
         <div className="space-y-2 pt-2" style={{ borderTop: "1px solid var(--border)" }}>
           {reviews.map((r) => (
-            <div key={r.id} className="rounded-lg p-3" style={{ background: "#030922", border: "1px solid rgba(16,96,216,0.15)" }}>
+            <div key={r.id} className="rounded-lg p-3" style={{ background: "var(--surface2)", border: "1px solid var(--border-md)" }}>
               <div className="flex items-center gap-2 mb-1.5">
                 {r.org.logoLetter && (
                   <div
@@ -664,7 +664,7 @@ function ScholarCard({
                 <span className="text-[11px] font-semibold" style={{ color: "#8ab0d8" }}>{r.org.name}</span>
                 <span className="text-[10px]" style={{ color: "#5a7898" }}>on {r.orgProject.title}</span>
               </div>
-              <p className="text-xs leading-relaxed" style={{ color: "#c8ddf0" }}>{r.body}</p>
+              <p className="text-xs leading-relaxed" style={{ color: "var(--text)" }}>{r.body}</p>
             </div>
           ))}
         </div>
@@ -703,7 +703,7 @@ function RosterPanel({ sentTo, candidates, openSpots }: RosterPanelProps) {
         style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
       >
         <h3 className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: "#5a7898" }}>Your Roster</h3>
-        <p className="text-xs" style={{ color: "#3a5878" }}>
+        <p className="text-xs" style={{ color: "var(--muted)" }}>
           Send recruitment requests to build your team. Recruited scholars appear here.
         </p>
       </div>
@@ -771,7 +771,7 @@ function RosterPanel({ sentTo, candidates, openSpots }: RosterPanelProps) {
       </div>
 
       {spotsLeft > 0 && (
-        <p className="text-[11px]" style={{ color: "#3a5878" }}>
+        <p className="text-[11px]" style={{ color: "var(--muted)" }}>
           {spotsLeft} spot{spotsLeft !== 1 ? "s" : ""} remaining
         </p>
       )}

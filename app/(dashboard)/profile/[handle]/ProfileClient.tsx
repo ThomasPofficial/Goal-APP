@@ -206,7 +206,7 @@ export default function ProfileClient({ profile, isOwn, ownReviews = [] }: Props
                   <span className="text-[11px]" style={{ color: "#5a7898" }}>· {r.orgProject.title}</span>
                   <span className="ml-auto text-[10px]" style={{ color: "#5a7898" }}>{format(new Date(r.createdAt), "MMM d, yyyy")}</span>
                 </div>
-                <p className="text-sm leading-relaxed" style={{ color: "#c8ddf0", fontFamily: "'Cormorant Garamond', serif", fontSize: 15 }}>{r.body}</p>
+                <p className="text-sm leading-relaxed" style={{ color: "var(--text)", fontFamily: "var(--font-serif)", fontSize: 15 }}>{r.body}</p>
               </div>
             ))}
           </div>
@@ -219,7 +219,7 @@ export default function ProfileClient({ profile, isOwn, ownReviews = [] }: Props
           style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
         >
           <p className="text-sm font-medium" style={{ color: "#5a7898" }}>No reviews yet</p>
-          <p className="text-xs mt-1" style={{ color: "#3a5878" }}>
+          <p className="text-xs mt-1" style={{ color: "var(--muted)" }}>
             Reviews appear here after you complete an org project. They&apos;re written by the org and visible only to you — and to teams recruiting via the algorithm.
           </p>
         </div>

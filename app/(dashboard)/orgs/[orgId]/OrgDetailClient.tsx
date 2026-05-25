@@ -128,7 +128,7 @@ export default function OrgDetailClient({
             background: org.logoBg ?? accentColor,
             color: org.logoColor ?? "#fff",
             borderColor: "#030609",
-            fontFamily: "'Cormorant Garamond', serif",
+            fontFamily: "var(--font-serif)",
           }}
         >
           {org.logoLetter ?? org.name[0]}
@@ -193,7 +193,7 @@ export default function OrgDetailClient({
                 background: "rgba(16,96,216,0.06)",
                 border: "1px solid var(--border-md)",
                 color: "var(--text2)",
-                fontFamily: "'Cormorant Garamond', serif",
+                fontFamily: "var(--font-serif)",
                 fontSize: 15,
               }}
             >

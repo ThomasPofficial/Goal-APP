@@ -161,7 +161,7 @@ function OrgCard({ org }: { org: Org }) {
               background: org.logoBg ?? color,
               color: org.logoColor ?? "#fff",
               borderColor: "var(--surface)",
-              fontFamily: "'Cormorant Garamond', serif",
+              fontFamily: "var(--font-serif)",
               fontSize: 16,
             }}
           >
