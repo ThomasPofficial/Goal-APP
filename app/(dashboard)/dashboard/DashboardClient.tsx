@@ -48,7 +48,7 @@ const CATEGORY_COLORS: Record<string, string> = {
 };
 
 const card = {
-  background: "var(--surface)", border: "1px solid var(--border-md)", borderRadius: "12px",
+  background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "0",
 };
 
 export default function DashboardClient({ profile, spaces, traitsDone, tutorial }: { profile: ProfileData; spaces: SpaceRow[]; traitsDone: boolean; tutorial: TutorialData }) {
@@ -104,7 +104,14 @@ export default function DashboardClient({ profile, spaces, traitsDone, tutorial 
       <div className="w-full sm:w-[280px] sm:flex-shrink-0 space-y-4">
 
         {/* Identity */}
-        <div style={{ ...card, padding: "20px" }}>
+        <div
+          className="bracket-card"
+          style={{
+            ...card,
+            padding: "20px",
+            ...(typeInfo ? { boxShadow: `0 0 48px ${typeInfo.color}12, 0 0 0 1px ${typeInfo.color}10` } : {}),
+          }}
+        >
           <div className="flex items-start gap-3 mb-3">
             <Avatar src={profile.avatarUrl} name={profile.displayName} geniusType={profile.geniusType} size="lg" />
             <div className="flex-1 min-w-0">
@@ -112,7 +119,12 @@ export default function DashboardClient({ profile, spaces, traitsDone, tutorial 
                 {profile.displayName}
               </p>
               {profile.handle && <p className="text-xs" style={{ color: "var(--text2)" }}>@{profile.handle}</p>}
-              {profile.geniusType && <GeniusTypeBadge type={profile.geniusType} size="sm" className="mt-1" />}
+              {profile.geniusType && (
+                <p className="text-[10px] font-medium tracking-[0.15em] uppercase mt-1" style={{ color: typeInfo?.color ?? "var(--muted)", fontFamily: "var(--font-mono)" }}>
+                  {typeInfo?.label} · {profile.geniusType}
+                </p>
+              )}
+              {profile.geniusType && <GeniusTypeBadge type={profile.geniusType} size="sm" className="mt-1.5" />}
             </div>
           </div>
 
@@ -131,7 +143,7 @@ export default function DashboardClient({ profile, spaces, traitsDone, tutorial 
 
           <Link
             href="/profile/me"
-            className="block w-full text-center text-xs font-medium py-2 rounded-lg transition-colors"
+            className="block w-full text-center text-xs font-medium py-2 transition-colors"
             style={{ border: "1px solid var(--border-md)", color: "var(--text2)" }}
             onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.borderColor = "var(--gold)"; (e.currentTarget as HTMLAnchorElement).style.color = "var(--gold)"; }}
             onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.borderColor = "var(--border-md)"; (e.currentTarget as HTMLAnchorElement).style.color = "var(--text2)"; }}
@@ -141,7 +153,7 @@ export default function DashboardClient({ profile, spaces, traitsDone, tutorial 
         </div>
 
         {/* Spaces */}
-        <div style={{ ...card, overflow: "hidden", padding: 0 }}>
+        <div className="bracket-card" style={{ ...card, overflow: "hidden", padding: 0 }}>
           <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: "1px solid var(--border)" }}>
             <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text2)", fontFamily: "var(--font-display, sans-serif)" }}>Spaces</p>
             <Link href="/teams" className="text-xs transition-colors" style={{ color: "var(--muted)" }}>View all</Link>
@@ -157,7 +169,7 @@ export default function DashboardClient({ profile, spaces, traitsDone, tutorial 
                 <Link key={s.id} href={`/teams/${s.id}`} className="flex items-center justify-between px-4 py-3 transition-colors" style={{ borderTop: "1px solid var(--border)" }}>
                   <span className="text-sm truncate" style={{ color: "var(--text)" }}>{s.name}</span>
                   <div className="flex items-center gap-2 flex-shrink-0">
-                    {s.hasUnread && <span className="w-2 h-2 rounded-full" style={{ background: "var(--gold)" }} />}
+                    {s.hasUnread && <span className="pulse-dot w-2 h-2 rounded-full flex-shrink-0" style={{ background: "var(--gold)" }} />}
                     <ChevronRight className="w-3.5 h-3.5" style={{ color: "var(--muted)" }} />
                   </div>
                 </Link>
@@ -167,7 +179,7 @@ export default function DashboardClient({ profile, spaces, traitsDone, tutorial 
         </div>
 
         {/* Feedback */}
-        <div style={{ ...card, padding: "16px" }}>
+        <div className="bracket-card" style={{ ...card, padding: "16px" }}>
           <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: "var(--text2)", fontFamily: "var(--font-display, sans-serif)" }}>Platform feedback</p>
           {feedbackSent ? (
             <p className="text-xs" style={{ color: "#4ade80" }}>Thanks — got it.</p>
@@ -178,10 +190,10 @@ export default function DashboardClient({ profile, spaces, traitsDone, tutorial 
                 onChange={(e) => setFeedback(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && sendFeedback()}
                 placeholder="Something broken or missing?"
-                className="flex-1 text-xs rounded-lg px-3 py-2 focus:outline-none"
-                style={{ background: "var(--surface2)", border: "1px solid var(--border-md)", color: "var(--text)" }}
+                className="flex-1 text-xs px-3 py-2 focus:outline-none"
+                style={{ background: "var(--surface2)", border: "1px solid var(--border-md)", color: "var(--text)", borderRadius: 0 }}
               />
-              <button onClick={sendFeedback} className="text-xs px-3 py-2 rounded-lg font-medium" style={{ background: "var(--gold)", color: "#04070F" }}>
+              <button onClick={sendFeedback} className="text-xs px-3 py-2 font-medium" style={{ background: "var(--gold)", color: "#04070F", borderRadius: 0 }}>
                 Send
               </button>
             </div>
@@ -195,7 +207,7 @@ export default function DashboardClient({ profile, spaces, traitsDone, tutorial 
         <TutorialWidget {...tutorial} />
 
         {!traitsDone && (
-          <Link href="/quiz?tab=traits" className="flex items-center justify-between gap-3 rounded-xl px-4 py-3 transition-colors group" style={{ background: "rgba(74,128,240,0.06)", border: "1px solid rgba(74,128,240,0.2)" }}>
+          <Link href="/quiz?tab=traits" className="bracket-card flex items-center justify-between gap-3 px-4 py-3 transition-colors group" style={{ background: "rgba(74,128,240,0.06)", border: "1px solid rgba(74,128,240,0.12)" }}>
             <div className="flex items-center gap-3">
               <span className="text-lg">✦</span>
               <div>
@@ -208,7 +220,7 @@ export default function DashboardClient({ profile, spaces, traitsDone, tutorial 
         )}
 
         {ticker.length > 0 && (
-          <div className="rounded-xl overflow-hidden h-10 flex items-center" style={{ background: "var(--surface)" }}>
+          <div className="overflow-hidden h-10 flex items-center" style={{ background: "var(--surface)", borderTop: "1px solid var(--border)", borderBottom: "1px solid var(--border)" }}>
             <div className="overflow-hidden flex-1">
               <div className="flex gap-12 whitespace-nowrap" style={{ animation: "ticker-scroll 40s linear infinite" }}>
                 {[...ticker, ...ticker].map((item, i) => (
@@ -231,11 +243,12 @@ export default function DashboardClient({ profile, spaces, traitsDone, tutorial 
             <button
               key={f}
               onClick={() => setActiveFilter(f)}
-              className="px-3 py-1 rounded-full text-xs font-medium transition-all"
+              className="px-3 py-1 text-xs font-medium transition-all"
               style={{
                 background: activeFilter === f ? "var(--gold)" : "transparent",
                 border: `1px solid ${activeFilter === f ? "var(--gold)" : "var(--border-md)"}`,
                 color: activeFilter === f ? "#04070F" : "var(--text2)",
+                borderRadius: 0,
               }}
             >
               {f === "ALL" ? "All" : f.charAt(0) + f.slice(1).toLowerCase()}
@@ -274,7 +287,7 @@ export default function DashboardClient({ profile, spaces, traitsDone, tutorial 
 function OppCardComp({ opp, onSaveToggle }: { opp: OppCard; onSaveToggle: () => void }) {
   const accent = opp.org.accentColor ?? CATEGORY_COLORS[opp.category] ?? "var(--gold)";
   return (
-    <div className="relative rounded-xl overflow-hidden flex" style={{ background: "var(--surface)", border: "1px solid var(--border-md)" }}>
+    <div className="relative bracket-card flex" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
       <div className="w-1 flex-shrink-0" style={{ background: accent }} />
       <div className="flex-1 p-4">
         <div className="flex items-start justify-between gap-3">
@@ -286,7 +299,7 @@ function OppCardComp({ opp, onSaveToggle }: { opp: OppCard; onSaveToggle: () => 
             <p className="font-medium text-sm truncate" style={{ color: "var(--text)" }}>{opp.title}</p>
             {opp.description && <p className="text-xs mt-1 line-clamp-2 leading-relaxed" style={{ color: "var(--text2)" }}>{opp.description}</p>}
           </div>
-          <button onClick={onSaveToggle} className="flex-shrink-0 p-1.5 rounded-lg transition-colors" style={{ color: opp.saved ? "var(--gold)" : "var(--muted)" }} title={opp.saved ? "Unsave" : "Save"}>
+          <button onClick={onSaveToggle} className="flex-shrink-0 p-1.5 transition-colors" style={{ color: opp.saved ? "var(--gold)" : "var(--muted)" }} title={opp.saved ? "Unsave" : "Save"}>
             <Save className="w-4 h-4" fill={opp.saved ? "currentColor" : "none"} />
           </button>
         </div>
