@@ -102,7 +102,7 @@ export default function LoginPage() {
       }}
     >
       <div className="mb-8 text-center">
-        <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 32, fontWeight: 500, letterSpacing: "-0.5px", color: "#f0f8ff", marginBottom: 4 }}>
+        <h1 style={{ fontFamily: "var(--font-serif)", fontSize: 32, fontWeight: 500, letterSpacing: "-0.5px", color: "var(--text)", marginBottom: 4 }}>
           Nivarro
         </h1>
         <h2 className="text-lg" style={{ color: "var(--text)", fontFamily: "var(--font-body, sans-serif)", fontWeight: 600 }}>
