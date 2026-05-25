@@ -1,10 +1,9 @@
 /**
- * Mock account seeder — creates 5 loginable test scholars + 1 sample team.
+ * Mock seeder — 5 fresh scholars + Watershed Initiative as official org/project.
+ * Accounts have NO genius type, NO traits, NO teams — truly just started.
  *
- * Run against the live Render DB:
- *   DATABASE_URL="<render-postgres-url>" npx tsx prisma/seed-mock.ts
- *
- * All accounts use password: nivarro123
+ * Run: DATABASE_URL="<render-postgres-url>" npx tsx prisma/seed-mock.ts
+ * Password: nivarro123
  */
 
 import { PrismaClient } from "@prisma/client";
@@ -19,92 +18,21 @@ const prisma = new PrismaClient({ adapter });
 
 const PASSWORD = "nivarro123";
 
-// ─── Mock account definitions ────────────────────────────────────────────────
-
 const ACCOUNTS = [
-  {
-    email: "alex@nivarro.test",
-    name: "Alex Rivera",
-    handle: "alexrivera",
-    headline: "Builder & Systems Thinker",
-    bio: "I build platforms that help ambitious people find each other and do serious work. Happiest when I'm shipping something that didn't exist last week.",
-    strengthSummary: "Sees patterns across complex systems and translates vision into executable plans quickly. High output, strong judgment.",
-    geniusType: "DYNAMO" as const,
-    grade: 11,
-    schoolName: "Stuyvesant High School",
-    interests: ["Software Engineering", "Startups", "Systems Design", "AI / ML"],
-    currentFocus: "Building tools that reduce friction between ambitious people",
-    traits: ["visionary", "analytical", "decisive", "self-starter", "problem-solver"],
-  },
-  {
-    email: "sam@nivarro.test",
-    name: "Sam Chen",
-    handle: "samchen",
-    headline: "Team Builder & People Leader",
-    bio: "The best products come from teams that genuinely understand each other. I focus on building those teams.",
-    strengthSummary: "Exceptional at aligning teams and keeping morale high without losing momentum. Makes everyone around them sharper.",
-    geniusType: "BLAZE" as const,
-    grade: 12,
-    schoolName: "Phillips Exeter Academy",
-    interests: ["Leadership", "Psychology", "Community Building", "Film & Media"],
-    currentFocus: "Studying how high-performing teams form and sustain themselves",
-    traits: ["charismatic", "motivator", "empathetic", "storyteller", "cooperative"],
-  },
-  {
-    email: "jordan@nivarro.test",
-    name: "Jordan Park",
-    handle: "jordanpark",
-    headline: "Operations & Execution Lead",
-    bio: "I turn ambitious plans into running systems. Give me a goal and a deadline and I'll build the infrastructure in between.",
-    strengthSummary: "Unmatched at building operational backbone. The reason complex projects don't fall apart.",
-    geniusType: "TEMPO" as const,
-    grade: 10,
-    schoolName: "Thomas Jefferson High School for Science and Technology",
-    interests: ["Engineering", "Productivity Systems", "Research", "Science"],
-    currentFocus: "Designing repeatable workflows for student-led research projects",
-    traits: ["organized", "reliable", "disciplined", "systematic", "detail-oriented"],
-  },
-  {
-    email: "morgan@nivarro.test",
-    name: "Morgan Lee",
-    handle: "morganlee",
-    headline: "Data Researcher & Analytical Strategist",
-    bio: "I find the signal in the noise. Give me a messy dataset or a broken process and I'll have a framework by Friday.",
-    strengthSummary: "Exceptional analytical depth with clear communication. Makes complex findings accessible without losing precision.",
-    geniusType: "STEEL" as const,
-    grade: 11,
-    schoolName: "BASIS Scottsdale",
-    interests: ["Data Science", "Behavioral Economics", "Public Policy", "Mathematics"],
-    currentFocus: "Researching how recommendation algorithms affect student opportunity access",
-    traits: ["analytical", "critical-thinker", "objective", "strategic", "curious"],
-    isFirstGen: true,
-  },
-  {
-    email: "riley@nivarro.test",
-    name: "Riley Walsh",
-    handle: "rileywalsh",
-    headline: "Creative Strategist & Product Thinker",
-    bio: "I think in narratives and design in systems. Interested in the overlap between UX, storytelling, and behavior.",
-    strengthSummary: "Rare combination of creative instinct and structured thinking. Brings visual and narrative clarity to teams.",
-    geniusType: "DYNAMO" as const,
-    grade: 12,
-    schoolName: "School of the Arts, San Francisco",
-    interests: ["UX Design", "Brand Strategy", "Writing", "Social Science"],
-    currentFocus: "Redesigning how students discover and evaluate opportunities",
-    traits: ["creative", "innovative", "storyteller", "conceptual-thinker", "adaptable"],
-  },
+  { email: "alex@nivarro.test",   name: "Alex Rivera", handle: "alexrivera",  headline: "Builder & Systems Thinker",              bio: "I build platforms that help ambitious people find each other." },
+  { email: "sam@nivarro.test",    name: "Sam Chen",    handle: "samchen",     headline: "Team Builder & People Leader",            bio: "The best products come from teams that genuinely understand each other." },
+  { email: "jordan@nivarro.test", name: "Jordan Park", handle: "jordanpark",  headline: "Operations & Execution Lead",             bio: "I turn ambitious plans into running systems." },
+  { email: "morgan@nivarro.test", name: "Morgan Lee",  handle: "morganlee",   headline: "Data Researcher & Analytical Strategist", bio: "I find the signal in the noise." },
+  { email: "riley@nivarro.test",  name: "Riley Walsh", handle: "rileywalsh",  headline: "Creative Strategist & Product Thinker",   bio: "I think in narratives and design in systems." },
 ];
-
-// ─── Main ────────────────────────────────────────────────────────────────────
 
 async function main() {
   console.log("Hashing password...");
   const pw = await bcrypt.hash(PASSWORD, 10);
 
-  const profileIds: Record<string, string> = {};
-
+  // 1. Reset all accounts to fresh state
   for (const acct of ACCOUNTS) {
-    console.log(`Creating ${acct.name} (${acct.email})...`);
+    console.log(`Resetting ${acct.name}...`);
 
     const user = await prisma.user.upsert({
       where: { email: acct.email },
@@ -112,13 +40,23 @@ async function main() {
       create: { email: acct.email, name: acct.name, passwordHash: pw },
     });
 
-    const profile = await prisma.profile.upsert({
+    const existing = await prisma.profile.findUnique({ where: { userId: user.id }, select: { id: true } });
+    if (existing) {
+      await prisma.profileTrait.deleteMany({ where: { profileId: existing.id } });
+      await prisma.teamMember.deleteMany({ where: { profileId: existing.id } });
+    }
+
+    await prisma.profile.upsert({
       where: { userId: user.id },
       update: {
-        onboardingComplete: true,
+        displayName: acct.name,
         handle: acct.handle,
-        geniusType: acct.geniusType,
-        currentFocus: acct.currentFocus ?? null,
+        headline: acct.headline,
+        bio: acct.bio,
+        geniusType: null,
+        secondaryGeniusType: null,
+        currentFocus: null,
+        onboardingComplete: false,
       },
       create: {
         userId: user.id,
@@ -126,95 +64,127 @@ async function main() {
         handle: acct.handle,
         headline: acct.headline,
         bio: acct.bio,
-        strengthSummary: acct.strengthSummary,
-        geniusType: acct.geniusType,
-        grade: acct.grade,
-        schoolName: acct.schoolName,
-        interests: JSON.stringify(acct.interests),
-        currentFocus: acct.currentFocus ?? null,
-        isFirstGen: (acct as { isFirstGen?: boolean }).isFirstGen ?? false,
-        onboardingComplete: true,
+        onboardingComplete: false,
       },
     });
 
-    profileIds[acct.handle] = profile.id;
-
-    // Traits
-    const traits = await prisma.trait.findMany({
-      where: { slug: { in: acct.traits } },
-    });
-    for (let i = 0; i < traits.length; i++) {
-      await prisma.profileTrait.upsert({
-        where: { profileId_traitId: { profileId: profile.id, traitId: traits[i].id } },
-        update: {},
-        create: { profileId: profile.id, traitId: traits[i].id, order: i },
-      });
-    }
-    console.log(`  ✓ ${profile.displayName} — ${acct.geniusType} — ${traits.length} traits`);
+    console.log(`  OK ${acct.name} — no type / no traits / no teams`);
   }
 
-  // ── Sample team: Alex + Sam ───────────────────────────────────────────────
-  console.log("\nCreating sample team...");
-  const alexUser = await prisma.user.findUnique({ where: { email: "alex@nivarro.test" } });
-  const existingTeam = await prisma.team.findFirst({
-    where: { name: "Watershed Project", createdById: alexUser!.id },
+  // 2. Watershed Initiative — official org + project + opportunity listing
+  console.log("\nCreating Watershed Initiative...");
+  const creator = await prisma.user.findUnique({ where: { email: "alex@nivarro.test" } });
+
+  const org = await prisma.org.upsert({
+    where: { id: "mock-watershed-org" } as never,
+    update: {
+      name: "Watershed Initiative",
+      tagline: "Closing the academic opportunity gap through data and technology.",
+      description: "Watershed Initiative partners with student teams to build data tools exposing hidden opportunity gaps in college admissions and academic access. Our work directly informs policy and helps first-generation students find paths they never knew existed.",
+      whatWeSeek: "Teams with at least one analyst and one builder. Someone who can read data and someone who can ship product. Strong communicators a plus.",
+      category: "RESEARCH",
+      status: "OPEN",
+      accentColor: "#3B82F6",
+      logoLetter: "W",
+      logoBg: "#0D1F35",
+      logoColor: "#3B82F6",
+      minTeamSize: 2,
+      maxTeamSize: 4,
+      gradeEligibility: "9,10,11,12",
+      format: "Remote",
+      founded: "2021",
+      orgType: "Nonprofit Research Program",
+      values: JSON.stringify(["Equity", "Rigor", "Access", "Impact"]),
+      focusTags: JSON.stringify(["Data Science", "Public Policy", "EdTech", "Research"]),
+      memberCount: 14,
+    },
+    create: {
+      id: "mock-watershed-org",
+      name: "Watershed Initiative",
+      tagline: "Closing the academic opportunity gap through data and technology.",
+      description: "Watershed Initiative partners with student teams to build data tools exposing hidden opportunity gaps in college admissions and academic access. Our work directly informs policy and helps first-generation students find paths they never knew existed.",
+      whatWeSeek: "Teams with at least one analyst and one builder. Someone who can read data and someone who can ship product. Strong communicators a plus.",
+      category: "RESEARCH",
+      status: "OPEN",
+      accentColor: "#3B82F6",
+      logoLetter: "W",
+      logoBg: "#0D1F35",
+      logoColor: "#3B82F6",
+      minTeamSize: 2,
+      maxTeamSize: 4,
+      gradeEligibility: "9,10,11,12",
+      format: "Remote",
+      founded: "2021",
+      orgType: "Nonprofit Research Program",
+      values: JSON.stringify(["Equity", "Rigor", "Access", "Impact"]),
+      focusTags: JSON.stringify(["Data Science", "Public Policy", "EdTech", "Research"]),
+      memberCount: 14,
+      createdById: creator!.id,
+    },
   });
 
-  if (!existingTeam) {
-    const team = await prisma.team.create({
-      data: {
-        name: "Watershed Project",
-        description: "Building a data-driven tool to surface hidden academic opportunity gaps for first-gen students.",
-        status: "ACTIVE",
-        createdById: alexUser!.id,
-      },
-    });
+  console.log("  OK Org: Watershed Initiative");
 
-    await prisma.teamMember.createMany({
-      data: [
-        { teamId: team.id, profileId: profileIds["alexrivera"], role: "ADMIN" },
-        { teamId: team.id, profileId: profileIds["samchen"], role: "MEMBER" },
-      ],
-      skipDuplicates: true,
-    });
+  await prisma.orgProject.upsert({
+    where: { id: "mock-watershed-project" } as never,
+    update: {
+      title: "Academic Opportunity Gap Tracker",
+      shortDescription: "Build a data tool that surfaces hidden opportunity gaps for first-gen students.",
+      description: "Design and ship v1 of a recommendation tool that maps academic programs, competitions, and internships to underrepresented zip codes. Help counselors and students see what is available that they are currently missing.",
+      fullDescription: "10-week remote project. Three phases: data collection (scraping and cleaning public datasets), gap analysis (scoring model to identify access deserts), and a counselor-facing dashboard. We provide mentorship, weekly check-ins with our research director, and letters of recommendation for all completing members.",
+      openSpots: 3,
+      requiredSkills: JSON.stringify(["Data Analysis", "Python", "Research", "Communication"]),
+      preferredGeniusTypes: JSON.stringify(["STEEL", "DYNAMO", "TEMPO"]),
+      roles: JSON.stringify(["Data Lead", "Product Builder", "Research Writer"]),
+      hoursPerWeek: "8-12 hrs",
+      duration: "10 weeks",
+      format: "Remote",
+      status: "OPEN",
+    },
+    create: {
+      id: "mock-watershed-project",
+      orgId: org.id,
+      title: "Academic Opportunity Gap Tracker",
+      shortDescription: "Build a data tool that surfaces hidden opportunity gaps for first-gen students.",
+      description: "Design and ship v1 of a recommendation tool that maps academic programs, competitions, and internships to underrepresented zip codes. Help counselors and students see what is available that they are currently missing.",
+      fullDescription: "10-week remote project. Three phases: data collection (scraping and cleaning public datasets), gap analysis (scoring model to identify access deserts), and a counselor-facing dashboard. We provide mentorship, weekly check-ins with our research director, and letters of recommendation for all completing members.",
+      openSpots: 3,
+      requiredSkills: JSON.stringify(["Data Analysis", "Python", "Research", "Communication"]),
+      preferredGeniusTypes: JSON.stringify(["STEEL", "DYNAMO", "TEMPO"]),
+      roles: JSON.stringify(["Data Lead", "Product Builder", "Research Writer"]),
+      hoursPerWeek: "8-12 hrs",
+      duration: "10 weeks",
+      format: "Remote",
+      status: "OPEN",
+    },
+  });
 
-    // Team conversation
-    await prisma.conversation.create({
-      data: {
-        type: "TEAM",
-        teamId: team.id,
-        participants: {
-          create: [
-            { userId: alexUser!.id },
-            { userId: (await prisma.user.findUnique({ where: { email: "sam@nivarro.test" } }))!.id },
-          ],
-        },
-        messages: {
-          create: [
-            {
-              senderId: alexUser!.id,
-              content: "Hey Sam — let's scope this out. I'm thinking we start with the data collection layer first before touching the frontend.",
-            },
-          ],
-        },
-      },
-    });
+  console.log("  OK Project: Academic Opportunity Gap Tracker (open)");
 
-    console.log("  ✓ Team 'Watershed Project' created with Alex + Sam");
-  } else {
-    console.log("  Team already exists — skipping");
-  }
+  await prisma.opportunity.upsert({
+    where: { id: "mock-watershed-opp" } as never,
+    update: {
+      title: "Research Team — Opportunity Gap Tracker",
+      description: "10-week remote project. Build a data tool mapping academic access gaps for first-gen students. Roles: Data Lead, Product Builder, Research Writer. All grades welcome.",
+      category: "RESEARCH",
+      isRemote: true,
+      gradeEligibility: "9,10,11,12",
+    },
+    create: {
+      id: "mock-watershed-opp",
+      orgId: org.id,
+      title: "Research Team — Opportunity Gap Tracker",
+      description: "10-week remote project. Build a data tool mapping academic access gaps for first-gen students. Roles: Data Lead, Product Builder, Research Writer. All grades welcome.",
+      category: "RESEARCH",
+      isRemote: true,
+      gradeEligibility: "9,10,11,12",
+    },
+  });
 
-  console.log("\n✅ Mock seed complete\n");
-  console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-  console.log("  Password for all accounts: nivarro123");
-  console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-  console.log("  alex@nivarro.test    → Alex Rivera  (DYNAMO)  grade 11");
-  console.log("  sam@nivarro.test     → Sam Chen     (BLAZE)   grade 12");
-  console.log("  jordan@nivarro.test  → Jordan Park  (TEMPO)   grade 10");
-  console.log("  morgan@nivarro.test  → Morgan Lee   (STEEL)   grade 11");
-  console.log("  riley@nivarro.test   → Riley Walsh  (DYNAMO)  grade 12");
-  console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
+  console.log("  OK Opportunity listing visible in dashboard feed");
+  console.log("\nSeed complete. Password: nivarro123");
+  console.log("alex / sam / jordan / morgan / riley -- fresh, no type/traits/teams");
+  console.log("Watershed Initiative -- open org, project accepting applications");
 }
 
 main()

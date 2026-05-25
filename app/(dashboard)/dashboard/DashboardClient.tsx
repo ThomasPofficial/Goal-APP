@@ -296,25 +296,27 @@ export default function DashboardClient({ profile, spaces, traitsDone, tutorialD
 function OppCardComp({ opp, onSaveToggle }: { opp: OppCard; onSaveToggle: () => void }) {
   const accent = opp.org.accentColor ?? CATEGORY_COLORS[opp.category] ?? "var(--gold)";
   return (
-    <div className="relative bracket-card flex" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
+    <div className="relative bracket-card flex" style={{ background: "var(--surface)", border: "1px solid var(--border)", height: "128px" }}>
       <div className="w-1 flex-shrink-0" style={{ background: accent }} />
-      <div className="flex-1 p-4">
+      <div className="flex-1 p-4 flex flex-col justify-between min-w-0">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded" style={{ color: accent, background: `${accent}20` }}>{opp.category}</span>
-              <span className="text-xs" style={{ color: "var(--muted)" }}>{opp.org.name}</span>
+              <span className="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5" style={{ color: accent, background: `${accent}20` }}>{opp.category}</span>
+              <span className="text-xs truncate" style={{ color: "var(--muted)" }}>{opp.org.name}</span>
             </div>
             <p className="font-medium text-sm truncate" style={{ color: "var(--text)" }}>{opp.title}</p>
-            {opp.description && <p className="text-xs mt-1 line-clamp-2 leading-relaxed" style={{ color: "var(--text2)" }}>{opp.description}</p>}
+            <p className="text-xs mt-1 leading-relaxed" style={{ color: "var(--text2)", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", minHeight: "2.5em" }}>
+              {opp.description ?? ""}
+            </p>
           </div>
           <button onClick={onSaveToggle} className="flex-shrink-0 p-1.5 transition-colors" style={{ color: opp.saved ? "var(--gold)" : "var(--muted)" }} title={opp.saved ? "Unsave" : "Save"}>
             <Save className="w-4 h-4" fill={opp.saved ? "currentColor" : "none"} />
           </button>
         </div>
-        <div className="flex items-center gap-3 mt-3 flex-wrap">
+        <div className="flex items-center gap-3">
           {opp.deadline && <span className="text-[11px]" style={{ color: "var(--muted)" }}>Due {format(new Date(opp.deadline), "MMM d, yyyy")}</span>}
-          {opp.isRemote && <span className="text-[11px] px-1.5 py-0.5 rounded" style={{ background: "var(--surface2)", color: "var(--text2)" }}>Remote</span>}
+          {opp.isRemote && <span className="text-[11px] px-1.5 py-0.5" style={{ background: "var(--surface2)", color: "var(--text2)" }}>Remote</span>}
           <Link href={`/orgs/${opp.org.id}`} className="ml-auto text-[11px] flex items-center gap-1 transition-colors" style={{ color: "var(--gold)" }}>
             View org <ExternalLink className="w-3 h-3" />
           </Link>
