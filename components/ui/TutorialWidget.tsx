@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { X, Check, ChevronRight, BookOpen } from "lucide-react";
+import { X, Check, ChevronDown, ChevronRight, BookOpen, ArrowRight } from "lucide-react";
 
 const STORAGE_KEY = "nivarro_tutorial_v1_dismissed";
 
@@ -14,12 +14,22 @@ interface TutorialState {
   hasBrowsedOrgs: boolean;
 }
 
+interface Step {
+  label: string;
+  description: string;
+  href: string;
+  ctaLabel: string;
+  done: boolean;
+  guide: string[];
+}
+
 interface Props extends TutorialState {}
 
 export default function TutorialWidget(initialProps: Props) {
   const [dismissed, setDismissed] = useState(true);
   const [mounted, setMounted] = useState(false);
   const [state, setState] = useState<TutorialState>(initialProps);
+  const [expanded, setExpanded] = useState<number | null>(null);
 
   const refresh = useCallback(async () => {
     try {
@@ -36,11 +46,8 @@ export default function TutorialWidget(initialProps: Props) {
     setMounted(true);
     refresh();
 
-    // Re-check whenever user tabs back in (after completing a step elsewhere)
     const onFocus = () => refresh();
     window.addEventListener("focus", onFocus);
-
-    // Periodic poll every 45s so progress updates without needing full page reload
     const interval = setInterval(refresh, 45_000);
 
     return () => {
@@ -58,42 +65,79 @@ export default function TutorialWidget(initialProps: Props) {
 
   const { hasGeniusType, traitsDone, hasTeam, hasApplied, hasBrowsedOrgs } = state;
 
-  const steps = [
+  const steps: Step[] = [
     {
       label: "Set up your Genius profile",
       description: "Take the quiz to discover your type",
       href: "/quiz",
+      ctaLabel: "Take the quiz",
       done: hasGeniusType,
+      guide: [
+        "Go to the Quiz page and answer the short personality-style questions.",
+        "Be honest — there are no wrong answers. Your responses reveal how you think and work.",
+        "You'll receive a Genius Type (e.g., Architect, Connector, Builder) that appears on your public profile.",
+        "Orgs and teammates use your type to understand what role you'd play on a team.",
+      ],
     },
     {
       label: "Add your traits",
-      description: "Tell the community what you&apos;re skilled at",
+      description: "Tell the community what you're skilled at",
       href: "/quiz?tab=traits",
+      ctaLabel: "Add traits",
       done: traitsDone,
+      guide: [
+        "Head to the Traits tab on the Quiz page after completing your Genius Type.",
+        "Add 3–8 skills or strengths you'd bring to a team — e.g., \"Python\", \"UI Design\", \"Public Speaking\".",
+        "Pick things you're genuinely confident in, not just interested in.",
+        "Org admins search for specific traits when looking for candidates, so be specific.",
+      ],
     },
     {
       label: "Browse organizations",
       description: "Find orgs posting open projects for teams",
       href: "/orgs",
+      ctaLabel: "Browse orgs",
       done: hasBrowsedOrgs,
+      guide: [
+        "Visit the Orgs page to see all verified organizations accepting team applications.",
+        "Read each org's mission and open projects to find ones that match your interests.",
+        "Look at what Genius Types and traits they're seeking — compare with your own profile.",
+        "Save orgs you like to revisit them, or jump straight to a project page to apply.",
+      ],
     },
     {
       label: "Build or join a team",
       description: "Create your team or accept a recruitment invite",
       href: "/teams",
+      ctaLabel: "Go to Teams",
       done: hasTeam,
+      guide: [
+        "You need a team of 2–5 people to apply to any org project.",
+        "Create a new team from the Teams page — give it a name and a short description.",
+        "Invite teammates by sharing your team link or finding them by handle.",
+        "Already have an invite? Accept it from your notifications and you'll be added automatically.",
+      ],
     },
     {
       label: "Apply to an org project",
-      description: "Submit your team&apos;s application from a project page",
+      description: "Submit your team's application from a project page",
       href: "/orgs",
+      ctaLabel: "Find a project",
       done: hasApplied,
+      guide: [
+        "Find an org project your team is excited about and navigate to its page.",
+        "Click the Apply button — you'll select which team is applying.",
+        "Write a short pitch (2–4 sentences) about why your team is a great fit.",
+        "Track your application status from your Teams page once submitted.",
+      ],
     },
   ];
 
   const completedCount = steps.filter((s) => s.done).length;
   const progress = (completedCount / steps.length) * 100;
   const allDone = completedCount === steps.length;
+
+  const toggle = (i: number) => setExpanded(expanded === i ? null : i);
 
   return (
     <div
@@ -114,7 +158,7 @@ export default function TutorialWidget(initialProps: Props) {
               className="text-sm font-semibold"
               style={{ color: "var(--text)", fontFamily: "var(--font-display, sans-serif)" }}
             >
-              {allDone ? "You&apos;re all set!" : "Get started on Nivarro"}
+              {allDone ? "You're all set!" : "Get started on Nivarro"}
             </h2>
             <p className="text-[11px]" style={{ color: "var(--text2)" }}>
               {completedCount} of {steps.length} steps complete
@@ -142,55 +186,88 @@ export default function TutorialWidget(initialProps: Props) {
 
       {/* Steps */}
       <div className="space-y-1">
-        {steps.map((step, i) => (
-          <Link
-            key={i}
-            href={step.href}
-            className="flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors group"
-            style={{
-              background: step.done ? "transparent" : "var(--surface2)",
-              opacity: step.done ? 0.55 : 1,
-            }}
-          >
-            <div
-              className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0"
-              style={{
-                background: step.done ? "rgba(74,128,240,0.15)" : "var(--surface3)",
-                border: step.done
-                  ? "1px solid rgba(74,128,240,0.3)"
-                  : "1px solid var(--border-md)",
-              }}
-            >
-              {step.done ? (
-                <Check className="w-3 h-3" style={{ color: "var(--blue)" }} />
-              ) : (
-                <span className="text-[10px] font-bold" style={{ color: "var(--muted)" }}>
-                  {i + 1}
-                </span>
+        {steps.map((step, i) => {
+          const isOpen = expanded === i;
+          return (
+            <div key={i}>
+              <button
+                onClick={() => !step.done && toggle(i)}
+                className="w-full flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors text-left group"
+                style={{
+                  background: step.done ? "transparent" : isOpen ? "var(--surface3)" : "var(--surface2)",
+                  opacity: step.done ? 0.55 : 1,
+                  cursor: step.done ? "default" : "pointer",
+                }}
+              >
+                <div
+                  className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0"
+                  style={{
+                    background: step.done ? "rgba(74,128,240,0.15)" : "var(--surface3)",
+                    border: step.done
+                      ? "1px solid rgba(74,128,240,0.3)"
+                      : "1px solid var(--border-md)",
+                  }}
+                >
+                  {step.done ? (
+                    <Check className="w-3 h-3" style={{ color: "var(--blue)" }} />
+                  ) : (
+                    <span className="text-[10px] font-bold" style={{ color: "var(--muted)" }}>
+                      {i + 1}
+                    </span>
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p
+                    className="text-sm font-medium"
+                    style={{ color: step.done ? "var(--text2)" : "var(--text)" }}
+                  >
+                    {step.label}
+                  </p>
+                  {!step.done && !isOpen && (
+                    <p className="text-xs" style={{ color: "var(--text2)" }}>
+                      {step.description}
+                    </p>
+                  )}
+                </div>
+                {!step.done && (
+                  isOpen
+                    ? <ChevronDown className="w-4 h-4 flex-shrink-0" style={{ color: "var(--blue)" }} />
+                    : <ChevronRight className="w-4 h-4 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: "var(--blue)" }} />
+                )}
+              </button>
+
+              {/* Expanded guide */}
+              {isOpen && !step.done && (
+                <div
+                  className="mx-3 mb-1 rounded-xl px-4 py-3"
+                  style={{ background: "var(--surface2)", border: "1px solid var(--border-md)" }}
+                >
+                  <ul className="space-y-2 mb-3">
+                    {step.guide.map((line, j) => (
+                      <li key={j} className="flex items-start gap-2">
+                        <span
+                          className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0"
+                          style={{ background: "var(--blue)" }}
+                        />
+                        <p className="text-xs leading-relaxed" style={{ color: "var(--text2)" }}>
+                          {line}
+                        </p>
+                      </li>
+                    ))}
+                  </ul>
+                  <Link
+                    href={step.href}
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold rounded-lg px-3 py-1.5 transition-colors"
+                    style={{ background: "var(--blue)", color: "#fff" }}
+                  >
+                    {step.ctaLabel}
+                    <ArrowRight className="w-3 h-3" />
+                  </Link>
+                </div>
               )}
             </div>
-            <div className="flex-1 min-w-0">
-              <p
-                className="text-sm font-medium"
-                style={{ color: step.done ? "var(--text2)" : "var(--text)" }}
-                dangerouslySetInnerHTML={{ __html: step.label }}
-              />
-              {!step.done && (
-                <p
-                  className="text-xs"
-                  style={{ color: "var(--text2)" }}
-                  dangerouslySetInnerHTML={{ __html: step.description }}
-                />
-              )}
-            </div>
-            {!step.done && (
-              <ChevronRight
-                className="w-4 h-4 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                style={{ color: "var(--blue)" }}
-              />
-            )}
-          </Link>
-        ))}
+          );
+        })}
       </div>
 
       {allDone && (
