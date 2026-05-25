@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { X, Check, ChevronDown, ChevronRight, BookOpen, ArrowRight } from "lucide-react";
 
-const STORAGE_KEY = "nivarro_tutorial_v1_dismissed";
+const STORAGE_KEY = "nivarro_tutorial_v2_dismissed";
 
 interface TutorialState {
   hasGeniusType: boolean;
