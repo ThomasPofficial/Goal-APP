@@ -5,7 +5,7 @@ import SessionProvider from "@/components/providers/SessionProvider";
 
 const plusJakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700", "800", "900"],
+  weight: ["300", "400", "500", "600", "700", "800"],
   variable: "--font-display",
   display: "swap",
 });
