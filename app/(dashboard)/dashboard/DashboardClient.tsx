@@ -155,7 +155,9 @@ export default function DashboardClient({ profile, spaces, traitsDone, tutorial 
         {/* Spaces */}
         <div className="bracket-card" style={{ ...card, overflow: "hidden", padding: 0 }}>
           <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: "1px solid var(--border)" }}>
-            <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text2)", fontFamily: "var(--font-display, sans-serif)" }}>Spaces</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.1em] flex items-center gap-1.5" style={{ color: "var(--text2)", fontFamily: "var(--font-display, sans-serif)" }}>
+              <span className="text-[7px]" style={{ color: "var(--blue)" }}>◆</span>Spaces
+            </p>
             <Link href="/teams" className="text-xs transition-colors" style={{ color: "var(--muted)" }}>View all</Link>
           </div>
           {spaces.length === 0 ? (
@@ -180,7 +182,9 @@ export default function DashboardClient({ profile, spaces, traitsDone, tutorial 
 
         {/* Feedback */}
         <div className="bracket-card" style={{ ...card, padding: "16px" }}>
-          <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: "var(--text2)", fontFamily: "var(--font-display, sans-serif)" }}>Platform feedback</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.1em] flex items-center gap-1.5 mb-2" style={{ color: "var(--text2)", fontFamily: "var(--font-display, sans-serif)" }}>
+            <span className="text-[7px]" style={{ color: "var(--blue)" }}>◆</span>Platform feedback
+          </p>
           {feedbackSent ? (
             <p className="text-xs" style={{ color: "#4ade80" }}>Thanks — got it.</p>
           ) : (
@@ -256,7 +260,10 @@ export default function DashboardClient({ profile, spaces, traitsDone, tutorial 
           ))}
         </div>
 
-        <h2 className="text-sm font-semibold" style={{ color: "var(--text)", fontFamily: "var(--font-display, sans-serif)" }}>Opportunities for you</h2>
+        <div className="flex items-center gap-2">
+          <span className="text-[8px]" style={{ color: "var(--blue)" }}>◆</span>
+          <h2 className="text-xs font-semibold uppercase tracking-[0.1em]" style={{ color: "var(--text)", fontFamily: "var(--font-display, sans-serif)" }}>Opportunities for you</h2>
+        </div>
 
         {feedLoading ? (
           <div className="space-y-3">
