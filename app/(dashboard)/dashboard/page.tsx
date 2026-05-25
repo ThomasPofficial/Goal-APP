@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import DashboardClient from "./DashboardClient";
 import type { GeniusTypeKey } from "@/lib/geniusTypes";
 
@@ -8,6 +9,9 @@ export default async function DashboardPage() {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
   const userId = session.user.id;
+
+  const cookieStore = await cookies();
+  const tutorialDismissed = cookieStore.get("nv_tutorial_dismissed")?.value === "1";
 
   const profile = await prisma.profile.findUnique({
     where: { userId },
@@ -76,6 +80,7 @@ export default async function DashboardPage() {
       }}
       spaces={spaces}
       traitsDone={traitsDone}
+      tutorialDismissed={tutorialDismissed}
       tutorial={{
         hasGeniusType: !!profile?.geniusType,
         traitsDone,
