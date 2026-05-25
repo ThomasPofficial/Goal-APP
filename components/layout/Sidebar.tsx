@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { X } from "lucide-react";
 import AccountMenu from "./AccountMenu";
 import ThemeToggle from "./ThemeToggle";
+import NivarroMark from "@/components/ui/NivarroMark";
 import { cn } from "@/lib/utils";
 import type { GeniusType } from "@/data/traits";
 
@@ -44,12 +45,13 @@ export default function Sidebar({ userName, userEmail, geniusType, mobileOpen = 
         className="flex items-center justify-between px-5 flex-shrink-0"
         style={{ height: 56, borderBottom: "1px solid rgba(255,255,255,0.05)" }}
       >
-        <Link href="/dashboard" onClick={onMobileClose} style={{ textDecoration: "none" }}>
+        <Link href="/dashboard" onClick={onMobileClose} className="flex items-center gap-2.5" style={{ textDecoration: "none" }}>
+          <NivarroMark size={22} color="var(--n-text)" />
           <span
             className="logo-text"
-            style={{ fontSize: 17, letterSpacing: "-0.03em", color: "var(--n-text)", fontFamily: "var(--font-display)" }}
+            style={{ fontSize: 14, letterSpacing: "0.12em", color: "var(--n-text)", fontFamily: "var(--font-display)", textTransform: "uppercase", fontWeight: 700 }}
           >
-            Ni<span style={{ color: "var(--blue)" }}>varro</span>
+            NI<span style={{ color: "var(--blue)" }}>VARRO</span>
           </span>
         </Link>
         <button
