@@ -56,9 +56,9 @@
   --glow-text:        0 0 16px rgba(59,130,246,0.6);
 
   /* ── Radius & shadow ── */
-  --radius-sm:  3px;
-  --radius-md:  5px;
-  --radius-lg:  8px;
+  --radius-sm:  0px;
+  --radius-md:  0px;
+  --radius-lg:  0px;
   --shadow-sm:  0 1px 3px rgba(0,0,0,0.5), 0 1px 2px rgba(0,0,0,0.3);
   --shadow-md:  0 4px 16px rgba(0,0,0,0.45);
   --shadow-lg:  0 16px 48px rgba(0,0,0,0.6);
@@ -194,7 +194,7 @@ a, button {
 .card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: 0;
   box-shadow: var(--shadow-sm);
   transition: box-shadow 200ms, border-color 200ms, transform 200ms;
 }
@@ -251,7 +251,7 @@ body.day .card:hover {
   font-size: 0.875rem;
   letter-spacing: -0.01em;
   border: none;
-  border-radius: var(--radius-sm);
+  border-radius: 0;
   cursor: pointer;
   box-shadow: var(--glow-blue-sm);
   transition: box-shadow 150ms, transform 150ms, background 150ms;
@@ -279,7 +279,7 @@ body.day .card:hover {
   font-size: 0.875rem;
   letter-spacing: -0.01em;
   border: 1px solid var(--border-md);
-  border-radius: var(--radius-sm);
+  border-radius: 0;
   cursor: pointer;
   transition: border-color 150ms, color 150ms, box-shadow 150ms;
 }
@@ -289,6 +289,50 @@ body.day .card:hover {
   color: var(--blue);
   box-shadow: var(--glow-blue-sm);
 }
+
+/* ─────────────────────────────────────────
+   CORNER BRACKET CARDS
+   Cards show L-shaped corner marks instead
+   of full borders — precision reticle aesthetic.
+───────────────────────────────────────── */
+
+.bracket-card {
+  position: relative;
+}
+.bracket-card::before,
+.bracket-card::after {
+  content: "";
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-style: solid;
+  border-color: rgba(59,130,246,0.45);
+  pointer-events: none;
+  z-index: 2;
+  transition: border-color 200ms;
+}
+.bracket-card::before {
+  top: 0; left: 0;
+  border-width: 1px 0 0 1px;
+}
+.bracket-card::after {
+  bottom: 0; right: 0;
+  border-width: 0 1px 1px 0;
+}
+.bracket-card:hover::before,
+.bracket-card:hover::after {
+  border-color: rgba(59,130,246,0.75);
+}
+
+/* ─────────────────────────────────────────
+   PULSE DOT — animated unread indicator
+───────────────────────────────────────── */
+
+@keyframes pulse-dot {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.6); opacity: 0.55; }
+}
+.pulse-dot { animation: pulse-dot 2.2s ease-in-out infinite; }
 
 /* Logo wordmark glow */
 .logo-text {

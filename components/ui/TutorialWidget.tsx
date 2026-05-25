@@ -141,14 +141,14 @@ export default function TutorialWidget(initialProps: Props) {
 
   return (
     <div
-      className="rounded-2xl border p-5 mb-6"
-      style={{ background: "var(--surface)", borderColor: "var(--border-md)" }}
+      className="bracket-card border p-5 mb-6"
+      style={{ background: "var(--surface)", borderColor: "var(--border)" }}
     >
       {/* Header */}
       <div className="flex items-start justify-between gap-3 mb-3">
         <div className="flex items-center gap-2.5">
           <div
-            className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
+            className="w-8 h-8 rounded-none flex items-center justify-center flex-shrink-0"
             style={{ background: "rgba(74,128,240,0.12)", border: "1px solid rgba(74,128,240,0.2)" }}
           >
             <BookOpen className="w-4 h-4" style={{ color: "var(--blue)" }} />
@@ -167,7 +167,7 @@ export default function TutorialWidget(initialProps: Props) {
         </div>
         <button
           onClick={dismiss}
-          className="w-7 h-7 flex items-center justify-center rounded-full transition-colors flex-shrink-0 mt-0.5"
+          className="w-7 h-7 flex items-center justify-center transition-colors flex-shrink-0 mt-0.5"
           style={{ color: "var(--muted)" }}
           aria-label="Dismiss guide"
           title="Dismiss guide"
@@ -192,7 +192,7 @@ export default function TutorialWidget(initialProps: Props) {
             <div key={i}>
               <button
                 onClick={() => !step.done && toggle(i)}
-                className="w-full flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors text-left group"
+                className="w-full flex items-center gap-3 rounded-none px-3 py-2.5 transition-colors text-left group"
                 style={{
                   background: step.done ? "transparent" : isOpen ? "var(--surface3)" : "var(--surface2)",
                   opacity: step.done ? 0.55 : 1,
@@ -239,7 +239,7 @@ export default function TutorialWidget(initialProps: Props) {
               {/* Expanded guide */}
               {isOpen && !step.done && (
                 <div
-                  className="mx-3 mb-1 rounded-xl px-4 py-3"
+                  className="mx-3 mb-1 rounded-none px-4 py-3"
                   style={{ background: "var(--surface2)", border: "1px solid var(--border-md)" }}
                 >
                   <ul className="space-y-2 mb-3">
@@ -257,7 +257,7 @@ export default function TutorialWidget(initialProps: Props) {
                   </ul>
                   <Link
                     href={step.href}
-                    className="inline-flex items-center gap-1.5 text-xs font-semibold rounded-lg px-3 py-1.5 transition-colors"
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 transition-colors"
                     style={{ background: "var(--blue)", color: "#fff" }}
                   >
                     {step.ctaLabel}
