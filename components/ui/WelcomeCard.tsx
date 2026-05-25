@@ -5,37 +5,19 @@ import Link from "next/link";
 import { X, ArrowRight } from "lucide-react";
 import NivarroMark from "@/components/ui/NivarroMark";
 
-const STORAGE_KEY = "nv_welcome_v1";
+const STORAGE_KEY = "nv_welcome_v2";
+
+const OUTCOMES = [
+  "They find their people.",
+  "They discover what they are actually built for.",
+  "They go home feeling like their work meant something.",
+];
 
 const GENIUS_TYPES = [
-  {
-    emoji: "⚡",
-    key: "DYNAMO",
-    label: "Dynamo",
-    color: "#F59E0B",
-    line: "The Visionary Builder — sees the gap between what exists and what's possible, then builds the bridge.",
-  },
-  {
-    emoji: "🔥",
-    key: "BLAZE",
-    label: "Blaze",
-    color: "#EF4444",
-    line: "The Bold Connector — turns cold rooms warm. The one people follow when the path isn't clear.",
-  },
-  {
-    emoji: "🎯",
-    key: "TEMPO",
-    label: "Tempo",
-    color: "#10B981",
-    line: "The Steady Strategist — makes ambitious plans actually work. The infrastructure beneath every breakthrough.",
-  },
-  {
-    emoji: "🛡️",
-    key: "STEEL",
-    label: "Steel",
-    color: "#6366F1",
-    line: "The Deep Thinker — goes where others won't on hard problems. The one you trust when precision matters.",
-  },
+  { emoji: "⚡", label: "Dynamo", color: "#F59E0B", line: "Visionary Builder — turns big ideas into moving parts." },
+  { emoji: "🔥", label: "Blaze",  color: "#EF4444", line: "Bold Connector — the one rooms shift toward." },
+  { emoji: "🎯", label: "Tempo",  color: "#10B981", line: "Steady Strategist — makes ambitious plans actually land." },
+  { emoji: "🛡️", label: "Steel",  color: "#6366F1", line: "Deep Thinker — precision and integrity under pressure." },
 ];
 
 export default function WelcomeCard({ hasGeniusType }: { hasGeniusType: boolean }) {
@@ -55,117 +37,99 @@ export default function WelcomeCard({ hasGeniusType }: { hasGeniusType: boolean 
   if (!mounted || dismissed) return null;
 
   return (
-    <div
-      className="bracket-card border mb-6"
-      style={{ background: "var(--surface)", borderColor: "var(--border)" }}
-    >
+    <div className="bracket-card border mb-6" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+
       {/* Header */}
-      <div
-        className="flex items-center justify-between px-5 py-4"
-        style={{ borderBottom: "1px solid var(--border)" }}
-      >
+      <div className="flex items-center justify-between px-5 py-3.5" style={{ borderBottom: "1px solid var(--border)" }}>
         <div className="flex items-center gap-3">
-          <NivarroMark size={20} color="var(--text)" />
-          <p
-            className="text-xs font-semibold tracking-[0.12em] uppercase"
-            style={{ color: "var(--text)", fontFamily: "var(--font-display)" }}
-          >
-            Welcome to Nivarro
+          <NivarroMark size={18} color="var(--text)" />
+          <p className="text-[11px] font-semibold tracking-[0.14em] uppercase" style={{ color: "var(--text)", fontFamily: "var(--font-mono)" }}>
+            What Nivarro is
           </p>
         </div>
-        <button
-          onClick={dismiss}
-          className="w-6 h-6 flex items-center justify-center transition-colors"
-          style={{ color: "var(--muted)" }}
-          aria-label="Dismiss"
-        >
+        <button onClick={dismiss} className="w-6 h-6 flex items-center justify-center transition-colors" style={{ color: "var(--muted)" }} aria-label="Dismiss">
           <X className="w-3.5 h-3.5" />
         </button>
       </div>
 
-      {/* Mission */}
-      <div className="px-5 pt-4 pb-3">
-        <p
-          className="text-sm leading-relaxed mb-1"
-          style={{ color: "var(--text)", fontFamily: "var(--font-serif)", fontStyle: "italic", fontSize: "1rem" }}
-        >
-          &ldquo;There is a generation out there right now doing everything right — studying, grinding, showing up every single day — and still finding nothing on the other side.
+      {/* What we do */}
+      <div className="px-5 pt-5 pb-4" style={{ borderBottom: "1px solid var(--border)" }}>
+        <p className="leading-relaxed mb-3" style={{ color: "var(--text)", fontFamily: "var(--font-display)", fontWeight: 600, fontSize: "0.9rem" }}>
+          We connect young people — high schoolers, college students, the ones who are hungry but stuck — to real opportunities in business and tech.
         </p>
-        <p
-          className="text-sm leading-relaxed"
-          style={{ color: "var(--text2)", fontFamily: "var(--font-serif)", fontStyle: "italic", fontSize: "1rem" }}
-        >
-          Nivarro was built to close that gap. Real opportunities in business and tech — for the ones who are hungry but stuck.&rdquo;
-        </p>
+        <div className="space-y-1.5">
+          {[
+            "The internships that build resumes.",
+            "The programs that open rooms they were never supposed to be in.",
+            "The experiences that turn potential into proof.",
+          ].map((line, i) => (
+            <div key={i} className="flex items-start gap-2.5">
+              <span className="text-[7px] mt-[5px] flex-shrink-0" style={{ color: "var(--blue)" }}>◆</span>
+              <p className="text-sm leading-relaxed" style={{ color: "var(--text2)" }}>{line}</p>
+            </div>
+          ))}
+        </div>
       </div>
 
-      {/* Divider with label */}
-      <div className="flex items-center gap-3 px-5 py-3">
-        <div className="flex-1 h-px" style={{ background: "var(--border)" }} />
-        <p className="text-[10px] font-semibold tracking-[0.14em] uppercase flex-shrink-0" style={{ color: "var(--muted)", fontFamily: "var(--font-mono)" }}>
-          Your Genius Type
+      {/* The transformation — this is the heart */}
+      <div className="px-5 pt-4 pb-5" style={{ borderBottom: "1px solid var(--border)" }}>
+        <p className="text-[10px] font-semibold tracking-[0.14em] uppercase mb-4" style={{ color: "var(--muted)", fontFamily: "var(--font-mono)" }}>
+          When we do that, something bigger happens
         </p>
-        <div className="flex-1 h-px" style={{ background: "var(--border)" }} />
+        <div className="space-y-3">
+          {OUTCOMES.map((line, i) => (
+            <p
+              key={i}
+              style={{
+                color: "var(--text)",
+                fontFamily: "var(--font-serif)",
+                fontStyle: "italic",
+                fontSize: "1.05rem",
+                lineHeight: 1.5,
+                paddingLeft: "1rem",
+                borderLeft: "2px solid var(--blue)",
+              }}
+            >
+              {line}
+            </p>
+          ))}
+        </div>
+        <p className="text-xs leading-relaxed mt-4" style={{ color: "var(--text2)" }}>
+          And years from now — they provide for families of their own, strengthen the communities they came from, and pour back into an American economy that is desperately waiting on them.
+        </p>
       </div>
 
       {/* Genius types */}
-      <div className="px-5 pb-4 space-y-3">
-        <p className="text-xs leading-relaxed" style={{ color: "var(--text2)" }}>
-          Every scholar on Nivarro has a Genius Type — the way you naturally think, lead, and contribute. Orgs and teammates use it to understand what role you'd play on a team. There are no wrong answers.
+      <div className="px-5 pt-4 pb-4" style={{ borderBottom: "1px solid var(--border)" }}>
+        <p className="text-[10px] font-semibold tracking-[0.14em] uppercase mb-3" style={{ color: "var(--muted)", fontFamily: "var(--font-mono)" }}>
+          Your Genius Type shapes how you contribute
         </p>
-        <div className="grid grid-cols-1 gap-2">
+        <p className="text-xs leading-relaxed mb-3" style={{ color: "var(--text2)" }}>
+          Every scholar has a Genius Type — the way you naturally think, lead, and build. Orgs and teammates use it to understand the role you would play.
+        </p>
+        <div className="grid grid-cols-2 gap-2">
           {GENIUS_TYPES.map((t) => (
-            <div
-              key={t.key}
-              className="flex items-start gap-3 px-3 py-2.5"
-              style={{ background: "var(--surface2)", borderLeft: `2px solid ${t.color}` }}
-            >
-              <span className="text-base flex-shrink-0 mt-px">{t.emoji}</span>
-              <div className="flex-1 min-w-0">
-                <p
-                  className="text-xs font-semibold tracking-[0.06em] uppercase mb-0.5"
-                  style={{ color: t.color, fontFamily: "var(--font-mono)" }}
-                >
-                  {t.label}
-                </p>
-                <p className="text-[11px] leading-relaxed" style={{ color: "var(--text2)" }}>
-                  {t.line}
-                </p>
-              </div>
+            <div key={t.label} className="px-3 py-2.5" style={{ background: "var(--surface2)", borderLeft: `2px solid ${t.color}` }}>
+              <p className="text-[10px] font-semibold tracking-[0.08em] uppercase mb-1" style={{ color: t.color, fontFamily: "var(--font-mono)" }}>
+                {t.emoji} {t.label}
+              </p>
+              <p className="text-[11px] leading-relaxed" style={{ color: "var(--text2)" }}>{t.line}</p>
             </div>
           ))}
         </div>
       </div>
 
       {/* CTA */}
-      <div
-        className="flex items-center justify-between gap-4 px-5 py-3"
-        style={{ borderTop: "1px solid var(--border)" }}
-      >
-        {!hasGeniusType ? (
-          <p className="text-xs" style={{ color: "var(--text2)" }}>
-            Take the 3-minute quiz to find your type.
-          </p>
-        ) : (
-          <p className="text-xs" style={{ color: "var(--text2)" }}>
-            Your type is set. Keep building.
-          </p>
-        )}
+      <div className="flex items-center justify-between gap-4 px-5 py-3">
+        <p className="text-xs" style={{ color: "var(--text2)" }}>
+          {hasGeniusType ? "Your type is set. Keep building." : "Take the 3-minute quiz to find your type."}
+        </p>
         <div className="flex items-center gap-2 flex-shrink-0">
-          <button
-            onClick={dismiss}
-            className="text-xs px-3 py-1.5 font-medium transition-colors"
-            style={{ color: "var(--muted)", border: "1px solid var(--border-md)", borderRadius: 0 }}
-          >
+          <button onClick={dismiss} className="text-xs px-3 py-1.5 font-medium transition-colors" style={{ color: "var(--muted)", border: "1px solid var(--border-md)", borderRadius: 0 }}>
             Got it
           </button>
           {!hasGeniusType && (
-            <Link
-              href="/quiz"
-              onClick={dismiss}
-              className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 transition-colors"
-              style={{ background: "var(--blue)", color: "#fff", borderRadius: 0 }}
-            >
+            <Link href="/quiz" onClick={dismiss} className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5" style={{ background: "var(--blue)", color: "#fff", borderRadius: 0 }}>
               Take the quiz <ArrowRight className="w-3 h-3" />
             </Link>
           )}
