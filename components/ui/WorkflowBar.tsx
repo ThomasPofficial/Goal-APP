@@ -47,18 +47,35 @@ export default function WorkflowBar() {
 
   const step = session.step;
   const projectUrl = `/orgs/${session.orgProject.org.id}/projects/${session.orgProject.id}`;
-  const continueUrl = step === 1 ? "/orgs" : projectUrl;
+
+  // Each step has a clear destination
+  const STEP_URLS: Record<number, string> = {
+    1: "/orgs",
+    2: projectUrl,
+    3: "/teams",
+    4: projectUrl,
+    5: projectUrl,
+  };
+  const STEP_CTA: Record<number, string> = {
+    1: "Browse orgs",
+    2: "View project",
+    3: "Build your team",
+    4: "Recruit teammates",
+    5: "Apply now",
+  };
+
+  const continueUrl = STEP_URLS[step] ?? projectUrl;
+  const ctaLabel = STEP_CTA[step] ?? "Continue";
 
   return (
     <div
-      className="rounded-xl px-4 py-3 mb-6 flex items-center gap-3 flex-wrap"
+      className="bracket-card px-4 py-3 mb-6 flex items-center gap-3 flex-wrap"
       style={{
         background: "var(--surface)",
         border: "1px solid var(--border-md)",
-        boxShadow: "var(--glow-card)",
       }}
     >
-      {/* Step indicator */}
+      {/* Step indicators */}
       <div className="flex items-center gap-1 flex-shrink-0">
         {STEPS.map((s, i) => {
           const stepNum = i + 1;
@@ -67,22 +84,14 @@ export default function WorkflowBar() {
           return (
             <div key={s.label} className="flex items-center gap-1">
               <div
-                className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold transition-all"
+                className="flex items-center gap-1 px-2 py-0.5 text-[11px] font-semibold transition-all"
                 style={{
-                  background: isActive
-                    ? "rgba(16,96,216,0.25)"
-                    : isDone
-                    ? "rgba(16,96,216,0.1)"
-                    : "transparent",
-                  border: isActive
-                    ? "1px solid rgba(16,96,216,0.6)"
-                    : isDone
-                    ? "1px solid rgba(16,96,216,0.3)"
-                    : "1px solid rgba(255,255,255,0.08)",
+                  background: isActive ? "rgba(59,130,246,0.18)" : isDone ? "rgba(59,130,246,0.08)" : "transparent",
+                  border: isActive ? "1px solid rgba(59,130,246,0.5)" : isDone ? "1px solid rgba(59,130,246,0.25)" : "1px solid var(--border)",
                   color: isActive ? "var(--blue)" : isDone ? "var(--blue)" : "var(--muted)",
                 }}
               >
-                {isDone ? "✓" : stepNum} {isActive ? <span className="hidden sm:inline">{s.label}</span> : null}
+                {isDone ? "✓" : stepNum}{isActive ? <span className="hidden sm:inline ml-1">{s.label}</span> : null}
               </div>
               {i < STEPS.length - 1 && (
                 <ChevronRight className="w-3 h-3 flex-shrink-0" style={{ color: "var(--border-md)" }} />
@@ -94,25 +103,24 @@ export default function WorkflowBar() {
 
       {/* Project name */}
       <div className="flex-1 min-w-0">
-        <p className="text-[11px] truncate" style={{ color: "var(--muted)" }}>Active workflow</p>
-        <p className="text-sm font-semibold truncate" style={{ color: "var(--text)", fontFamily: "var(--font-serif)" }}>
+        <p className="text-[10px] uppercase tracking-[0.1em] font-semibold" style={{ color: "var(--muted)", fontFamily: "var(--font-mono)" }}>
+          Active workflow
+        </p>
+        <p className="text-sm font-semibold truncate" style={{ color: "var(--text)" }}>
           {session.orgProject.title}
         </p>
       </div>
 
       {/* Actions */}
       <div className="flex items-center gap-2 flex-shrink-0">
-        <Link
-          href={continueUrl}
-          className="btn-primary px-3 py-1.5 text-xs"
-        >
-          Continue →
+        <Link href={continueUrl} className="btn-primary px-3 py-1.5 text-xs">
+          {ctaLabel} →
         </Link>
         <button
           onClick={abandon}
           disabled={abandoning}
-          className="w-7 h-7 flex items-center justify-center rounded-full transition-colors"
-          style={{ color: "#5a7898" }}
+          className="w-7 h-7 flex items-center justify-center transition-colors"
+          style={{ color: "var(--muted)" }}
           title="Abandon workflow"
         >
           {abandoning ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <X className="w-3.5 h-3.5" />}

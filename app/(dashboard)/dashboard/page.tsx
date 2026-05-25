@@ -67,6 +67,11 @@ export default async function DashboardPage() {
 
   const traitsDone = (profile?.traitLinks?.length ?? 0) > 0;
 
+  // Hide tutorial widget when there's an active workflow — two flows at once is confusing
+  const hasActiveWorkflow = profile?.id
+    ? (await prisma.workflowSession.count({ where: { profileId: profile.id } })) > 0
+    : false;
+
   return (
     <DashboardClient
       profile={{
@@ -80,7 +85,7 @@ export default async function DashboardPage() {
       }}
       spaces={spaces}
       traitsDone={traitsDone}
-      tutorialDismissed={tutorialDismissed}
+      tutorialDismissed={tutorialDismissed || hasActiveWorkflow}
       tutorial={{
         hasGeniusType: !!profile?.geniusType,
         traitsDone,
