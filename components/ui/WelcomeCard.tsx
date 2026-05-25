@@ -5,7 +5,7 @@ import Link from "next/link";
 import { X, ArrowRight } from "lucide-react";
 import NivarroMark from "@/components/ui/NivarroMark";
 
-const STORAGE_KEY = "nv_welcome_v2";
+const STORAGE_KEY = "nv_welcome_v3";
 
 const OUTCOMES = [
   "They find their people.",
@@ -52,50 +52,13 @@ export default function WelcomeCard({ hasGeniusType }: { hasGeniusType: boolean 
         </button>
       </div>
 
-      {/* What we do */}
-      <div className="px-5 pt-5 pb-4" style={{ borderBottom: "1px solid var(--border)" }}>
-        <p className="leading-relaxed mb-3" style={{ color: "var(--text)", fontFamily: "var(--font-display)", fontWeight: 600, fontSize: "0.9rem" }}>
-          We connect young people — high schoolers, college students, the ones who are hungry but stuck — to real opportunities in business and tech.
+      {/* Mission — two paragraphs verbatim */}
+      <div className="px-5 pt-5 pb-5" style={{ borderBottom: "1px solid var(--border)" }}>
+        <p className="leading-relaxed mb-4" style={{ color: "var(--text)", fontFamily: "var(--font-serif)", fontSize: "1rem", lineHeight: 1.7 }}>
+          We connect young people — high schoolers, college students, the ones who are hungry but stuck — to real opportunities in business and tech. The internships that build resumes. The programs that open rooms they were never supposed to be in. The experiences that turn potential into proof.
         </p>
-        <div className="space-y-1.5">
-          {[
-            "The internships that build resumes.",
-            "The programs that open rooms they were never supposed to be in.",
-            "The experiences that turn potential into proof.",
-          ].map((line, i) => (
-            <div key={i} className="flex items-start gap-2.5">
-              <span className="text-[7px] mt-[5px] flex-shrink-0" style={{ color: "var(--blue)" }}>◆</span>
-              <p className="text-sm leading-relaxed" style={{ color: "var(--text2)" }}>{line}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* The transformation — this is the heart */}
-      <div className="px-5 pt-4 pb-5" style={{ borderBottom: "1px solid var(--border)" }}>
-        <p className="text-[10px] font-semibold tracking-[0.14em] uppercase mb-4" style={{ color: "var(--muted)", fontFamily: "var(--font-mono)" }}>
-          When we do that, something bigger happens
-        </p>
-        <div className="space-y-3">
-          {OUTCOMES.map((line, i) => (
-            <p
-              key={i}
-              style={{
-                color: "var(--text)",
-                fontFamily: "var(--font-serif)",
-                fontStyle: "italic",
-                fontSize: "1.05rem",
-                lineHeight: 1.5,
-                paddingLeft: "1rem",
-                borderLeft: "2px solid var(--blue)",
-              }}
-            >
-              {line}
-            </p>
-          ))}
-        </div>
-        <p className="text-xs leading-relaxed mt-4" style={{ color: "var(--text2)" }}>
-          And years from now — they provide for families of their own, strengthen the communities they came from, and pour back into an American economy that is desperately waiting on them.
+        <p className="leading-relaxed" style={{ color: "var(--text2)", fontFamily: "var(--font-serif)", fontStyle: "italic", fontSize: "1rem", lineHeight: 1.7 }}>
+          When we do that, something bigger happens. They find their people. They discover what they are actually built for. They go home at the end of the day feeling like their work meant something. And years from now, they provide for families of their own, strengthen the communities they came from, and pour back into an American economy that is desperately waiting on them.
         </p>
       </div>
 
