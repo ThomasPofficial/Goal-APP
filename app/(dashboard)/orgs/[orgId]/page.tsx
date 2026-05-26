@@ -38,6 +38,9 @@ export default async function OrgDetailPage({ params }: { params: Promise<{ orgI
         duration: true,
         deadline: true,
         status: true,
+        closedAt: true,
+        outcomeNote: true,
+        _count: { select: { teamApplications: true } },
       },
     }),
     session?.user?.id
@@ -55,26 +58,39 @@ export default async function OrgDetailPage({ params }: { params: Promise<{ orgI
 
   const isAdmin = org.createdById === session?.user?.id;
 
-  const applications = isAdmin
-    ? await prisma.teamApplication.findMany({
-        where: { orgProject: { orgId } },
-        orderBy: { submittedAt: "desc" },
-        include: {
-          orgProject: { select: { id: true, title: true } },
-          team: {
-            include: {
-              members: {
-                include: {
-                  profile: {
-                    select: { id: true, displayName: true, avatarUrl: true, geniusType: true, handle: true },
+  const [applications, adminStats] = await Promise.all([
+    isAdmin
+      ? prisma.teamApplication.findMany({
+          where: { orgProject: { orgId } },
+          orderBy: { submittedAt: "desc" },
+          include: {
+            orgProject: { select: { id: true, title: true } },
+            team: {
+              include: {
+                members: {
+                  include: {
+                    profile: {
+                      select: { id: true, displayName: true, avatarUrl: true, geniusType: true, handle: true },
+                    },
                   },
                 },
               },
             },
           },
-        },
-      })
-    : [];
+        })
+      : [],
+    isAdmin
+      ? prisma.$transaction([
+          prisma.teamApplication.count({ where: { orgProject: { orgId }, status: "PENDING" } }),
+          prisma.teamApplication.count({ where: { orgProject: { orgId }, status: "ACCEPTED" } }),
+          prisma.teamApplication.count({ where: { orgProject: { orgId } } }),
+          prisma.orgReview.count({ where: { orgId } }),
+        ])
+      : [0, 0, 0, 0],
+  ]);
+
+  const [pendingCount, acceptedCount, totalApps, reviewCount] = adminStats as [number, number, number, number];
+  const activeProjects = projects.filter((p) => p.status === "OPEN").length;
 
   const myTeamIds = new Set(myProfile?.teamMemberships.map((m) => m.teamId) ?? []);
   const myOrgTeam = org.teams.find((t) => myTeamIds.has(t.id));
@@ -84,6 +100,9 @@ export default async function OrgDetailPage({ params }: { params: Promise<{ orgI
       org={{
         ...org,
         deadline: org.deadline?.toISOString() ?? null,
+        whatInternsBuild: org.whatInternsBuild ?? null,
+        contactEmail: org.contactEmail ?? null,
+        isPaid: org.isPaid,
         teams: org.teams.map((t) => ({
           ...t,
           members: t.members.map((m) => ({
@@ -102,6 +121,9 @@ export default async function OrgDetailPage({ params }: { params: Promise<{ orgI
         hoursPerWeek: p.hoursPerWeek ?? null,
         duration: p.duration ?? null,
         deadline: p.deadline?.toISOString() ?? null,
+        closedAt: p.closedAt?.toISOString() ?? null,
+        outcomeNote: p.outcomeNote ?? null,
+        applicationCount: p._count.teamApplications,
       }))}
       myProfileId={myProfile?.id ?? null}
       myTeamId={myOrgTeam?.id ?? null}
@@ -123,6 +145,10 @@ export default async function OrgDetailPage({ params }: { params: Promise<{ orgI
           })),
         },
       }))}
+      adminStats={isAdmin ? { activeProjects, totalApps, pendingCount, acceptedCount } : null}
+      apiKey={isAdmin ? (org.apiKey ?? null) : null}
+      reviewCount={reviewCount}
+      whatInternsBuild={org.whatInternsBuild ?? null}
     />
   );
 }

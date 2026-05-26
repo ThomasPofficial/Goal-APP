@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { format } from "date-fns";
-import { Search, ArrowLeft, UserPlus, CheckCircle2, Clock, Zap, BookOpen, Lock } from "lucide-react";
+import { Search, ArrowLeft, Clock, Zap, BookOpen, Lock } from "lucide-react";
 import Avatar from "@/components/ui/Avatar";
 import GeniusTypeBadge from "@/components/ui/GeniusTypeBadge";
 import ApplyModal from "@/components/ui/ApplyModal";
@@ -80,9 +80,6 @@ export default function ProjectDetailClient({
   const [geniusFilter, setGeniusFilter] = useState<GeniusTypeKey | "">("");
   const [loading, setLoading] = useState(false);
   const [algorithmLoading, setAlgorithmLoading] = useState(false);
-  const [recruitingId, setRecruitingId] = useState<string | null>(null);
-  const [recruitMsg, setRecruitMsg] = useState("");
-  const [sentTo, setSentTo] = useState<Set<string>>(new Set());
   const [showApplyModal, setShowApplyModal] = useState(false);
   const [applied, setApplied] = useState<{ id: string; status: string; teamId: string } | null>(existingApplication);
   const [startingWorkflow, setStartingWorkflow] = useState(false);
@@ -175,18 +172,6 @@ export default function ProjectDetailClient({
       const data = await res.json();
       setWorkflowStep(data.session.step);
     }
-  };
-
-  const sendRecruit = async (toProfileId: string) => {
-    if (!myProfileId) return;
-    await fetch(`/api/org-projects/${project.id}/recruit`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ toProfileId, message: recruitMsg }),
-    });
-    setSentTo((prev) => new Set(prev).add(toProfileId));
-    setRecruitingId(null);
-    setRecruitMsg("");
   };
 
   const displayedCandidates = searchMode === "algorithm" ? algorithmCandidates : scholars;
@@ -494,27 +479,13 @@ export default function ProjectDetailClient({
                   scholar={scholar}
                   showReviews={searchMode === "algorithm" && isInTeamStep}
                   myProfileId={myProfileId}
-                  sentTo={sentTo}
-                  recruitingId={recruitingId}
-                  recruitMsg={recruitMsg}
-                  setRecruitingId={setRecruitingId}
-                  setRecruitMsg={setRecruitMsg}
-                  sendRecruit={sendRecruit}
                 />
               ))
             )}
           </div>
         </div>
 
-        {/* Roster Panel — shown in team-building step */}
         <div className="space-y-4">
-          {isInTeamStep && (
-            <RosterPanel
-              sentTo={sentTo}
-              candidates={[...algorithmCandidates, ...scholars]}
-              openSpots={project.openSpots}
-            />
-          )}
           <h2 className="text-sm font-semibold uppercase tracking-wider" style={{ color: "#d8eeff" }}>Apply</h2>
           <div
             className="rounded-xl p-4 sticky top-6"
@@ -595,17 +566,10 @@ interface ScholarCardProps {
   scholar: Scholar;
   showReviews: boolean;
   myProfileId: string | null;
-  sentTo: Set<string>;
-  recruitingId: string | null;
-  recruitMsg: string;
-  setRecruitingId: (id: string | null) => void;
-  setRecruitMsg: (msg: string) => void;
-  sendRecruit: (id: string) => Promise<void>;
 }
 
 function ScholarCard({
-  scholar, showReviews, myProfileId, sentTo,
-  recruitingId, recruitMsg, setRecruitingId, setRecruitMsg, sendRecruit,
+  scholar, showReviews, myProfileId,
 }: ScholarCardProps) {
   const [reviewsOpen, setReviewsOpen] = useState(false);
   const reviews = scholar.orgReviews ?? [];
@@ -653,49 +617,15 @@ function ScholarCard({
           )}
         </div>
         <div className="flex-shrink-0">
-          {sentTo.has(scholar.id) ? (
-            <span className="flex items-center gap-1 text-xs text-green-400 font-medium">
-              <CheckCircle2 className="w-3.5 h-3.5" /> Sent
-            </span>
-          ) : recruitingId === scholar.id ? (
-            <div className="space-y-1 w-48">
-              <textarea
-                value={recruitMsg}
-                onChange={(e) => setRecruitMsg(e.target.value)}
-                placeholder="Optional message…"
-                rows={2}
-                className="w-full text-xs resize-none rounded-lg px-2 py-1.5 focus:outline-none"
-                style={{ border: "1px solid var(--border-md)", background: "var(--surface2)", color: "var(--text)" }}
-              />
-              <div className="flex gap-1">
-                <button
-                  onClick={() => setRecruitingId(null)}
-                  className="flex-1 text-xs py-1 rounded-lg"
-                  style={{ border: "1px solid var(--border)", color: "#8ab0d8" }}
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => sendRecruit(scholar.id)}
-                  className="flex-1 text-xs py-1 rounded-lg font-semibold"
-                  style={{ background: "#1060d8", color: "#fff" }}
-                >
-                  Send
-                </button>
-              </div>
-            </div>
-          ) : myProfileId && scholar.id !== myProfileId ? (
-            <button
-              onClick={() => setRecruitingId(scholar.id)}
-              className="flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-lg transition-colors"
-              style={{
-                color: "#4a80f0",
-                border: "1px solid rgba(16,96,216,0.28)",
-              }}
+          {myProfileId && scholar.handle && scholar.id !== myProfileId && (
+            <Link
+              href={`/profile/${scholar.handle}`}
+              className="flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 transition-colors"
+              style={{ color: "#4a80f0", border: "1px solid rgba(16,96,216,0.28)" }}
             >
-              <UserPlus className="w-3.5 h-3.5" /> Recruit
-            </button>
-          ) : null}
+              View profile
+            </Link>
+          )}
         </div>
       </div>
 
@@ -725,108 +655,3 @@ function ScholarCard({
   );
 }
 
-// ── Roster Panel ───────────────────────────────────────────────────────────────
-
-const GENIUS_ORDER: GeniusTypeKey[] = ["DYNAMO", "BLAZE", "TEMPO", "STEEL"];
-
-interface RosterPanelProps {
-  sentTo: Set<string>;
-  candidates: Scholar[];
-  openSpots: number;
-}
-
-function RosterPanel({ sentTo, candidates, openSpots }: RosterPanelProps) {
-  const recruited = candidates.filter((c) => sentTo.has(c.id));
-  const spotsLeft = Math.max(0, openSpots - recruited.length);
-
-  // Count genius types in roster
-  const typeCounts: Record<string, number> = {};
-  for (const s of recruited) {
-    if (s.geniusType) typeCounts[s.geniusType] = (typeCounts[s.geniusType] ?? 0) + 1;
-  }
-
-  const typesPresent = new Set(recruited.map((s) => s.geniusType).filter(Boolean));
-  const isBalanced = typesPresent.size >= 3 && recruited.length >= 2;
-
-  if (recruited.length === 0 && spotsLeft === openSpots) {
-    return (
-      <div
-        className="rounded-xl p-4"
-        style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
-      >
-        <h3 className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: "#5a7898" }}>Your Roster</h3>
-        <p className="text-xs" style={{ color: "var(--muted)" }}>
-          Send recruitment requests to build your team. Recruited scholars appear here.
-        </p>
-      </div>
-    );
-  }
-
-  return (
-    <div
-      className="rounded-xl p-4 space-y-3"
-      style={{ background: "var(--surface)", border: "1px solid var(--border-md)" }}
-    >
-      <div className="flex items-center justify-between">
-        <h3 className="text-xs font-semibold uppercase tracking-wider" style={{ color: "#5a7898" }}>Your Roster</h3>
-        <span className="text-[11px]" style={{ color: spotsLeft === 0 ? "#4ade80" : "#5a7898" }}>
-          {recruited.length}/{openSpots} recruited
-        </span>
-      </div>
-
-      {/* Coverage bar */}
-      <div>
-        <div className="flex gap-0.5 h-2 rounded-full overflow-hidden" style={{ background: "var(--surface2)" }}>
-          {GENIUS_ORDER.map((g) => {
-            const count = typeCounts[g] ?? 0;
-            if (count === 0) return null;
-            const pct = (count / openSpots) * 100;
-            return (
-              <div
-                key={g}
-                style={{ width: `${pct}%`, background: GENIUS_TYPES[g].color, opacity: 0.85 }}
-              />
-            );
-          })}
-        </div>
-        <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-          {GENIUS_ORDER.map((g) => {
-            const count = typeCounts[g] ?? 0;
-            if (count === 0) return null;
-            return (
-              <span key={g} className="flex items-center gap-1 text-[10px]" style={{ color: GENIUS_TYPES[g].color }}>
-                {GENIUS_TYPES[g].emoji} {GENIUS_TYPES[g].label} ×{count}
-              </span>
-            );
-          })}
-        </div>
-      </div>
-
-      {isBalanced && (
-        <div
-          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold"
-          style={{ background: "rgba(74,222,128,0.08)", border: "1px solid rgba(74,222,128,0.2)", color: "#4ade80" }}
-        >
-          <CheckCircle2 className="w-3.5 h-3.5" /> Well-balanced team
-        </div>
-      )}
-
-      {/* Recruited scholars */}
-      <div className="space-y-1.5">
-        {recruited.map((s) => (
-          <div key={s.id} className="flex items-center gap-2">
-            <Avatar src={s.avatarUrl} name={s.displayName} geniusType={s.geniusType} size={24} />
-            <span className="text-xs flex-1 min-w-0 truncate" style={{ color: "#d8eeff" }}>{s.displayName}</span>
-            {s.geniusType && <GeniusTypeBadge type={s.geniusType} size="sm" />}
-          </div>
-        ))}
-      </div>
-
-      {spotsLeft > 0 && (
-        <p className="text-[11px]" style={{ color: "var(--muted)" }}>
-          {spotsLeft} spot{spotsLeft !== 1 ? "s" : ""} remaining
-        </p>
-      )}
-    </div>
-  );
-}

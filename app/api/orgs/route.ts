@@ -1,24 +1,18 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
-import type { OrgCategory, OrgStatus } from "@prisma/client";
+import type { OrgCategory, OrgStatus } from "@prisma/client"; // OrgStatus used in GET
 
 export async function POST(req: Request) {
   const session = await auth();
-  if (!session?.user?.email) {
+  if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-  if (session.user.email !== "team.nivarro@gmail.com") {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const body = await req.json();
   const {
-    name, tagline, description, whatWeSeek, category, status,
-    heroUrl, accentColor, minTeamSize, maxTeamSize, gradeEligibility,
-    deadline, format, location, stipend, autoAccept,
-    logoLetter, logoBg, logoColor, bannerGradient, founded, website,
-    orgType, values, socialProof, focusTags, memberCount, headquartersLocation,
+    name, category, website, description, logoLetter, logoBg, logoColor,
+    accentColor, whatInternsBuild, contactEmail,
   } = body;
 
   if (!name || !category) {
@@ -28,34 +22,20 @@ export async function POST(req: Request) {
   const org = await prisma.org.create({
     data: {
       name,
-      tagline,
-      description,
-      whatWeSeek,
       category: category as OrgCategory,
-      status: (status ?? "OPEN") as OrgStatus,
-      heroUrl,
-      accentColor,
-      minTeamSize: minTeamSize ?? 1,
-      maxTeamSize: maxTeamSize ?? 5,
-      gradeEligibility,
-      deadline: deadline ? new Date(deadline) : null,
-      format,
-      location,
-      stipend,
-      autoAccept: autoAccept ?? false,
-      createdById: session.user.id,
+      website,
+      description,
       logoLetter,
       logoBg,
       logoColor,
-      bannerGradient,
-      founded,
-      website,
-      orgType,
-      values: values ? JSON.stringify(values) : "[]",
-      socialProof,
-      focusTags: focusTags ? JSON.stringify(focusTags) : "[]",
-      memberCount,
-      headquartersLocation,
+      accentColor,
+      whatInternsBuild,
+      contactEmail,
+      values: "[]",
+      focusTags: "[]",
+      maxTeamSize: 3,
+      minTeamSize: 1,
+      createdById: session.user.id,
     },
   });
 

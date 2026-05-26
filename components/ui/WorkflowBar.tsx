@@ -98,18 +98,35 @@ export default function WorkflowBar() {
           const stepNum = i + 1;
           const isActive = stepNum === step;
           const isDone = stepNum < step;
+          const stepUrl = STEP_URLS[stepNum];
+          const label = stepNum === 3 ? (!hasGeniusType ? "Take Quiz" : !traitsDone ? "Add Traits" : s.label) : s.label;
+          const canNavigate = isDone || isActive;
           return (
             <div key={s.label} className="flex items-center gap-1">
-              <div
-                className="flex items-center gap-1 px-2 py-0.5 text-[11px] font-semibold transition-all"
-                style={{
-                  background: isActive ? "rgba(59,130,246,0.18)" : isDone ? "rgba(59,130,246,0.08)" : "transparent",
-                  border: isActive ? "1px solid rgba(59,130,246,0.5)" : isDone ? "1px solid rgba(59,130,246,0.25)" : "1px solid var(--border)",
-                  color: isActive ? "var(--blue)" : isDone ? "var(--blue)" : "var(--muted)",
-                }}
-              >
-                {isDone ? "✓" : stepNum}{isActive ? <span className="hidden sm:inline ml-1">{stepNum === 3 ? (!hasGeniusType ? "Take Quiz" : !traitsDone ? "Add Traits" : s.label) : s.label}</span> : null}
-              </div>
+              {canNavigate ? (
+                <Link
+                  href={stepUrl}
+                  className="flex items-center gap-1 px-2 py-0.5 text-[11px] font-semibold transition-all"
+                  style={{
+                    background: isActive ? "rgba(59,130,246,0.18)" : "rgba(59,130,246,0.08)",
+                    border: isActive ? "1px solid rgba(59,130,246,0.5)" : "1px solid rgba(59,130,246,0.25)",
+                    color: "var(--blue)",
+                  }}
+                >
+                  {isDone ? "✓" : stepNum}{isActive ? <span className="hidden sm:inline ml-1">{label}</span> : null}
+                </Link>
+              ) : (
+                <div
+                  className="flex items-center gap-1 px-2 py-0.5 text-[11px] font-semibold"
+                  style={{
+                    background: "transparent",
+                    border: "1px solid var(--border)",
+                    color: "var(--muted)",
+                  }}
+                >
+                  {stepNum}
+                </div>
+              )}
               {i < STEPS.length - 1 && (
                 <ChevronRight className="w-3 h-3 flex-shrink-0" style={{ color: "var(--border-md)" }} />
               )}
