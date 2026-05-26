@@ -39,7 +39,6 @@ interface OrgDetail {
   focusTags: string;
   memberCount: number | null;
   headquartersLocation: string | null;
-  opportunities: { id: string; title: string; description: string | null; deadline: string | null }[];
   teams: {
     id: string;
     name: string;
@@ -314,24 +313,6 @@ export default function OrgDetailClient({
             </div>
           )}
 
-          {org.opportunities.length > 0 && (
-            <div>
-              <h2 className="text-sm font-semibold mb-3" style={{ color: "var(--text)" }}>Opportunities</h2>
-              <div className="space-y-2">
-                {org.opportunities.map((opp) => (
-                  <div key={opp.id} className="rounded-lg p-3" style={{ background: "var(--surface2)", border: "1px solid var(--border-md)" }}>
-                    <p className="font-medium text-sm" style={{ color: "var(--text)" }}>{opp.title}</p>
-                    {opp.description && (
-                      <p className="text-xs mt-1 line-clamp-2" style={{ color: "var(--text2)" }}>{opp.description}</p>
-                    )}
-                    {opp.deadline && (
-                      <p className="text-xs mt-1" style={{ color: "var(--muted)" }}>Due {format(new Date(opp.deadline), "MMM d, yyyy")}</p>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
 
         {/* ── Right sidebar ─────────────────────────────────────── */}
