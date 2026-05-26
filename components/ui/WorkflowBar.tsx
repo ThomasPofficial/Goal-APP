@@ -25,13 +25,20 @@ interface WorkflowSession {
 
 export default function WorkflowBar() {
   const [session, setSession] = useState<WorkflowSession | null>(null);
+  const [hasGeniusType, setHasGeniusType] = useState(false);
+  const [traitsDone, setTraitsDone] = useState(false);
   const [loading, setLoading] = useState(true);
   const [abandoning, setAbandoning] = useState(false);
 
   useEffect(() => {
     fetch("/api/workflow")
       .then((r) => r.json())
-      .then((d) => { setSession(d.session ?? null); setLoading(false); })
+      .then((d) => {
+        setSession(d.session ?? null);
+        setHasGeniusType(!!d.hasGeniusType);
+        setTraitsDone(!!d.traitsDone);
+        setLoading(false);
+      })
       .catch(() => setLoading(false));
   }, []);
 
@@ -48,18 +55,21 @@ export default function WorkflowBar() {
   const step = session.step;
   const projectUrl = `/orgs/${session.orgProject.org.id}/projects/${session.orgProject.id}`;
 
-  // Each step has a clear destination
+  // Step 3 gates on profile completeness before team creation
+  const step3Url = !hasGeniusType ? "/quiz" : !traitsDone ? "/quiz?tab=traits" : "/teams";
+  const step3Cta = !hasGeniusType ? "Take the quiz first" : !traitsDone ? "Add your traits" : "Build your team";
+
   const STEP_URLS: Record<number, string> = {
     1: "/orgs",
     2: projectUrl,
-    3: "/teams",
+    3: step3Url,
     4: projectUrl,
     5: projectUrl,
   };
   const STEP_CTA: Record<number, string> = {
     1: "Browse orgs",
     2: "View project",
-    3: "Build your team",
+    3: step3Cta,
     4: "Recruit teammates",
     5: "Apply now",
   };

@@ -7,7 +7,14 @@ export async function GET() {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const profile = await prisma.profile.findUnique({ where: { userId: session.user.id } });
+  const profile = await prisma.profile.findUnique({
+    where: { userId: session.user.id },
+    select: {
+      id: true,
+      geniusType: true,
+      _count: { select: { traitLinks: true } },
+    },
+  });
   if (!profile) return NextResponse.json({ session: null });
 
   const workflowSession = await prisma.workflowSession.findUnique({
@@ -30,7 +37,10 @@ export async function GET() {
     },
   });
 
-  return NextResponse.json({ session: workflowSession });
+  const hasGeniusType = !!profile.geniusType;
+  const traitsDone = (profile._count?.traitLinks ?? 0) > 0;
+
+  return NextResponse.json({ session: workflowSession, hasGeniusType, traitsDone });
 }
 
 // POST — start a new workflow on a project (one at a time enforced by DB unique constraint)
