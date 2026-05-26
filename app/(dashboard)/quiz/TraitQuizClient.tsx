@@ -26,9 +26,10 @@ interface Props {
   alreadyCompleted: boolean;
   existingTraits: TraitData[];
   existingSummary: string | null;
+  hasActiveWorkflow?: boolean;
 }
 
-export default function TraitQuizClient({ alreadyCompleted, existingTraits, existingSummary }: Props) {
+export default function TraitQuizClient({ alreadyCompleted, existingTraits, existingSummary, hasActiveWorkflow }: Props) {
   const router = useRouter();
   const [step, setStep] = useState<"quiz" | "analyzing" | "result">(
     alreadyCompleted ? "result" : "quiz"
@@ -166,12 +167,28 @@ export default function TraitQuizClient({ alreadyCompleted, existingTraits, exis
                   <CheckCircle2 className="w-4 h-4" />
                   <span>Traits applied to your profile</span>
                 </div>
-                <button onClick={() => router.push("/profile")} className="btn-primary w-full flex items-center justify-center gap-2 py-2.5 text-sm">
-                  View Profile <ArrowRight className="w-4 h-4" />
-                </button>
-                <button onClick={() => router.push("/dashboard")} className="w-full text-center text-xs py-1.5 transition-colors" style={{ color: "var(--muted)" }}>
-                  Go to Dashboard
-                </button>
+                {hasActiveWorkflow ? (
+                  <>
+                    <p className="text-xs text-center" style={{ color: "var(--muted)" }}>
+                      Your profile is complete — time to build your team.
+                    </p>
+                    <button onClick={() => router.push("/teams")} className="btn-primary w-full flex items-center justify-center gap-2 py-2.5 text-sm">
+                      Build your team <ArrowRight className="w-4 h-4" />
+                    </button>
+                    <button onClick={() => router.push("/profile")} className="w-full text-center text-xs py-1.5 transition-colors" style={{ color: "var(--muted)" }}>
+                      View profile first
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button onClick={() => router.push("/profile")} className="btn-primary w-full flex items-center justify-center gap-2 py-2.5 text-sm">
+                      View Profile <ArrowRight className="w-4 h-4" />
+                    </button>
+                    <button onClick={() => router.push("/dashboard")} className="w-full text-center text-xs py-1.5 transition-colors" style={{ color: "var(--muted)" }}>
+                      Go to Dashboard
+                    </button>
+                  </>
+                )}
               </div>
             ) : (
               <div className="space-y-2">

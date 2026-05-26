@@ -25,7 +25,7 @@ export default async function ProjectDetailPage({
 
   const myProfile = await prisma.profile.findUnique({
     where: { userId: session.user.id },
-    select: { id: true },
+    select: { id: true, geniusType: true, _count: { select: { traitLinks: true } } },
   });
 
   const [existingApplication, workflowSession] = await Promise.all([
@@ -62,6 +62,8 @@ export default async function ProjectDetailPage({
         createdAt: project.createdAt.toISOString(),
       }}
       myProfileId={myProfile?.id ?? null}
+      hasGeniusType={!!myProfile?.geniusType}
+      traitsDone={(myProfile?._count?.traitLinks ?? 0) > 0}
       existingApplication={existingApplication}
       activeWorkflowStep={activeWorkflowStep}
     />
