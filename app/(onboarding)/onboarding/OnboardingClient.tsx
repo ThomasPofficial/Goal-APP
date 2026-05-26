@@ -28,9 +28,6 @@ export default function OnboardingClient({ geniusType }: { geniusType: GeniusTyp
   const [freeform, setFreeform] = useState("");
   const [grade, setGrade] = useState<number | null>(null);
   const [schoolName, setSchoolName] = useState("");
-  const [isFirstGen, setIsFirstGen] = useState(false);
-  const [isHomeschooled, setIsHomeschooled] = useState(false);
-  const [isInternational, setIsInternational] = useState(false);
   const [saving, setSaving] = useState(false);
 
   // ─── Step 1: Quiz result reveal ─────────────────────────────────────────
@@ -243,9 +240,6 @@ export default function OnboardingClient({ geniusType }: { geniusType: GeniusTyp
           interests: selectedInterests,
           grade,
           schoolName: schoolName || null,
-          isFirstGen,
-          isHomeschooled,
-          isInternational,
           onboardingComplete: true,
         }),
       });
@@ -268,21 +262,50 @@ export default function OnboardingClient({ geniusType }: { geniusType: GeniusTyp
           <p className="text-xs font-semibold text-gray-500 dark:text-[#9898a8] uppercase tracking-wider mb-2">
             Grade <span className="text-red-500">*</span>
           </p>
-          <div className="flex gap-2">
-            {[9, 10, 11, 12].map((g) => (
-              <button
-                key={g}
-                onClick={() => setGrade(g)}
-                className={cn(
-                  "w-12 h-12 rounded-lg border text-sm font-semibold transition-all",
-                  grade === g
-                    ? cn(info.tailwindBg, info.tailwindText, info.tailwindBorder)
-                    : "border-gray-200 dark:border-[#2a2a33] text-gray-600 dark:text-[#9898a8] hover:border-gray-300 dark:hover:border-[#3a3a44]"
-                )}
-              >
-                {g}
-              </button>
-            ))}
+          <div className="space-y-2">
+            <div className="flex gap-2 items-center">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-[#5a5a6a] w-16 flex-shrink-0">HS</span>
+              <div className="flex gap-2">
+                {[9, 10, 11, 12].map((g) => (
+                  <button
+                    key={g}
+                    onClick={() => setGrade(g)}
+                    className={cn(
+                      "w-12 h-10 rounded-lg border text-sm font-semibold transition-all",
+                      grade === g
+                        ? cn(info.tailwindBg, info.tailwindText, info.tailwindBorder)
+                        : "border-gray-200 dark:border-[#2a2a33] text-gray-600 dark:text-[#9898a8] hover:border-gray-300 dark:hover:border-[#3a3a44]"
+                    )}
+                  >
+                    {g}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="flex gap-2 items-center">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-[#5a5a6a] w-16 flex-shrink-0">College</span>
+              <div className="flex gap-2 flex-wrap">
+                {([
+                  [13, "Fr."],
+                  [14, "So."],
+                  [15, "Jr."],
+                  [16, "Sr."],
+                ] as [number, string][]).map(([g, label]) => (
+                  <button
+                    key={g}
+                    onClick={() => setGrade(g)}
+                    className={cn(
+                      "px-3 h-10 rounded-lg border text-sm font-semibold transition-all",
+                      grade === g
+                        ? cn(info.tailwindBg, info.tailwindText, info.tailwindBorder)
+                        : "border-gray-200 dark:border-[#2a2a33] text-gray-600 dark:text-[#9898a8] hover:border-gray-300 dark:hover:border-[#3a3a44]"
+                    )}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
 
@@ -296,26 +319,6 @@ export default function OnboardingClient({ geniusType }: { geniusType: GeniusTyp
             placeholder="Westlake High School"
             className="mt-1.5 w-full rounded-lg border border-gray-200 dark:border-[#2a2a33] bg-white dark:bg-[#16161a] text-gray-900 dark:text-[#e8e8ec] placeholder-gray-400 dark:placeholder-[#5a5a6a] px-3 py-2 text-sm focus:outline-none focus:border-[#4a80f0] transition-colors"
           />
-        </div>
-
-        <div className="space-y-3">
-          {(
-            [
-              [isFirstGen, setIsFirstGen, "First-generation student"],
-              [isHomeschooled, setIsHomeschooled, "Homeschooled"],
-              [isInternational, setIsInternational, "International student"],
-            ] as [boolean, (v: boolean) => void, string][]
-          ).map(([val, setter, label]) => (
-            <label key={label} className="flex items-center gap-3 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={val}
-                onChange={(e) => setter(e.target.checked)}
-                className="w-4 h-4 rounded accent-[#4a80f0]"
-              />
-              <span className="text-sm text-gray-700 dark:text-[#e8e8ec]">{label}</span>
-            </label>
-          ))}
         </div>
 
         <p className="text-xs text-gray-400 dark:text-[#5a5a6a]">
