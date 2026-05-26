@@ -58,6 +58,8 @@ interface ProjectDetailClientProps {
     org: { id: string; name: string; accentColor: string | null; maxTeamSize: number };
   };
   myProfileId: string | null;
+  hasGeniusType: boolean;
+  traitsDone: boolean;
   existingApplication: { id: string; status: string; teamId: string } | null;
   activeWorkflowStep: number | null;
 }
@@ -65,6 +67,8 @@ interface ProjectDetailClientProps {
 export default function ProjectDetailClient({
   project,
   myProfileId,
+  hasGeniusType,
+  traitsDone,
   existingApplication,
   activeWorkflowStep,
 }: ProjectDetailClientProps) {
@@ -250,27 +254,46 @@ export default function ProjectDetailClient({
         {/* Workflow CTA */}
         {myProfileId && !workflowStep && project.status === "OPEN" && !applied && (
           <div className="mt-4 pt-4" style={{ borderTop: "1px solid var(--border)" }}>
-            <button
-              onClick={startWorkflow}
-              disabled={startingWorkflow}
-              className="px-4 py-2 rounded-lg text-sm font-semibold transition-all"
-              style={{
-                background: "linear-gradient(135deg, #0a3ea0, #1060d8)",
-                color: "#fff",
-                boxShadow: "0 4px 16px rgba(16,96,216,0.4)",
-                opacity: startingWorkflow ? 0.7 : 1,
-              }}
-            >
-              {startingWorkflow ? "Starting…" : "Pursue this project →"}
-            </button>
-            {workflowError ? (
-              <p className="text-xs mt-1.5 font-medium" style={{ color: "#f87171" }}>
-                {workflowError} — <a href="/dashboard" className="underline">go to dashboard</a> to continue it.
-              </p>
+            {/* Profile incomplete — show setup checklist instead of pursue button */}
+            {(!hasGeniusType || !traitsDone) ? (
+              <div className="space-y-3">
+                <p className="text-xs font-semibold uppercase tracking-[0.12em]" style={{ color: "var(--muted)", fontFamily: "var(--font-mono)" }}>
+                  Complete your profile to pursue this project
+                </p>
+                <div className="space-y-1.5">
+                  <div className="flex items-center gap-2 text-sm">
+                    <span style={{ color: hasGeniusType ? "#4ADE80" : "var(--muted)" }}>{hasGeniusType ? "✓" : "○"}</span>
+                    <span style={{ color: hasGeniusType ? "var(--text2)" : "var(--text)" }}>Genius Type quiz</span>
+                    {!hasGeniusType && <a href="/quiz" className="text-xs ml-auto font-semibold" style={{ color: "var(--blue)" }}>Take quiz →</a>}
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <span style={{ color: traitsDone ? "#4ADE80" : "var(--muted)" }}>{traitsDone ? "✓" : "○"}</span>
+                    <span style={{ color: traitsDone ? "var(--text2)" : "var(--text)" }}>Traits quiz</span>
+                    {hasGeniusType && !traitsDone && <a href="/quiz?tab=traits" className="text-xs ml-auto font-semibold" style={{ color: "var(--blue)" }}>Add traits →</a>}
+                  </div>
+                </div>
+                <p className="text-xs" style={{ color: "var(--muted)" }}>Orgs and teammates use these to understand who you are.</p>
+              </div>
             ) : (
-              <p className="text-xs mt-1.5" style={{ color: "#5a7898" }}>
-                Starts your team-building workflow for this project
-              </p>
+              <>
+                <button
+                  onClick={startWorkflow}
+                  disabled={startingWorkflow}
+                  className="btn-primary px-5 py-2 text-sm font-semibold"
+                  style={{ opacity: startingWorkflow ? 0.7 : 1 }}
+                >
+                  {startingWorkflow ? "Starting…" : "Pursue this project →"}
+                </button>
+                {workflowError ? (
+                  <p className="text-xs mt-1.5 font-medium" style={{ color: "#f87171" }}>
+                    {workflowError} — <a href="/dashboard" className="underline">go to dashboard</a> to continue it.
+                  </p>
+                ) : (
+                  <p className="text-xs mt-1.5" style={{ color: "var(--muted)" }}>
+                    Starts your team-building workflow for this project
+                  </p>
+                )}
+              </>
             )}
           </div>
         )}

@@ -22,6 +22,7 @@ export default async function QuizPage(props: {
     ? await prisma.profile.findUnique({
         where: { userId },
         select: {
+          id: true,
           geniusType: true,
           strengthSummary: true,
           traitLinks: {
@@ -32,8 +33,16 @@ export default async function QuizPage(props: {
       })
     : null;
 
+  const workflowSession = profile?.id
+    ? await prisma.workflowSession.findUnique({
+        where: { profileId: profile.id },
+        select: { step: true },
+      })
+    : null;
+
   const geniusDone = !!profile?.geniusType;
   const traitsDone = (profile?.traitLinks?.length ?? 0) > 0;
+  const hasActiveWorkflow = !!workflowSession;
   const existingTraits = profile?.traitLinks?.map((l) => ({
     id: l.trait.id,
     slug: l.trait.slug,
@@ -142,6 +151,7 @@ export default async function QuizPage(props: {
           alreadyCompleted={traitsDone}
           existingTraits={existingTraits}
           existingSummary={profile?.strengthSummary ?? null}
+          hasActiveWorkflow={hasActiveWorkflow}
         />
       )}
     </div>
