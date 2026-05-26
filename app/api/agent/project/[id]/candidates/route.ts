@@ -1,7 +1,101 @@
 import { prisma } from "@/lib/prisma";
 import { requireAgentAuth } from "@/lib/agent-auth";
 import { NextResponse } from "next/server";
+import type { GeniusType } from "@prisma/client";
 
+// ---------------------------------------------------------------------------
+// Scoring helper
+// ---------------------------------------------------------------------------
+type ScholarRaw = {
+  id: string;
+  displayName: string | null;
+  handle: string | null;
+  headline: string | null;
+  bio: string | null;
+  strengthSummary: string | null;
+  avatarUrl: string | null;
+  geniusType: GeniusType | null;
+  secondaryGeniusType: GeniusType | null;
+  grade: number | null;
+  schoolName: string | null;
+  interests: string | null;
+  traitLinks: {
+    trait: { slug: string; name: string; category: string };
+    order: number;
+  }[];
+  orgReviews: {
+    id: string;
+    body: string | null;
+    createdAt: Date;
+    org: { name: string };
+    orgProject: { title: string } | null;
+  }[];
+};
+
+function scoreCandidate(
+  scholar: ScholarRaw,
+  preferredTypes: string[],
+  requiredSkills: string[]
+): { score: number; matchReasons: string[] } {
+  let score = 0;
+  const matchReasons: string[] = [];
+
+  // ── Review track record ──────────────────────────────────────────────────
+  const reviewCount = scholar.orgReviews.length;
+  if (reviewCount > 0) {
+    const reviewScore = Math.min(40 + (reviewCount - 1) * 5, 60);
+    score += reviewScore;
+    matchReasons.push(
+      `${reviewCount} org review${reviewCount > 1 ? "s" : ""} from previous work`
+    );
+  }
+
+  // ── Preferred genius type match ───────────────────────────────────────────
+  if (preferredTypes.length > 0 && scholar.geniusType && preferredTypes.includes(scholar.geniusType)) {
+    score += 15;
+    matchReasons.push(
+      `Primary type ${scholar.geniusType} matches project preference`
+    );
+  }
+
+  // ── Required skills match ────────────────────────────────────────────────
+  if (requiredSkills.length > 0) {
+    const searchableText = [
+      scholar.bio ?? "",
+      scholar.headline ?? "",
+      scholar.interests ?? "",
+    ]
+      .join(" ")
+      .toLowerCase();
+
+    const matchedSkills: string[] = [];
+    for (const skill of requiredSkills) {
+      if (searchableText.includes(skill.toLowerCase())) {
+        matchedSkills.push(skill);
+      }
+    }
+
+    const skillScore = Math.min(matchedSkills.length * 5, 20);
+    if (skillScore > 0) {
+      score += skillScore;
+      matchReasons.push(
+        `Matches required skills: ${matchedSkills.join(", ")}`
+      );
+    }
+  }
+
+  // ── Profile completeness ──────────────────────────────────────────────────
+  if (scholar.strengthSummary) {
+    score += 5;
+    matchReasons.push("Complete profile with strength summary");
+  }
+
+  return { score: Math.min(score, 100), matchReasons };
+}
+
+// ---------------------------------------------------------------------------
+// Route handler
+// ---------------------------------------------------------------------------
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const auth = await requireAgentAuth(req);
   if (!auth.ok) return auth.response;
@@ -31,6 +125,9 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 
   let preferredTypes: string[] = [];
   try { preferredTypes = JSON.parse(project.preferredGeniusTypes ?? "[]"); } catch { preferredTypes = []; }
+
+  let requiredSkills: string[] = [];
+  try { requiredSkills = JSON.parse(project.requiredSkills ?? "[]"); } catch { requiredSkills = []; }
 
   const candidates = await prisma.profile.findMany({
     where: { onboardingComplete: true },
@@ -67,18 +164,34 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     },
   });
 
-  const sorted = preferredTypes.length > 0
-    ? [
-        ...candidates.filter((c) => c.geniusType && preferredTypes.includes(c.geniusType)),
-        ...candidates.filter((c) => !c.geniusType || !preferredTypes.includes(c.geniusType)),
-      ]
-    : candidates;
+  // Score and annotate each candidate
+  const scored = candidates.map((candidate) => {
+    const { score, matchReasons } = scoreCandidate(candidate, preferredTypes, requiredSkills);
+    return { ...candidate, score, matchReasons };
+  });
+
+  // Sort by score descending; ties broken by review count
+  scored.sort((a, b) => {
+    if (b.score !== a.score) return b.score - a.score;
+    return b.orgReviews.length - a.orgReviews.length;
+  });
 
   const resetAt = new Date();
   resetAt.setUTCHours(24, 0, 0, 0);
 
+  const projectContext = {
+    title: project.title,
+    preferredTypes,
+    requiredSkills,
+  };
+
   return NextResponse.json(
-    { candidates: sorted, quota: { dailyCap, resetsAt: resetAt.toISOString() }, exhausted: false },
+    {
+      candidates: scored,
+      quota: { dailyCap, resetsAt: resetAt.toISOString() },
+      exhausted: false,
+      projectContext,
+    },
     { headers: { "X-RateLimit-Remaining": String(auth.callsRemaining) } }
   );
 }
