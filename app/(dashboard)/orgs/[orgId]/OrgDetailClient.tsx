@@ -39,6 +39,9 @@ interface OrgDetail {
   focusTags: string;
   memberCount: number | null;
   headquartersLocation: string | null;
+  whatInternsBuild: string | null;
+  contactEmail: string | null;
+  isPaid: boolean;
   teams: {
     id: string;
     name: string;
@@ -63,6 +66,9 @@ interface OrgProjectSummary {
   duration: string | null;
   deadline: string | null;
   status: string;
+  closedAt: string | null;
+  outcomeNote: string | null;
+  applicationCount: number;
 }
 
 interface AdminApplication {
@@ -86,16 +92,123 @@ const CATEGORY_COLORS: Record<string, string> = {
   COMPETITION: "#F97316", BOOTCAMP: "#8B5CF6", RESEARCH: "#06B6D4", CLUB: "#10B981",
 };
 
+function GenerateKeyButton({ orgId, onGenerated }: { orgId: string; onGenerated: (key: string) => void }) {
+  const [loading, setLoading] = useState(false);
+  const generate = async () => {
+    setLoading(true);
+    const res = await fetch(`/api/orgs/${orgId}/generate-api-key`, { method: "POST" });
+    const data = await res.json();
+    if (res.ok) onGenerated(data.apiKey);
+    setLoading(false);
+  };
+  return (
+    <button
+      onClick={generate}
+      disabled={loading}
+      className="text-xs px-3 py-1.5 rounded-lg"
+      style={{ background: "rgba(74,128,240,0.15)", color: "var(--blue)", border: "1px solid rgba(74,128,240,0.3)" }}
+    >
+      {loading ? "Generating…" : "Generate API Key"}
+    </button>
+  );
+}
+
+function CloseProjectModal({
+  project,
+  orgId,
+  onClose,
+  onClosed,
+}: {
+  project: OrgProjectSummary;
+  orgId: string;
+  onClose: () => void;
+  onClosed: (projectId: string, outcomeNote: string) => void;
+}) {
+  const [outcomeNote, setOutcomeNote] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleClose = async () => {
+    setLoading(true);
+    const res = await fetch(`/api/org-projects/${project.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: "CLOSED", outcomeNote }),
+    });
+    if (res.ok) {
+      onClosed(project.id, outcomeNote);
+    }
+    setLoading(false);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.7)" }}>
+      <div className="rounded-2xl p-6 w-full max-w-md" style={{ background: "var(--bg)", border: "1px solid var(--border-md)" }}>
+        <h2 className="text-base font-semibold mb-1" style={{ color: "var(--text)", fontFamily: "var(--font-serif)" }}>
+          Close project
+        </h2>
+        <p className="text-sm mb-4" style={{ color: "var(--text2)" }}>{project.title}</p>
+        <label className="block mb-1">
+          <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)", fontFamily: "var(--font-mono)" }}>
+            What did this team build? (optional)
+          </span>
+        </label>
+        <textarea
+          value={outcomeNote}
+          onChange={(e) => setOutcomeNote(e.target.value)}
+          rows={3}
+          className="w-full rounded-lg px-3 py-2 text-sm mb-4 resize-none"
+          style={{ background: "var(--surface)", border: "1px solid var(--border-md)", color: "var(--text)", outline: "none" }}
+          placeholder="Briefly describe the outcome…"
+        />
+        <div className="flex gap-2 justify-end">
+          <button
+            onClick={onClose}
+            className="text-sm px-4 py-2 rounded-lg"
+            style={{ background: "var(--surface)", color: "var(--text2)", border: "1px solid var(--border-md)" }}
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleClose}
+            disabled={loading}
+            className="text-sm px-4 py-2 rounded-lg font-semibold"
+            style={{ background: "rgba(248,113,113,0.12)", color: "#f87171", border: "1px solid rgba(248,113,113,0.3)" }}
+          >
+            {loading ? "Closing…" : "Close Project"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function OrgDetailClient({
   org, projects, myProfileId, myTeamId, isAdmin, applications,
+  adminStats, apiKey, reviewCount, whatInternsBuild,
 }: {
-  org: OrgDetail; projects: OrgProjectSummary[]; myProfileId: string | null; myTeamId: string | null;
-  isAdmin: boolean; applications: AdminApplication[];
+  org: OrgDetail;
+  projects: OrgProjectSummary[];
+  myProfileId: string | null;
+  myTeamId: string | null;
+  isAdmin: boolean;
+  applications: AdminApplication[];
+  adminStats: { activeProjects: number; totalApps: number; pendingCount: number; acceptedCount: number } | null;
+  apiKey: string | null;
+  reviewCount: number;
+  whatInternsBuild: string | null;
 }) {
   const [saved, setSaved] = useState(false);
-  const [adminTab, setAdminTab] = useState<"overview" | "applications">("overview");
+  const [adminTab, setAdminTab] = useState<"overview" | "projects" | "applications" | "settings">("overview");
   const [appStatuses, setAppStatuses] = useState<Record<string, string>>(
     () => Object.fromEntries(applications.map((a) => [a.id, a.status]))
+  );
+  const [closingProject, setClosingProject] = useState<string | null>(null);
+  const [apiKeyState, setApiKeyState] = useState<string | null>(apiKey);
+  const [projectStatuses, setProjectStatuses] = useState<Record<string, string>>(
+    () => Object.fromEntries(projects.map((p) => [p.id, p.status]))
+  );
+  const [projectOutcomeNotes, setProjectOutcomeNotes] = useState<Record<string, string>>(
+    () => Object.fromEntries(projects.map((p) => [p.id, p.outcomeNote ?? ""]))
   );
 
   const accentColor = org.accentColor ?? CATEGORY_COLORS[org.category] ?? "#1060d8";
@@ -108,6 +221,16 @@ export default function OrgDetailClient({
     : org.bannerGradient
     ? org.bannerGradient
     : `linear-gradient(135deg, ${accentColor}30 0%, #030609 100%)`;
+
+  // Projects with locally-updated statuses
+  const projectsWithStatus = projects.map((p) => ({
+    ...p,
+    status: projectStatuses[p.id] ?? p.status,
+    outcomeNote: projectOutcomeNotes[p.id] ?? p.outcomeNote,
+  }));
+
+  const openProjects = projectsWithStatus.filter((p) => p.status === "OPEN");
+  const closedProjects = projectsWithStatus.filter((p) => p.closedAt || p.status === "CLOSED");
 
   return (
     <div>
@@ -157,7 +280,7 @@ export default function OrgDetailClient({
       {/* Admin tab switcher */}
       {isAdmin && (
         <div className="flex gap-1 mb-5 border-b" style={{ borderColor: "var(--border)" }}>
-          {(["overview", "applications"] as const).map((t) => (
+          {(["overview", "projects", "applications", "settings"] as const).map((t) => (
             <button
               key={t}
               onClick={() => setAdminTab(t)}
@@ -167,7 +290,9 @@ export default function OrgDetailClient({
                 color: adminTab === t ? "var(--text)" : "var(--text2)",
               }}
             >
-              {t === "applications" ? `Applications${applications.length ? ` (${applications.length})` : ""}` : "Overview"}
+              {t === "applications"
+                ? `Applications${applications.length ? ` (${applications.length})` : ""}`
+                : t.charAt(0).toUpperCase() + t.slice(1)}
             </button>
           ))}
         </div>
@@ -182,9 +307,138 @@ export default function OrgDetailClient({
         />
       )}
 
-      <div className={cn("flex gap-6", isAdmin && adminTab === "applications" && "hidden")}>
+      {/* Admin: projects tab */}
+      {isAdmin && adminTab === "projects" && (
+        <div className="space-y-3 mb-6">
+          {projectsWithStatus.map((proj) => (
+            <div
+              key={proj.id}
+              className="rounded-xl p-4 flex items-center justify-between gap-4"
+              style={{ background: "var(--surface)", border: "1px solid var(--border-md)" }}
+            >
+              <div className="flex-1 min-w-0">
+                <Link
+                  href={`/orgs/${org.id}/projects/${proj.id}`}
+                  className="font-medium text-sm hover:underline"
+                  style={{ color: "var(--text)" }}
+                >
+                  {proj.title}
+                </Link>
+                <p className="text-xs mt-0.5" style={{ color: "var(--muted)" }}>
+                  {proj.applicationCount} application{proj.applicationCount !== 1 ? "s" : ""} · {proj.openSpots} open spot{proj.openSpots !== 1 ? "s" : ""}
+                </p>
+              </div>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <span
+                  className={`text-[11px] px-2 py-0.5 rounded-full font-semibold ${
+                    proj.status === "OPEN" ? "bg-green-950 text-green-400" : "bg-[#1e1e24] text-[#9898a8]"
+                  }`}
+                >
+                  {proj.status}
+                </span>
+                {proj.status === "OPEN" && (
+                  <button
+                    onClick={() => setClosingProject(proj.id)}
+                    className="text-xs px-3 py-1.5 rounded-lg"
+                    style={{ background: "rgba(248,113,113,0.08)", color: "#f87171", border: "1px solid rgba(248,113,113,0.2)" }}
+                  >
+                    Close
+                  </button>
+                )}
+              </div>
+            </div>
+          ))}
+          {projects.length === 0 && (
+            <div className="py-12 text-center" style={{ color: "var(--muted)" }}>No projects yet.</div>
+          )}
+        </div>
+      )}
+
+      {/* Admin: settings tab */}
+      {isAdmin && adminTab === "settings" && (
+        <div
+          className="rounded-xl p-5 space-y-4 mb-6"
+          style={{ background: "var(--surface)", border: "1px solid var(--border-md)" }}
+        >
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: "var(--muted)", fontFamily: "var(--font-mono)" }}>Org Name</p>
+            <p className="text-sm" style={{ color: "var(--text)" }}>{org.name}</p>
+          </div>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: "var(--muted)", fontFamily: "var(--font-mono)" }}>Description</p>
+            <p className="text-sm" style={{ color: "var(--text2)" }}>{org.description || "—"}</p>
+          </div>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: "var(--muted)", fontFamily: "var(--font-mono)" }}>Contact Email</p>
+            <p className="text-sm" style={{ color: "var(--text2)" }}>{org.contactEmail || "—"}</p>
+          </div>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: "var(--muted)", fontFamily: "var(--font-mono)" }}>What Interns Build</p>
+            <p className="text-sm" style={{ color: "var(--text2)" }}>{org.whatInternsBuild || "—"}</p>
+          </div>
+        </div>
+      )}
+
+      <div
+        className={cn(
+          "flex gap-6",
+          isAdmin && (adminTab === "applications" || adminTab === "projects" || adminTab === "settings") && "hidden"
+        )}
+      >
         {/* ── Left content ─────────────────────────────────────── */}
         <div className="flex-1 min-w-0 space-y-6">
+
+          {/* Admin overview stats strip */}
+          {isAdmin && adminStats && (
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {[
+                { label: "Active Projects", value: adminStats.activeProjects },
+                { label: "Applications", value: adminStats.totalApps },
+                { label: "Pending Review", value: adminStats.pendingCount },
+                { label: "Teams Accepted", value: adminStats.acceptedCount },
+              ].map(({ label, value }) => (
+                <div
+                  key={label}
+                  className="rounded-xl p-4 text-center"
+                  style={{ background: "var(--surface)", border: "1px solid var(--border-md)" }}
+                >
+                  <p className="text-2xl font-bold" style={{ color: "var(--text)", fontFamily: "var(--font-serif)" }}>{value}</p>
+                  <p className="text-[11px] mt-0.5" style={{ color: "var(--muted)", fontFamily: "var(--font-mono)" }}>{label}</p>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Admin: API key widget */}
+          {isAdmin && (
+            <div className="rounded-xl p-4" style={{ background: "var(--surface)", border: "1px solid var(--border-md)" }}>
+              <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: "var(--muted)", fontFamily: "var(--font-mono)" }}>API Key</p>
+              {apiKeyState ? (
+                <div className="flex items-center gap-2">
+                  <code
+                    className="flex-1 text-sm px-3 py-1.5 rounded-lg"
+                    style={{ background: "var(--n-bg2)", color: "var(--text2)", fontFamily: "var(--font-mono)", border: "1px solid var(--border)" }}
+                  >
+                    nv_sk_{"•".repeat(24)}
+                  </code>
+                  <button
+                    onClick={() => navigator.clipboard.writeText(apiKeyState)}
+                    className="text-xs px-3 py-1.5 rounded-lg"
+                    style={{ background: "rgba(74,128,240,0.15)", color: "var(--blue)", border: "1px solid rgba(74,128,240,0.3)" }}
+                  >
+                    Copy
+                  </button>
+                </div>
+              ) : (
+                <GenerateKeyButton orgId={org.id} onGenerated={(key) => setApiKeyState(key)} />
+              )}
+              <p className="text-xs mt-2" style={{ color: "var(--muted)" }}>
+                Your API key gives AI agents access to student profiles and private org reviews.{" "}
+                <a href="/docs/api" style={{ color: "var(--blue)" }}>View docs →</a>
+              </p>
+            </div>
+          )}
+
           {org.socialProof && (
             <div
               className="rounded-lg px-4 py-3 text-sm italic"
@@ -204,6 +458,14 @@ export default function OrgDetailClient({
             <div>
               <h2 className="text-sm font-semibold mb-2" style={{ color: "var(--text)" }}>About</h2>
               <p className="text-sm leading-relaxed" style={{ color: "var(--text2)" }}>{org.description}</p>
+            </div>
+          )}
+
+          {/* What students work on (public) */}
+          {(whatInternsBuild ?? org.whatInternsBuild) && (
+            <div>
+              <h2 className="text-sm font-semibold mb-2" style={{ color: "var(--text)" }}>What students work on</h2>
+              <p className="text-sm leading-relaxed" style={{ color: "var(--text2)" }}>{whatInternsBuild ?? org.whatInternsBuild}</p>
             </div>
           )}
 
@@ -254,11 +516,23 @@ export default function OrgDetailClient({
             )}
           </div>
 
-          {projects.length > 0 && (
+          {/* Trust signals */}
+          {reviewCount > 0 && (
+            <div className="flex gap-4 flex-wrap">
+              <div
+                className="text-xs px-3 py-1.5 rounded-full"
+                style={{ background: "rgba(74,128,240,0.08)", border: "1px solid var(--border-md)", color: "var(--text2)" }}
+              >
+                ✓ {reviewCount} student{reviewCount !== 1 ? "s" : ""} reviewed
+              </div>
+            </div>
+          )}
+
+          {openProjects.length > 0 && (
             <div id="projects">
               <h2 className="text-sm font-semibold mb-3" style={{ color: "var(--text)" }}>Open Projects</h2>
               <div className="space-y-2">
-                {projects.map((proj) => {
+                {openProjects.map((proj) => {
                   const skills: string[] = JSON.parse(proj.requiredSkills || "[]");
                   const preferred: string[] = JSON.parse(proj.preferredGeniusTypes || "[]");
                   return (
@@ -313,6 +587,27 @@ export default function OrgDetailClient({
             </div>
           )}
 
+          {/* Past projects */}
+          {closedProjects.length > 0 && (
+            <div>
+              <h2 className="text-sm font-semibold mb-3" style={{ color: "var(--text)" }}>Past Projects</h2>
+              <div className="space-y-2">
+                {closedProjects.map((proj) => (
+                  <div
+                    key={proj.id}
+                    className="rounded-lg p-3"
+                    style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
+                  >
+                    <p className="font-medium text-sm" style={{ color: "var(--text2)" }}>{proj.title}</p>
+                    {proj.outcomeNote && (
+                      <p className="text-xs mt-1" style={{ color: "var(--muted)" }}>{proj.outcomeNote}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
         </div>
 
         {/* ── Right sidebar ─────────────────────────────────────── */}
@@ -348,7 +643,7 @@ export default function OrgDetailClient({
               >
                 Open workspace <ExternalLink className="w-3.5 h-3.5" />
               </Link>
-            ) : projects.length > 0 ? (
+            ) : openProjects.length > 0 ? (
               <a
                 href="#projects"
                 className="btn-primary w-full py-2.5 text-sm text-center block"
@@ -376,6 +671,20 @@ export default function OrgDetailClient({
           </div>
         </div>
       </div>
+
+      {/* Close project modal */}
+      {closingProject && (
+        <CloseProjectModal
+          project={projectsWithStatus.find((p) => p.id === closingProject)!}
+          orgId={org.id}
+          onClose={() => setClosingProject(null)}
+          onClosed={(projectId, note) => {
+            setProjectStatuses((prev) => ({ ...prev, [projectId]: "CLOSED" }));
+            setProjectOutcomeNotes((prev) => ({ ...prev, [projectId]: note }));
+            setClosingProject(null);
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -511,4 +820,3 @@ function ApplicationCard({
     </div>
   );
 }
-

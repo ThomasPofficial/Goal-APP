@@ -66,7 +66,12 @@ export default function ApplyModal({
     });
   };
 
+  const MIN_WHY_JOIN = 50;
+  const whyJoinTrimmed = whyJoin.trim();
+  const whyJoinValid = whyJoinTrimmed.length >= MIN_WHY_JOIN;
+
   const handleSubmit = async () => {
+    if (!whyJoinValid) return;
     setSubmitting(true);
     setError(null);
     try {
@@ -75,7 +80,7 @@ export default function ApplyModal({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           memberProfileIds: [...selected],
-          whyJoin: whyJoin.trim() || undefined,
+          whyJoin: whyJoinTrimmed,
         }),
       });
       const data = await res.json();
@@ -241,22 +246,34 @@ export default function ApplyModal({
           style={{ borderTop: "1px solid var(--border)" }}
         >
           <div>
-            <label className="text-xs font-medium block mb-1" style={{ color: "var(--text2)" }}>
-              Why do you want to join?{" "}
-              <span style={{ color: "var(--muted)" }}>(optional)</span>
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-xs font-medium" style={{ color: "var(--text2)" }}>
+                Why do you want to join? <span style={{ color: "#f87171" }}>*</span>
+              </label>
+              <span
+                className="text-[11px]"
+                style={{ color: whyJoinValid ? "#4ADE80" : "var(--muted)" }}
+              >
+                {whyJoinTrimmed.length}/{MIN_WHY_JOIN}
+              </span>
+            </div>
             <textarea
               value={whyJoin}
               onChange={(e) => setWhyJoin(e.target.value)}
-              rows={3}
-              placeholder="What makes you a great fit for this project?"
+              rows={4}
+              placeholder="Tell the org what draws you to this project, what you'll bring to the team, and why you'd be a great fit. Be specific."
               className="w-full resize-none text-sm rounded-lg px-3 py-2 focus:outline-none"
               style={{
                 background: "var(--n-bg2)",
-                border: "1px solid var(--border)",
+                border: `1px solid ${whyJoin && !whyJoinValid ? "rgba(248,113,113,0.4)" : "var(--border)"}`,
                 color: "var(--text)",
               }}
             />
+            {whyJoin && !whyJoinValid && (
+              <p className="text-[11px] mt-1" style={{ color: "var(--muted)" }}>
+                {MIN_WHY_JOIN - whyJoinTrimmed.length} more character{MIN_WHY_JOIN - whyJoinTrimmed.length !== 1 ? "s" : ""} needed
+              </p>
+            )}
           </div>
           {error && (
             <p className="text-xs text-red-400">{error}</p>
@@ -271,8 +288,8 @@ export default function ApplyModal({
             </div>
             <button
               onClick={handleSubmit}
-              disabled={submitting}
-              className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-colors disabled:opacity-40"
+              disabled={submitting || !whyJoinValid}
+              className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               style={{ background: "var(--blue)", color: "#05080F" }}
             >
               {submitting ? "Submitting…" : "Apply"}

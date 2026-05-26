@@ -359,6 +359,8 @@ model Org {
   focusTags            String      @default("[]")
   memberCount          Int?
   headquartersLocation String?
+  whatInternsBuild     String?
+  contactEmail         String?
 
   opportunities Opportunity[]
   teams         Team[]
@@ -508,6 +510,8 @@ model OrgProject {
   progressPercent      Int              @default(0)
   deadline             DateTime?
   status               OrgProjectStatus @default(OPEN)
+  closedAt             DateTime?
+  outcomeNote          String?
   createdAt            DateTime         @default(now())
 
   org              Org                  @relation(fields: [orgId], references: [id], onDelete: Cascade)
