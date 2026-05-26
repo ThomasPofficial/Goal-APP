@@ -87,6 +87,7 @@ export default function ProjectDetailClient({
   const [applied, setApplied] = useState<{ id: string; status: string; teamId: string } | null>(existingApplication);
   const [startingWorkflow, setStartingWorkflow] = useState(false);
   const [workflowError, setWorkflowError] = useState<string | null>(null);
+  const [abandoningWorkflow, setAbandoningWorkflow] = useState(false);
   const [workflowStep, setWorkflowStep] = useState<number | null>(activeWorkflowStep);
   const [searchMode, setSearchMode] = useState<"algorithm" | "regular">("algorithm");
 
@@ -154,6 +155,14 @@ export default function ProjectDetailClient({
       setWorkflowError(data.error ?? "You already have an active workflow on another project.");
     }
     setStartingWorkflow(false);
+  };
+
+  const abandonAndStart = async () => {
+    setAbandoningWorkflow(true);
+    await fetch("/api/workflow", { method: "DELETE" });
+    setWorkflowError(null);
+    setAbandoningWorkflow(false);
+    await startWorkflow();
   };
 
   const advanceToTeamStep = async () => {
@@ -285,9 +294,22 @@ export default function ProjectDetailClient({
                   {startingWorkflow ? "Starting…" : "Pursue this project →"}
                 </button>
                 {workflowError ? (
-                  <p className="text-xs mt-1.5 font-medium" style={{ color: "#f87171" }}>
-                    {workflowError} — <a href="/dashboard" className="underline">go to dashboard</a> to continue it.
-                  </p>
+                  <div className="mt-2 space-y-1.5">
+                    <p className="text-xs font-medium" style={{ color: "#f87171" }}>
+                      You already have an active workflow on another project.
+                    </p>
+                    <button
+                      onClick={abandonAndStart}
+                      disabled={abandoningWorkflow}
+                      className="text-xs font-semibold underline transition-colors disabled:opacity-50"
+                      style={{ color: "var(--blue)" }}
+                    >
+                      {abandoningWorkflow ? "Switching…" : "Switch to this project instead →"}
+                    </button>
+                    <p className="text-[11px]" style={{ color: "var(--muted)" }}>
+                      This will abandon the other workflow.
+                    </p>
+                  </div>
                 ) : (
                   <p className="text-xs mt-1.5" style={{ color: "var(--muted)" }}>
                     Starts your team-building workflow for this project
