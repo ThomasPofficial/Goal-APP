@@ -182,14 +182,14 @@ export default function QuizClient({ alreadyCompleted, existingType }: Props) {
             <button
               key={i}
               onClick={() => handleSelect(option.type)}
-              className={`w-full text-left px-4 py-3.5 rounded-lg border text-sm leading-relaxed transition-all ${
+              className={`w-full text-left px-4 py-3.5 rounded-lg border text-sm leading-relaxed transition-all flex items-center gap-3 ${
                 selected === option.type
                   ? "border-[#4a80f0] bg-[#4a80f010] text-[#eaeaea]"
                   : "border-[#1c1c20] text-[#909098] hover:border-[#28282e] hover:text-[#eaeaea] hover:bg-[#131315]"
               }`}
             >
               <span
-                className={`inline-flex items-center justify-center w-5 h-5 rounded-full border text-xs mr-3 flex-shrink-0 align-middle ${
+                className={`inline-flex items-center justify-center w-5 h-5 rounded-full border text-xs flex-shrink-0 ${
                   selected === option.type
                     ? "border-[#4a80f0] bg-[#4a80f0] text-[#080809]"
                     : "border-[#28282e]"
@@ -197,7 +197,7 @@ export default function QuizClient({ alreadyCompleted, existingType }: Props) {
               >
                 {selected === option.type ? "✓" : String.fromCharCode(65 + i)}
               </span>
-              {option.text}
+              <span>{option.text}</span>
             </button>
           ))}
         </div>
