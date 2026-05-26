@@ -101,7 +101,7 @@ export default function WorkflowBar() {
                   color: isActive ? "var(--blue)" : isDone ? "var(--blue)" : "var(--muted)",
                 }}
               >
-                {isDone ? "✓" : stepNum}{isActive ? <span className="hidden sm:inline ml-1">{s.label}</span> : null}
+                {isDone ? "✓" : stepNum}{isActive ? <span className="hidden sm:inline ml-1">{stepNum === 3 ? (!hasGeniusType ? "Take Quiz" : !traitsDone ? "Add Traits" : s.label) : s.label}</span> : null}
               </div>
               {i < STEPS.length - 1 && (
                 <ChevronRight className="w-3 h-3 flex-shrink-0" style={{ color: "var(--border-md)" }} />
