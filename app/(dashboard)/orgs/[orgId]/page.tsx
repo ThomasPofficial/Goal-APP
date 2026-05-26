@@ -12,7 +12,6 @@ export default async function OrgDetailPage({ params }: { params: Promise<{ orgI
     prisma.org.findUnique({
       where: { id: orgId },
       include: {
-        opportunities: { orderBy: { createdAt: "desc" } },
         teams: {
           include: {
             members: {
@@ -85,10 +84,6 @@ export default async function OrgDetailPage({ params }: { params: Promise<{ orgI
       org={{
         ...org,
         deadline: org.deadline?.toISOString() ?? null,
-        opportunities: org.opportunities.map((o) => ({
-          ...o,
-          deadline: o.deadline?.toISOString() ?? null,
-        })),
         teams: org.teams.map((t) => ({
           ...t,
           members: t.members.map((m) => ({
