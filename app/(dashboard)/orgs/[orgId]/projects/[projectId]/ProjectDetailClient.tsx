@@ -82,6 +82,7 @@ export default function ProjectDetailClient({
   const [showApplyModal, setShowApplyModal] = useState(false);
   const [applied, setApplied] = useState<{ id: string; status: string; teamId: string } | null>(existingApplication);
   const [startingWorkflow, setStartingWorkflow] = useState(false);
+  const [workflowError, setWorkflowError] = useState<string | null>(null);
   const [workflowStep, setWorkflowStep] = useState<number | null>(activeWorkflowStep);
   const [searchMode, setSearchMode] = useState<"algorithm" | "regular">("algorithm");
 
@@ -146,7 +147,7 @@ export default function ProjectDetailClient({
       });
       setWorkflowStep(2);
     } else if (res.status === 409) {
-      alert(data.error ?? "You already have an active workflow on another project.");
+      setWorkflowError(data.error ?? "You already have an active workflow on another project.");
     }
     setStartingWorkflow(false);
   };
@@ -262,9 +263,15 @@ export default function ProjectDetailClient({
             >
               {startingWorkflow ? "Starting…" : "Pursue this project →"}
             </button>
-            <p className="text-xs mt-1.5" style={{ color: "#5a7898" }}>
-              Starts your team-building workflow for this project
-            </p>
+            {workflowError ? (
+              <p className="text-xs mt-1.5 font-medium" style={{ color: "#f87171" }}>
+                {workflowError} — <a href="/dashboard" className="underline">go to dashboard</a> to continue it.
+              </p>
+            ) : (
+              <p className="text-xs mt-1.5" style={{ color: "#5a7898" }}>
+                Starts your team-building workflow for this project
+              </p>
+            )}
           </div>
         )}
         {workflowStep === 2 && (

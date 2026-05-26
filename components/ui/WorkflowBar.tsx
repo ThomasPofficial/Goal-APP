@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { X, ChevronRight, Loader2 } from "lucide-react";
 
@@ -30,7 +30,7 @@ export default function WorkflowBar() {
   const [loading, setLoading] = useState(true);
   const [abandoning, setAbandoning] = useState(false);
 
-  useEffect(() => {
+  const fetchWorkflow = useCallback(() => {
     fetch("/api/workflow")
       .then((r) => r.json())
       .then((d) => {
@@ -41,6 +41,13 @@ export default function WorkflowBar() {
       })
       .catch(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    fetchWorkflow();
+    const onVisible = () => { if (document.visibilityState === "visible") fetchWorkflow(); };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => document.removeEventListener("visibilitychange", onVisible);
+  }, [fetchWorkflow]);
 
   const abandon = async () => {
     if (!confirm("Abandon this workflow? Your progress on this project won't be saved.")) return;
