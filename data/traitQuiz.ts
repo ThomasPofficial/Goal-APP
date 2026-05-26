@@ -25,23 +25,22 @@ export const TRAIT_QUIZ_QUESTIONS: TraitQuizQuestion[] = [
   {
     id: 1,
     cluster: "Thinking Style",
-    question:
-      "When you're facing a complex problem at work, your instinct is to...",
+    question: "When you hit a problem you genuinely don't know how to solve, you usually...",
     options: [
       {
-        text: "Break it down step by step and trace it to the root cause",
+        text: "Break it into smaller parts and work through each one",
         weights: { analytical: 2, systematic: 1, "critical-thinker": 1 },
       },
       {
-        text: "Generate as many possible solutions as you can first",
+        text: "Throw out a bunch of ideas and see what sticks",
         weights: { creative: 2, innovative: 1, "problem-solver": 1 },
       },
       {
-        text: "Look at the real constraints and find what will actually work",
+        text: "Look at what's actually doable given your time and resources",
         weights: { pragmatic: 2, "problem-solver": 1, organized: 1 },
       },
       {
-        text: "Research what has worked and failed in similar situations",
+        text: "Search for how other people have handled something like this",
         weights: { strategic: 2, curious: 1, analytical: 1 },
       },
     ],
@@ -49,14 +48,14 @@ export const TRAIT_QUIZ_QUESTIONS: TraitQuizQuestion[] = [
   {
     id: 2,
     cluster: "Thinking Style",
-    question: "When you need to learn something new quickly, you typically...",
+    question: "When you have to figure out something you've never done before, you usually...",
     options: [
       {
-        text: "Jump in and figure it out as you go — learning by doing works best",
+        text: "Just start doing it and figure it out as you go",
         weights: { experimenter: 2, adaptable: 1, "fast-learner": 1 },
       },
       {
-        text: "Build a mental model or framework before diving into details",
+        text: "Look for a framework or mental model to organize your understanding first",
         weights: {
           "conceptual-thinker": 2,
           analytical: 1,
@@ -64,11 +63,11 @@ export const TRAIT_QUIZ_QUESTIONS: TraitQuizQuestion[] = [
         },
       },
       {
-        text: "Ask questions relentlessly until you understand the fundamentals",
+        text: "Ask a lot of questions until you actually understand what's going on",
         weights: { curious: 2, "critical-thinker": 1, analytical: 1 },
       },
       {
-        text: "Find the fastest path to working knowledge — theory can wait",
+        text: "Find the fastest path to knowing enough to function — you can fill in gaps later",
         weights: { "fast-learner": 2, pragmatic: 1, disciplined: 1 },
       },
     ],
@@ -76,15 +75,14 @@ export const TRAIT_QUIZ_QUESTIONS: TraitQuizQuestion[] = [
   {
     id: 3,
     cluster: "Thinking Style",
-    question:
-      "When you have to make an important decision without all the information...",
+    question: "When you have to make a call but you don't have all the information...",
     options: [
       {
-        text: "You research and gather as much data as possible before committing",
+        text: "You gather more before deciding — you want to feel confident in it",
         weights: { analytical: 2, "detail-oriented": 1, disciplined: 1 },
       },
       {
-        text: "You set a confidence threshold and commit once you hit it",
+        text: "You pick a point where you have enough and commit",
         weights: {
           "calculated-risk-taker": 2,
           decisive: 1,
@@ -92,11 +90,11 @@ export const TRAIT_QUIZ_QUESTIONS: TraitQuizQuestion[] = [
         },
       },
       {
-        text: "You act fast and iterate — being wrong quickly beats waiting forever",
+        text: "You just decide and adjust if you're wrong — waiting too long is its own mistake",
         weights: { "risk-taker": 2, "self-starter": 1, experimenter: 1 },
       },
       {
-        text: "You trust your pattern recognition and read of the situation",
+        text: "You go with your gut and your read of the situation",
         weights: { pragmatic: 2, adaptable: 1, objective: 1 },
       },
     ],
@@ -107,18 +105,18 @@ export const TRAIT_QUIZ_QUESTIONS: TraitQuizQuestion[] = [
   {
     id: 4,
     cluster: "Work Style",
-    question: "In a group project, the role you naturally fall into is...",
+    question: "In a group project you actually care about, you usually end up...",
     options: [
       {
-        text: "Keeping track of what's been decided, who owns what, and what's next",
+        text: "Keeping everyone organized — who's doing what and by when",
         weights: { organized: 2, reliable: 1, systematic: 1 },
       },
       {
-        text: "Pushing the work forward and keeping momentum going",
+        text: "Being the one who actually pushes the work forward when people stall",
         weights: { "self-starter": 2, hardworking: 1, ambitious: 1 },
       },
       {
-        text: "Reviewing quality and catching what doesn't meet the bar",
+        text: "Checking the work and catching things that aren't good enough",
         weights: {
           "detail-oriented": 2,
           "critical-thinker": 1,
@@ -126,7 +124,7 @@ export const TRAIT_QUIZ_QUESTIONS: TraitQuizQuestion[] = [
         },
       },
       {
-        text: "Connecting the dots between people and making the team work smoothly",
+        text: "Making sure the team actually functions — not just five people doing separate tasks",
         weights: { cooperative: 2, connector: 1, supportive: 1 },
       },
     ],
@@ -134,22 +132,22 @@ export const TRAIT_QUIZ_QUESTIONS: TraitQuizQuestion[] = [
   {
     id: 5,
     cluster: "Work Style",
-    question: "Your relationship with deadlines is best described as...",
+    question: "When a deadline is coming up, if you're being honest...",
     options: [
       {
-        text: "You build buffer and deliver before the deadline — being late is uncomfortable",
+        text: "You usually finish before it — being late genuinely stresses you out",
         weights: { disciplined: 2, punctual: 1, reliable: 1 },
       },
       {
-        text: "You work best under pressure — deadlines sharpen your focus",
+        text: "You mostly do the real work the night before — pressure is when you actually focus",
         weights: { resilient: 2, competitive: 1, hardworking: 1 },
       },
       {
-        text: "You set internal deadlines earlier than the external ones as a buffer",
+        text: "You start early enough to have a buffer if things go wrong",
         weights: { systematic: 2, disciplined: 1, reliable: 1 },
       },
       {
-        text: "You flag issues early rather than scramble — transparency beats heroics",
+        text: "If you're going to be late, you say something — you don't just go quiet on people",
         weights: { responsible: 2, communicative: 1, accountable: 1 },
       },
     ],
@@ -157,22 +155,22 @@ export const TRAIT_QUIZ_QUESTIONS: TraitQuizQuestion[] = [
   {
     id: 6,
     cluster: "Work Style",
-    question: "The environment where you do your best work has...",
+    question: "You actually do your best work when...",
     options: [
       {
-        text: "Clear structure, defined ownership, and reliable processes",
+        text: "There's clear structure — you know what's expected and who owns what",
         weights: { systematic: 2, organized: 1, disciplined: 1 },
       },
       {
-        text: "Creative freedom, space to explore, and room to try new things",
+        text: "You have room to explore and try things without a script",
         weights: { creative: 2, experimenter: 1, innovative: 1 },
       },
       {
-        text: "High standards, excellent peers, and real stakes",
+        text: "The bar is high and the people around you actually care about quality",
         weights: { ambitious: 2, competitive: 1, hardworking: 1 },
       },
       {
-        text: "Autonomy to work the way I decide, on problems I think matter",
+        text: "Nobody's micromanaging you and you can decide how to approach it",
         weights: { "self-starter": 2, disciplined: 1, "vision-executor": 1 },
       },
     ],
@@ -183,23 +181,22 @@ export const TRAIT_QUIZ_QUESTIONS: TraitQuizQuestion[] = [
   {
     id: 7,
     cluster: "Leadership & Influence",
-    question:
-      "When a group you're part of doesn't have a clear direction, you typically...",
+    question: "When a group you're in is kind of drifting with no real plan, you usually...",
     options: [
       {
-        text: "Step in and make a call — drifting is worse than an imperfect move",
+        text: "Step in and make a call — drifting is more annoying than an imperfect decision",
         weights: { decisive: 2, confident: 1, "self-starter": 1 },
       },
       {
-        text: "Help the group surface its thinking and guide it toward consensus",
+        text: "Try to get people talking and help the group agree on a direction",
         weights: { diplomatic: 2, motivator: 1, empathetic: 1 },
       },
       {
-        text: "Organize what's known and propose a structured process to move forward",
+        text: "Lay out what you know and suggest a way to move forward",
         weights: { organized: 2, communicative: 1, systematic: 1 },
       },
       {
-        text: "Challenge the premise — you try to diagnose the right problem first",
+        text: "Question whether the group is even solving the right problem",
         weights: { "critical-thinker": 2, strategic: 1, analytical: 1 },
       },
     ],
@@ -207,23 +204,22 @@ export const TRAIT_QUIZ_QUESTIONS: TraitQuizQuestion[] = [
   {
     id: 8,
     cluster: "Leadership & Influence",
-    question:
-      "When you want to move people toward an idea or decision, you typically do it...",
+    question: "When you're trying to get people to agree with you or go your direction, you usually...",
     options: [
       {
-        text: "Through the strength of a compelling vision or bold idea",
+        text: "Paint a picture of why it matters — you try to make them feel the vision",
         weights: { visionary: 2, charismatic: 1, persuasive: 1 },
       },
       {
-        text: "Through the trust and credibility you've built over time",
+        text: "Rely on the fact that people trust you — you've put in the work to earn that",
         weights: { trustworthy: 2, empathetic: 1, connector: 1 },
       },
       {
-        text: "Through clear reasoning that's logically hard to argue with",
+        text: "Make the logical case — a strong argument should be enough",
         weights: { analytical: 2, persuasive: 1, objective: 1 },
       },
       {
-        text: "Through results — you do the work and let your track record speak",
+        text: "Show results first — you do the work and let it speak",
         weights: { reliable: 2, hardworking: 1, "vision-executor": 1 },
       },
     ],
@@ -231,22 +227,22 @@ export const TRAIT_QUIZ_QUESTIONS: TraitQuizQuestion[] = [
   {
     id: 9,
     cluster: "Leadership & Influence",
-    question: "When you need to give someone difficult feedback, your default is...",
+    question: "When you have to tell someone something they probably don't want to hear...",
     options: [
       {
-        text: "Direct and specific — clarity is a form of respect",
+        text: "You're direct and specific — being vague is actually unkind",
         weights: { communicative: 2, accountable: 1, trustworthy: 1 },
       },
       {
-        text: "Thoughtful and relationship-aware — the person matters as much as the issue",
+        text: "You're careful about how you say it — the relationship matters too",
         weights: { diplomatic: 2, empathetic: 1, supportive: 1 },
       },
       {
-        text: "Focused on the actionable — what can they do differently right now?",
+        text: "You focus on what they can actually change — not what already happened",
         weights: { pragmatic: 2, "problem-solver": 1, motivator: 1 },
       },
       {
-        text: "Honest, even if it's uncomfortable — they deserve the real truth",
+        text: "You tell them the real truth even if it's uncomfortable — they deserve that",
         weights: { ethical: 2, "critical-thinker": 1, responsible: 1 },
       },
     ],
@@ -257,22 +253,22 @@ export const TRAIT_QUIZ_QUESTIONS: TraitQuizQuestion[] = [
   {
     id: 10,
     cluster: "Collaboration",
-    question: "On a project team, the thing you find yourself caring most about is...",
+    question: "On a team, the thing that actually bothers you most when it's missing is...",
     options: [
       {
-        text: "That everyone is aligned on the goal and knows what they're building",
+        text: "Clarity — nobody's sure what the real goal is or who owns what",
         weights: { communicative: 2, strategic: 1, organized: 1 },
       },
       {
-        text: "That people feel psychologically safe and genuinely respected",
+        text: "Respect — people don't feel safe speaking up or getting things wrong",
         weights: { supportive: 2, empathetic: 1, cooperative: 1 },
       },
       {
-        text: "That the output is genuinely excellent — not just good enough",
+        text: "Quality — the work is mediocre and nobody seems to care",
         weights: { "detail-oriented": 2, disciplined: 1, responsible: 1 },
       },
       {
-        text: "That we're learning from the work, not just executing it",
+        text: "Growth — it's just grinding through tasks, nobody's learning anything",
         weights: { curious: 2, "fast-learner": 1, mentor: 1 },
       },
     ],
@@ -280,14 +276,14 @@ export const TRAIT_QUIZ_QUESTIONS: TraitQuizQuestion[] = [
   {
     id: 11,
     cluster: "Collaboration",
-    question: "When you notice a teammate is struggling with something, you...",
+    question: "When you notice a teammate is clearly stuck or struggling, you...",
     options: [
       {
-        text: "Step in and help directly — even if it's not your responsibility",
+        text: "Jump in and help — you don't wait around to be asked",
         weights: { supportive: 2, cooperative: 1, responsible: 1 },
       },
       {
-        text: "Guide them through it so they can solve it themselves next time",
+        text: "Walk them through it so they can handle it themselves next time",
         weights: { mentor: 2, communicative: 1, empathetic: 1 },
       },
       {
@@ -295,7 +291,7 @@ export const TRAIT_QUIZ_QUESTIONS: TraitQuizQuestion[] = [
         weights: { accountable: 2, reliable: 1, communicative: 1 },
       },
       {
-        text: "Try to understand the root cause of why they're stuck",
+        text: "Try to understand what's actually going wrong before doing anything",
         weights: { "problem-solver": 2, systematic: 1, "critical-thinker": 1 },
       },
     ],
@@ -303,23 +299,22 @@ export const TRAIT_QUIZ_QUESTIONS: TraitQuizQuestion[] = [
   {
     id: 12,
     cluster: "Collaboration",
-    question:
-      "If you had to describe what people in your network come to you for, it would be...",
+    question: "When people in your life come to you, it's usually because...",
     options: [
       {
-        text: "Introductions — you know people and you're generous with connections",
+        text: "You know people and you'll actually make the introduction",
         weights: { connector: 2, "community-builder": 1, approachable: 1 },
       },
       {
-        text: "Honest perspective — they know you won't just tell them what they want to hear",
+        text: "You'll tell them the truth, not just what they want to hear",
         weights: { trustworthy: 2, objective: 1, ethical: 1 },
       },
       {
-        text: "Guidance — you're their sounding board when they're figuring something out",
+        text: "You're a good sounding board when they're trying to figure something out",
         weights: { mentor: 2, supportive: 1, empathetic: 1 },
       },
       {
-        text: "Execution — they trust that if you're involved, it will actually get done",
+        text: "If they need something done, they trust you'll actually follow through",
         weights: { reliable: 2, hardworking: 1, "vision-executor": 1 },
       },
     ],
@@ -330,22 +325,22 @@ export const TRAIT_QUIZ_QUESTIONS: TraitQuizQuestion[] = [
   {
     id: 13,
     cluster: "Values & Character",
-    question: "The kind of work that makes you feel most fulfilled is work that...",
+    question: "The work that actually makes you feel good about yourself afterward is work that...",
     options: [
       {
-        text: "Builds something that will outlast your direct involvement in it",
+        text: "Built something that'll still matter after you're done with it",
         weights: { visionary: 2, ambitious: 1, strategic: 1 },
       },
       {
-        text: "Deepens your expertise or expands what you're capable of",
+        text: "Made you better at something or showed you how much you still don't know",
         weights: { curious: 2, "fast-learner": 1, competitive: 1 },
       },
       {
-        text: "Makes a real difference to the people involved",
+        text: "Actually helped real people — not just checked boxes on a project",
         weights: { empathetic: 2, supportive: 1, mentor: 1 },
       },
       {
-        text: "You can point to and say was done to the highest standard",
+        text: "You know was done right — not rushed, not cut corners",
         weights: { disciplined: 2, ethical: 1, "detail-oriented": 1 },
       },
     ],
@@ -353,23 +348,22 @@ export const TRAIT_QUIZ_QUESTIONS: TraitQuizQuestion[] = [
   {
     id: 14,
     cluster: "Values & Character",
-    question:
-      "When something goes wrong because of a decision you made, your first instinct is to...",
+    question: "When something goes wrong and it was your call that caused it, you usually...",
     options: [
       {
-        text: "Own it immediately and fully — no excuses, no hedging",
+        text: "Own it straight up — no excuses, no pointing at other factors",
         weights: { accountable: 2, responsible: 1, trustworthy: 1 },
       },
       {
-        text: "Focus on fixing it — the past matters less than the path forward",
+        text: "Focus on fixing it — what's done is done, now what do we do",
         weights: { "problem-solver": 2, resilient: 1, pragmatic: 1 },
       },
       {
-        text: "Diagnose what caused it so you don't make the same mistake again",
+        text: "Replay what happened and try to understand exactly what went wrong",
         weights: { analytical: 2, systematic: 1, "critical-thinker": 1 },
       },
       {
-        text: "Communicate clearly and bring in whoever needs to know",
+        text: "Tell the people who need to know — even if it's an uncomfortable conversation",
         weights: { communicative: 2, responsible: 1, ethical: 1 },
       },
     ],
@@ -377,15 +371,14 @@ export const TRAIT_QUIZ_QUESTIONS: TraitQuizQuestion[] = [
   {
     id: 15,
     cluster: "Values & Character",
-    question:
-      "When it comes to risk, you would describe yourself as someone who...",
+    question: "When it comes to taking risks, you're usually the kind of person who...",
     options: [
       {
-        text: "Accepts risk as the price of real upside — you move and deal with consequences",
+        text: "Goes for it — you'd rather deal with the fallout than always wonder what if",
         weights: { "risk-taker": 2, ambitious: 1, "self-starter": 1 },
       },
       {
-        text: "Takes bold risks, but always knows exactly what you're actually betting",
+        text: "Takes the leap, but knows exactly what you're betting before you do",
         weights: {
           "calculated-risk-taker": 2,
           strategic: 1,
@@ -393,7 +386,7 @@ export const TRAIT_QUIZ_QUESTIONS: TraitQuizQuestion[] = [
         },
       },
       {
-        text: "Prefers to test small and scale what works before going all-in",
+        text: "Tests things small first — you want proof before you go all in",
         weights: {
           experimenter: 2,
           pragmatic: 1,
@@ -401,7 +394,7 @@ export const TRAIT_QUIZ_QUESTIONS: TraitQuizQuestion[] = [
         },
       },
       {
-        text: "Takes on hard challenges but avoids unnecessary exposure",
+        text: "Takes on hard challenges but doesn't gamble with things you can't afford to lose",
         weights: { resilient: 2, disciplined: 1, reliable: 1 },
       },
     ],
