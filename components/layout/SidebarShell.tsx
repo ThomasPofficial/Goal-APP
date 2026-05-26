@@ -12,6 +12,8 @@ interface Props {
   userName?: string | null;
   userEmail?: string | null;
   geniusType?: GeniusType | null;
+  myOrgId?: string | null;
+  myOrgName?: string | null;
 }
 
 const BOTTOM_TABS = [
@@ -22,7 +24,7 @@ const BOTTOM_TABS = [
   { href: "/messages",  label: "Messages", Icon: MessageSquare },
 ];
 
-export default function SidebarShell({ userName, userEmail, geniusType }: Props) {
+export default function SidebarShell({ userName, userEmail, geniusType, myOrgId, myOrgName }: Props) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
 
@@ -105,6 +107,8 @@ export default function SidebarShell({ userName, userEmail, geniusType }: Props)
         geniusType={geniusType}
         mobileOpen={mobileOpen}
         onMobileClose={() => setMobileOpen(false)}
+        myOrgId={myOrgId}
+        myOrgName={myOrgName}
       />
     </>
   );

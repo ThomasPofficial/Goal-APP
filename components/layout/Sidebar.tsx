@@ -24,9 +24,11 @@ interface SidebarProps {
   geniusType?: GeniusType | null;
   mobileOpen?: boolean;
   onMobileClose?: () => void;
+  myOrgId?: string | null;
+  myOrgName?: string | null;
 }
 
-export default function Sidebar({ userName, userEmail, geniusType, mobileOpen = false, onMobileClose }: SidebarProps) {
+export default function Sidebar({ userName, userEmail, geniusType, mobileOpen = false, onMobileClose, myOrgId, myOrgName }: SidebarProps) {
   const pathname = usePathname();
 
   return (
@@ -96,6 +98,33 @@ export default function Sidebar({ userName, userEmail, geniusType, mobileOpen = 
             </Link>
           );
         })}
+
+        {myOrgId && (
+          <>
+            <div className="pt-3 pb-1 px-3">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.12em]" style={{ color: "var(--n-muted, var(--muted))", fontFamily: "var(--font-mono)" }}>
+                Your Org
+              </p>
+            </div>
+            <Link
+              href={`/orgs/${myOrgId}`}
+              onClick={onMobileClose}
+              className={cn("relative flex items-center px-3 py-2 text-sm transition-all", pathname.startsWith(`/orgs/${myOrgId}`) && "nav-active")}
+              style={{
+                background: "transparent",
+                color: pathname.startsWith(`/orgs/${myOrgId}`) ? "var(--n-text)" : "var(--n-text2)",
+                fontFamily: "var(--font-display)",
+                fontWeight: pathname.startsWith(`/orgs/${myOrgId}`) ? 600 : 400,
+                letterSpacing: "-0.01em",
+                textDecoration: "none",
+              }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = "var(--n-text)"; }}
+              onMouseLeave={(e) => { if (!pathname.startsWith(`/orgs/${myOrgId}`)) (e.currentTarget as HTMLAnchorElement).style.color = "var(--n-text2)"; }}
+            >
+              <span className="truncate">{myOrgName ?? "My Org"}</span>
+            </Link>
+          </>
+        )}
       </nav>
 
       {/* Footer — theme toggle + account */}
