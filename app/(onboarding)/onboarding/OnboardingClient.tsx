@@ -53,7 +53,7 @@ export default function OnboardingClient({ geniusType }: { geniusType: GeniusTyp
           <p className="text-gray-600 dark:text-[#9898a8] leading-relaxed text-base max-w-md mx-auto">
             {info.description}
           </p>
-          <div className={cn("border-l-4 p-4 rounded-r-lg text-left text-sm", info.tailwindBg, info.tailwindBorder)}>
+          <div className={cn("border-l-4 p-4 rounded-r-lg text-center text-sm", info.tailwindBg, info.tailwindBorder)}>
             <span className={cn("font-semibold", info.tailwindText)}>Growth edge: </span>
             <span className="text-gray-600 dark:text-[#9898a8]">{info.tension}</span>
           </div>
