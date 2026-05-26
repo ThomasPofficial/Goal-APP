@@ -163,23 +163,25 @@ p { line-height: 1.65; margin: 0; }
    FORM ELEMENTS
 ───────────────────────────────────────── */
 
-input, textarea, select {
-  background: var(--surface2);
-  color: var(--text);
-  border: 1px solid var(--border-md);
-  border-radius: var(--radius-sm);
-  padding: 0.5rem 0.75rem;
-  font-family: var(--font-body);
-  font-size: 0.875rem;
-  transition: border-color 150ms, box-shadow 150ms;
-}
+@layer base {
+  input, textarea, select {
+    background: var(--surface2);
+    color: var(--text);
+    border: 1px solid var(--border-md);
+    border-radius: var(--radius-sm);
+    padding: 0.5rem 0.75rem;
+    font-family: var(--font-body);
+    font-size: 0.875rem;
+    transition: border-color 150ms, box-shadow 150ms;
+  }
 
-input::placeholder, textarea::placeholder { color: var(--muted); }
+  input::placeholder, textarea::placeholder { color: var(--muted); }
 
-input:focus, textarea:focus, select:focus {
-  outline: none;
-  border-color: var(--blue);
-  box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+  input:focus, textarea:focus, select:focus {
+    outline: none;
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+  }
 }
 
 a, button {
