@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { Plus_Jakarta_Sans, Cormorant_Garamond, DM_Mono } from "next/font/google";
 import "./globals.css";
 import SessionProvider from "@/components/providers/SessionProvider";
+import PostHogProvider from "@/components/providers/PostHogProvider";
+import { Suspense } from "react";
+import PostHogPageView from "@/components/providers/PostHogPageView";
 
 const plusJakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -49,7 +52,14 @@ export default function RootLayout({
             __html: `try{if(localStorage.getItem('nivarro-theme')==='light')document.body.classList.add('day')}catch(e){}`,
           }}
         />
-        <SessionProvider>{children}</SessionProvider>
+        <PostHogProvider>
+          <SessionProvider>
+            <Suspense>
+              <PostHogPageView />
+            </Suspense>
+            {children}
+          </SessionProvider>
+        </PostHogProvider>
       </body>
     </html>
   );
