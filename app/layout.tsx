@@ -3,6 +3,7 @@ import { Plus_Jakarta_Sans, Cormorant_Garamond, DM_Mono } from "next/font/google
 import "./globals.css";
 import SessionProvider from "@/components/providers/SessionProvider";
 import PostHogProvider from "@/components/providers/PostHogProvider";
+import PostHogIdentify from "@/components/providers/PostHogIdentify";
 import { Suspense } from "react";
 import PostHogPageView from "@/components/providers/PostHogPageView";
 
@@ -54,6 +55,7 @@ export default function RootLayout({
         />
         <PostHogProvider>
           <SessionProvider>
+            <PostHogIdentify />
             <Suspense>
               <PostHogPageView />
             </Suspense>
