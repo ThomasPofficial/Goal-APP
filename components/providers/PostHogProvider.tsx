@@ -1,27 +1,7 @@
 "use client";
 
 import posthog from "posthog-js";
-import { PostHogProvider as PHProvider, usePostHog } from "posthog-js/react";
-import { useEffect } from "react";
-import { useSession } from "next-auth/react";
-
-function PostHogIdentify() {
-  const { data: session } = useSession();
-  const ph = usePostHog();
-
-  useEffect(() => {
-    if (session?.user?.id) {
-      ph.identify(session.user.id, {
-        email: session.user.email ?? undefined,
-        name: session.user.name ?? undefined,
-      });
-    } else {
-      ph.reset();
-    }
-  }, [session, ph]);
-
-  return null;
-}
+import { PostHogProvider as PHProvider } from "posthog-js/react";
 
 if (typeof window !== "undefined" && process.env.NEXT_PUBLIC_POSTHOG_KEY) {
   posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY, {
@@ -34,10 +14,5 @@ if (typeof window !== "undefined" && process.env.NEXT_PUBLIC_POSTHOG_KEY) {
 
 export default function PostHogProvider({ children }: { children: React.ReactNode }) {
   if (!process.env.NEXT_PUBLIC_POSTHOG_KEY) return <>{children}</>;
-  return (
-    <PHProvider client={posthog}>
-      <PostHogIdentify />
-      {children}
-    </PHProvider>
-  );
+  return <PHProvider client={posthog}>{children}</PHProvider>;
 }
