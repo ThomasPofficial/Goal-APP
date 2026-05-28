@@ -290,22 +290,24 @@ export default function OrgDetailClient({
 
       {/* Admin tab switcher */}
       {isAdmin && (
-        <div className="flex gap-1 mb-5 border-b" style={{ borderColor: "var(--border)" }}>
-          {(["overview", "projects", "applications", "settings"] as const).map((t) => (
-            <button
-              key={t}
-              onClick={() => setAdminTab(t)}
-              className="pb-2.5 px-1 text-sm font-medium border-b-2 -mb-px transition-colors capitalize"
-              style={{
-                borderBottomColor: adminTab === t ? "var(--blue)" : "transparent",
-                color: adminTab === t ? "var(--text)" : "var(--text2)",
-              }}
-            >
-              {t === "applications"
-                ? `Applications${applications.length ? ` (${applications.length})` : ""}`
-                : t.charAt(0).toUpperCase() + t.slice(1)}
-            </button>
-          ))}
+        <div className="overflow-x-auto -mx-1 mb-5">
+          <div className="flex gap-1 border-b px-1" style={{ borderColor: "var(--border)", minWidth: "max-content" }}>
+            {(["overview", "projects", "applications", "settings"] as const).map((t) => (
+              <button
+                key={t}
+                onClick={() => setAdminTab(t)}
+                className="pb-2.5 px-2 text-sm font-medium border-b-2 -mb-px transition-colors capitalize whitespace-nowrap"
+                style={{
+                  borderBottomColor: adminTab === t ? "var(--blue)" : "transparent",
+                  color: adminTab === t ? "var(--text)" : "var(--text2)",
+                }}
+              >
+                {t === "applications"
+                  ? `Applications${applications.length ? ` (${applications.length})` : ""}`
+                  : t.charAt(0).toUpperCase() + t.slice(1)}
+              </button>
+            ))}
+          </div>
         </div>
       )}
 
@@ -789,7 +791,7 @@ function AdminApplicationsPanel({
               ✕
             </button>
           </div>
-          <pre className="text-xs leading-relaxed whitespace-pre-wrap" style={{ color: "var(--text2)", fontFamily: "var(--font-mono, monospace)" }}>
+          <pre className="text-xs leading-relaxed whitespace-pre-wrap break-words overflow-x-auto" style={{ color: "var(--text2)", fontFamily: "var(--font-mono, monospace)", overflowWrap: "break-word" }}>
             {aiAnalysis}
           </pre>
         </div>
@@ -840,39 +842,19 @@ function ApplicationCard({
       }}
     >
       {/* Header row */}
-      <div className="flex items-start justify-between gap-4 flex-wrap mb-3">
-        <div className="flex items-center gap-2 flex-wrap">
-          <Link href={`/teams/${app.team.id}`} className="font-semibold text-sm hover:underline" style={{ color: "var(--text)" }}>
-            {app.team.name}
-          </Link>
-          <span className="text-xs px-1.5 py-0.5 rounded" style={{ background: "rgba(74,128,240,0.1)", color: "var(--blue)", fontFamily: "var(--font-mono, monospace)" }}>
-            {app.orgProject.title}
-          </span>
-          <span className="text-xs" style={{ color: "var(--muted)" }}>
-            {formatDistanceToNow(new Date(app.submittedAt), { addSuffix: true })}
-          </span>
-        </div>
-
-        {status === "PENDING" ? (
-          <div className="flex gap-2 flex-shrink-0">
-            <button
-              onClick={() => onDecide(app.id, "ACCEPTED")}
-              className="flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors"
-              style={{ background: "rgba(74,222,128,0.12)", color: "#4ade80", border: "1px solid rgba(74,222,128,0.25)" }}
-            >
-              <CheckCircle2 className="w-3.5 h-3.5" /> Accept
-            </button>
-            <button
-              onClick={() => onDecide(app.id, "REJECTED")}
-              className="flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors"
-              style={{ background: "rgba(248,113,113,0.08)", color: "#f87171", border: "1px solid rgba(248,113,113,0.2)" }}
-            >
-              <XCircle className="w-3.5 h-3.5" /> Reject
-            </button>
-          </div>
-        ) : (
+      <div className="flex items-center gap-2 flex-wrap mb-2">
+        <Link href={`/teams/${app.team.id}`} className="font-semibold text-sm hover:underline" style={{ color: "var(--text)" }}>
+          {app.team.name}
+        </Link>
+        <span className="text-xs px-1.5 py-0.5 rounded" style={{ background: "rgba(74,128,240,0.1)", color: "var(--blue)", fontFamily: "var(--font-mono, monospace)" }}>
+          {app.orgProject.title}
+        </span>
+        <span className="text-xs" style={{ color: "var(--muted)" }}>
+          {formatDistanceToNow(new Date(app.submittedAt), { addSuffix: true })}
+        </span>
+        {status !== "PENDING" && (
           <span
-            className="text-xs font-semibold px-2.5 py-1 rounded-full flex-shrink-0"
+            className="text-xs font-semibold px-2.5 py-0.5 rounded-full ml-auto"
             style={{
               background: status === "ACCEPTED" ? "rgba(74,222,128,0.12)" : "rgba(248,113,113,0.08)",
               color: status === "ACCEPTED" ? "#4ade80" : "#f87171",
@@ -936,6 +918,26 @@ function ApplicationCard({
           );
         })}
       </div>
+
+      {/* Accept / Reject — full-width at the bottom, easy thumb targets */}
+      {status === "PENDING" && (
+        <div className="flex gap-2 mt-4">
+          <button
+            onClick={() => onDecide(app.id, "ACCEPTED")}
+            className="flex-1 flex items-center justify-center gap-1.5 text-sm font-semibold py-2.5 rounded-lg transition-colors"
+            style={{ background: "rgba(74,222,128,0.12)", color: "#4ade80", border: "1px solid rgba(74,222,128,0.25)" }}
+          >
+            <CheckCircle2 className="w-4 h-4" /> Accept
+          </button>
+          <button
+            onClick={() => onDecide(app.id, "REJECTED")}
+            className="flex-1 flex items-center justify-center gap-1.5 text-sm font-semibold py-2.5 rounded-lg transition-colors"
+            style={{ background: "rgba(248,113,113,0.08)", color: "#f87171", border: "1px solid rgba(248,113,113,0.2)" }}
+          >
+            <XCircle className="w-4 h-4" /> Reject
+          </button>
+        </div>
+      )}
     </div>
   );
 }
