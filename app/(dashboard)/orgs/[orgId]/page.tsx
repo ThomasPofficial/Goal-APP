@@ -70,7 +70,17 @@ export default async function OrgDetailPage({ params }: { params: Promise<{ orgI
                 members: {
                   include: {
                     profile: {
-                      select: { id: true, displayName: true, avatarUrl: true, geniusType: true, handle: true },
+                      select: {
+                        id: true, displayName: true, avatarUrl: true, geniusType: true, handle: true,
+                        headline: true, bio: true, strengthSummary: true,
+                        orgReviews: {
+                          select: {
+                            id: true, body: true,
+                            org: { select: { name: true } },
+                            orgProject: { select: { title: true } },
+                          },
+                        },
+                      },
                     },
                   },
                 },
@@ -131,6 +141,7 @@ export default async function OrgDetailPage({ params }: { params: Promise<{ orgI
       applications={applications.map((a) => ({
         id: a.id,
         status: a.status,
+        whyJoin: a.whyJoin ?? null,
         submittedAt: a.submittedAt.toISOString(),
         orgProject: a.orgProject,
         team: {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Menu, LayoutDashboard, Users, Building2, UsersRound, MessageSquare } from "lucide-react";
+import { Menu, LayoutDashboard, Users, Building2, UsersRound, MessageSquare, Briefcase } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Sidebar from "./Sidebar";
@@ -14,9 +14,10 @@ interface Props {
   geniusType?: GeniusType | null;
   myOrgId?: string | null;
   myOrgName?: string | null;
+  isOrg?: boolean;
 }
 
-const BOTTOM_TABS = [
+const STUDENT_BOTTOM_TABS = [
   { href: "/dashboard", label: "Home",     Icon: LayoutDashboard },
   { href: "/peers",     label: "Peers",    Icon: Users },
   { href: "/orgs",      label: "Orgs",     Icon: Building2 },
@@ -24,9 +25,19 @@ const BOTTOM_TABS = [
   { href: "/messages",  label: "Messages", Icon: MessageSquare },
 ];
 
-export default function SidebarShell({ userName, userEmail, geniusType, myOrgId, myOrgName }: Props) {
+export default function SidebarShell({ userName, userEmail, geniusType, myOrgId, myOrgName, isOrg }: Props) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
+
+  const orgHomeHref = myOrgId ? `/orgs/${myOrgId}` : "/dashboard";
+
+  const ORG_BOTTOM_TABS = [
+    { href: orgHomeHref, label: "Dashboard", Icon: Briefcase },
+    { href: "/peers",    label: "Students",  Icon: Users },
+    { href: "/messages", label: "Messages",  Icon: MessageSquare },
+  ];
+
+  const bottomTabs = isOrg ? ORG_BOTTOM_TABS : STUDENT_BOTTOM_TABS;
 
   return (
     <>
@@ -39,7 +50,7 @@ export default function SidebarShell({ userName, userEmail, geniusType, myOrgId,
           borderBottom: "1px solid var(--border)",
         }}
       >
-        <Link href="/dashboard" style={{ textDecoration: "none" }}>
+        <Link href={isOrg ? orgHomeHref : "/dashboard"} style={{ textDecoration: "none" }}>
           <span
             style={{
               fontFamily: "'Plus Jakarta Sans', sans-serif",
@@ -76,8 +87,10 @@ export default function SidebarShell({ userName, userEmail, geniusType, myOrgId,
           paddingBottom: "env(safe-area-inset-bottom)",
         }}
       >
-        {BOTTOM_TABS.map(({ href, label, Icon }) => {
-          const active = href === "/dashboard" ? pathname === "/dashboard" : pathname.startsWith(href);
+        {bottomTabs.map(({ href, label, Icon }) => {
+          const active = isOrg
+            ? pathname.startsWith(href) || (href === orgHomeHref && pathname.startsWith("/orgs/"))
+            : href === "/dashboard" ? pathname === "/dashboard" : pathname.startsWith(href);
           return (
             <Link
               key={href}
@@ -109,6 +122,7 @@ export default function SidebarShell({ userName, userEmail, geniusType, myOrgId,
         onMobileClose={() => setMobileOpen(false)}
         myOrgId={myOrgId}
         myOrgName={myOrgName}
+        isOrg={isOrg}
       />
     </>
   );

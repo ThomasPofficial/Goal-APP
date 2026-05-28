@@ -9,7 +9,7 @@ import NivarroMark from "@/components/ui/NivarroMark";
 import { cn } from "@/lib/utils";
 import type { GeniusType } from "@/data/traits";
 
-const navItems = [
+const STUDENT_NAV = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/peers",     label: "Peers" },
   { href: "/orgs",      label: "Orgs" },
@@ -26,10 +26,26 @@ interface SidebarProps {
   onMobileClose?: () => void;
   myOrgId?: string | null;
   myOrgName?: string | null;
+  isOrg?: boolean;
 }
 
-export default function Sidebar({ userName, userEmail, geniusType, mobileOpen = false, onMobileClose, myOrgId, myOrgName }: SidebarProps) {
+export default function Sidebar({ userName, userEmail, geniusType, mobileOpen = false, onMobileClose, myOrgId, myOrgName, isOrg }: SidebarProps) {
   const pathname = usePathname();
+
+  const orgNav = myOrgId ? [
+    { href: `/orgs/${myOrgId}`, label: myOrgName ?? "My Org" },
+    { href: "/peers",           label: "Find Students" },
+    { href: "/messages",        label: "Messages" },
+  ] : [];
+
+  const navItems = isOrg ? orgNav : STUDENT_NAV;
+  const homeHref = isOrg && myOrgId ? `/orgs/${myOrgId}` : "/dashboard";
+
+  const isActive = (href: string) => {
+    if (isOrg && myOrgId && href === `/orgs/${myOrgId}`) return pathname.startsWith(`/orgs/${myOrgId}`);
+    if (!isOrg && href === "/dashboard") return pathname === "/dashboard";
+    return pathname.startsWith(href);
+  };
 
   return (
     <aside
@@ -47,7 +63,7 @@ export default function Sidebar({ userName, userEmail, geniusType, mobileOpen = 
         className="flex items-center justify-between px-5 flex-shrink-0"
         style={{ height: 56, borderBottom: "1px solid rgba(255,255,255,0.05)" }}
       >
-        <Link href="/dashboard" onClick={onMobileClose} className="flex items-center gap-2.5" style={{ textDecoration: "none" }}>
+        <Link href={homeHref} onClick={onMobileClose} className="flex items-center gap-2.5" style={{ textDecoration: "none" }}>
           <NivarroMark size={22} color="var(--n-text)" />
           <span
             className="logo-text"
@@ -69,10 +85,7 @@ export default function Sidebar({ userName, userEmail, geniusType, mobileOpen = 
       {/* Nav */}
       <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
         {navItems.map(({ href, label }) => {
-          const active =
-            href === "/dashboard"
-              ? pathname === "/dashboard"
-              : pathname.startsWith(href);
+          const active = isActive(href);
           return (
             <Link
               key={href}
@@ -98,33 +111,6 @@ export default function Sidebar({ userName, userEmail, geniusType, mobileOpen = 
             </Link>
           );
         })}
-
-        {myOrgId && (
-          <>
-            <div className="pt-3 pb-1 px-3">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.12em]" style={{ color: "var(--n-muted, var(--muted))", fontFamily: "var(--font-mono)" }}>
-                Your Org
-              </p>
-            </div>
-            <Link
-              href={`/orgs/${myOrgId}`}
-              onClick={onMobileClose}
-              className={cn("relative flex items-center px-3 py-2 text-sm transition-all", pathname.startsWith(`/orgs/${myOrgId}`) && "nav-active")}
-              style={{
-                background: "transparent",
-                color: pathname.startsWith(`/orgs/${myOrgId}`) ? "var(--n-text)" : "var(--n-text2)",
-                fontFamily: "var(--font-display)",
-                fontWeight: pathname.startsWith(`/orgs/${myOrgId}`) ? 600 : 400,
-                letterSpacing: "-0.01em",
-                textDecoration: "none",
-              }}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = "var(--n-text)"; }}
-              onMouseLeave={(e) => { if (!pathname.startsWith(`/orgs/${myOrgId}`)) (e.currentTarget as HTMLAnchorElement).style.color = "var(--n-text2)"; }}
-            >
-              <span className="truncate">{myOrgName ?? "My Org"}</span>
-            </Link>
-          </>
-        )}
       </nav>
 
       {/* Footer — theme toggle + account */}

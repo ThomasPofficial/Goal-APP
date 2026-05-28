@@ -34,6 +34,7 @@ export default async function DashboardLayout({
         geniusType={(profile?.geniusType as GeniusType | null) ?? null}
         myOrgId={myOrg?.id ?? null}
         myOrgName={myOrg?.name ?? null}
+        isOrg={!!myOrg}
       />
       <main className="md:pl-[220px] min-h-screen pt-14 pb-[60px] md:pt-0 md:pb-0">
         <div className="max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-8">
