@@ -26,6 +26,9 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   if (application.orgProject.org.createdById !== session.user.id) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
+  if (application.status !== "PENDING") {
+    return NextResponse.json({ error: "Already decided" }, { status: 409 });
+  }
 
   const updated = await prisma.teamApplication.update({
     where: { id },

@@ -81,6 +81,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       .filter((m) => m.profile)
       .map((m) => {
         const p = m.profile!;
+        const interests: string[] = JSON.parse(p.interests || "[]");
         const reviews = p.orgReviews.map((r) => `  [${r.org.name} — ${r.orgProject.title}]: "${r.body}"`).join("\n");
         return `
     Name: ${p.displayName}
@@ -90,7 +91,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     Headline: ${p.headline ?? "none"}
     Bio: ${p.bio ?? "none"}
     Strength Summary: ${p.strengthSummary ?? "none"}
-    Interests: ${p.interests}
+    Interests: ${interests.join(", ") || "none"}
     Past Org Reviews (${p.orgReviews.length}):
 ${reviews || "    No reviews yet"}`;
       })
