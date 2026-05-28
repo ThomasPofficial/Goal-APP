@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { format, differenceInDays, formatDistanceToNow } from "date-fns";
-import { ExternalLink, Save, Users, MapPin, CheckCircle2, XCircle, Clock } from "lucide-react";
+import { ExternalLink, Save, Users, MapPin, CheckCircle2, XCircle, Clock, Sparkles, Star } from "lucide-react";
 import Avatar from "@/components/ui/Avatar";
 import GeniusTypeBadge from "@/components/ui/GeniusTypeBadge";
 import type { GeniusTypeKey } from "@/lib/geniusTypes";
@@ -74,6 +74,7 @@ interface OrgProjectSummary {
 interface AdminApplication {
   id: string;
   status: string;
+  whyJoin: string | null;
   submittedAt: string;
   orgProject: { id: string; title: string };
   team: {
@@ -82,7 +83,17 @@ interface AdminApplication {
     members: {
       id: string;
       role: string;
-      profile: { id: string; displayName: string; avatarUrl: string | null; geniusType: GeniusTypeKey | null; handle: string | null } | null;
+      profile: {
+        id: string;
+        displayName: string;
+        avatarUrl: string | null;
+        geniusType: GeniusTypeKey | null;
+        handle: string | null;
+        headline: string | null;
+        bio: string | null;
+        strengthSummary: string | null;
+        orgReviews: { id: string; body: string; org: { name: string }; orgProject: { title: string } }[];
+      } | null;
     }[];
   };
 }
@@ -301,6 +312,7 @@ export default function OrgDetailClient({
       {/* Admin: applications review panel */}
       {isAdmin && adminTab === "applications" && (
         <AdminApplicationsPanel
+          orgId={org.id}
           applications={applications}
           statuses={appStatuses}
           onDecision={(id, status) => setAppStatuses((prev) => ({ ...prev, [id]: status }))}
@@ -690,19 +702,39 @@ export default function OrgDetailClient({
 }
 
 function AdminApplicationsPanel({
-  applications, statuses, onDecision,
+  orgId, applications, statuses, onDecision,
 }: {
+  orgId: string;
   applications: AdminApplication[];
   statuses: Record<string, string>;
   onDecision: (id: string, status: string) => void;
 }) {
+  const [aiAnalysis, setAiAnalysis] = useState<string | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
+
   const decide = async (id: string, status: "ACCEPTED" | "REJECTED") => {
     onDecision(id, status);
-    await fetch(`/api/team-applications/${id}`, {
+    await fetch(`/api/applications/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status }),
     });
+  };
+
+  const analyzeWithAI = async () => {
+    setAiLoading(true);
+    setAiAnalysis(null);
+    try {
+      const res = await fetch(`/api/orgs/${orgId}/analyze-applicants`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+      const data = await res.json();
+      if (res.ok) setAiAnalysis(data.analysis);
+    } finally {
+      setAiLoading(false);
+    }
   };
 
   if (applications.length === 0) {
@@ -720,6 +752,49 @@ function AdminApplicationsPanel({
 
   return (
     <div className="space-y-6 mb-6">
+      {/* AI analysis button */}
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)", fontFamily: "var(--font-mono, monospace)" }}>
+          {applications.length} application{applications.length !== 1 ? "s" : ""}
+        </p>
+        <button
+          onClick={analyzeWithAI}
+          disabled={aiLoading}
+          className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors"
+          style={{
+            background: aiLoading ? "rgba(139,92,246,0.06)" : "rgba(139,92,246,0.12)",
+            color: "#a78bfa",
+            border: "1px solid rgba(139,92,246,0.25)",
+            opacity: aiLoading ? 0.7 : 1,
+          }}
+        >
+          <Sparkles className="w-3.5 h-3.5" />
+          {aiLoading ? "Analyzing…" : "Analyze with AI"}
+        </button>
+      </div>
+
+      {/* AI analysis result */}
+      {aiAnalysis && (
+        <div className="rounded-xl p-4 relative" style={{ background: "rgba(139,92,246,0.06)", border: "1px solid rgba(139,92,246,0.2)" }}>
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5" style={{ color: "#a78bfa" }} />
+              <span className="text-xs font-semibold" style={{ color: "#a78bfa", fontFamily: "var(--font-mono, monospace)" }}>AI ANALYSIS</span>
+            </div>
+            <button
+              onClick={() => setAiAnalysis(null)}
+              className="text-xs px-2 py-0.5 rounded"
+              style={{ color: "var(--muted)", background: "none", border: "none", cursor: "pointer" }}
+            >
+              ✕
+            </button>
+          </div>
+          <pre className="text-xs leading-relaxed whitespace-pre-wrap" style={{ color: "var(--text2)", fontFamily: "var(--font-mono, monospace)" }}>
+            {aiAnalysis}
+          </pre>
+        </div>
+      )}
+
       {pending.length > 0 && (
         <div>
           <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: "var(--text2)", fontFamily: "var(--font-mono, monospace)" }}>
@@ -761,31 +836,21 @@ function ApplicationCard({
       style={{
         background: "var(--surface)",
         border: `1px solid ${status === "ACCEPTED" ? "rgba(74,222,128,0.25)" : status === "REJECTED" ? "rgba(248,113,113,0.2)" : "var(--border-md)"}`,
-        opacity: status !== "PENDING" ? 0.7 : 1,
+        opacity: status !== "PENDING" ? 0.75 : 1,
       }}
     >
-      <div className="flex items-start justify-between gap-4 flex-wrap">
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1 flex-wrap">
-            <Link href={`/teams/${app.team.id}`} className="font-semibold text-sm hover:underline" style={{ color: "var(--text)" }}>
-              {app.team.name}
-            </Link>
-            <span className="text-xs px-1.5 py-0.5 rounded" style={{ background: "rgba(74,128,240,0.1)", color: "var(--blue)", fontFamily: "var(--font-mono, monospace)" }}>
-              {app.orgProject.title}
-            </span>
-            <span className="text-xs" style={{ color: "var(--muted)" }}>
-              {formatDistanceToNow(new Date(app.submittedAt), { addSuffix: true })}
-            </span>
-          </div>
-          <div className="flex flex-wrap gap-2 mt-2">
-            {app.team.members.map((m) => m.profile && (
-              <div key={m.id} className="flex items-center gap-1.5">
-                <Avatar src={m.profile.avatarUrl} name={m.profile.displayName} geniusType={m.profile.geniusType} size={22} />
-                <span className="text-xs" style={{ color: "var(--text2)" }}>{m.profile.displayName}</span>
-                {m.profile.geniusType && <GeniusTypeBadge type={m.profile.geniusType} size="sm" />}
-              </div>
-            ))}
-          </div>
+      {/* Header row */}
+      <div className="flex items-start justify-between gap-4 flex-wrap mb-3">
+        <div className="flex items-center gap-2 flex-wrap">
+          <Link href={`/teams/${app.team.id}`} className="font-semibold text-sm hover:underline" style={{ color: "var(--text)" }}>
+            {app.team.name}
+          </Link>
+          <span className="text-xs px-1.5 py-0.5 rounded" style={{ background: "rgba(74,128,240,0.1)", color: "var(--blue)", fontFamily: "var(--font-mono, monospace)" }}>
+            {app.orgProject.title}
+          </span>
+          <span className="text-xs" style={{ color: "var(--muted)" }}>
+            {formatDistanceToNow(new Date(app.submittedAt), { addSuffix: true })}
+          </span>
         </div>
 
         {status === "PENDING" ? (
@@ -816,6 +881,60 @@ function ApplicationCard({
             {status === "ACCEPTED" ? "Accepted" : "Rejected"}
           </span>
         )}
+      </div>
+
+      {/* Why join */}
+      {app.whyJoin && (
+        <p
+          className="text-xs italic mb-3 pl-3 border-l-2"
+          style={{ color: "var(--text2)", borderColor: "var(--border-md)", lineHeight: 1.6 }}
+        >
+          &ldquo;{app.whyJoin}&rdquo;
+        </p>
+      )}
+
+      {/* Team members — rich cards */}
+      <div className="space-y-3">
+        {app.team.members.map((m) => {
+          if (!m.profile) return null;
+          const p = m.profile;
+          return (
+            <div key={m.id} className="rounded-lg p-3" style={{ background: "var(--n-bg2)", border: "1px solid var(--border)" }}>
+              <div className="flex items-center gap-2 flex-wrap">
+                <Avatar src={p.avatarUrl} name={p.displayName} geniusType={p.geniusType} size={26} />
+                {p.handle ? (
+                  <Link href={`/peers/${p.handle}`} className="text-sm font-medium hover:underline" style={{ color: "var(--text)" }}>
+                    {p.displayName}
+                  </Link>
+                ) : (
+                  <span className="text-sm font-medium" style={{ color: "var(--text)" }}>{p.displayName}</span>
+                )}
+                {p.geniusType && <GeniusTypeBadge type={p.geniusType} size="sm" />}
+              </div>
+              {p.headline && (
+                <p className="text-xs mt-1.5 ml-8" style={{ color: "var(--text2)" }}>{p.headline}</p>
+              )}
+              {p.orgReviews.length > 0 && (
+                <div className="mt-2 ml-8 space-y-1.5">
+                  {p.orgReviews.slice(0, 2).map((r) => (
+                    <div key={r.id} className="text-xs rounded p-2" style={{ background: "rgba(74,128,240,0.06)", border: "1px solid var(--border)" }}>
+                      <span className="font-semibold" style={{ color: "var(--text2)" }}>
+                        <Star className="w-3 h-3 inline mr-0.5 mb-px" style={{ color: "#f59e0b" }} />
+                        {r.org.name} — {r.orgProject.title}
+                      </span>
+                      <p className="mt-0.5" style={{ color: "var(--muted)" }}>
+                        &ldquo;{r.body.length > 100 ? r.body.slice(0, 100) + "…" : r.body}&rdquo;
+                      </p>
+                    </div>
+                  ))}
+                  {p.orgReviews.length > 2 && (
+                    <p className="text-xs" style={{ color: "var(--muted)" }}>+{p.orgReviews.length - 2} more review{p.orgReviews.length - 2 !== 1 ? "s" : ""}</p>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
