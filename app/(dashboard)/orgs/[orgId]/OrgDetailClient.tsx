@@ -713,19 +713,26 @@ function AdminApplicationsPanel({
 }) {
   const [aiAnalysis, setAiAnalysis] = useState<string | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
 
   const decide = async (id: string, status: "ACCEPTED" | "REJECTED") => {
     onDecision(id, status);
-    await fetch(`/api/applications/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status }),
-    });
+    try {
+      const res = await fetch(`/api/applications/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
+      if (!res.ok) onDecision(id, "PENDING");
+    } catch {
+      onDecision(id, "PENDING");
+    }
   };
 
   const analyzeWithAI = async () => {
     setAiLoading(true);
     setAiAnalysis(null);
+    setAiError(null);
     try {
       const res = await fetch(`/api/orgs/${orgId}/analyze-applicants`, {
         method: "POST",
@@ -733,7 +740,10 @@ function AdminApplicationsPanel({
         body: JSON.stringify({}),
       });
       const data = await res.json();
-      if (res.ok) setAiAnalysis(data.analysis);
+      if (res.ok) setAiAnalysis(data.analysis || "No analysis returned.");
+      else setAiError(data.error ?? "Analysis failed. Please try again.");
+    } catch {
+      setAiError("Network error. Please try again.");
     } finally {
       setAiLoading(false);
     }
@@ -774,6 +784,13 @@ function AdminApplicationsPanel({
           {aiLoading ? "Analyzing…" : "Analyze with AI"}
         </button>
       </div>
+
+      {/* AI error */}
+      {aiError && (
+        <div className="rounded-xl px-4 py-3 text-sm" style={{ background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.2)", color: "#f87171" }}>
+          {aiError}
+        </div>
+      )}
 
       {/* AI analysis result */}
       {aiAnalysis && (
