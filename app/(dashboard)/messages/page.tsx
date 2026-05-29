@@ -12,11 +12,17 @@ export default async function MessagesPage({
   const session = await auth();
   if (!session?.user?.id) redirect('/login');
 
-  const myProfile = await prisma.profile.findUnique({
-    where: { userId: session.user.id },
-    select: { id: true, displayName: true, avatarUrl: true, geniusType: true },
-  });
-  if (!myProfile) redirect('/onboarding');
+  const [myProfile, myOrg] = await Promise.all([
+    prisma.profile.findUnique({
+      where: { userId: session.user.id },
+      select: { id: true, displayName: true, avatarUrl: true, geniusType: true },
+    }),
+    prisma.org.findFirst({
+      where: { createdById: session.user.id },
+      select: { id: true, name: true },
+    }),
+  ]);
+  if (!myProfile && !myOrg) redirect('/onboarding');
 
   const params = await searchParams;
 
@@ -90,15 +96,16 @@ export default async function MessagesPage({
 
   const initialOpenId = params.open ?? serialized[0]?.id ?? null;
 
+  const resolvedProfile = myProfile
+    ? { id: myProfile.id, displayName: myProfile.displayName, avatarUrl: myProfile.avatarUrl, geniusType: myProfile.geniusType as GeniusTypeKey | null }
+    : { id: "", displayName: myOrg?.name ?? session.user.name ?? "Org", avatarUrl: null, geniusType: null as GeniusTypeKey | null };
+
   return (
     <MessagesClient
       conversations={serialized}
       myUserId={session.user.id}
-      myProfileId={myProfile.id}
-      myProfile={{
-        ...myProfile,
-        geniusType: myProfile.geniusType as GeniusTypeKey | null,
-      }}
+      myProfileId={resolvedProfile.id}
+      myProfile={resolvedProfile}
       initialOpenId={initialOpenId}
     />
   );
