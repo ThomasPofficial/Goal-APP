@@ -19,6 +19,7 @@ export function proxy(req: NextRequest) {
     pathname.startsWith("/reset-password") ||
     pathname.startsWith("/api/auth") ||
     pathname.startsWith("/api/admin") ||
+    pathname.startsWith("/api/webhooks") ||
     pathname.startsWith("/quiz") ||
     pathname.startsWith("/onboarding");
 
