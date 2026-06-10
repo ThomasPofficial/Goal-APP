@@ -23,6 +23,7 @@
     "next-auth": "^5.0.0-beta.30",
     "pg": "^8.20.0",
     "posthog-js": "^1.376.2",
+    "posthog-node": "^5.36.12",
     "prisma": "^7.8.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
