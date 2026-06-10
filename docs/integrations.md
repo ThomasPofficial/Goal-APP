@@ -21,6 +21,7 @@ Set on Render service `Goal-APP-3` (`srv-d7o25h68bjmc7395irug`).
 | `GITHUB_PAT`            | Repo-scoped PAT for issue creation               | GitHub writes          |
 | `GITHUB_WEBHOOK_SECRET` | Shared secret for `X-Hub-Signature-256`          | GitHub inbound webhook |
 | `FORM_WEBHOOK_SECRET`   | Shared secret with Apps Script                   | Form inbound webhook   |
+| `WELCOME_EMAIL_ENABLED` | Set to `true` to opt in to welcome emails        | Welcome email (off by default) |
 
 ## PostHog (server-side capture)
 
@@ -47,12 +48,14 @@ Useful product events to fire from server:
 - `org_application_created`
 - `deploy_completed` (from GitHub release webhook)
 
-## Welcome emails
+## Welcome emails (off by default)
 
 `lib/welcome-email.ts` sends through Resend using the existing
 `getResendClient()` helper. Triggered by the form-submit webhook when
-`source === "signup-form"`. Cost: ~$0 at current volume (Resend free tier
-covers 3k emails/month).
+`source === "signup-form"` AND `WELCOME_EMAIL_ENABLED=true`. With the env
+var unset (the default) the webhook is data-collection only and never sends
+an email. Cost when enabled: ~$0 at current volume (Resend free tier covers
+3k emails/month).
 
 ## Google Forms -> webhook
 

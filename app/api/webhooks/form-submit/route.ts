@@ -17,8 +17,10 @@ export const dynamic = "force-dynamic";
  *
  * Side effects on success:
  *   1. PostHog event `form_submitted`
- *   2. Resend welcome email (if email present and source === "signup-form")
- *   3. Notion row in NOTION_SIGNUPS_DB_ID (if configured)
+ *   2. Notion row in NOTION_SIGNUPS_DB_ID (if configured)
+ *   3. Welcome email — DISABLED by default. Set
+ *      `WELCOME_EMAIL_ENABLED=true` to opt in. Until then this route is
+ *      data-collection only.
  *
  * All side effects are best-effort: a single failure is logged but does not
  * 500 the webhook (Apps Script will retry on 5xx and we don't want dupes).
@@ -73,25 +75,7 @@ export async function POST(req: Request) {
     },
   });
 
-  // 2. Welcome email
-  let welcome: { sent: boolean; error?: string } = { sent: false };
-  if (data.email && data.source === "signup-form") {
-    try {
-      const r = await sendWelcomeEmail({ to: data.email, name: data.name });
-      welcome = { sent: true };
-      await capture({
-        distinctId,
-        event: "welcome_email_sent",
-        properties: { messageId: r.id },
-      });
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      console.error("[form-submit] welcome email failed:", msg);
-      welcome = { sent: false, error: msg };
-    }
-  }
-
-  // 3. Notion row
+  // 2. Notion row
   let notion: { written: boolean; pageId?: string; error?: string } = {
     written: false,
   };
@@ -117,9 +101,34 @@ export async function POST(req: Request) {
     }
   }
 
+  // 3. Welcome email — gated. Off until Thomas explicitly turns it on.
+  let welcome: { sent: boolean; skipped?: boolean; error?: string } = {
+    sent: false,
+    skipped: true,
+  };
+  if (
+    process.env.WELCOME_EMAIL_ENABLED === "true" &&
+    data.email &&
+    data.source === "signup-form"
+  ) {
+    try {
+      const r = await sendWelcomeEmail({ to: data.email, name: data.name });
+      welcome = { sent: true };
+      await capture({
+        distinctId,
+        event: "welcome_email_sent",
+        properties: { messageId: r.id },
+      });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error("[form-submit] welcome email failed:", msg);
+      welcome = { sent: false, error: msg };
+    }
+  }
+
   return NextResponse.json({
     ok: true,
-    welcome,
     notion,
+    welcome,
   });
 }
