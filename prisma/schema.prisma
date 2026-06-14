@@ -102,6 +102,9 @@ model Profile {
   isHomeschooled      Boolean     @default(false)
   isInternational     Boolean     @default(false)
   onboardingComplete  Boolean     @default(false)
+  animalArchetypes    String      @default("[]")
+  archetypeAnalysis   String?
+  archetypeUpdatedAt  DateTime?
   createdAt           DateTime    @default(now())
   updatedAt           DateTime    @updatedAt
 
