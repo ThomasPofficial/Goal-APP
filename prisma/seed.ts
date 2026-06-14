@@ -67,7 +67,7 @@ async function main() {
           "Research",
         ]),
         openSpots: 3,
-        status: "OPEN",
+        listingStatus: "OPEN",
       },
     });
 
@@ -208,7 +208,7 @@ async function main() {
         format: "Remote",
         openSpots: 3,
         progressPercent: 100,
-        status: "CLOSED",
+        listingStatus: "CLOSED",
         deadline: new Date("2025-12-15T00:00:00Z"),
       },
     });
