@@ -23,6 +23,7 @@ export async function POST(req: Request) {
     "noah@nivarro.demo",
     "maya@nivarro.demo",
     "ridgepoint@nivarro.demo",
+    "sunsetpines@nivarro.demo",
   ];
   for (const email of demoEmails) {
     await prisma.user.updateMany({ where: { email }, data: { passwordHash: hash } });
@@ -101,11 +102,77 @@ export async function POST(req: Request) {
     }
   }
 
+  // ── Sunset Pines canonical listing ──────────────────────────────────────
+  let sunsetOrg = await prisma.org.findFirst({ where: { name: "Sunset Pines Senior Living" } });
+  if (!sunsetOrg) {
+    const sunsetUser = await prisma.user.upsert({
+      where: { email: "sunsetpines@nivarro.demo" },
+      update: {},
+      create: { name: "Sunset Pines Admin", email: "sunsetpines@nivarro.demo", passwordHash: hash },
+    });
+    sunsetOrg = await prisma.org.create({
+      data: {
+        name: "Sunset Pines Senior Living",
+        tagline: "Where veterans find connection through play.",
+        description: "A senior living community serving 18 Vietnam-era veterans in Sacramento.",
+        createdById: sunsetUser.id,
+        verified: false,
+        category: "RESEARCH",
+      },
+    });
+  }
+
+  const sunsetProject = await prisma.orgProject.findFirst({
+    where: { orgId: sunsetOrg.id, title: "Veterans Game Studio" },
+  });
+
+  if (!sunsetProject) {
+    await prisma.orgProject.create({
+      data: {
+        orgId: sunsetOrg.id,
+        title: "Veterans Game Studio",
+        description: "Build a multiplayer game for 18 Vietnam-era veterans at Sunset Pines Senior Living.",
+        shortDescription: "Build a co-op game that 18 veterans at Sunset Pines will play together every afternoon.",
+        impactStatement: "18 Vietnam-era veterans at Sunset Pines will play together every afternoon.",
+        storyBody: `Margaret Chen wrote us a letter.\n\n"I'm the Activities Director at Sunset Pines Senior Living in Sacramento. We have 18 residents who served in Vietnam — men between 74 and 82 who grew up playing cards, dominoes, and checkers together. Since COVID, most of them stay in their rooms. I think they're lonely. I don't know how to fix that, but I thought maybe games could help."\n\nShe didn't have a budget line. She didn't know what Unity was. She just knew her residents were fading — and she thought students might care.\n\nThis is that project.`,
+        locationCity: "Sacramento, CA",
+        locationRequired: "REQUIRED",
+        locationRadius: 15,
+        budgetTotal: 15000,
+        budgetNotes: "Split however the team decides. Submit receipts for tooling.",
+        toolingStipend: true,
+        gradeEligibility: JSON.stringify(["11", "12"]),
+        advisorRequired: "REQUIRED",
+        applicationMode: "TEAM",
+        appMaterials: JSON.stringify(["cover_letter", "why_us"]),
+        requiredSkills: JSON.stringify(["Game development", "Multiplayer networking", "UI/UX accessibility", "Communication"]),
+        preferredGeniusTypes: JSON.stringify(["DYNAMO", "BLAZE"]),
+        openSpots: 5,
+        hoursPerWeek: "10-15",
+        duration: "June 15 – August 30 (11 weeks)",
+        format: "In-person",
+        contactName: "Margaret Chen",
+        contactRole: "Activities Director, Sunset Pines Senior Living",
+        studentOutcomes: JSON.stringify(["PAID", "PORTFOLIO", "REC_LETTER", "MENTORSHIP"]),
+        dayInLife: JSON.stringify([
+          "Visit Sunset Pines to hear veterans' stories — design the game with them, not for them",
+          "Build in Unity/Godot/web — procedurally varied missions, co-op for 6-8 simultaneous players",
+          "Weekly playtests with residents — sit with an 80-year-old and watch him play",
+          "Submit tooling receipts; manage your own budget split as a team",
+          "Ship a real product by August 30 — it will be played every afternoon",
+        ]),
+        listingStatus: "OPEN",
+        publishedAt: new Date(),
+      },
+    });
+  }
+
   return NextResponse.json({
     accounts: {
       orgs: [
         { email: "ridgepoint@nivarro.demo", password: "ridgepoint2026", note: "Ridgepoint Policy Fellows — full admin dashboard + mock scholars" },
         { email: "org@nivarro.demo", password: "demo2026", note: "Blank org account — create your own org via /orgs/new" },
+        { email: "sunsetpines@nivarro.demo", password: "demo2026", note: "Sunset Pines Senior Living — Veterans Game Studio listing (canonical demo)" },
       ],
       scholars: [
         { email: "student@nivarro.demo", password: "demo2026", note: "Blank student account — no profile yet" },
