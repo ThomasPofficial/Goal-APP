@@ -79,7 +79,7 @@ export async function POST(req: Request) {
         hoursPerWeek: "10–15 hrs/week",
         duration: "8 weeks",
         format: "Remote with optional DC cohort events",
-        status: "OPEN",
+        listingStatus: "OPEN",
       },
     });
   } else {
@@ -98,7 +98,7 @@ export async function POST(req: Request) {
         title: PAST_PROJECT_TITLE,
         shortDescription:
           "Fellows researched barriers to economic mobility for first-generation college students. Work cited in state legislative hearing.",
-        status: "CLOSED",
+        listingStatus: "CLOSED",
         closedAt: new Date("2025-08-15"),
         outcomeNote:
           "Fellows produced three policy briefs cited in the Massachusetts Joint Committee on Education hearing on college affordability.",

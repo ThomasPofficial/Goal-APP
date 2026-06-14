@@ -28,7 +28,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     include: { org: { select: { id: true, name: true, autoAccept: true, maxTeamSize: true } } },
   });
   if (!orgProject) return NextResponse.json({ error: "Project not found" }, { status: 404 });
-  if (orgProject.status !== "OPEN") return NextResponse.json({ error: "Project closed" }, { status: 409 });
+  if (orgProject.listingStatus !== "OPEN") return NextResponse.json({ error: "Project closed" }, { status: 409 });
 
   const existingApp = await prisma.teamApplication.findFirst({
     where: {

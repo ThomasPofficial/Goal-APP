@@ -65,7 +65,7 @@ interface OrgProjectSummary {
   hoursPerWeek: string | null;
   duration: string | null;
   deadline: string | null;
-  status: string;
+  listingStatus: string;
   closedAt: string | null;
   outcomeNote: string | null;
   applicationCount: number;
@@ -216,7 +216,7 @@ export default function OrgDetailClient({
   const [closingProject, setClosingProject] = useState<string | null>(null);
   const [apiKeyState, setApiKeyState] = useState<string | null>(apiKey);
   const [projectStatuses, setProjectStatuses] = useState<Record<string, string>>(
-    () => Object.fromEntries(projects.map((p) => [p.id, p.status]))
+    () => Object.fromEntries(projects.map((p) => [p.id, p.listingStatus]))
   );
   const [projectOutcomeNotes, setProjectOutcomeNotes] = useState<Record<string, string>>(
     () => Object.fromEntries(projects.map((p) => [p.id, p.outcomeNote ?? ""]))
@@ -236,12 +236,12 @@ export default function OrgDetailClient({
   // Projects with locally-updated statuses
   const projectsWithStatus = projects.map((p) => ({
     ...p,
-    status: projectStatuses[p.id] ?? p.status,
+    listingStatus: projectStatuses[p.id] ?? p.listingStatus,
     outcomeNote: projectOutcomeNotes[p.id] ?? p.outcomeNote,
   }));
 
-  const openProjects = projectsWithStatus.filter((p) => p.status === "OPEN");
-  const closedProjects = projectsWithStatus.filter((p) => p.closedAt || p.status === "CLOSED");
+  const openProjects = projectsWithStatus.filter((p) => p.listingStatus === "OPEN");
+  const closedProjects = projectsWithStatus.filter((p) => p.closedAt || p.listingStatus === "CLOSED");
 
   return (
     <div>
@@ -345,12 +345,12 @@ export default function OrgDetailClient({
               <div className="flex items-center gap-2 flex-shrink-0">
                 <span
                   className={`text-[11px] px-2 py-0.5 rounded-full font-semibold ${
-                    proj.status === "OPEN" ? "bg-green-950 text-green-400" : "bg-[#1e1e24] text-[#9898a8]"
+                    proj.listingStatus === "OPEN" ? "bg-green-950 text-green-400" : "bg-[#1e1e24] text-[#9898a8]"
                   }`}
                 >
-                  {proj.status}
+                  {proj.listingStatus}
                 </span>
-                {proj.status === "OPEN" && (
+                {proj.listingStatus === "OPEN" && (
                   <button
                     onClick={() => setClosingProject(proj.id)}
                     className="text-xs px-3 py-1.5 rounded-lg"
