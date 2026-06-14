@@ -108,6 +108,7 @@ model Profile {
   user                 User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
   traitLinks           ProfileTrait[]
   savedOpportunities   SavedOpportunity[]
+  savedOrgs            SavedOrg[]
   contacts             Contact[]            @relation("ContactOwner")
   contactOf            Contact[]            @relation("ContactTarget")
   teamMemberships      TeamMember[]
@@ -362,11 +363,12 @@ model Org {
   whatInternsBuild     String?
   contactEmail         String?
 
-  opportunities Opportunity[]
-  teams         Team[]
-  projects      OrgProject[]
-  reviews       OrgReview[]
-  agentCallLogs AgentCallLog[]
+  opportunities   Opportunity[]
+  teams           Team[]
+  projects        OrgProject[]
+  reviews         OrgReview[]
+  agentCallLogs   AgentCallLog[]
+  savedByProfiles SavedOrg[]
 }
 
 model Opportunity {
@@ -394,6 +396,18 @@ model SavedOpportunity {
   opportunity Opportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
 
   @@unique([profileId, opportunityId])
+}
+
+model SavedOrg {
+  id        String   @id @default(cuid())
+  profileId String
+  orgId     String
+  createdAt DateTime @default(now())
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  org     Org     @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, orgId])
 }
 
 // ─────────────────────────────────────────────
