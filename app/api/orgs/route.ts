@@ -9,6 +9,14 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const existingProfile = await prisma.profile.findUnique({
+    where: { userId: session.user.id },
+    select: { id: true },
+  });
+  if (existingProfile) {
+    return NextResponse.json({ error: "Student accounts cannot create organizations" }, { status: 403 });
+  }
+
   const body = await req.json();
   const {
     name, category, website, description, logoLetter, logoBg, logoColor,
@@ -63,7 +71,7 @@ export async function GET(req: Request) {
       status: true, heroUrl: true, accentColor: true, minTeamSize: true,
       maxTeamSize: true, gradeEligibility: true, deadline: true,
       logoLetter: true, logoBg: true, logoColor: true, bannerGradient: true,
-      focusTags: true,
+      focusTags: true, verified: true,
       _count: { select: { teams: true } },
     },
     orderBy: { createdAt: "desc" },
