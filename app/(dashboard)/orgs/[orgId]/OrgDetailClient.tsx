@@ -703,6 +703,122 @@ export default function OrgDetailClient({
   );
 }
 
+function WriteReviewModal({
+  app,
+  onClose,
+  onSubmitted,
+}: {
+  app: AdminApplication;
+  onClose: () => void;
+  onSubmitted: () => void;
+}) {
+  const members = app.team.members.filter((m) => m.profile);
+  const [selectedProfileId, setSelectedProfileId] = useState(members[0]?.profile?.id ?? "");
+  const [body, setBody] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSubmit = async () => {
+    if (body.trim().length < 50) {
+      setError("Review must be at least 50 characters.");
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    const res = await fetch(`/api/org-projects/${app.orgProject.id}/reviews`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ reviews: [{ profileId: selectedProfileId, body: body.trim() }] }),
+    });
+    if (res.ok) {
+      onSubmitted();
+    } else {
+      const data = await res.json().catch(() => ({}));
+      setError(data.error ?? "Failed to submit review.");
+    }
+    setLoading(false);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.7)" }}>
+      <div className="rounded-2xl p-6 w-full max-w-md" style={{ background: "var(--bg)", border: "1px solid var(--border-md)" }}>
+        <h2 className="text-base font-semibold mb-1" style={{ color: "var(--text)", fontFamily: "var(--font-serif)" }}>
+          Write review
+        </h2>
+        <p className="text-sm mb-4" style={{ color: "var(--text2)" }}>{app.orgProject.title} · {app.team.name}</p>
+
+        {members.length > 1 ? (
+          <div className="mb-4">
+            <label className="block mb-1">
+              <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)", fontFamily: "var(--font-mono)" }}>
+                Student
+              </span>
+            </label>
+            <select
+              value={selectedProfileId}
+              onChange={(e) => setSelectedProfileId(e.target.value)}
+              className="w-full rounded-lg px-3 py-2 text-sm"
+              style={{ background: "var(--surface)", border: "1px solid var(--border-md)", color: "var(--text)", outline: "none" }}
+            >
+              {members.map((m) => (
+                <option key={m.profile!.id} value={m.profile!.id}>
+                  {m.profile!.displayName}
+                </option>
+              ))}
+            </select>
+          </div>
+        ) : members.length === 1 ? (
+          <div className="flex items-center gap-2 mb-4 px-3 py-2 rounded-lg" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
+            <Avatar src={members[0].profile!.avatarUrl} name={members[0].profile!.displayName} geniusType={members[0].profile!.geniusType} size={24} />
+            <span className="text-sm" style={{ color: "var(--text)" }}>{members[0].profile!.displayName}</span>
+          </div>
+        ) : null}
+
+        <label className="block mb-1">
+          <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--muted)", fontFamily: "var(--font-mono)" }}>
+            Review
+          </span>
+        </label>
+        <textarea
+          value={body}
+          onChange={(e) => setBody(e.target.value)}
+          rows={5}
+          className="w-full rounded-lg px-3 py-2 text-sm mb-1 resize-none"
+          style={{ background: "var(--surface)", border: "1px solid var(--border-md)", color: "var(--text)", outline: "none" }}
+          placeholder="Describe the student's contributions, growth, and strengths…"
+        />
+        <p className="text-xs mb-4" style={{ color: body.trim().length >= 50 ? "var(--muted)" : "#f87171" }}>
+          {body.trim().length} / 50 min
+        </p>
+
+        {error && (
+          <div className="mb-4 text-sm rounded-lg px-3 py-2" style={{ background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.2)", color: "#f87171" }}>
+            {error}
+          </div>
+        )}
+
+        <div className="flex gap-2 justify-end">
+          <button
+            onClick={onClose}
+            className="text-sm px-4 py-2 rounded-lg"
+            style={{ background: "var(--surface)", color: "var(--text2)", border: "1px solid var(--border-md)" }}
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSubmit}
+            disabled={loading || body.trim().length < 50 || !selectedProfileId}
+            className="text-sm px-4 py-2 rounded-lg font-semibold disabled:opacity-50"
+            style={{ background: "rgba(74,128,240,0.15)", color: "var(--blue)", border: "1px solid rgba(74,128,240,0.3)" }}
+          >
+            {loading ? "Submitting…" : "Submit Review"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function AdminApplicationsPanel({
   orgId, applications, statuses, onDecision,
 }: {
@@ -714,6 +830,8 @@ function AdminApplicationsPanel({
   const [aiAnalysis, setAiAnalysis] = useState<string | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
+  const [reviewingApp, setReviewingApp] = useState<AdminApplication | null>(null);
+  const [submittedReviews, setSubmittedReviews] = useState<Set<string>>(new Set());
 
   const decide = async (id: string, status: "ACCEPTED" | "REJECTED") => {
     onDecision(id, status);
@@ -821,7 +939,7 @@ function AdminApplicationsPanel({
           </p>
           <div className="space-y-3">
             {pending.map((app) => (
-              <ApplicationCard key={app.id} app={app} status={statuses[app.id]} onDecide={decide} />
+              <ApplicationCard key={app.id} app={app} status={statuses[app.id]} onDecide={decide} onWriteReview={null} />
             ))}
           </div>
         </div>
@@ -833,21 +951,41 @@ function AdminApplicationsPanel({
           </p>
           <div className="space-y-3">
             {decided.map((app) => (
-              <ApplicationCard key={app.id} app={app} status={statuses[app.id]} onDecide={decide} />
+              <ApplicationCard
+                key={app.id}
+                app={app}
+                status={statuses[app.id]}
+                onDecide={decide}
+                onWriteReview={statuses[app.id] === "ACCEPTED" ? () => setReviewingApp(app) : null}
+                reviewSubmitted={submittedReviews.has(app.id)}
+              />
             ))}
           </div>
         </div>
+      )}
+
+      {reviewingApp && (
+        <WriteReviewModal
+          app={reviewingApp}
+          onClose={() => setReviewingApp(null)}
+          onSubmitted={() => {
+            setSubmittedReviews((prev) => new Set(prev).add(reviewingApp.id));
+            setReviewingApp(null);
+          }}
+        />
       )}
     </div>
   );
 }
 
 function ApplicationCard({
-  app, status, onDecide,
+  app, status, onDecide, onWriteReview, reviewSubmitted,
 }: {
   app: AdminApplication;
   status: string;
   onDecide: (id: string, s: "ACCEPTED" | "REJECTED") => void;
+  onWriteReview: (() => void) | null;
+  reviewSubmitted?: boolean;
 }) {
   return (
     <div
@@ -953,6 +1091,25 @@ function ApplicationCard({
           >
             <XCircle className="w-4 h-4" /> Reject
           </button>
+        </div>
+      )}
+
+      {/* Write review — only for accepted apps */}
+      {onWriteReview && (
+        <div className="mt-3">
+          {reviewSubmitted ? (
+            <p className="text-xs text-center py-2" style={{ color: "#4ade80" }}>
+              ✓ Review submitted
+            </p>
+          ) : (
+            <button
+              onClick={onWriteReview}
+              className="w-full text-sm py-2 rounded-lg font-medium"
+              style={{ background: "rgba(74,128,240,0.08)", color: "var(--blue)", border: "1px solid rgba(74,128,240,0.2)" }}
+            >
+              Write Review
+            </button>
+          )}
         </div>
       )}
     </div>
