@@ -4,11 +4,8 @@ import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { format } from "date-fns";
 import { ExternalLink, ChevronRight, Save } from "lucide-react";
-import Avatar from "@/components/ui/Avatar";
-import GeniusTypeBadge from "@/components/ui/GeniusTypeBadge";
 import TutorialWidget from "@/components/ui/TutorialWidget";
 import WelcomeCard from "@/components/ui/WelcomeCard";
-import { GENIUS_TYPES } from "@/lib/geniusTypes";
 import type { GeniusTypeKey } from "@/lib/geniusTypes";
 
 interface ProfileData {
@@ -63,8 +60,6 @@ export default function DashboardClient({ profile, spaces, traitsDone, tutorialD
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
 
-  const typeInfo = profile.geniusType ? GENIUS_TYPES[profile.geniusType] : null;
-
   const fetchTicker = useCallback(async () => {
     try { const res = await fetch("/api/opportunities/ticker"); const data = await res.json(); setTicker(data.opportunities ?? []); } catch {}
   }, []);
@@ -83,7 +78,8 @@ export default function DashboardClient({ profile, spaces, traitsDone, tutorialD
 
   useEffect(() => { fetchTicker(); }, [fetchTicker]);
   useEffect(() => { setPage(1); fetchFeed(1, activeFilter, true); }, [activeFilter, fetchFeed]);
-  useEffect(() => { const id = setInterval(fetchTicker, 600000); return () => clearInterval(id); }, [fetchTicker]);
+  // Refresh ticker every 60s — live feel
+  useEffect(() => { const id = setInterval(fetchTicker, 60000); return () => clearInterval(id); }, [fetchTicker]);
 
   const sendFeedback = async () => {
     if (!feedback.trim()) return;
@@ -102,56 +98,7 @@ export default function DashboardClient({ profile, spaces, traitsDone, tutorialD
   return (
     <div className="flex flex-col sm:flex-row gap-6 min-h-0">
       {/* Left panel */}
-      <div className="w-full sm:w-[280px] sm:flex-shrink-0 space-y-4">
-
-        {/* Identity */}
-        <div
-          className="bracket-card"
-          style={{
-            ...card,
-            padding: "20px",
-            ...(typeInfo ? { boxShadow: `0 0 48px ${typeInfo.color}12, 0 0 0 1px ${typeInfo.color}10` } : {}),
-          }}
-        >
-          <div className="flex items-start gap-3 mb-3">
-            <Avatar src={profile.avatarUrl} name={profile.displayName} geniusType={profile.geniusType} size="lg" />
-            <div className="flex-1 min-w-0">
-              <p className="font-semibold truncate" style={{ color: "var(--text)", fontFamily: "var(--font-display, sans-serif)" }}>
-                {profile.displayName}
-              </p>
-              {profile.handle && <p className="text-xs" style={{ color: "var(--text2)" }}>@{profile.handle}</p>}
-              {profile.geniusType && (
-                <p className="text-[10px] font-medium tracking-[0.15em] uppercase mt-1" style={{ color: typeInfo?.color ?? "var(--muted)", fontFamily: "var(--font-mono)" }}>
-                  {typeInfo?.label} · {profile.geniusType}
-                </p>
-              )}
-              {profile.geniusType && <GeniusTypeBadge type={profile.geniusType} size="sm" className="mt-1.5" />}
-            </div>
-          </div>
-
-          {profile.currentFocus && typeInfo && (
-            <div className="border-l-4 pl-3 py-1 mb-3 text-xs italic leading-relaxed" style={{ borderColor: typeInfo.color, color: "var(--text2)" }}>
-              {profile.currentFocus}
-            </div>
-          )}
-
-          <div className="flex gap-4 text-center mb-4">
-            <Link href="/saved">
-              <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>{profile.savedCount}</p>
-              <p className="text-[11px]" style={{ color: "var(--muted)" }}>Saved</p>
-            </Link>
-          </div>
-
-          <Link
-            href="/profile/me"
-            className="block w-full text-center text-xs font-medium py-2 transition-colors"
-            style={{ border: "1px solid var(--border-md)", color: "var(--text2)" }}
-            onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.borderColor = "var(--gold)"; (e.currentTarget as HTMLAnchorElement).style.color = "var(--gold)"; }}
-            onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.borderColor = "var(--border-md)"; (e.currentTarget as HTMLAnchorElement).style.color = "var(--text2)"; }}
-          >
-            Edit profile
-          </Link>
-        </div>
+      <div className="w-full sm:w-[260px] sm:flex-shrink-0 space-y-4">
 
         {/* Spaces */}
         <div className="bracket-card" style={{ ...card, overflow: "hidden", padding: 0 }}>
@@ -226,17 +173,41 @@ export default function DashboardClient({ profile, spaces, traitsDone, tutorialD
         )}
 
         {ticker.length > 0 && (
-          <div className="overflow-hidden h-10 flex items-center" style={{ background: "var(--surface)", borderTop: "1px solid var(--border)", borderBottom: "1px solid var(--border)" }}>
+          <div
+            className="overflow-hidden flex items-center gap-3"
+            style={{ height: 36, background: "var(--surface)", borderTop: "1px solid var(--border)", borderBottom: "1px solid var(--border)" }}
+          >
+            {/* LIVE badge */}
+            <div
+              className="flex items-center gap-1.5 flex-shrink-0 px-3"
+              style={{ borderRight: "1px solid var(--border)", height: "100%" }}
+            >
+              <span className="live-dot" />
+              <span className="text-[9px] font-bold tracking-[0.2em] uppercase" style={{ color: "var(--blue)", fontFamily: "var(--font-mono)" }}>LIVE</span>
+            </div>
             <div className="overflow-hidden flex-1">
-              <div className="flex gap-12 whitespace-nowrap" style={{ animation: "ticker-scroll 40s linear infinite" }}>
+              <div className="ticker-track">
                 {[...ticker, ...ticker].map((item, i) => (
-                  <Link key={`${item.id}-${i}`} href={`/orgs/${item.org.id}`} className="inline-flex items-center gap-3 text-xs flex-shrink-0 transition-colors" style={{ color: "var(--text2)" }}>
-                    <span className="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded" style={{ color: CATEGORY_COLORS[item.category] ?? "var(--text2)", background: `${CATEGORY_COLORS[item.category] ?? "#888"}20` }}>
+                  <Link
+                    key={`${item.id}-${i}`}
+                    href={`/orgs/${item.org.id}`}
+                    className="inline-flex items-center gap-3 text-xs flex-shrink-0 transition-colors"
+                    style={{ color: "var(--text2)", textDecoration: "none" }}
+                  >
+                    <span
+                      className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5"
+                      style={{ color: CATEGORY_COLORS[item.category] ?? "var(--text2)", background: `${CATEGORY_COLORS[item.category] ?? "#888"}18` }}
+                    >
                       {item.category}
                     </span>
-                    <span>{item.org.name}</span>
-                    <span style={{ color: "var(--text)" }}>{item.title}</span>
-                    {item.deadline && <span style={{ color: "var(--muted)" }}>· {format(new Date(item.deadline), "MMM d")}</span>}
+                    <span style={{ color: "var(--muted)" }}>{item.org.name}</span>
+                    <span style={{ color: "var(--text)", fontWeight: 500 }}>{item.title}</span>
+                    {item.deadline && (
+                      <span style={{ color: "var(--muted)", fontFamily: "var(--font-mono)", fontSize: 10 }}>
+                        · {format(new Date(item.deadline), "MMM d")}
+                      </span>
+                    )}
+                    <span style={{ color: "rgba(59,130,246,0.3)" }}>·</span>
                   </Link>
                 ))}
               </div>
@@ -288,7 +259,6 @@ export default function DashboardClient({ profile, spaces, traitsDone, tutorialD
         )}
       </div>
 
-      <style>{`@keyframes ticker-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }`}</style>
     </div>
   );
 }
