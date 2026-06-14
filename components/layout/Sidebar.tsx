@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { X, ChevronLeft, ChevronRight, LayoutDashboard, Users, Building2, UsersRound, MessageSquare, Bell, Briefcase } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, LayoutDashboard, Users, Building2, UsersRound, MessageSquare, Bell, Briefcase, Megaphone } from "lucide-react";
 import AccountMenu from "./AccountMenu";
 import ThemeToggle from "./ThemeToggle";
 import NivarroMark from "@/components/ui/NivarroMark";
@@ -34,10 +34,17 @@ interface SidebarProps {
 export default function Sidebar({ userName, userEmail, geniusType, mobileOpen = false, onMobileClose, myOrgId, myOrgName, isOrg, collapsed = false, onToggleCollapse }: SidebarProps) {
   const pathname = usePathname();
 
+  const isNivarroAdmin = userEmail === "team@nivarro.co";
+
   const orgNav = myOrgId ? [
     { href: `/orgs/${myOrgId}`, label: myOrgName ?? "My Org", Icon: Briefcase },
     { href: "/peers",           label: "Find Students",       Icon: Users },
     { href: "/messages",        label: "Messages",            Icon: MessageSquare },
+    ...(isNivarroAdmin ? [
+      { href: "/admin/org-categories",   label: "Org Categories",    Icon: Building2 },
+      { href: "/admin/platform-updates", label: "Platform Updates",  Icon: Megaphone },
+      { href: "/admin/scraper-queue",    label: "Scraper Queue",     Icon: Bell },
+    ] : []),
   ] : [];
 
   const navItems = isOrg ? orgNav : STUDENT_NAV;

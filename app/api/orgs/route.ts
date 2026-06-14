@@ -19,8 +19,13 @@ export async function POST(req: Request) {
 
   const body = await req.json();
   const {
-    name, category, website, description, logoLetter, logoBg, logoColor,
-    accentColor, whatInternsBuild, contactEmail,
+    name, category, website, founded, headquartersLocation,
+    tagline, description, whatWeSeek, whatInternsBuild, contactEmail,
+    values, logoLetter, logoBg, logoColor, accentColor,
+    // project listing
+    projectTitle, projectDescription, openSpots, hoursPerWeek, duration,
+    format, requiredSkills, preferredGeniusTypes, gradeEligibility,
+    applicationMode, appMaterials, autoAccept, stipend, impactStatement,
   } = body;
 
   if (!name || !category) {
@@ -32,20 +37,48 @@ export async function POST(req: Request) {
       name,
       category: category as OrgCategory,
       website,
+      founded,
+      headquartersLocation,
+      tagline,
       description,
+      whatWeSeek,
+      whatInternsBuild,
+      contactEmail,
       logoLetter,
       logoBg,
       logoColor,
       accentColor,
-      whatInternsBuild,
-      contactEmail,
-      values: "[]",
+      values: values ?? "[]",
       focusTags: "[]",
-      maxTeamSize: 3,
+      maxTeamSize: 4,
       minTeamSize: 1,
+      stipend,
+      autoAccept: autoAccept ?? false,
       createdById: session.user.id,
     },
   });
+
+  // Create first project listing if project title provided
+  if (projectTitle?.trim()) {
+    await prisma.orgProject.create({
+      data: {
+        orgId: org.id,
+        title: projectTitle.trim(),
+        description: projectDescription?.trim(),
+        impactStatement: impactStatement?.trim(),
+        openSpots: openSpots ?? 1,
+        hoursPerWeek,
+        duration,
+        format,
+        requiredSkills: requiredSkills ?? "[]",
+        preferredGeniusTypes: preferredGeniusTypes ?? "[]",
+        gradeEligibility: gradeEligibility ?? "[]",
+        applicationMode: applicationMode ?? "TEAM",
+        appMaterials: appMaterials ?? "[]",
+        listingStatus: "OPEN",
+      },
+    });
+  }
 
   return NextResponse.json({ org }, { status: 201 });
 }

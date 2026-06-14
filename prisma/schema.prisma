@@ -105,6 +105,7 @@ model Profile {
   animalArchetypes    String      @default("[]")
   archetypeAnalysis   String?
   archetypeUpdatedAt  DateTime?
+  isDemo              Boolean     @default(false)
   createdAt           DateTime    @default(now())
   updatedAt           DateTime    @updatedAt
 
@@ -675,6 +676,18 @@ model AgentCallLog {
   org Org @relation(fields: [orgId], references: [id], onDelete: Cascade)
 
   @@unique([orgId, date])
+}
+
+// ─────────────────────────────────────────────
+// PLATFORM UPDATES (team@nivarro.co broadcasts)
+// ─────────────────────────────────────────────
+
+model PlatformUpdate {
+  id        String   @id @default(cuid())
+  title     String
+  body      String
+  emoji     String?
+  createdAt DateTime @default(now())
 }
 
 // ─────────────────────────────────────────────
