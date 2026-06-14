@@ -36,7 +36,7 @@ function fixMigrationState() {
 
   const result = spawnSync(
     "npx",
-    ["prisma", "db", "execute", `--file=${tmpFile}`, `--url=${DATABASE_URL}`],
+    ["prisma", "db", "execute", `--file=${tmpFile}`],
     { env, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }
   );
 
