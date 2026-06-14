@@ -56,7 +56,7 @@ export async function POST(req: Request) {
 
   const project = await prisma.orgProject.findUnique({ where: { id: orgProjectId } });
   if (!project) return NextResponse.json({ error: "Project not found" }, { status: 404 });
-  if (project.status !== "OPEN") return NextResponse.json({ error: "Project is not open" }, { status: 409 });
+  if (project.listingStatus !== "OPEN") return NextResponse.json({ error: "Project is not open" }, { status: 409 });
 
   const existing = await prisma.workflowSession.findUnique({ where: { profileId: profile.id } });
   if (existing) {

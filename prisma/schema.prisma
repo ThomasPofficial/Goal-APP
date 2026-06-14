@@ -501,32 +501,51 @@ model NoteboardCard {
 // ORG PROJECTS & WORKFLOW
 // ─────────────────────────────────────────────
 
-enum OrgProjectStatus {
-  OPEN
-  CLOSED
-  FILLED
-}
-
 model OrgProject {
-  id                   String           @id @default(cuid())
+  id                   String    @id @default(cuid())
   orgId                String
   title                String
   description          String?
   shortDescription     String?
   fullDescription      String?
-  openSpots            Int              @default(1)
-  requiredSkills       String           @default("[]")
-  preferredGeniusTypes String           @default("[]")
-  roles                String           @default("[]")
+  openSpots            Int       @default(1)
+  requiredSkills       String    @default("[]")
+  preferredGeniusTypes String    @default("[]")
+  roles                String    @default("[]")
   hoursPerWeek         String?
   duration             String?
   format               String?
-  progressPercent      Int              @default(0)
+  progressPercent      Int       @default(0)
   deadline             DateTime?
-  status               OrgProjectStatus @default(OPEN)
+  listingStatus        String    @default("OPEN")
   closedAt             DateTime?
   outcomeNote          String?
-  createdAt            DateTime         @default(now())
+  createdAt            DateTime  @default(now())
+
+  // Rich listing fields
+  locationCity         String?
+  locationRequired     String    @default("NONE")
+  locationRadius       Int?
+  budgetTotal          Int?
+  budgetNotes          String?
+  toolingStipend       Boolean   @default(false)
+  toolingAmount        Int?
+  gradeEligibility     String    @default("[]")
+  advisorRequired      String    @default("NONE")
+  applicationMode      String    @default("TEAM")
+  appMaterials         String    @default("[]")
+  storyBody            String?
+  impactStatement      String?
+  contactName          String?
+  contactRole          String?
+  studentOutcomes      String    @default("[]")
+  dayInLife            String    @default("[]")
+  priorTestimonial     String?
+  mediaUrls            String    @default("[]")
+  acceptanceRate       Float?
+  responseTimeDays     Int?
+  publishedAt          DateTime?
+  lastEditedAt         DateTime?
 
   org              Org                  @relation(fields: [orgId], references: [id], onDelete: Cascade)
   recruitmentReqs  RecruitmentRequest[]

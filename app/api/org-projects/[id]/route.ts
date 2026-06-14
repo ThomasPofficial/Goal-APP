@@ -19,7 +19,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const data: Record<string, unknown> = {};
-  if (status === "CLOSED") { data.status = "CLOSED"; data.closedAt = new Date(); }
+  if (status === "CLOSED") { data.listingStatus = "CLOSED"; data.closedAt = new Date(); }
   if (outcomeNote !== undefined) data.outcomeNote = outcomeNote;
 
   const updated = await prisma.orgProject.update({ where: { id }, data });

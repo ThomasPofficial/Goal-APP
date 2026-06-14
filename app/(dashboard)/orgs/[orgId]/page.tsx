@@ -37,7 +37,7 @@ export default async function OrgDetailPage({ params }: { params: Promise<{ orgI
         hoursPerWeek: true,
         duration: true,
         deadline: true,
-        status: true,
+        listingStatus: true,
         closedAt: true,
         outcomeNote: true,
         _count: { select: { teamApplications: true } },
@@ -100,7 +100,7 @@ export default async function OrgDetailPage({ params }: { params: Promise<{ orgI
   ]);
 
   const [pendingCount, acceptedCount, totalApps, reviewCount] = adminStats as [number, number, number, number];
-  const activeProjects = projects.filter((p) => p.status === "OPEN").length;
+  const activeProjects = projects.filter((p) => p.listingStatus === "OPEN").length;
 
   const myTeamIds = new Set(myProfile?.teamMemberships.map((m) => m.teamId) ?? []);
   const myOrgTeam = org.teams.find((t) => myTeamIds.has(t.id));

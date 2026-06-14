@@ -18,7 +18,7 @@ export async function GET(req: Request) {
       openSpots: true,
       requiredSkills: true,
       deadline: true,
-      status: true,
+      listingStatus: true,
       _count: { select: { teamApplications: { where: { status: "ACCEPTED" } } } },
     },
   });

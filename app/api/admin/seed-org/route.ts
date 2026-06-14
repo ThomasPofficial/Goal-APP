@@ -57,7 +57,7 @@ export async function POST() {
         "Research",
       ]),
       openSpots: 3,
-      status: "OPEN",
+      listingStatus: "OPEN",
     },
   });
 

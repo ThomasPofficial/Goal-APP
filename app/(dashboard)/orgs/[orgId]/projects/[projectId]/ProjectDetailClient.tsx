@@ -53,7 +53,7 @@ interface ProjectDetailClientProps {
     hoursPerWeek: string | null;
     duration: string | null;
     deadline: string | null;
-    status: string;
+    listingStatus: string;
     createdAt: string;
     org: { id: string; name: string; accentColor: string | null; maxTeamSize: number };
   };
@@ -246,7 +246,7 @@ export default function ProjectDetailClient({
         </div>
 
         {/* Workflow CTA */}
-        {myProfileId && !workflowStep && project.status === "OPEN" && !applied && (
+        {myProfileId && !workflowStep && project.listingStatus === "OPEN" && !applied && (
           <div className="mt-4 pt-4" style={{ borderTop: "1px solid var(--border)" }}>
             {/* Profile incomplete — show setup checklist instead of pursue button */}
             {(!hasGeniusType || !traitsDone) ? (
@@ -517,7 +517,7 @@ export default function ProjectDetailClient({
                   View team workspace →
                 </Link>
               </div>
-            ) : project.status !== "OPEN" ? (
+            ) : project.listingStatus !== "OPEN" ? (
               <p className="text-center text-xs py-4" style={{ color: "#8ab0d8" }}>Applications are closed.</p>
             ) : !myProfileId ? (
               <p className="text-center text-xs py-4" style={{ color: "#8ab0d8" }}>Sign in to apply.</p>
