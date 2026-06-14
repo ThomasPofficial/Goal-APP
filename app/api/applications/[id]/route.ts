@@ -17,6 +17,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     where: { id },
     select: {
       id: true,
+      teamId: true,
       status: true,
       orgProject: { select: { org: { select: { createdById: true } } } },
     },
@@ -34,6 +35,13 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     where: { id },
     data: { status, decidedAt: new Date() },
   });
+
+  if (status === "ACCEPTED") {
+    await prisma.team.update({
+      where: { id: application.teamId },
+      data: { status: "ACCEPTED" },
+    });
+  }
 
   return NextResponse.json(updated);
 }
