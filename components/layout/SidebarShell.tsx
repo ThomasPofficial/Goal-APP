@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Menu, LayoutDashboard, Users, Building2, UsersRound, MessageSquare, Briefcase } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -27,9 +27,27 @@ const STUDENT_BOTTOM_TABS = [
 
 export default function SidebarShell({ userName, userEmail, geniusType, myOrgId, myOrgName, isOrg }: Props) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
   const pathname = usePathname();
 
   const orgHomeHref = myOrgId ? `/orgs/${myOrgId}` : "/dashboard";
+
+  // Restore collapse state and sync CSS variable
+  useEffect(() => {
+    const stored = localStorage.getItem("nv_sidebar_collapsed");
+    const isCollapsed = stored === "1";
+    setCollapsed(isCollapsed);
+    document.documentElement.style.setProperty("--sidebar-w", isCollapsed ? "56px" : "220px");
+  }, []);
+
+  const toggleCollapse = () => {
+    setCollapsed((prev) => {
+      const next = !prev;
+      localStorage.setItem("nv_sidebar_collapsed", next ? "1" : "0");
+      document.documentElement.style.setProperty("--sidebar-w", next ? "56px" : "220px");
+      return next;
+    });
+  };
 
   const ORG_BOTTOM_TABS = [
     { href: orgHomeHref, label: "Dashboard", Icon: Briefcase },
@@ -53,7 +71,7 @@ export default function SidebarShell({ userName, userEmail, geniusType, myOrgId,
         <Link href={isOrg ? orgHomeHref : "/dashboard"} style={{ textDecoration: "none" }}>
           <span
             style={{
-              fontFamily: "'Plus Jakarta Sans', sans-serif",
+              fontFamily: "var(--font-body)",
               fontSize: 18,
               fontWeight: 900,
               letterSpacing: "-0.04em",
@@ -68,7 +86,7 @@ export default function SidebarShell({ userName, userEmail, geniusType, myOrgId,
           <ThemeToggle compact />
           <button
             onClick={() => setMobileOpen(true)}
-            className="w-9 h-9 flex items-center justify-center rounded-lg"
+            className="w-9 h-9 flex items-center justify-center"
             style={{ color: "var(--text2)", background: "none", border: "none", cursor: "pointer" }}
             aria-label="Open menu"
           >
@@ -123,6 +141,8 @@ export default function SidebarShell({ userName, userEmail, geniusType, myOrgId,
         myOrgId={myOrgId}
         myOrgName={myOrgName}
         isOrg={isOrg}
+        collapsed={collapsed}
+        onToggleCollapse={toggleCollapse}
       />
     </>
   );
