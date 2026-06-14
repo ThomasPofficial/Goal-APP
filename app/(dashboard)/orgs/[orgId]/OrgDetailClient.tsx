@@ -195,7 +195,7 @@ function CloseProjectModal({
 
 export default function OrgDetailClient({
   org, projects, myProfileId, myTeamId, isAdmin, applications,
-  adminStats, apiKey, reviewCount, whatInternsBuild,
+  adminStats, apiKey, reviewCount, whatInternsBuild, initialSaved,
 }: {
   org: OrgDetail;
   projects: OrgProjectSummary[];
@@ -207,8 +207,9 @@ export default function OrgDetailClient({
   apiKey: string | null;
   reviewCount: number;
   whatInternsBuild: string | null;
+  initialSaved: boolean;
 }) {
-  const [saved, setSaved] = useState(false);
+  const [saved, setSaved] = useState(initialSaved);
   const [adminTab, setAdminTab] = useState<"overview" | "projects" | "applications" | "settings">("overview");
   const [appStatuses, setAppStatuses] = useState<Record<string, string>>(
     () => Object.fromEntries(applications.map((a) => [a.id, a.status]))
@@ -671,7 +672,11 @@ export default function OrgDetailClient({
             )}
 
             <button
-              onClick={() => setSaved((s) => !s)}
+              onClick={async () => {
+                const res = await fetch(`/api/orgs/${org.id}/save`, { method: "POST" });
+                const data = await res.json();
+                setSaved(data.saved);
+              }}
               className={cn(
                 "flex items-center justify-center gap-1.5 w-full py-2 rounded-lg border text-xs font-medium mt-2 transition-colors",
                 saved
