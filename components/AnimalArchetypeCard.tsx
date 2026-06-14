@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactElement } from "react";
 import { ANIMAL_ARCHETYPES, type AnimalKey } from "@/lib/animalArchetypes";
 
 function GorillaSprite() {
@@ -325,7 +326,7 @@ function SharkSprite() {
   );
 }
 
-const SPRITES: Record<AnimalKey, () => JSX.Element> = {
+const SPRITES: Record<AnimalKey, () => ReactElement> = {
   gorilla: GorillaSprite,
   tiger: TigerSprite,
   cheetah: CheetahSprite,
