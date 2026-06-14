@@ -8,34 +8,43 @@ import GeniusTypeBadge from "@/components/ui/GeniusTypeBadge";
 import type { GeniusTypeKey } from "@/lib/geniusTypes";
 import { cn } from "@/lib/utils";
 
-interface RecruitmentRequest {
+interface RecruitmentItem {
   id: string;
+  type: "recruitment";
   status: string;
+  sortDate: string;
   message: string | null;
   createdAt: string;
-  orgProject: {
-    id: string;
-    title: string;
-    orgId: string;
-    org: { id: string; name: string };
-  };
-  fromProfile: {
-    id: string;
-    displayName: string;
-    avatarUrl: string | null;
-    geniusType: string | null;
-    handle: string | null;
-  };
+  orgProject: { id: string; title: string; orgId: string; org: { id: string; name: string } };
+  fromProfile: { id: string; displayName: string; avatarUrl: string | null; geniusType: string | null; handle: string | null };
   team: { id: string; name: string };
 }
 
-export default function NotificationsClient({ requests }: { requests: RecruitmentRequest[] }) {
-  const [statuses, setStatuses] = useState<Record<string, string>>(() =>
+interface DecisionItem {
+  id: string;
+  type: "decision";
+  status: string;
+  sortDate: string;
+  decidedAt: string | null;
+  team: { id: string; name: string };
+  orgProject: { id: string; title: string; orgId: string; org: { id: string; name: string } };
+}
+
+type NotifItem = RecruitmentItem | DecisionItem;
+
+export default function NotificationsClient({
+  requests,
+  applications,
+}: {
+  requests: RecruitmentItem[];
+  applications: DecisionItem[];
+}) {
+  const [recruitStatuses, setRecruitStatuses] = useState<Record<string, string>>(() =>
     Object.fromEntries(requests.map((r) => [r.id, r.status]))
   );
 
   const respond = async (id: string, status: "ACCEPTED" | "DECLINED") => {
-    setStatuses((prev) => ({ ...prev, [id]: status }));
+    setRecruitStatuses((prev) => ({ ...prev, [id]: status }));
     await fetch(`/api/recruitment-requests/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -43,62 +52,130 @@ export default function NotificationsClient({ requests }: { requests: Recruitmen
     });
   };
 
-  const pending = requests.filter((r) => statuses[r.id] === "PENDING");
-  const handled = requests.filter((r) => statuses[r.id] !== "PENDING");
+  const allItems: NotifItem[] = [
+    ...requests.map((r) => ({ ...r, status: recruitStatuses[r.id] ?? r.status })),
+    ...applications,
+  ].sort((a, b) => new Date(b.sortDate).getTime() - new Date(a.sortDate).getTime());
+
+  const pending = allItems.filter((i) => i.type === "recruitment" && i.status === "PENDING");
+  const earlier = allItems.filter((i) => !(i.type === "recruitment" && i.status === "PENDING"));
+
+  if (allItems.length === 0) {
+    return (
+      <div className="max-w-2xl space-y-6">
+        <h1 className="text-2xl font-medium" style={{ fontFamily: "var(--font-serif)" }}>Notifications</h1>
+        <div className="text-center py-16 space-y-2">
+          <p className="text-sm" style={{ color: "var(--muted)" }}>No notifications yet.</p>
+          <p className="text-xs" style={{ color: "var(--muted)" }}>Acceptances, invitations, and decisions show up here.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-2xl space-y-6">
-      <h1 className="text-2xl font-bold text-[#EAE8E0]">Notifications</h1>
+      <h1 className="text-2xl font-medium" style={{ fontFamily: "var(--font-serif)" }}>Notifications</h1>
 
-      {requests.length === 0 ? (
-        <div className="text-center py-16 space-y-2">
-          <p className="text-sm text-[#5A5570]">No notifications yet.</p>
-          <p className="text-xs text-[#5A5570]">When someone recruits you, you&apos;ll see it here.</p>
+      {pending.length > 0 && (
+        <div>
+          <p className="text-xs font-mono font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--muted)" }}>
+            PENDING · {pending.length}
+          </p>
+          <div className="space-y-3">
+            {pending.map((item) =>
+              item.type === "recruitment" ? (
+                <RecruitCard key={item.id} req={item} status={recruitStatuses[item.id]} onRespond={respond} />
+              ) : null
+            )}
+          </div>
         </div>
-      ) : (
-        <>
-          {pending.length > 0 && (
-            <div>
-              <p className="text-xs font-semibold text-[#8A8898] uppercase tracking-wider mb-3">
-                Pending · {pending.length}
-              </p>
-              <div className="space-y-3">
-                {pending.map((req) => (
-                  <RequestCard key={req.id} req={req} status={statuses[req.id]} onRespond={respond} />
-                ))}
-              </div>
-            </div>
-          )}
-          {handled.length > 0 && (
-            <div>
-              <p className="text-xs font-semibold text-[#8A8898] uppercase tracking-wider mb-3">Earlier</p>
-              <div className="space-y-3">
-                {handled.map((req) => (
-                  <RequestCard key={req.id} req={req} status={statuses[req.id]} onRespond={respond} />
-                ))}
-              </div>
-            </div>
-          )}
-        </>
+      )}
+
+      {earlier.length > 0 && (
+        <div>
+          <p className="text-xs font-mono font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--muted)" }}>
+            EARLIER
+          </p>
+          <div className="space-y-3">
+            {earlier.map((item) =>
+              item.type === "recruitment" ? (
+                <RecruitCard key={item.id} req={item} status={recruitStatuses[item.id]} onRespond={respond} />
+              ) : (
+                <DecisionCard key={item.id} item={item} />
+              )
+            )}
+          </div>
+        </div>
       )}
     </div>
   );
 }
 
-function RequestCard({
+function DecisionCard({ item }: { item: DecisionItem }) {
+  const accepted = item.status === "ACCEPTED";
+  return (
+    <div
+      className={cn(
+        "border p-4",
+        accepted ? "border-emerald-800/40" : "border-red-900/30 opacity-70"
+      )}
+      style={{ background: "var(--surface)" }}
+    >
+      <div className="flex items-start gap-3">
+        <div className={cn(
+          "w-2 h-2 rounded-full mt-1.5 flex-shrink-0",
+          accepted ? "bg-emerald-400" : "bg-red-500"
+        )} />
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium" style={{ color: "var(--text)" }}>
+            {accepted ? "Your team was accepted" : "Application not accepted"}
+          </p>
+          <p className="text-xs mt-0.5" style={{ color: "var(--text2)" }}>
+            <Link href={`/teams/${item.team.id}`} className="hover:underline" style={{ color: "var(--blue)" }}>
+              {item.team.name}
+            </Link>
+            {" · "}
+            <Link
+              href={`/orgs/${item.orgProject.orgId}/projects/${item.orgProject.id}`}
+              className="hover:underline"
+              style={{ color: "var(--text2)" }}
+            >
+              {item.orgProject.title}
+            </Link>
+            {" · "}
+            {item.orgProject.org.name}
+          </p>
+          {item.decidedAt && (
+            <p className="text-xs mt-1 font-mono" style={{ color: "var(--muted)" }}>
+              {formatDistanceToNow(new Date(item.decidedAt), { addSuffix: true })}
+            </p>
+          )}
+        </div>
+        <span className={cn(
+          "text-xs font-mono uppercase tracking-widest px-2 py-0.5 flex-shrink-0",
+          accepted ? "text-emerald-400" : "text-red-400"
+        )}>
+          {accepted ? "ACCEPTED" : "REJECTED"}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function RecruitCard({
   req, status, onRespond,
 }: {
-  req: RecruitmentRequest;
+  req: RecruitmentItem;
   status: string;
   onRespond: (id: string, s: "ACCEPTED" | "DECLINED") => void;
 }) {
   return (
     <div className={cn(
-      "bg-[#0D1525] border rounded-xl p-4 transition-opacity",
+      "border p-4 transition-opacity",
       status === "PENDING"
         ? "border-[rgba(74,128,240,0.28)]"
         : "border-[rgba(74,128,240,0.12)] opacity-60"
-    )}>
+    )} style={{ background: "var(--surface)" }}>
       <div className="flex items-start gap-3">
         <Avatar
           src={req.fromProfile.avatarUrl}
@@ -110,30 +187,36 @@ function RequestCard({
           <div className="flex items-center gap-2 flex-wrap">
             <Link
               href={`/profile/${req.fromProfile.handle ?? req.fromProfile.id}`}
-              className="font-medium text-sm text-[#EAE8E0] hover:text-[#4a80f0] transition-colors"
+              className="font-medium text-sm hover:underline"
+              style={{ color: "var(--text)" }}
             >
               {req.fromProfile.displayName}
             </Link>
             {req.fromProfile.geniusType && (
               <GeniusTypeBadge type={req.fromProfile.geniusType as GeniusTypeKey} size="sm" />
             )}
-            <span className="text-xs text-[#5A5570]">
+            <span className="text-xs font-mono" style={{ color: "var(--muted)" }}>
               {formatDistanceToNow(new Date(req.createdAt), { addSuffix: true })}
             </span>
           </div>
-          <p className="text-xs text-[#8A8898] mt-0.5">
+          <p className="text-xs mt-0.5" style={{ color: "var(--text2)" }}>
             Invited you to join{" "}
-            <span className="text-[#4a80f0]">{req.team.name}</span> for{" "}
+            <Link href={`/teams/${req.team.id}`} className="hover:underline" style={{ color: "var(--blue)" }}>
+              {req.team.name}
+            </Link>
+            {" for "}
             <Link
               href={`/orgs/${req.orgProject.orgId}/projects/${req.orgProject.id}`}
-              className="text-[#4a80f0] hover:underline"
+              className="hover:underline"
+              style={{ color: "var(--blue)" }}
             >
               {req.orgProject.title}
-            </Link>{" "}
-            · {req.orgProject.org.name}
+            </Link>
+            {" · "}
+            {req.orgProject.org.name}
           </p>
           {req.message && (
-            <p className="text-xs text-[#8A8898] mt-1.5 italic bg-[#111C32] rounded-lg px-3 py-2">
+            <p className="text-xs mt-1.5 italic px-3 py-2" style={{ background: "var(--surface2)", color: "var(--text2)" }}>
               &ldquo;{req.message}&rdquo;
             </p>
           )}
@@ -141,23 +224,22 @@ function RequestCard({
             <div className="flex gap-2 mt-3">
               <button
                 onClick={() => onRespond(req.id, "ACCEPTED")}
-                className="px-4 py-1.5 rounded-lg bg-[#4a80f0] text-[#05080F] text-xs font-semibold hover:bg-[#6a9fff] transition-colors"
+                className="btn-primary px-4 py-1.5 text-xs"
               >
                 Accept
               </button>
               <button
                 onClick={() => onRespond(req.id, "DECLINED")}
-                className="px-4 py-1.5 rounded-lg border border-[rgba(74,128,240,0.12)] text-[#8A8898] text-xs hover:border-red-500/30 hover:text-red-400 transition-colors"
+                className="btn-ghost px-4 py-1.5 text-xs"
               >
                 Decline
               </button>
             </div>
           ) : (
-            <span className={cn(
-              "inline-block mt-2 text-xs font-semibold px-2 py-0.5 rounded-full",
-              status === "ACCEPTED" ? "bg-green-950 text-green-400" : "bg-[#1e1e24] text-[#5A5570]"
-            )}>
-              {status === "ACCEPTED" ? "Accepted" : "Declined"}
+            <span className="font-mono text-xs uppercase tracking-widest mt-2 inline-block" style={{
+              color: status === "ACCEPTED" ? "var(--blue)" : "var(--muted)"
+            }}>
+              {status}
             </span>
           )}
         </div>
