@@ -3,16 +3,14 @@
 
 /* ─────────────────────────────────────────
    FONT TOKENS
-   Single source of truth — every component
-   that refs these vars gets the right font.
 ───────────────────────────────────────── */
 
 :root {
-  --font-display: var(--font-display, 'Plus Jakarta Sans', system-ui, sans-serif);
-  --font-body:    var(--font-display);
-  --font-mono:    'DM Mono', 'JetBrains Mono', monospace;
+  /* Next.js font sets --font-display via className on <html> */
+  --font-body: var(--font-display, 'Plus Jakarta Sans', system-ui, sans-serif);
+  --font-mono: 'DM Mono', 'JetBrains Mono', monospace;
 
-  /* ── Accent ── */
+  /* ── Accent — electric blue, unchanged ── */
   --blue:        #3B82F6;
   --blue-bright: #60A5FA;
   --blue-dim:    #1E3A5F;
@@ -23,17 +21,17 @@
   --gold-dim:    var(--blue-dim);
   --gold-glow:   var(--blue-glow);
 
-  /* ── Dark surfaces ── */
-  --n-bg:       #020407;
-  --n-bg2:      #040D1C;
-  --n-surface:  #081626;
-  --n-surface2: #0D1F35;
-  --n-surface3: #122744;
-  --n-border:   rgba(255,255,255,0.05);
-  --n-border-md:rgba(59,130,246,0.18);
-  --n-text:     #EEF2FF;
+  /* ── OLED black surfaces — true zero ── */
+  --n-bg:       #000000;
+  --n-bg2:      #000000;
+  --n-surface:  #060606;
+  --n-surface2: #0c0c0c;
+  --n-surface3: #141414;
+  --n-border:   rgba(255,255,255,0.04);
+  --n-border-md:rgba(59,130,246,0.22);
+  --n-text:     #F0F4FF;
   --n-text2:    #8AA4C8;
-  --n-muted:    #4A607E;
+  --n-muted:    #3A506A;
 
   /* ── Active (dark default) ── */
   --bg:        var(--n-bg);
@@ -48,19 +46,22 @@
   --muted:     var(--n-muted);
 
   /* ── Glow system ── */
-  --glow-blue:        0 0 20px rgba(59,130,246,0.45), 0 0 6px rgba(59,130,246,0.25);
-  --glow-blue-strong: 0 0 36px rgba(59,130,246,0.65), 0 0 12px rgba(59,130,246,0.4);
-  --glow-blue-sm:     0 0 10px rgba(59,130,246,0.3);
-  --glow-card:        0 8px 32px rgba(59,130,246,0.12), 0 0 0 1px rgba(59,130,246,0.1);
-  --glow-text:        0 0 16px rgba(59,130,246,0.6);
+  --glow-blue:        0 0 24px rgba(59,130,246,0.55), 0 0 6px rgba(59,130,246,0.3);
+  --glow-blue-strong: 0 0 40px rgba(59,130,246,0.75), 0 0 12px rgba(59,130,246,0.5);
+  --glow-blue-sm:     0 0 12px rgba(59,130,246,0.35);
+  --glow-card:        0 0 0 1px rgba(59,130,246,0.15), 0 8px 32px rgba(0,0,0,0.8);
+  --glow-text:        0 0 20px rgba(59,130,246,0.7);
+
+  /* ── Sidebar width (JS-driven for collapse) ── */
+  --sidebar-w: 220px;
 
   /* ── Radius & shadow ── */
   --radius-sm:  0px;
   --radius-md:  0px;
   --radius-lg:  0px;
-  --shadow-sm:  0 1px 3px rgba(0,0,0,0.5), 0 1px 2px rgba(0,0,0,0.3);
-  --shadow-md:  0 4px 16px rgba(0,0,0,0.45);
-  --shadow-lg:  0 16px 48px rgba(0,0,0,0.6);
+  --shadow-sm:  0 1px 4px rgba(0,0,0,0.9);
+  --shadow-md:  0 4px 20px rgba(0,0,0,0.9);
+  --shadow-lg:  0 16px 48px rgba(0,0,0,0.95);
 }
 
 /* ─────────────────────────────────────────
@@ -89,7 +90,6 @@ body.day {
   --text2:     #334155;
   --muted:     #64748B;
 
-  /* Softer glows in light mode */
   --glow-blue:        0 2px 12px rgba(29,78,216,0.2);
   --glow-blue-strong: 0 4px 24px rgba(29,78,216,0.3);
   --glow-blue-sm:     0 1px 6px rgba(29,78,216,0.14);
@@ -124,17 +124,17 @@ html, body {
 ───────────────────────────────────────── */
 
 h1, h2, h3, h4 {
-  font-family: var(--font-display);
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  line-height: 1.2;
+  font-family: var(--font-body);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
   color: var(--text);
   margin: 0;
 }
 
-h1 { font-size: clamp(1.8rem, 4vw, 2.6rem); }
-h2 { font-size: clamp(1.3rem, 3vw, 1.8rem); }
-h3 { font-size: clamp(1.05rem, 2vw, 1.25rem); }
+h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); letter-spacing: -0.035em; }
+h2 { font-size: clamp(1.3rem, 3vw, 1.9rem); }
+h3 { font-size: clamp(1.05rem, 2vw, 1.3rem); }
 
 p { line-height: 1.65; margin: 0; }
 
@@ -142,19 +142,19 @@ p { line-height: 1.65; margin: 0; }
    SCROLLBAR
 ───────────────────────────────────────── */
 
-::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar { width: 3px; height: 3px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border-md); border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+::-webkit-scrollbar-thumb { background: rgba(59,130,246,0.2); border-radius: 0; }
+::-webkit-scrollbar-thumb:hover { background: rgba(59,130,246,0.4); }
 
 /* ─────────────────────────────────────────
    SELECTION & FOCUS
 ───────────────────────────────────────── */
 
-::selection { background: rgba(59,130,246,0.2); color: var(--text); }
+::selection { background: rgba(59,130,246,0.25); color: var(--text); }
 
 :focus-visible {
-  outline: 2px solid var(--blue);
+  outline: 1px solid var(--blue);
   outline-offset: 2px;
 }
 
@@ -167,11 +167,11 @@ p { line-height: 1.65; margin: 0; }
     background: var(--surface2);
     color: var(--text);
     border: 1px solid var(--border-md);
-    border-radius: var(--radius-sm);
+    border-radius: 0;
     padding: 0.5rem 0.75rem;
     font-family: var(--font-body);
     font-size: 0.875rem;
-    transition: border-color 150ms, box-shadow 150ms;
+    transition: border-color 80ms, box-shadow 80ms;
   }
 
   input::placeholder, textarea::placeholder { color: var(--muted); }
@@ -179,13 +179,24 @@ p { line-height: 1.65; margin: 0; }
   input:focus, textarea:focus, select:focus {
     outline: none;
     border-color: var(--blue);
-    box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+    box-shadow: 0 0 0 1px rgba(59,130,246,0.3);
   }
 }
 
 a, button {
-  transition: color 120ms, background-color 120ms, border-color 120ms,
-              opacity 120ms, box-shadow 150ms;
+  transition: color 80ms, background-color 80ms, border-color 80ms,
+              opacity 80ms, box-shadow 100ms;
+}
+
+/* ─────────────────────────────────────────
+   DASHBOARD LAYOUT — sidebar-aware main
+───────────────────────────────────────── */
+
+@media (min-width: 768px) {
+  .dashboard-main {
+    padding-left: var(--sidebar-w, 220px);
+    transition: padding-left 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
 }
 
 /* ─────────────────────────────────────────
@@ -197,11 +208,11 @@ a, button {
   border: 1px solid var(--border);
   border-radius: 0;
   box-shadow: var(--shadow-sm);
-  transition: box-shadow 200ms, border-color 200ms, transform 200ms;
+  transition: box-shadow 150ms, border-color 150ms, transform 120ms;
 }
 
 .card:hover {
-  border-color: rgba(59,130,246,0.2);
+  border-color: rgba(59,130,246,0.22);
   box-shadow: var(--glow-card);
   transform: translateY(-1px);
 }
@@ -212,22 +223,18 @@ body.day .card:hover {
   transform: translateY(-1px);
 }
 
-/* Minimal scrollbar */
-::-webkit-scrollbar { width: 3px; height: 3px; }
-
 /* ─────────────────────────────────────────
    GLOW UTILITIES
-   Use these class names in components for
-   consistent, mode-aware glow effects.
 ───────────────────────────────────────── */
 
 .glow-blue  { box-shadow: var(--glow-blue); }
 .glow-blue:hover { box-shadow: var(--glow-blue-strong); }
 
-/* Nav item active state — sharp left bar, no pill */
-.nav-active {
-  position: relative;
-}
+/* ─────────────────────────────────────────
+   NAV ACTIVE — sharp left bar
+───────────────────────────────────────── */
+
+.nav-active { position: relative; }
 .nav-active::before {
   content: "";
   position: absolute;
@@ -236,9 +243,13 @@ body.day .card:hover {
   bottom: 0;
   width: 2px;
   background: var(--blue);
+  box-shadow: 0 0 8px rgba(59,130,246,0.6);
 }
 
-/* Primary button — blue with glow */
+/* ─────────────────────────────────────────
+   BUTTONS
+───────────────────────────────────────── */
+
 .btn-primary {
   display: inline-flex;
   align-items: center;
@@ -247,7 +258,7 @@ body.day .card:hover {
   padding: 0.5rem 1.1rem;
   background: var(--blue);
   color: #FFFFFF;
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   font-weight: 700;
   font-size: 0.875rem;
   letter-spacing: -0.01em;
@@ -255,7 +266,7 @@ body.day .card:hover {
   border-radius: 0;
   cursor: pointer;
   box-shadow: var(--glow-blue-sm);
-  transition: box-shadow 150ms, transform 150ms, background 150ms;
+  transition: box-shadow 80ms, transform 80ms, background 80ms;
 }
 
 .btn-primary:hover {
@@ -264,9 +275,8 @@ body.day .card:hover {
   transform: translateY(-1px);
 }
 
-.btn-primary:active { transform: none; }
+.btn-primary:active { transform: none; box-shadow: none; }
 
-/* Ghost button */
 .btn-ghost {
   display: inline-flex;
   align-items: center;
@@ -275,14 +285,14 @@ body.day .card:hover {
   padding: 0.45rem 1rem;
   background: transparent;
   color: var(--text2);
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   font-weight: 600;
   font-size: 0.875rem;
   letter-spacing: -0.01em;
   border: 1px solid var(--border-md);
   border-radius: 0;
   cursor: pointer;
-  transition: border-color 150ms, color 150ms, box-shadow 150ms;
+  transition: border-color 80ms, color 80ms, box-shadow 80ms;
 }
 
 .btn-ghost:hover {
@@ -292,60 +302,119 @@ body.day .card:hover {
 }
 
 /* ─────────────────────────────────────────
-   CORNER BRACKET CARDS
-   Cards show L-shaped corner marks instead
-   of full borders — precision reticle aesthetic.
+   CORNER BRACKET CARDS — reticle aesthetic
 ───────────────────────────────────────── */
 
-.bracket-card {
-  position: relative;
-}
+.bracket-card { position: relative; }
 .bracket-card::before,
 .bracket-card::after {
   content: "";
   position: absolute;
-  width: 12px;
-  height: 12px;
+  width: 10px;
+  height: 10px;
   border-style: solid;
-  border-color: rgba(59,130,246,0.45);
+  border-color: rgba(59,130,246,0.35);
   pointer-events: none;
   z-index: 2;
-  transition: border-color 200ms;
+  transition: border-color 150ms, width 150ms, height 150ms;
 }
-.bracket-card::before {
-  top: 0; left: 0;
-  border-width: 1px 0 0 1px;
-}
-.bracket-card::after {
-  bottom: 0; right: 0;
-  border-width: 0 1px 1px 0;
-}
+.bracket-card::before { top: 0; left: 0; border-width: 1px 0 0 1px; }
+.bracket-card::after  { bottom: 0; right: 0; border-width: 0 1px 1px 0; }
 .bracket-card:hover::before,
 .bracket-card:hover::after {
-  border-color: rgba(59,130,246,0.75);
+  border-color: rgba(59,130,246,0.7);
+  width: 14px;
+  height: 14px;
+  box-shadow: 0 0 8px rgba(59,130,246,0.3);
 }
 
 /* ─────────────────────────────────────────
-   PULSE DOT — animated unread indicator
+   ANIMATIONS
 ───────────────────────────────────────── */
 
+/* Ticker scroll — CNBC-style */
+@keyframes ticker-scroll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* Snap-in — elements lock into place with slight overshoot */
+@keyframes snap-in {
+  0%   { opacity: 0; transform: translateY(6px) scaleY(0.97); }
+  70%  { opacity: 1; transform: translateY(-1px) scaleY(1.005); }
+  100% { opacity: 1; transform: translateY(0) scaleY(1); }
+}
+.snap-in { animation: snap-in 0.2s cubic-bezier(0.4, 0, 0.2, 1) both; }
+
+/* Slide up — section entrance */
+@keyframes slide-up {
+  0%   { opacity: 0; transform: translateY(12px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+.slide-up { animation: slide-up 0.3s cubic-bezier(0.4, 0, 0.2, 1) both; }
+
+/* Flash-in — data appears like a telemetry readout */
+@keyframes flash-in {
+  0%   { opacity: 0; letter-spacing: 0.1em; }
+  60%  { opacity: 1; letter-spacing: -0.01em; }
+  100% { opacity: 1; }
+}
+.flash-in { animation: flash-in 0.25s ease-out both; }
+
+/* Number tick — spinning up to a value */
+@keyframes count-up {
+  0%   { opacity: 0.3; transform: translateY(4px); }
+  100% { opacity: 1;   transform: translateY(0); }
+}
+.count-up { animation: count-up 0.4s ease-out both; }
+
+/* Live ping — broadcast dot */
+@keyframes live-ping {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(59,130,246,0.6); opacity: 1; }
+  50%       { box-shadow: 0 0 0 5px rgba(59,130,246,0); opacity: 0.7; }
+}
+.live-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #3B82F6;
+  animation: live-ping 1.6s ease-in-out infinite;
+}
+
+/* Pulse dot — unread indicator */
 @keyframes pulse-dot {
   0%, 100% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.6); opacity: 0.55; }
+  50%       { transform: scale(1.6); opacity: 0.5; }
 }
 .pulse-dot { animation: pulse-dot 2.2s ease-in-out infinite; }
 
+/* Team accepted */
 @keyframes accepted-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.4); }
-  50% { box-shadow: 0 0 0 6px rgba(52, 211, 153, 0); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(52,211,153,0.4); }
+  50%       { box-shadow: 0 0 0 6px rgba(52,211,153,0); }
 }
-
 .team-accepted {
-  border-color: rgba(52, 211, 153, 0.5) !important;
+  border-color: rgba(52,211,153,0.5) !important;
   animation: accepted-pulse 1.5s ease-in-out 3;
 }
 
-/* Status pills — mono uppercase */
+/* Countdown bar — WelcomeCard auto-dismiss */
+@keyframes countdown-bar {
+  0%   { width: 100%; }
+  100% { width: 0%; }
+}
+.countdown-bar {
+  height: 1px;
+  background: var(--blue);
+  box-shadow: 0 0 6px rgba(59,130,246,0.5);
+  animation: countdown-bar var(--countdown-duration, 20s) linear forwards;
+}
+
+/* ─────────────────────────────────────────
+   STATUS PILLS
+───────────────────────────────────────── */
+
 .status-pill {
   font-family: var(--font-mono);
   font-size: 0.7rem;
@@ -355,76 +424,79 @@ body.day .card:hover {
   padding: 0.2rem 0.5rem;
 }
 
-/* Logo wordmark glow */
+/* ─────────────────────────────────────────
+   LOGO
+───────────────────────────────────────── */
+
 .logo-text {
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   font-weight: 900;
   letter-spacing: -0.04em;
 }
-
 .logo-accent {
   color: var(--blue);
   text-shadow: var(--glow-text);
 }
 
-/* Genius type badge glow on hover */
-.genius-badge {
-  transition: box-shadow 150ms, transform 150ms;
-}
-.genius-badge:hover {
-  transform: scale(1.04);
+/* ─────────────────────────────────────────
+   GENIUS BADGE
+───────────────────────────────────────── */
+
+.genius-badge { transition: box-shadow 150ms, transform 150ms; }
+.genius-badge:hover { transform: scale(1.04); }
+
+/* ─────────────────────────────────────────
+   SIDEBAR COLLAPSED STATE
+───────────────────────────────────────── */
+
+.sidebar-collapsed-label {
+  overflow: hidden;
+  white-space: nowrap;
+  transition: opacity 0.2s, max-width 0.25s cubic-bezier(0.4,0,0.2,1);
 }
 
 /* ─────────────────────────────────────────
-   COLOR COMPATIBILITY — dark-only hex values
-   Maps old hardcoded navy text colors to CSS
-   variables so light mode stays readable.
+   LIVE TICKER STRIP
 ───────────────────────────────────────── */
 
-/* #f0f8ff, #d8eeff — near-white blue text, invisible in light mode */
+.ticker-track {
+  display: flex;
+  gap: 3rem;
+  white-space: nowrap;
+  will-change: transform;
+  animation: ticker-scroll 50s linear infinite;
+}
+.ticker-track:hover { animation-play-state: paused; }
+
+/* ─────────────────────────────────────────
+   COLOR COMPATIBILITY — mode overrides
+───────────────────────────────────────── */
+
 [style*="color: rgb(240, 248, 255)"],
-[style*="color:#f0f8ff"],
-[style*='color: "#f0f8ff"'] { color: var(--text) !important; }
+[style*="color:#f0f8ff"] { color: var(--text) !important; }
 
 [style*="color: rgb(216, 238, 255)"],
-[style*="color:#d8eeff"],
-[style*='color: "#d8eeff"'] { color: var(--text) !important; }
+[style*="color:#d8eeff"] { color: var(--text) !important; }
 
-/* #8ab0d8 — secondary blue text */
 [style*="color: rgb(138, 176, 216)"],
-[style*="color:#8ab0d8"],
-[style*='color: "#8ab0d8"'] { color: var(--text2) !important; }
+[style*="color:#8ab0d8"] { color: var(--text2) !important; }
 
-/* #5a7898 — muted navy text */
 [style*="color: rgb(90, 120, 152)"],
-[style*="color:#5a7898"],
-[style*='color: "#5a7898"'] { color: var(--muted) !important; }
+[style*="color:#5a7898"] { color: var(--muted) !important; }
 
-/* #6A9FFF — blue accent links */
 [style*="color: rgb(106, 159, 255)"],
 [style*="color:#6A9FFF"],
 [style*="color:#6a9fff"] { color: var(--blue-bright) !important; }
 
-/* #c8ddf0 — near-white blue, invisible in light mode */
 [style*="color: rgb(200, 221, 240)"] { color: var(--text) !important; }
-
-/* #3a5878 — dark blue muted text */
 [style*="color: rgb(58, 88, 120)"] { color: var(--muted) !important; }
 
-/* ─────────────────────────────────────────
-   LIGHT MODE OVERRIDES
-   Fix colorScheme + inline dark bg surfaces
-───────────────────────────────────────── */
-
-/* Force date/time pickers to light styling in day mode */
 body.day input[type="date"],
 body.day input[type="time"],
-body.day input[type="datetime-local"] {
-  color-scheme: light;
-}
+body.day input[type="datetime-local"] { color-scheme: light; }
 
 /* ─────────────────────────────────────────
-   LEGACY TAILWIND ARBITRARY CLASS OVERRIDES
+   LEGACY TAILWIND OVERRIDES
 ───────────────────────────────────────── */
 
 .bg-\[#080809\], .bg-\[#0f0f11\], .bg-\[#0d0d0e\], .bg-\[#07090f\] { background-color: var(--bg) !important; }
@@ -460,7 +532,6 @@ body.day input[type="datetime-local"] {
 .placeholder-\[#58586a\]::placeholder,
 .placeholder-\[#5a5570\]::placeholder { color: var(--muted) !important; }
 
-/* Uppercase hex variants (case-sensitive class names) */
 .text-\[#EAE8E0\] { color: var(--text) !important; }
 .text-\[#5A5570\] { color: var(--muted) !important; }
 .text-\[#8A8898\] { color: var(--text2) !important; }

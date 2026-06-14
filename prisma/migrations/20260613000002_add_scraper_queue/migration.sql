@@ -1,4 +1,4 @@
-CREATE TABLE "ScrapedListing" (
+CREATE TABLE IF NOT EXISTS "ScrapedListing" (
   "id" TEXT NOT NULL,
   "sourceUrl" TEXT NOT NULL,
   "sourceInstitution" TEXT NOT NULL,
@@ -14,4 +14,4 @@ CREATE TABLE "ScrapedListing" (
   "scrapedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT "ScrapedListing_pkey" PRIMARY KEY ("id")
 );
-CREATE INDEX "ScrapedListing_status_idx" ON "ScrapedListing"("status");
+CREATE INDEX IF NOT EXISTS "ScrapedListing_status_idx" ON "ScrapedListing"("status");

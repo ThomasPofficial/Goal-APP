@@ -1,4 +1,4 @@
-CREATE TABLE "SavedOrg" (
+CREATE TABLE IF NOT EXISTS "SavedOrg" (
   "id" TEXT NOT NULL,
   "profileId" TEXT NOT NULL,
   "orgId" TEXT NOT NULL,
@@ -7,4 +7,4 @@ CREATE TABLE "SavedOrg" (
   CONSTRAINT "SavedOrg_profileId_fkey" FOREIGN KEY ("profileId") REFERENCES "Profile"("id") ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT "SavedOrg_orgId_fkey" FOREIGN KEY ("orgId") REFERENCES "Org"("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
-CREATE UNIQUE INDEX "SavedOrg_profileId_orgId_key" ON "SavedOrg"("profileId", "orgId");
+CREATE UNIQUE INDEX IF NOT EXISTS "SavedOrg_profileId_orgId_key" ON "SavedOrg"("profileId", "orgId");

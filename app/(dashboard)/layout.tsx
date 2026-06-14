@@ -36,7 +36,7 @@ export default async function DashboardLayout({
         myOrgName={myOrg?.name ?? null}
         isOrg={!!myOrg}
       />
-      <main className="md:pl-[220px] min-h-screen pt-14 pb-[60px] md:pt-0 md:pb-0">
+      <main className="dashboard-main min-h-screen pt-14 pb-[60px] md:pt-0 md:pb-0">
         <div className="max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-8">
           <WorkflowBar />
           {children}
