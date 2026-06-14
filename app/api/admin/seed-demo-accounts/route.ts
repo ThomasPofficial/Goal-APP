@@ -9,6 +9,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
+  try {
   const DEMO_PASSWORD = "demo2026";
   const hash = await bcrypt.hash(DEMO_PASSWORD, 10);
 
@@ -168,6 +169,7 @@ export async function POST(req: Request) {
   }
 
   return NextResponse.json({
+    ok: true,
     accounts: {
       orgs: [
         { email: "ridgepoint@nivarro.demo", password: "ridgepoint2026", note: "Ridgepoint Policy Fellows — full admin dashboard + mock scholars" },
@@ -187,4 +189,9 @@ export async function POST(req: Request) {
       ],
     },
   });
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : String(e);
+    const stack = e instanceof Error ? e.stack : undefined;
+    return NextResponse.json({ error: msg, stack }, { status: 500 });
+  }
 }
