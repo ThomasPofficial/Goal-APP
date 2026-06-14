@@ -1,0 +1,2 @@
+ALTER TABLE "Org" ADD COLUMN "verified" BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE "OrgReview" ADD COLUMN "aiInsight" TEXT;

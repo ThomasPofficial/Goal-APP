@@ -24,6 +24,7 @@ interface Org {
   logoColor: string | null;
   bannerGradient: string | null;
   focusTags: string;
+  verified: boolean;
   _count: { teams: number };
 }
 
@@ -161,7 +162,6 @@ function OrgCard({ org }: { org: Org }) {
               background: org.logoBg ?? color,
               color: org.logoColor ?? "#fff",
               borderColor: "var(--surface)",
-              fontFamily: "var(--font-serif)",
               fontSize: 16,
             }}
           >
@@ -171,12 +171,17 @@ function OrgCard({ org }: { org: Org }) {
 
         <div className="p-4 pt-3">
           <div className="flex items-start justify-between gap-2 mb-0.5">
-            <p
-              className="font-semibold text-sm truncate"
-              style={{ color: "var(--text)", fontFamily: "var(--font-serif)", fontSize: 15 }}
-            >
-              {org.name}
-            </p>
+            <div className="flex items-center gap-1.5 min-w-0">
+              <p className="font-semibold truncate" style={{ color: "var(--text)", fontSize: 15 }}>
+                {org.name}
+              </p>
+              {org.verified && (
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="flex-shrink-0" title="Verified organization">
+                  <circle cx="7" cy="7" r="7" fill="#3B82F6" />
+                  <path d="M4 7l2 2 4-4" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              )}
+            </div>
             <span
               className={cn(
                 "flex-shrink-0 text-[10px] font-mono font-semibold uppercase tracking-widest px-1.5 py-0.5 rounded",

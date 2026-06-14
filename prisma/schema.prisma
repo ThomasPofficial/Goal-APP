@@ -362,6 +362,7 @@ model Org {
   headquartersLocation String?
   whatInternsBuild     String?
   contactEmail         String?
+  verified             Boolean     @default(false)
 
   opportunities   Opportunity[]
   teams           Team[]
@@ -612,6 +613,7 @@ model OrgReview {
   profileId    String
   body         String
   deadline     DateTime
+  aiInsight    String?
   createdAt    DateTime @default(now())
 
   org        Org        @relation(fields: [orgId], references: [id], onDelete: Cascade)
