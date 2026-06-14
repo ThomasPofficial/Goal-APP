@@ -356,6 +356,16 @@ body.day .card:hover {
   animation: accepted-pulse 1.5s ease-in-out 3;
 }
 
+/* Status pills — mono uppercase */
+.status-pill {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.2rem 0.5rem;
+}
+
 /* Logo wordmark glow */
 .logo-text {
   font-family: var(--font-display);
