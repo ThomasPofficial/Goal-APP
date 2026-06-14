@@ -179,7 +179,7 @@ function OrgCard({ org }: { org: Org }) {
             </p>
             <span
               className={cn(
-                "flex-shrink-0 text-[10px] font-semibold px-1.5 py-0.5 rounded",
+                "flex-shrink-0 text-[10px] font-mono font-semibold uppercase tracking-widest px-1.5 py-0.5 rounded",
                 org.status === "OPEN" ? "bg-green-950 text-green-400" :
                 org.status === "ROLLING" ? "bg-blue-950 text-blue-400" : ""
               )}
