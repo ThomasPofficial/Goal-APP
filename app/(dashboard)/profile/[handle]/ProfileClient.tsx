@@ -69,6 +69,7 @@ export default function ProfileClient({ profile, isOwn, ownReviews = [] }: Props
   })();
 
   const analyzeArchetype = async () => {
+    if (!profile.handle) return;
     setAnalyzingArchetype(true);
     setArchetypeError(null);
     try {

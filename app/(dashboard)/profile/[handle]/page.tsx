@@ -34,7 +34,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ handle
     session?.user?.id
       ? prisma.profile.findUnique({
           where: { userId: session.user.id },
-          select: { id: true, handle: true, displayName: true, avatarUrl: true, geniusType: true, currentFocus: true, interests: true, grade: true, schoolName: true, isFirstGen: true, isHomeschooled: true, isInternational: true },
+          select: { id: true, handle: true, displayName: true, avatarUrl: true, geniusType: true, currentFocus: true, interests: true, grade: true, schoolName: true, isFirstGen: true, isHomeschooled: true, isInternational: true, animalArchetypes: true, archetypeAnalysis: true, archetypeUpdatedAt: true },
         })
       : null,
   ]);
@@ -67,7 +67,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ handle
         archetypeUpdatedAt: profile.archetypeUpdatedAt?.toISOString() ?? null,
       }}
       isOwn={!!isOwnProfile}
-      myProfile={myProfile ? { ...myProfile, geniusType: myProfile.geniusType as GeniusTypeKey | null } : null}
+      myProfile={myProfile ? { ...myProfile, geniusType: myProfile.geniusType as GeniusTypeKey | null, archetypeUpdatedAt: myProfile.archetypeUpdatedAt?.toISOString() ?? null } : null}
       ownReviews={ownReviews.map((r) => ({ ...r, createdAt: r.createdAt.toISOString() }))}
     />
   );
