@@ -77,6 +77,7 @@ export default function TeamWorkspaceClient({
   myUserId: string;
 }) {
   const [tab, setTab] = useState<"chat" | "board" | "applications">("chat");
+  const [bannerDismissed, setBannerDismissed] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [msgInput, setMsgInput] = useState("");
   const [sending, setSending] = useState(false);
@@ -190,13 +191,32 @@ export default function TeamWorkspaceClient({
           </div>
         </div>
       )}
-      {team.status === "ACCEPTED" && (
-        <div className="mb-4 flex items-center gap-3 px-4 py-3 rounded-xl bg-green-950/40 border border-green-500/20">
-          <div className="w-2 h-2 rounded-full bg-green-400 flex-shrink-0" />
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-green-300">Accepted — you&apos;re in!</p>
-            <p className="text-xs text-green-400/70">Your team has been accepted. Full workspace unlocked.</p>
-          </div>
+      {team.status === "ACCEPTED" && !bannerDismissed && (
+        <div
+          className="relative p-4 mb-4 border border-emerald-800/40"
+          style={{ background: "rgba(6, 78, 59, 0.2)" }}
+        >
+          <button
+            onClick={() => setBannerDismissed(true)}
+            className="absolute top-3 right-3 text-xs"
+            style={{ color: "var(--muted)", background: "none", border: "none", cursor: "pointer" }}
+            aria-label="Dismiss"
+          >
+            ✕
+          </button>
+          <p className="text-sm font-semibold text-emerald-300 mb-2">Your team was accepted</p>
+          <ol className="space-y-1">
+            {[
+              "Introduce yourselves in the chat below",
+              "Review the project brief in Applications tab",
+              "Message the org to confirm next steps",
+            ].map((step, i) => (
+              <li key={i} className="text-xs flex gap-2" style={{ color: "var(--text2)" }}>
+                <span className="font-mono text-emerald-400">{i + 1}.</span>
+                {step}
+              </li>
+            ))}
+          </ol>
         </div>
       )}
 
