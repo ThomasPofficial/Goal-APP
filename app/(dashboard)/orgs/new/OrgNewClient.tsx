@@ -2,28 +2,24 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2, Plus, X } from "lucide-react";
 
 const CATEGORIES = [
-  "ACCELERATOR",
-  "FELLOWSHIP",
-  "INTERNSHIP",
-  "COMPETITION",
-  "BOOTCAMP",
-  "RESEARCH",
-  "CLUB",
+  "ACCELERATOR", "FELLOWSHIP", "INTERNSHIP", "COMPETITION", "BOOTCAMP", "RESEARCH", "CLUB",
 ] as const;
+
+const GENIUS_TYPES = ["DYNAMO", "BLAZE", "TEMPO", "STEEL"] as const;
+const GRADES = [9, 10, 11, 12] as const;
+const APP_MATERIALS = ["Resume", "Cover Letter", "Portfolio", "Writing Sample", "Video Introduction", "GitHub Profile", "References"];
+const FORMATS = ["Remote", "In-Person", "Hybrid"];
 
 type OrgCategory = (typeof CATEGORIES)[number];
 
-const TOTAL_STEPS = 3;
-
-const STEP_LABELS = ["Basics", "Visual Identity", "About"];
+const TOTAL_STEPS = 4;
+const STEP_LABELS = ["Basics", "Brand", "Mission", "Project Details"];
 
 export default function OrgNewClient() {
   const router = useRouter();
-
-  // Step state
   const [step, setStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -32,39 +28,64 @@ export default function OrgNewClient() {
   const [name, setName] = useState("");
   const [category, setCategory] = useState<OrgCategory | "">("");
   const [website, setWebsite] = useState("");
+  const [founded, setFounded] = useState("");
+  const [hqLocation, setHqLocation] = useState("");
 
-  // Step 2 — Visual Identity
+  // Step 2 — Brand
   const [logoLetter, setLogoLetter] = useState("");
-  const [logoBg, setLogoBg] = useState("#1a2540");
+  const [logoBg, setLogoBg] = useState("#0a1535");
   const [logoColor, setLogoColor] = useState("#ffffff");
-  const [accentColor, setAccentColor] = useState("#4a80f0");
+  const [accentColor, setAccentColor] = useState("#3B82F6");
+  const [tagline, setTagline] = useState("");
 
-  // Step 3 — About
+  // Step 3 — Mission
   const [description, setDescription] = useState("");
+  const [whatWeSeek, setWhatWeSeek] = useState("");
   const [whatInternsBuild, setWhatInternsBuild] = useState("");
   const [contactEmail, setContactEmail] = useState("");
+  const [values, setValues] = useState<string[]>([]);
+  const [newValue, setNewValue] = useState("");
 
-  // Derived
+  // Step 4 — Project (first listing)
+  const [projectTitle, setProjectTitle] = useState("");
+  const [projectDescription, setProjectDescription] = useState("");
+  const [openSpots, setOpenSpots] = useState(3);
+  const [hoursPerWeek, setHoursPerWeek] = useState("");
+  const [duration, setDuration] = useState("");
+  const [format, setFormat] = useState("Remote");
+  const [requiredSkills, setRequiredSkills] = useState<string[]>([]);
+  const [newSkill, setNewSkill] = useState("");
+  const [preferredGeniusTypes, setPreferredGeniusTypes] = useState<string[]>([]);
+  const [gradeEligibility, setGradeEligibility] = useState<number[]>([]);
+  const [applicationMode, setApplicationMode] = useState<"TEAM" | "SOLO">("TEAM");
+  const [appMaterials, setAppMaterials] = useState<string[]>([]);
+  const [autoAccept, setAutoAccept] = useState(false);
+  const [stipend, setStipend] = useState("");
+  const [impactStatement, setImpactStatement] = useState("");
+
   const effectiveLogoLetter = logoLetter || name[0] || "?";
 
-  // Validation per step
   function canAdvance() {
     if (step === 1) return name.trim().length > 0 && category !== "";
     if (step === 2) return true;
     if (step === 3) return description.trim().length >= 100;
+    if (step === 4) return projectTitle.trim().length > 0 && projectDescription.trim().length >= 60;
     return false;
   }
 
   function handleNext() {
-    if (step === 2 && !logoLetter && name[0]) {
-      setLogoLetter(name[0].toUpperCase());
-    }
+    if (step === 2 && !logoLetter && name[0]) setLogoLetter(name[0].toUpperCase());
+    setError(null);
     setStep((s) => Math.min(s + 1, TOTAL_STEPS));
   }
 
   function handleBack() {
     setStep((s) => Math.max(s - 1, 1));
     setError(null);
+  }
+
+  function toggleArr<T>(arr: T[], val: T, set: (v: T[]) => void) {
+    set(arr.includes(val) ? arr.filter((x) => x !== val) : [...arr, val]);
   }
 
   async function handleSubmit() {
@@ -79,20 +100,37 @@ export default function OrgNewClient() {
           name: name.trim(),
           category,
           website: website.trim() || undefined,
+          founded: founded.trim() || undefined,
+          headquartersLocation: hqLocation.trim() || undefined,
+          tagline: tagline.trim() || undefined,
           description: description.trim(),
+          whatWeSeek: whatWeSeek.trim() || undefined,
+          whatInternsBuild: whatInternsBuild.trim() || undefined,
+          contactEmail: contactEmail.trim() || undefined,
+          values: JSON.stringify(values),
           logoLetter: effectiveLogoLetter,
           logoBg,
           logoColor,
           accentColor,
-          whatInternsBuild: whatInternsBuild.trim() || undefined,
-          contactEmail: contactEmail.trim() || undefined,
+          // Project details for first listing
+          projectTitle: projectTitle.trim() || undefined,
+          projectDescription: projectDescription.trim() || undefined,
+          openSpots,
+          hoursPerWeek: hoursPerWeek.trim() || undefined,
+          duration: duration.trim() || undefined,
+          format,
+          requiredSkills: JSON.stringify(requiredSkills),
+          preferredGeniusTypes: JSON.stringify(preferredGeniusTypes),
+          gradeEligibility: JSON.stringify(gradeEligibility),
+          applicationMode,
+          appMaterials: JSON.stringify(appMaterials),
+          autoAccept,
+          stipend: stipend.trim() || undefined,
+          impactStatement: impactStatement.trim() || undefined,
         }),
       });
       const data = await res.json();
-      if (!res.ok) {
-        setError(data.error ?? "Something went wrong.");
-        return;
-      }
+      if (!res.ok) { setError(data.error ?? "Something went wrong."); return; }
       router.push("/orgs/" + data.org.id);
     } catch {
       setError("Network error. Please try again.");
@@ -102,364 +140,262 @@ export default function OrgNewClient() {
   }
 
   return (
-    <div style={{ maxWidth: 560, margin: "0 auto", padding: "2rem 1rem" }}>
-      {/* Header */}
-      <h1
-        style={{
-          fontFamily: "var(--font-serif)",
-          fontSize: 22,
-          fontWeight: 700,
-          color: "var(--text)",
-          marginBottom: "1.5rem",
-        }}
-      >
-        Create Organization
-      </h1>
+    <div style={{ maxWidth: 600, margin: "0 auto", padding: "2rem 1rem" }}>
+      <div className="mb-6">
+        <h1 className="text-xl font-bold mb-1" style={{ color: "var(--text)", letterSpacing: "-0.03em" }}>
+          Create Organization
+        </h1>
+        <p className="text-xs" style={{ color: "var(--text2)" }}>Fill in details carefully — this is what students see first.</p>
+      </div>
 
-      {/* Progress indicator */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 8,
-          marginBottom: "2rem",
-        }}
-      >
+      {/* Step indicators */}
+      <div className="flex items-center gap-2 mb-6">
         {STEP_LABELS.map((label, idx) => {
           const num = idx + 1;
           const isActive = num === step;
           const isDone = num < step;
           return (
-            <div
-              key={num}
-              style={{ display: "flex", alignItems: "center", gap: 8 }}
-            >
-              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <div
-                  style={{
-                    width: 24,
-                    height: 24,
-                    borderRadius: "50%",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: 11,
-                    fontWeight: 700,
-                    fontFamily: "var(--font-mono)",
-                    background: isDone
-                      ? "var(--blue)"
-                      : isActive
-                      ? "rgba(74,128,240,0.15)"
-                      : "var(--surface)",
-                    color: isDone
-                      ? "#fff"
-                      : isActive
-                      ? "var(--blue)"
-                      : "var(--muted)",
-                    border: isActive
-                      ? "1px solid var(--blue)"
-                      : isDone
-                      ? "none"
-                      : "1px solid var(--border-md)",
-                    transition: "all 0.15s",
-                  }}
-                >
+            <div key={num} className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5">
+                <div style={{
+                  width: 22, height: 22, display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 10, fontWeight: 700, fontFamily: "var(--font-mono)",
+                  background: isDone ? "var(--blue)" : isActive ? "rgba(59,130,246,0.12)" : "var(--surface2)",
+                  color: isDone ? "#fff" : isActive ? "var(--blue)" : "var(--muted)",
+                  border: isActive ? "1px solid var(--blue)" : "1px solid var(--border-md)",
+                  transition: "all 0.15s",
+                }}>
                   {isDone ? "✓" : num}
                 </div>
-                <span
-                  style={{
-                    fontSize: 12,
-                    color: isActive ? "var(--text)" : "var(--muted)",
-                    fontWeight: isActive ? 600 : 400,
-                  }}
-                >
+                <span style={{ fontSize: 11, color: isActive ? "var(--text)" : "var(--muted)", fontWeight: isActive ? 600 : 400 }}>
                   {label}
                 </span>
               </div>
               {idx < STEP_LABELS.length - 1 && (
-                <div
-                  style={{
-                    width: 24,
-                    height: 1,
-                    background: isDone ? "var(--blue)" : "var(--border-md)",
-                    marginLeft: 4,
-                    transition: "background 0.15s",
-                  }}
-                />
+                <div style={{ width: 16, height: 1, background: isDone ? "var(--blue)" : "var(--border-md)" }} />
               )}
             </div>
           );
         })}
       </div>
 
-      {/* Card */}
-      <div
-        className="bracket-card"
-        style={{
-          background: "var(--surface)",
-          border: "1px solid var(--border-md)",
-          borderRadius: 12,
-          padding: "1.75rem",
-        }}
-      >
+      <div className="bracket-card" style={{ background: "var(--surface)", border: "1px solid var(--border-md)", padding: "1.75rem" }}>
+
         {/* ── Step 1: Basics ── */}
         {step === 1 && (
           <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-            <div>
-              <label style={labelStyle}>
-                Organization name <Required />
-              </label>
-              <input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. Build Club"
-                autoFocus
-                style={inputStyle}
-              />
-            </div>
-
-            <div>
-              <label style={labelStyle}>
-                Category <Required />
-              </label>
-              <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value as OrgCategory)}
-                style={inputStyle}
-              >
+            <Field label="Organization name" required>
+              <input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Build Club" autoFocus style={inputStyle} />
+            </Field>
+            <Field label="Category" required>
+              <select value={category} onChange={(e) => setCategory(e.target.value as OrgCategory)} style={inputStyle}>
                 <option value="">Select a category…</option>
-                {CATEGORIES.map((c) => (
-                  <option key={c} value={c}>
-                    {c.charAt(0) + c.slice(1).toLowerCase()}
-                  </option>
-                ))}
+                {CATEGORIES.map((c) => <option key={c} value={c}>{c.charAt(0) + c.slice(1).toLowerCase()}</option>)}
               </select>
+            </Field>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+              <Field label="Website">
+                <input value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="https://example.com" type="url" style={inputStyle} />
+              </Field>
+              <Field label="Founded year">
+                <input value={founded} onChange={(e) => setFounded(e.target.value)} placeholder="e.g. 2022" maxLength={4} style={inputStyle} />
+              </Field>
             </div>
-
-            <div>
-              <label style={labelStyle}>Website</label>
-              <input
-                value={website}
-                onChange={(e) => setWebsite(e.target.value)}
-                placeholder="https://example.com"
-                type="url"
-                style={inputStyle}
-              />
-            </div>
+            <Field label="Headquarters / Location">
+              <input value={hqLocation} onChange={(e) => setHqLocation(e.target.value)} placeholder="e.g. San Francisco, CA or Remote" style={inputStyle} />
+            </Field>
           </div>
         )}
 
-        {/* ── Step 2: Visual Identity ── */}
+        {/* ── Step 2: Brand ── */}
         {step === 2 && (
           <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
-            {/* Live preview */}
-            <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 4 }}>
-              <div
-                style={{
-                  background: logoBg,
-                  color: logoColor,
-                  width: 56,
-                  height: 56,
-                  borderRadius: 12,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: 24,
-                  fontWeight: 700,
-                  fontFamily: "var(--font-serif)",
-                  flexShrink: 0,
-                }}
-              >
+            <div className="flex items-center gap-4">
+              <div style={{ background: logoBg, color: logoColor, width: 52, height: 52, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, fontWeight: 700, flexShrink: 0 }}>
                 {effectiveLogoLetter}
               </div>
               <div>
-                <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text)", fontFamily: "var(--font-serif)" }}>
-                  {name || "Your Org"}
-                </p>
-                <p style={{ fontSize: 11, color: "var(--muted)", marginTop: 2 }}>Logo preview</p>
+                <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>{name || "Your Org"}</p>
+                <p className="text-[11px]" style={{ color: "var(--muted)", marginTop: 2 }}>Logo preview</p>
               </div>
             </div>
-
-            <div>
-              <label style={labelStyle}>Logo letter</label>
-              <input
-                value={logoLetter}
-                onChange={(e) => setLogoLetter(e.target.value.slice(0, 1).toUpperCase())}
-                placeholder={name[0]?.toUpperCase() || "A"}
-                maxLength={1}
-                style={{ ...inputStyle, maxWidth: 80 }}
-              />
-            </div>
-
+            <Field label="Logo letter">
+              <input value={logoLetter} onChange={(e) => setLogoLetter(e.target.value.slice(0, 1).toUpperCase())} placeholder={name[0]?.toUpperCase() || "A"} maxLength={1} style={{ ...inputStyle, maxWidth: 80 }} />
+            </Field>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "1rem" }}>
-              <div>
-                <label style={labelStyle}>Background</label>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 6 }}>
-                  <input
-                    type="color"
-                    value={logoBg}
-                    onChange={(e) => setLogoBg(e.target.value)}
-                    style={colorPickerStyle}
-                  />
-                  <span style={{ fontSize: 11, color: "var(--muted)", fontFamily: "var(--font-mono)" }}>
-                    {logoBg}
-                  </span>
-                </div>
-              </div>
-              <div>
-                <label style={labelStyle}>Letter color</label>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 6 }}>
-                  <input
-                    type="color"
-                    value={logoColor}
-                    onChange={(e) => setLogoColor(e.target.value)}
-                    style={colorPickerStyle}
-                  />
-                  <span style={{ fontSize: 11, color: "var(--muted)", fontFamily: "var(--font-mono)" }}>
-                    {logoColor}
-                  </span>
-                </div>
-              </div>
-              <div>
-                <label style={labelStyle}>Accent color</label>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 6 }}>
-                  <input
-                    type="color"
-                    value={accentColor}
-                    onChange={(e) => setAccentColor(e.target.value)}
-                    style={colorPickerStyle}
-                  />
-                  <span style={{ fontSize: 11, color: "var(--muted)", fontFamily: "var(--font-mono)" }}>
-                    {accentColor}
-                  </span>
-                </div>
-              </div>
+              {[
+                { label: "Logo background", value: logoBg, set: setLogoBg },
+                { label: "Letter color", value: logoColor, set: setLogoColor },
+                { label: "Accent color", value: accentColor, set: setAccentColor },
+              ].map(({ label, value, set }) => (
+                <Field key={label} label={label}>
+                  <div className="flex items-center gap-2 mt-1">
+                    <input type="color" value={value} onChange={(e) => set(e.target.value)} style={colorPickerStyle} />
+                    <span style={{ fontSize: 10, color: "var(--muted)", fontFamily: "var(--font-mono)" }}>{value}</span>
+                  </div>
+                </Field>
+              ))}
             </div>
+            <Field label="Tagline">
+              <input value={tagline} onChange={(e) => setTagline(e.target.value)} placeholder="One sentence that says what makes you different." style={inputStyle} maxLength={120} />
+            </Field>
           </div>
         )}
 
-        {/* ── Step 3: About ── */}
+        {/* ── Step 3: Mission ── */}
         {step === 3 && (
           <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-            <div>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-                <label style={labelStyle}>
-                  Description <Required />
-                </label>
-                <span
-                  style={{
-                    fontSize: 11,
-                    fontFamily: "var(--font-mono)",
-                    color: description.trim().length >= 100 ? "var(--blue)" : "var(--muted)",
-                  }}
-                >
-                  {description.trim().length}/100 min
-                </span>
+            <Field label="Description" required hint={`${description.trim().length}/100 min`} hintOk={description.trim().length >= 100}>
+              <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Your org's mission, what you do, and what makes you worth a student's time." rows={4} style={{ ...inputStyle, resize: "vertical", minHeight: 96 }} />
+            </Field>
+            <Field label="What we look for in students">
+              <textarea value={whatWeSeek} onChange={(e) => setWhatWeSeek(e.target.value)} placeholder="Skills, mindsets, qualities you actively screen for." rows={3} style={{ ...inputStyle, resize: "vertical", minHeight: 72 }} />
+            </Field>
+            <Field label="What students actually build here">
+              <textarea value={whatInternsBuild} onChange={(e) => setWhatInternsBuild(e.target.value)} placeholder="Specific projects, responsibilities, what they'll ship or contribute." rows={3} style={{ ...inputStyle, resize: "vertical", minHeight: 72 }} />
+            </Field>
+            <Field label="Core values">
+              <div className="flex flex-wrap gap-1.5 mb-2">
+                {values.map((v) => (
+                  <span key={v} className="inline-flex items-center gap-1 text-xs px-2 py-1" style={{ background: "rgba(59,130,246,0.1)", border: "1px solid rgba(59,130,246,0.25)", color: "var(--blue)" }}>
+                    {v}
+                    <button onClick={() => setValues(values.filter((x) => x !== v))} style={{ background: "none", border: "none", cursor: "pointer", color: "inherit", padding: 0, lineHeight: 1 }}>
+                      <X size={10} />
+                    </button>
+                  </span>
+                ))}
               </div>
-              <textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Describe your organization, its mission, and what makes it unique…"
-                rows={4}
-                style={{ ...inputStyle, resize: "vertical", minHeight: 96 }}
-              />
-              {description.trim().length > 0 && description.trim().length < 100 && (
-                <p style={{ fontSize: 11, color: "#f87171", marginTop: 4 }}>
-                  Please write at least 100 characters ({100 - description.trim().length} more needed).
-                </p>
-              )}
+              <div className="flex gap-2">
+                <input value={newValue} onChange={(e) => setNewValue(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && newValue.trim()) { setValues([...values, newValue.trim()]); setNewValue(""); } }} placeholder="Add a value (press Enter)" style={{ ...inputStyle, flex: 1 }} />
+                <button onClick={() => { if (newValue.trim()) { setValues([...values, newValue.trim()]); setNewValue(""); } }} className="btn-ghost" style={{ flexShrink: 0 }}>
+                  <Plus size={13} />
+                </button>
+              </div>
+            </Field>
+            <Field label="Contact email">
+              <input value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} placeholder="hello@example.com" type="email" style={inputStyle} />
+            </Field>
+          </div>
+        )}
+
+        {/* ── Step 4: Project Details ── */}
+        {step === 4 && (
+          <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+            <p className="text-xs mb-2" style={{ color: "var(--text2)" }}>
+              This creates your first project listing. Students apply to specific projects, not just your org.
+            </p>
+            <Field label="Project title" required>
+              <input value={projectTitle} onChange={(e) => setProjectTitle(e.target.value)} placeholder="e.g. Product Design Intern — Summer 2026" autoFocus style={inputStyle} />
+            </Field>
+            <Field label="What students will do" required hint={`${projectDescription.trim().length}/60 min`} hintOk={projectDescription.trim().length >= 60}>
+              <textarea value={projectDescription} onChange={(e) => setProjectDescription(e.target.value)} placeholder="Concrete, specific — what will they actually work on? What will they ship?" rows={4} style={{ ...inputStyle, resize: "vertical", minHeight: 96 }} />
+            </Field>
+            <Field label="Impact statement">
+              <input value={impactStatement} onChange={(e) => setImpactStatement(e.target.value)} placeholder="Why does this project matter? What's the outcome?" style={inputStyle} />
+            </Field>
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "1rem" }}>
+              <Field label="Open spots">
+                <input type="number" min={1} max={20} value={openSpots} onChange={(e) => setOpenSpots(Number(e.target.value))} style={inputStyle} />
+              </Field>
+              <Field label="Hours/week">
+                <input value={hoursPerWeek} onChange={(e) => setHoursPerWeek(e.target.value)} placeholder="e.g. 8–12 hours" style={inputStyle} />
+              </Field>
+              <Field label="Duration">
+                <input value={duration} onChange={(e) => setDuration(e.target.value)} placeholder="e.g. 10 weeks" style={inputStyle} />
+              </Field>
             </div>
 
-            <div>
-              <label style={labelStyle}>What students typically work on here</label>
-              <textarea
-                value={whatInternsBuild}
-                onChange={(e) => setWhatInternsBuild(e.target.value)}
-                placeholder="e.g. Building production features, shipping mobile apps, running experiments…"
-                rows={3}
-                style={{ ...inputStyle, resize: "vertical", minHeight: 72 }}
-              />
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+              <Field label="Format">
+                <select value={format} onChange={(e) => setFormat(e.target.value)} style={inputStyle}>
+                  {FORMATS.map((f) => <option key={f} value={f}>{f}</option>)}
+                </select>
+              </Field>
+              <Field label="Stipend / Compensation">
+                <input value={stipend} onChange={(e) => setStipend(e.target.value)} placeholder="e.g. Unpaid, $500/month" style={inputStyle} />
+              </Field>
             </div>
 
-            <div>
-              <label style={labelStyle}>Contact email</label>
-              <input
-                value={contactEmail}
-                onChange={(e) => setContactEmail(e.target.value)}
-                placeholder="hello@example.com"
-                type="email"
-                style={inputStyle}
-              />
+            <Field label="Required skills">
+              <div className="flex flex-wrap gap-1.5 mb-2">
+                {requiredSkills.map((s) => (
+                  <span key={s} className="inline-flex items-center gap-1 text-xs px-2 py-1" style={{ background: "var(--surface2)", border: "1px solid var(--border-md)", color: "var(--text2)" }}>
+                    {s}
+                    <button onClick={() => setRequiredSkills(requiredSkills.filter((x) => x !== s))} style={{ background: "none", border: "none", cursor: "pointer", color: "inherit", padding: 0 }}>
+                      <X size={10} />
+                    </button>
+                  </span>
+                ))}
+              </div>
+              <div className="flex gap-2">
+                <input value={newSkill} onChange={(e) => setNewSkill(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && newSkill.trim()) { setRequiredSkills([...requiredSkills, newSkill.trim()]); setNewSkill(""); } }} placeholder="Add a skill (press Enter)" style={{ ...inputStyle, flex: 1 }} />
+                <button onClick={() => { if (newSkill.trim()) { setRequiredSkills([...requiredSkills, newSkill.trim()]); setNewSkill(""); } }} className="btn-ghost" style={{ flexShrink: 0 }}>
+                  <Plus size={13} />
+                </button>
+              </div>
+            </Field>
+
+            <Field label="Preferred Genius Types">
+              <div className="flex gap-2 flex-wrap mt-1">
+                {GENIUS_TYPES.map((g) => (
+                  <button key={g} onClick={() => toggleArr(preferredGeniusTypes, g, setPreferredGeniusTypes)} className="text-xs px-2.5 py-1 font-medium transition-all" style={{ border: `1px solid ${preferredGeniusTypes.includes(g) ? "var(--blue)" : "var(--border-md)"}`, background: preferredGeniusTypes.includes(g) ? "rgba(59,130,246,0.1)" : "transparent", color: preferredGeniusTypes.includes(g) ? "var(--blue)" : "var(--text2)", cursor: "pointer" }}>
+                    {g}
+                  </button>
+                ))}
+              </div>
+            </Field>
+
+            <Field label="Grade eligibility (leave empty for all grades)">
+              <div className="flex gap-2 flex-wrap mt-1">
+                {GRADES.map((g) => (
+                  <button key={g} onClick={() => toggleArr(gradeEligibility, g, setGradeEligibility as (v: number[]) => void)} className="text-xs px-2.5 py-1 font-medium transition-all" style={{ border: `1px solid ${gradeEligibility.includes(g) ? "var(--blue)" : "var(--border-md)"}`, background: gradeEligibility.includes(g) ? "rgba(59,130,246,0.1)" : "transparent", color: gradeEligibility.includes(g) ? "var(--blue)" : "var(--text2)", cursor: "pointer" }}>
+                    Grade {g}
+                  </button>
+                ))}
+              </div>
+            </Field>
+
+            <Field label="Application materials">
+              <div className="flex flex-wrap gap-2 mt-1">
+                {APP_MATERIALS.map((m) => (
+                  <button key={m} onClick={() => toggleArr(appMaterials, m, setAppMaterials)} className="text-xs px-2.5 py-1 font-medium transition-all" style={{ border: `1px solid ${appMaterials.includes(m) ? "var(--blue)" : "var(--border-md)"}`, background: appMaterials.includes(m) ? "rgba(59,130,246,0.1)" : "transparent", color: appMaterials.includes(m) ? "var(--blue)" : "var(--text2)", cursor: "pointer" }}>
+                    {m}
+                  </button>
+                ))}
+              </div>
+            </Field>
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+              <Field label="Application mode">
+                <select value={applicationMode} onChange={(e) => setApplicationMode(e.target.value as "TEAM" | "SOLO")} style={inputStyle}>
+                  <option value="TEAM">Teams apply together</option>
+                  <option value="SOLO">Solo applications</option>
+                </select>
+              </Field>
+              <Field label="Auto-accept teams?">
+                <button onClick={() => setAutoAccept(!autoAccept)} className="text-xs px-3 py-2 font-medium transition-all mt-1" style={{ border: `1px solid ${autoAccept ? "var(--blue)" : "var(--border-md)"}`, background: autoAccept ? "rgba(59,130,246,0.1)" : "transparent", color: autoAccept ? "var(--blue)" : "var(--text2)", cursor: "pointer", width: "100%" }}>
+                  {autoAccept ? "Yes — auto-accept" : "No — manual review"}
+                </button>
+              </Field>
             </div>
           </div>
         )}
 
-        {/* Error */}
-        {error && (
-          <p style={{ fontSize: 13, color: "#f87171", marginTop: "1rem" }}>{error}</p>
-        )}
+        {error && <p style={{ fontSize: 13, color: "#f87171", marginTop: "1rem" }}>{error}</p>}
 
         {/* Navigation */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginTop: "1.75rem",
-            paddingTop: "1.25rem",
-            borderTop: "1px solid var(--border)",
-          }}
-        >
-          <button
-            onClick={handleBack}
-            disabled={step === 1}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 4,
-              fontSize: 13,
-              color: step === 1 ? "var(--muted)" : "var(--text2)",
-              background: "none",
-              border: "none",
-              cursor: step === 1 ? "default" : "pointer",
-              padding: "6px 0",
-              opacity: step === 1 ? 0.4 : 1,
-            }}
-          >
-            <ChevronLeft size={15} />
-            Back
+        <div className="flex justify-between items-center mt-7 pt-5" style={{ borderTop: "1px solid var(--border)" }}>
+          <button onClick={handleBack} disabled={step === 1} className="flex items-center gap-1 text-sm" style={{ color: step === 1 ? "var(--muted)" : "var(--text2)", background: "none", border: "none", cursor: step === 1 ? "default" : "pointer", opacity: step === 1 ? 0.4 : 1, padding: "6px 0" }}>
+            <ChevronLeft size={14} /> Back
           </button>
-
           {step < TOTAL_STEPS ? (
-            <button
-              onClick={handleNext}
-              disabled={!canAdvance()}
-              className="btn-primary"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 4,
-                opacity: canAdvance() ? 1 : 0.5,
-                cursor: canAdvance() ? "pointer" : "default",
-              }}
-            >
-              Next
-              <ChevronRight size={15} />
+            <button onClick={handleNext} disabled={!canAdvance()} className="btn-primary flex items-center gap-1" style={{ opacity: canAdvance() ? 1 : 0.5, cursor: canAdvance() ? "pointer" : "default" }}>
+              Next <ChevronRight size={14} />
             </button>
           ) : (
-            <button
-              onClick={handleSubmit}
-              disabled={!canAdvance() || submitting}
-              className="btn-primary"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 6,
-                opacity: canAdvance() && !submitting ? 1 : 0.5,
-                cursor: canAdvance() && !submitting ? "pointer" : "default",
-              }}
-            >
-              {submitting && <Loader2 size={14} className="animate-spin" />}
+            <button onClick={handleSubmit} disabled={!canAdvance() || submitting} className="btn-primary flex items-center gap-1.5" style={{ opacity: canAdvance() && !submitting ? 1 : 0.5, cursor: canAdvance() && !submitting ? "pointer" : "default" }}>
+              {submitting && <Loader2 size={13} className="animate-spin" />}
               {submitting ? "Creating…" : "Create organization"}
             </button>
           )}
@@ -471,40 +407,29 @@ export default function OrgNewClient() {
 
 // ── Shared styles ──
 
-const labelStyle: React.CSSProperties = {
-  display: "block",
-  fontSize: 12,
-  fontWeight: 600,
-  color: "var(--text2)",
-  marginBottom: 6,
-  letterSpacing: "0.02em",
-  textTransform: "uppercase",
-};
+interface FieldProps { label: string; required?: boolean; hint?: string; hintOk?: boolean; children: React.ReactNode; }
+
+function Field({ label, required, hint, hintOk, children }: FieldProps) {
+  return (
+    <div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 6 }}>
+        <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "var(--text2)", letterSpacing: "0.06em", textTransform: "uppercase" }}>
+          {label} {required && <span style={{ color: "#f87171" }}>*</span>}
+        </label>
+        {hint && <span style={{ fontSize: 10, fontFamily: "var(--font-mono)", color: hintOk ? "var(--blue)" : "var(--muted)" }}>{hint}</span>}
+      </div>
+      {children}
+    </div>
+  );
+}
 
 const inputStyle: React.CSSProperties = {
-  width: "100%",
-  boxSizing: "border-box",
-  padding: "8px 12px",
-  borderRadius: 8,
-  border: "1px solid var(--border-md)",
-  background: "var(--bg)",
-  color: "var(--text)",
-  fontSize: 14,
-  outline: "none",
-  fontFamily: "inherit",
+  width: "100%", boxSizing: "border-box", padding: "8px 12px",
+  border: "1px solid var(--border-md)", background: "var(--bg)",
+  color: "var(--text)", fontSize: 14, outline: "none", fontFamily: "inherit",
 };
 
 const colorPickerStyle: React.CSSProperties = {
-  width: 32,
-  height: 32,
-  borderRadius: 6,
-  border: "1px solid var(--border-md)",
-  cursor: "pointer",
-  padding: 2,
-  background: "var(--bg)",
-  flexShrink: 0,
+  width: 32, height: 32, border: "1px solid var(--border-md)",
+  cursor: "pointer", padding: 2, background: "var(--bg)", flexShrink: 0,
 };
-
-function Required() {
-  return <span style={{ color: "#f87171", marginLeft: 2 }}>*</span>;
-}

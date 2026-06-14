@@ -86,10 +86,11 @@ async function main() {
   });
   const priyaProfile = await prisma.profile.upsert({
     where: { userId: priyaUser.id },
-    update: {},
+    update: { isDemo: true },
     create: {
       userId: priyaUser.id,
       displayName: "Priya Nair",
+      isDemo: true,
       handle: "priyanair",
       headline: "Data Researcher & Systems Analyst",
       bio: "I find the signal in the noise. Give me a messy dataset or a broken process and I'll have a framework for it by Friday.",
@@ -110,10 +111,11 @@ async function main() {
   });
   const marcusProfile = await prisma.profile.upsert({
     where: { userId: marcusUser.id },
-    update: {},
+    update: { isDemo: true },
     create: {
       userId: marcusUser.id,
       displayName: "Marcus Webb",
+      isDemo: true,
       handle: "marcuswebb",
       headline: "Entrepreneur & Impact Strategist",
       bio: "I think in systems and move in sprints. Most interested in projects where the output creates something that wasn't there before.",
@@ -133,10 +135,11 @@ async function main() {
   });
   const zoeProfile = await prisma.profile.upsert({
     where: { userId: zoeUser.id },
-    update: {},
+    update: { isDemo: true },
     create: {
       userId: zoeUser.id,
       displayName: "Zoe Kim",
+      isDemo: true,
       handle: "zoekim",
       headline: "Builder & Full-Stack Developer",
       bio: "I build things that work. Fast iterations, clean code, and a preference for shipping over theorizing.",

@@ -6,6 +6,7 @@ import { format } from "date-fns";
 import { ExternalLink, ChevronRight, Save } from "lucide-react";
 import TutorialWidget from "@/components/ui/TutorialWidget";
 import WelcomeCard from "@/components/ui/WelcomeCard";
+import PlatformUpdatesCard from "@/components/ui/PlatformUpdatesCard";
 import type { GeniusTypeKey } from "@/lib/geniusTypes";
 
 interface ProfileData {
@@ -157,6 +158,7 @@ export default function DashboardClient({ profile, spaces, traitsDone, tutorialD
       <div className="flex-1 min-w-0 space-y-4">
 
         <WelcomeCard hasGeniusType={tutorial.hasGeniusType} />
+        <PlatformUpdatesCard />
         <TutorialWidget {...tutorial} serverDismissed={tutorialDismissed} />
 
         {!traitsDone && (
