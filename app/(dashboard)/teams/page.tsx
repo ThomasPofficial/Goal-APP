@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import type { GeniusTypeKey } from "@/lib/geniusTypes";
 import Avatar from "@/components/ui/Avatar";
+import { cn } from "@/lib/utils";
 
 export default async function TeamsPage() {
   const session = await auth();
@@ -67,7 +68,7 @@ export default async function TeamsPage() {
             <Link
               key={team.id}
               href={`/teams/${team.id}`}
-              className="block rounded-xl p-5 transition-all card"
+              className={cn("block rounded-xl p-5 transition-all card", team.status === "ACCEPTED" && "team-accepted")}
               style={{ background: "var(--surface)", border: "1px solid var(--border-md)" }}
             >
               <div className="flex items-start justify-between gap-4">
@@ -114,7 +115,7 @@ function StatusBadge({ status }: { status: string }) {
   const map: Record<string, { label: string; className: string }> = {
     SUBMITTED: { label: "Applied", className: "bg-blue-900/30 text-blue-300" },
     ACTIVE:    { label: "Active",   className: "bg-emerald-900/30 text-emerald-300" },
-    ACCEPTED:  { label: "Accepted", className: "bg-emerald-900/30 text-emerald-300" },
+    ACCEPTED:  { label: "ACCEPTED", className: "font-mono uppercase tracking-widest text-emerald-400 bg-emerald-900/20" },
     COMPLETED: { label: "Completed", className: "bg-purple-900/30 text-purple-300" },
     REJECTED:  { label: "Rejected", className: "bg-red-900/30 text-red-300" },
   };
