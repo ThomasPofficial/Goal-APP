@@ -58,6 +58,12 @@ export default async function OrgDetailPage({ params }: { params: Promise<{ orgI
 
   const isAdmin = org.createdById === session?.user?.id;
 
+  const initialSaved = myProfile
+    ? !!(await prisma.savedOrg.findUnique({
+        where: { profileId_orgId: { profileId: myProfile.id, orgId } },
+      }))
+    : false;
+
   const [applications, adminStats] = await Promise.all([
     isAdmin
       ? prisma.teamApplication.findMany({
@@ -160,6 +166,7 @@ export default async function OrgDetailPage({ params }: { params: Promise<{ orgI
       apiKey={isAdmin ? (org.apiKey ?? null) : null}
       reviewCount={reviewCount}
       whatInternsBuild={org.whatInternsBuild ?? null}
+      initialSaved={initialSaved}
     />
   );
 }

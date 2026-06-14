@@ -136,10 +136,10 @@ export default function DashboardClient({ profile, spaces, traitsDone, tutorialD
           )}
 
           <div className="flex gap-4 text-center mb-4">
-            <div>
+            <Link href="/saved">
               <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>{profile.savedCount}</p>
               <p className="text-[11px]" style={{ color: "var(--muted)" }}>Saved</p>
-            </div>
+            </Link>
           </div>
 
           <Link

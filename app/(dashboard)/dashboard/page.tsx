@@ -31,6 +31,7 @@ export default async function DashboardPage() {
       secondaryGeniusType: true,
       currentFocus: true,
       traitLinks: { select: { id: true } },
+      savedOrgs: { select: { id: true } },
       savedOpportunities: { select: { id: true } },
       teamMemberships: {
         select: {
@@ -88,7 +89,7 @@ export default async function DashboardPage() {
         geniusType: (profile?.geniusType as GeniusTypeKey | null) ?? null,
         secondaryGeniusType: (profile?.secondaryGeniusType as GeniusTypeKey | null) ?? null,
         currentFocus: profile?.currentFocus ?? null,
-        savedCount: profile?.savedOpportunities.length ?? 0,
+        savedCount: (profile?.savedOrgs?.length ?? 0) + (profile?.savedOpportunities?.length ?? 0),
       }}
       spaces={spaces}
       traitsDone={traitsDone}
