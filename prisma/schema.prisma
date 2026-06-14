@@ -671,3 +671,25 @@ model AgentCallLog {
 
   @@unique([orgId, date])
 }
+
+// ─────────────────────────────────────────────
+// SCRAPER QUEUE
+// ─────────────────────────────────────────────
+
+model ScrapedListing {
+  id                String    @id @default(cuid())
+  sourceUrl         String
+  sourceInstitution String
+  title             String
+  rawDescription    String
+  deadline          String?
+  aiSummary         String?
+  aiConfidence      Float?
+  aiApproved        Boolean?
+  status            String    @default("PENDING")
+  reviewedBy        String?
+  reviewedAt        DateTime?
+  scrapedAt         DateTime  @default(now())
+
+  @@index([status])
+}
