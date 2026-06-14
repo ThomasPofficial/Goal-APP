@@ -6,6 +6,8 @@ import { format } from "date-fns";
 import Avatar from "@/components/ui/Avatar";
 import GeniusTypeBadge from "@/components/ui/GeniusTypeBadge";
 import { GENIUS_TYPES, type GeniusTypeKey } from "@/lib/geniusTypes";
+import AnimalArchetypeCard from "@/components/AnimalArchetypeCard";
+import type { AnimalKey } from "@/lib/animalArchetypes";
 
 interface OwnReview {
   id: string;
@@ -29,6 +31,9 @@ interface ProfileData {
   isFirstGen: boolean;
   isHomeschooled: boolean;
   isInternational: boolean;
+  animalArchetypes: string;
+  archetypeAnalysis: string | null;
+  archetypeUpdatedAt: string | null;
 }
 
 interface Props {
@@ -52,10 +57,33 @@ export default function ProfileClient({ profile, isOwn, ownReviews = [] }: Props
   });
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [analyzingArchetype, setAnalyzingArchetype] = useState(false);
+  const [archetypeError, setArchetypeError] = useState<string | null>(null);
+  const [archetypes, setArchetypes] = useState<AnimalKey[]>(() => {
+    try { return JSON.parse(profile.animalArchetypes ?? "[]"); } catch { return []; }
+  });
+  const [archetypeAnalysis, setArchetypeAnalysis] = useState<string | null>(profile.archetypeAnalysis);
 
   const interests: string[] = (() => {
     try { return JSON.parse(profile.interests ?? "[]"); } catch { return []; }
   })();
+
+  const analyzeArchetype = async () => {
+    setAnalyzingArchetype(true);
+    setArchetypeError(null);
+    try {
+      const res = await fetch(`/api/profile/${profile.handle}/analyze-archetype`, { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) {
+        setArchetypeError(data.error ?? "Analysis failed");
+        return;
+      }
+      setArchetypes(data.archetypes);
+      setArchetypeAnalysis(data.analysis);
+    } finally {
+      setAnalyzingArchetype(false);
+    }
+  };
 
   const gt = profile.geniusType ? GENIUS_TYPES[profile.geniusType] : null;
 
@@ -151,6 +179,73 @@ export default function ProfileClient({ profile, isOwn, ownReviews = [] }: Props
               </span>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* Animal Archetypes */}
+      {(archetypes.length > 0 || isOwn) && (
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-xs font-semibold uppercase tracking-wider" style={{ color: "#5a6a7a" }}>
+              Animal Archetypes
+            </h2>
+            {isOwn && (
+              <button
+                onClick={analyzeArchetype}
+                disabled={analyzingArchetype}
+                className="text-[11px] font-mono px-3 py-1 rounded-full transition-all"
+                style={{
+                  background: analyzingArchetype ? "#1a2030" : "#0A1628",
+                  border: "1px solid #1E3A5A",
+                  color: analyzingArchetype ? "#4a6a8a" : "#4A90D4",
+                  cursor: analyzingArchetype ? "not-allowed" : "pointer",
+                }}
+              >
+                {analyzingArchetype
+                  ? "Analyzing…"
+                  : archetypes.length > 0
+                  ? "Re-analyze"
+                  : "Analyze My Archetypes"}
+              </button>
+            )}
+          </div>
+
+          {archetypeError && (
+            <p className="text-xs mb-3 px-3 py-2 rounded-lg" style={{ color: "#E87070", background: "#200A0A", border: "1px solid #3A1010" }}>
+              {archetypeError}
+            </p>
+          )}
+
+          {archetypes.length > 0 ? (
+            <div>
+              <div className="flex gap-3 flex-wrap">
+                {archetypes.map((key) => (
+                  <AnimalArchetypeCard key={key} animalKey={key} />
+                ))}
+              </div>
+              {archetypeAnalysis && (
+                <div className="mt-4 px-4 py-3 rounded-xl" style={{ background: "#0A1020", border: "1px solid #1E2A3A" }}>
+                  <p className="text-[10px] font-mono uppercase tracking-widest mb-1.5" style={{ color: "#3A5A7A" }}>
+                    AI Analysis
+                  </p>
+                  <p className="text-sm leading-relaxed" style={{ color: "#6888a8" }}>{archetypeAnalysis}</p>
+                </div>
+              )}
+            </div>
+          ) : isOwn ? (
+            <div
+              className="rounded-xl p-5 text-center"
+              style={{ background: "#060C14", border: "1px dashed #1E2A3A" }}
+            >
+              <div className="text-2xl mb-2">🦍 🐯 🦁</div>
+              <p className="text-sm font-medium mb-1" style={{ color: "#4A6A8A" }}>
+                Your animal archetypes haven&apos;t been discovered yet
+              </p>
+              <p className="text-xs" style={{ color: "#2A4060" }}>
+                Once an org leaves you a detailed review (240+ words), click &quot;Analyze My Archetypes&quot; above.
+              </p>
+            </div>
+          ) : null}
         </div>
       )}
 

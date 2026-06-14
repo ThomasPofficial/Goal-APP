@@ -26,6 +26,9 @@ export default async function ProfilePage({ params }: { params: Promise<{ handle
         isHomeschooled: true,
         isInternational: true,
         userId: true,
+        animalArchetypes: true,
+        archetypeAnalysis: true,
+        archetypeUpdatedAt: true,
       },
     }),
     session?.user?.id
@@ -57,7 +60,12 @@ export default async function ProfilePage({ params }: { params: Promise<{ handle
 
   return (
     <ProfileClient
-      profile={{ ...profile, geniusType: profile.geniusType as GeniusTypeKey | null, secondaryGeniusType: profile.secondaryGeniusType as GeniusTypeKey | null }}
+      profile={{
+        ...profile,
+        geniusType: profile.geniusType as GeniusTypeKey | null,
+        secondaryGeniusType: profile.secondaryGeniusType as GeniusTypeKey | null,
+        archetypeUpdatedAt: profile.archetypeUpdatedAt?.toISOString() ?? null,
+      }}
       isOwn={!!isOwnProfile}
       myProfile={myProfile ? { ...myProfile, geniusType: myProfile.geniusType as GeniusTypeKey | null } : null}
       ownReviews={ownReviews.map((r) => ({ ...r, createdAt: r.createdAt.toISOString() }))}

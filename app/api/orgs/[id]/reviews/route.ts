@@ -20,6 +20,14 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     return NextResponse.json({ error: "orgProjectId, profileId, body, and deadline are required" }, { status: 400 });
   }
 
+  const wordCount = body.trim().split(/\s+/).filter(Boolean).length;
+  if (wordCount < 240) {
+    return NextResponse.json(
+      { error: `Review must be at least 240 words (currently ${wordCount}). Be specific about what the student did, how they worked, and what you observed.` },
+      { status: 422 }
+    );
+  }
+
   const org = await prisma.org.findUnique({ where: { id: orgId } });
   if (!org) return NextResponse.json({ error: "Org not found" }, { status: 404 });
 
