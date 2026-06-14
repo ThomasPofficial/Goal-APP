@@ -12,42 +12,76 @@ export default async function NotificationsPage() {
     select: { id: true },
   });
 
-  const requests = myProfile
-    ? await prisma.recruitmentRequest.findMany({
-        where: { toProfileId: myProfile.id },
-        include: {
-          orgProject: {
-            select: {
-              id: true,
-              title: true,
-              orgId: true,
-              org: { select: { id: true, name: true } },
+  const [requests, applications] = await Promise.all([
+    myProfile
+      ? prisma.recruitmentRequest.findMany({
+          where: { toProfileId: myProfile.id },
+          include: {
+            orgProject: {
+              select: {
+                id: true,
+                title: true,
+                orgId: true,
+                org: { select: { id: true, name: true } },
+              },
+            },
+            fromProfile: {
+              select: {
+                id: true,
+                displayName: true,
+                avatarUrl: true,
+                geniusType: true,
+                handle: true,
+              },
+            },
+            team: { select: { id: true, name: true } },
+          },
+          orderBy: { createdAt: "desc" },
+        })
+      : Promise.resolve([]),
+
+    myProfile
+      ? prisma.teamApplication.findMany({
+          where: {
+            status: { not: "PENDING" },
+            team: { members: { some: { profileId: myProfile.id } } },
+          },
+          include: {
+            team: { select: { id: true, name: true } },
+            orgProject: {
+              select: {
+                id: true,
+                title: true,
+                orgId: true,
+                org: { select: { id: true, name: true } },
+              },
             },
           },
-          fromProfile: {
-            select: {
-              id: true,
-              displayName: true,
-              avatarUrl: true,
-              geniusType: true,
-              handle: true,
-            },
-          },
-          team: { select: { id: true, name: true } },
-        },
-        orderBy: { createdAt: "desc" },
-      })
-    : [];
+          orderBy: { decidedAt: "desc" },
+        })
+      : Promise.resolve([]),
+  ]);
 
   return (
     <NotificationsClient
       requests={requests.map((r) => ({
         ...r,
+        type: "recruitment" as const,
+        sortDate: r.createdAt.toISOString(),
         createdAt: r.createdAt.toISOString(),
         fromProfile: {
           ...r.fromProfile,
           geniusType: r.fromProfile.geniusType as string | null,
         },
+      }))}
+      applications={applications.map((a) => ({
+        id: a.id,
+        type: "decision" as const,
+        status: a.status,
+        sortDate: (a.decidedAt ?? new Date()).toISOString(),
+        decidedAt: a.decidedAt?.toISOString() ?? null,
+        team: a.team,
+        orgProject: a.orgProject,
       }))}
     />
   );
