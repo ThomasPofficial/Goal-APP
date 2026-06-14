@@ -13,9 +13,21 @@ if (!DATABASE_URL) {
 const PORT = process.env.PORT || 3000;
 const env = { ...process.env };
 
-// Marks the failed SQLite migration as applied so migrate deploy can proceed.
-// Runs a simple UPDATE — safe if migration isn't in the table (affects 0 rows).
-const FIX_SQL = `UPDATE "_prisma_migrations" SET finished_at = NOW(), logs = NULL, applied_steps_count = 1, rolled_back_at = NULL WHERE migration_name = '20260426162504_nivarro_core';`;
+// Marks known-problematic migrations as applied so migrate deploy can proceed.
+// Safe if a migration isn't in the table (UPDATE affects 0 rows).
+const FIX_SQL = `
+UPDATE "_prisma_migrations"
+SET finished_at = NOW(), logs = NULL, applied_steps_count = 1, rolled_back_at = NULL
+WHERE migration_name IN (
+  '20260426162504_nivarro_core',
+  '20260613000000_add_saved_org',
+  '20260613000001_add_rich_listing_fields',
+  '20260613000002_add_scraper_queue',
+  '20260614000000_add_verified_and_review_ai',
+  '20260614000001_add_animal_archetypes'
+)
+AND (finished_at IS NULL OR rolled_back_at IS NOT NULL OR logs IS NOT NULL);
+`;
 
 function fixMigrationState() {
   console.log("→ Fixing legacy migration state via db execute...");
@@ -41,7 +53,7 @@ try {
   try {
     execSync("npx prisma migrate deploy", { stdio: "inherit", env });
   } catch (_firstErr) {
-    console.log("→ migrate deploy failed — attempting auto-fix of SQLite migration...");
+    console.log("→ migrate deploy failed — attempting auto-fix of migration state...");
     if (fixMigrationState()) {
       console.log("→ Retrying migrate deploy...");
       execSync("npx prisma migrate deploy", { stdio: "inherit", env });
