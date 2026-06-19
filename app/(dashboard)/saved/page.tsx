@@ -22,7 +22,7 @@ export default async function SavedPage() {
               id: true,
               name: true,
               tagline: true,
-              orgProjects: {
+              projects: {
                 where: { listingStatus: "OPEN" },
                 select: { id: true },
               },
@@ -69,7 +69,7 @@ export default async function SavedPage() {
                   <p className="text-xs mt-0.5 line-clamp-1" style={{ color: "var(--text2)" }}>{org.tagline}</p>
                 )}
                 <p className="text-xs font-mono mt-1" style={{ color: "var(--muted)" }}>
-                  {org.orgProjects.length} open listing{org.orgProjects.length !== 1 ? "s" : ""}
+                  {org.projects.length} open listing{org.projects.length !== 1 ? "s" : ""}
                 </p>
               </div>
               <UnsaveButton orgId={org.id} />
