@@ -1,8 +1,8 @@
 -- isDemo flag on Profile: marks seed/bot accounts, filtered from peers listing
-ALTER TABLE "Profile" ADD COLUMN "isDemo" BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE "Profile" ADD COLUMN IF NOT EXISTS "isDemo" BOOLEAN NOT NULL DEFAULT false;
 
 -- PlatformUpdate: platform announcements posted by team@nivarro.co, shown after WelcomeCard
-CREATE TABLE "PlatformUpdate" (
+CREATE TABLE IF NOT EXISTS "PlatformUpdate" (
     "id"        TEXT        NOT NULL,
     "title"     TEXT        NOT NULL,
     "body"      TEXT        NOT NULL,

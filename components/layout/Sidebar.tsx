@@ -162,7 +162,6 @@ export default function Sidebar({ userName, userEmail, geniusType, mobileOpen = 
         className="hidden md:flex items-center justify-center flex-shrink-0"
         style={{
           height: 32,
-          borderTop: "1px solid rgba(255,255,255,0.04)",
           background: "none",
           border: "none",
           borderTop: "1px solid rgba(255,255,255,0.04)",

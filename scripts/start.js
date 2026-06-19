@@ -24,7 +24,8 @@ WHERE migration_name IN (
   '20260613000001_add_rich_listing_fields',
   '20260613000002_add_scraper_queue',
   '20260614000000_add_verified_and_review_ai',
-  '20260614000001_add_animal_archetypes'
+  '20260614000001_add_animal_archetypes',
+  '20260614000002_add_platform_updates_and_demo_flag'
 )
 AND (finished_at IS NULL OR rolled_back_at IS NOT NULL OR logs IS NOT NULL);
 `;
