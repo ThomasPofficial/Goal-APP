@@ -210,6 +210,9 @@ export async function POST(req: Request) {
           "Nivarro fellows work directly with our engineering and design team. Past fellows shipped features that are live on the platform today.",
       },
     });
+  } else {
+    // Always re-link the org to the current user — guards against stale createdById after user recreation
+    await prisma.org.update({ where: { id: nivarroOrg.id }, data: { createdById: nivDevUser.id } });
   }
 
   // ── Re-fetch veterans project so it's always defined below ───────────────
