@@ -67,7 +67,7 @@ export default async function DashboardPage() {
     });
 
   const hasTeam = (profile?.teamMemberships?.length ?? 0) > 0;
-  const hasApplied = hasTeam && profile?.id
+  const hasApplied = profile?.id
     ? (await prisma.teamApplication.count({
         where: { team: { members: { some: { profileId: profile.id } } } },
       })) > 0
