@@ -190,7 +190,7 @@ export default function ProfileClient({ profile, isOwn, ownReviews = [] }: Props
             <h2 className="text-xs font-semibold uppercase tracking-wider" style={{ color: "#5a6a7a" }}>
               Animal Archetypes
             </h2>
-            {isOwn && (
+            {isOwn && ownReviews.length >= 3 && (
               <button
                 onClick={analyzeArchetype}
                 disabled={analyzingArchetype}
@@ -206,7 +206,7 @@ export default function ProfileClient({ profile, isOwn, ownReviews = [] }: Props
                   ? "Analyzing…"
                   : archetypes.length > 0
                   ? "Re-analyze"
-                  : "Analyze My Archetypes"}
+                  : "Analyze now"}
               </button>
             )}
           </div>
@@ -243,7 +243,9 @@ export default function ProfileClient({ profile, isOwn, ownReviews = [] }: Props
                 Your animal archetypes haven&apos;t been discovered yet
               </p>
               <p className="text-xs" style={{ color: "#2A4060" }}>
-                Once an org leaves you a detailed review (240+ words), click &quot;Analyze My Archetypes&quot; above.
+                {ownReviews.length >= 3
+                  ? "You have enough reviews — your archetypes will be assigned automatically, or click \"Analyze now\" above."
+                  : `Archetypes unlock after ${3 - ownReviews.length} more detailed org review${3 - ownReviews.length === 1 ? "" : "s"} (240+ words each). They're assigned automatically when you hit 3.`}
               </p>
             </div>
           ) : null}
@@ -316,7 +318,7 @@ export default function ProfileClient({ profile, isOwn, ownReviews = [] }: Props
         >
           <p className="text-sm font-medium" style={{ color: "#5a7898" }}>No reviews yet</p>
           <p className="text-xs mt-1" style={{ color: "var(--muted)" }}>
-            Reviews appear here after you complete an org project. They&apos;re written by the org and visible only to you — and to teams recruiting via the algorithm.
+            Reviews appear here after you complete an org project. They&apos;re written by the org and visible only to you. Once you have 3, your animal archetypes are automatically assigned.
           </p>
         </div>
       )}

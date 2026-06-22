@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { X, Check, ChevronDown, ChevronRight, BookOpen, ArrowRight } from "lucide-react";
 
-const LS_KEY = "nv_tutorial_v3_dismissed";
+const LS_KEY = "nv_tutorial_v4_dismissed";
 
 interface TutorialState {
   hasGeniusType: boolean;
@@ -62,7 +62,7 @@ export default function TutorialWidget({ serverDismissed = false, ...initialProp
 
   if (!mounted || dismissed) return null;
 
-  const { hasGeniusType, traitsDone, hasTeam, hasApplied, hasBrowsedOrgs } = state;
+  const { hasGeniusType, traitsDone, hasApplied, hasBrowsedOrgs } = state;
 
   const steps: Step[] = [
     {
@@ -93,40 +93,27 @@ export default function TutorialWidget({ serverDismissed = false, ...initialProp
     },
     {
       label: "Browse organizations",
-      description: "Find orgs posting open projects for teams",
+      description: "Find orgs posting open projects",
       href: "/orgs",
       ctaLabel: "Browse orgs",
       done: hasBrowsedOrgs,
       guide: [
-        "Visit the Orgs page to see all verified organizations accepting team applications.",
+        "Visit the Orgs page to see organizations accepting applications.",
         "Read each org's mission and open projects to find ones that match your interests.",
         "Look at what Genius Types and traits they're seeking — compare with your own profile.",
         "Save orgs you like to revisit, or jump straight to a project page to apply.",
       ],
     },
     {
-      label: "Build or join a team",
-      description: "Create your team or accept a recruitment invite",
-      href: "/teams",
-      ctaLabel: "Go to Teams",
-      done: hasTeam,
-      guide: [
-        "You need a team of 2–5 people to apply to any org project.",
-        "Create a new team from the Teams page — give it a name and a short description.",
-        "Invite teammates by sharing your team link or finding them by handle.",
-        "Already have an invite? Accept it from your notifications and you'll be added automatically.",
-      ],
-    },
-    {
       label: "Apply to an org project",
-      description: "Submit your team's application from a project page",
+      description: "Submit your application directly from a project page",
       href: "/orgs",
       ctaLabel: "Find a project",
       done: hasApplied,
       guide: [
-        "Find an org project your team is excited about and navigate to its page.",
-        "Click the Apply button — you'll select which team is applying.",
-        "Write a short pitch (2–4 sentences) about why your team is a great fit.",
+        "Find an org project you're excited about and navigate to its page.",
+        "Click the Apply button — you can apply solo or bring up to a few teammates.",
+        "Write a short pitch about why you're a great fit for the project.",
         "Track your application status from your Teams page once submitted.",
       ],
     },

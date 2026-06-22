@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
+import { runArchetypeAnalysis, ARCHETYPE_MIN_REVIEWS, ARCHETYPE_MIN_WORDS } from "@/lib/runArchetypeAnalysis";
 
 const ai = new Anthropic();
 
@@ -33,9 +34,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
   for (const r of reviews) {
     const wc = wordCount(r.body ?? "");
-    if (wc < 240)
+    if (wc < ARCHETYPE_MIN_WORDS)
       return NextResponse.json(
-        { error: `Review must be at least 240 words (got ${wc})` },
+        { error: `Review must be at least ${ARCHETYPE_MIN_WORDS} words (got ${wc})` },
         { status: 400 }
       );
   }
@@ -44,6 +45,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   deadline.setFullYear(deadline.getFullYear() + 1);
 
   let created = 0;
+  const profilesToCheck = new Set<string>();
+
   for (const r of reviews) {
     let aiInsight: string | undefined;
     try {
@@ -75,6 +78,37 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       update: { body: r.body.trim(), ...(aiInsight ? { aiInsight } : {}) },
     });
     created++;
+    profilesToCheck.add(r.profileId);
+  }
+
+  // Auto-trigger archetype analysis for students who now have 3+ qualifying reviews
+  for (const profileId of profilesToCheck) {
+    try {
+      const profile = await prisma.profile.findUnique({
+        where: { id: profileId },
+        select: {
+          animalArchetypes: true,
+          orgReviews: { select: { body: true } },
+        },
+      });
+      if (!profile) continue;
+
+      const alreadyHasArchetypes = (() => {
+        try { return JSON.parse(profile.animalArchetypes ?? "[]").length > 0; } catch { return false; }
+      })();
+
+      if (alreadyHasArchetypes) continue;
+
+      const qualifyingCount = profile.orgReviews.filter(
+        (r) => wordCount(r.body) >= ARCHETYPE_MIN_WORDS
+      ).length;
+
+      if (qualifyingCount >= ARCHETYPE_MIN_REVIEWS) {
+        await runArchetypeAnalysis(profileId);
+      }
+    } catch {
+      // Non-fatal: archetype analysis failure shouldn't block the review response
+    }
   }
 
   return NextResponse.json({ created });
