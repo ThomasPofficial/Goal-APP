@@ -254,6 +254,31 @@ export async function POST(req: Request) {
     });
   }
 
+  // ── Thomas Piacentine mock review (from Sunset Pines / Veterans Game Studio) ─
+  if (thomasProfile && veteransProject && sunsetOrg) {
+    const thomasReviewDeadline = new Date();
+    thomasReviewDeadline.setFullYear(thomasReviewDeadline.getFullYear() + 1);
+    await prisma.orgReview.upsert({
+      where: { orgProjectId_profileId: { orgProjectId: veteransProject.id, profileId: thomasProfile.id } },
+      create: {
+        orgId: sunsetOrg.id,
+        orgProjectId: veteransProject.id,
+        profileId: thomasProfile.id,
+        deadline: thomasReviewDeadline,
+        body: `Thomas served as team lead for Studio 18 across the full eleven-week engagement at Sunset Pines, and I want to be specific about what that meant in practice, because "team lead" undersells it considerably.
+
+We started the project with four students who had never shipped a game and eighteen veterans who were skeptical that anything real would come of it. Thomas walked into that situation and immediately understood that the first job was trust, not code. He spent the opening two weeks doing what he called "listening sessions" — sitting with the veterans one-on-one, asking what they remembered about the war, what they were proud of, what still hurt. That research shaped every design decision his team made afterward. The game mechanics, the narrative framing, the audio cues — all of it came from those conversations.
+
+On the technical side, Thomas didn't try to do everything himself. He scoped the work carefully, delegated the prototype build to Diego, took on the audio integration himself when no one else had bandwidth, and kept the team in daily sync without making anyone feel micromanaged. When a major playtest at week seven revealed that veterans were losing the thread of the co-op objectives, Thomas called an emergency redesign session that night, had a revised build running by morning, and never once made the team feel like it was a setback.
+
+What I observed in Thomas over eleven weeks is rarer than most people his age realize: he carries genuine accountability without needing to be told to. The last night before the final playtest, our activities director mentioned in passing that the audio was still a bit off. Thomas was in the AV room until midnight fixing it — nobody asked him to, nobody was watching. That's not work ethic in the resume sense. That's someone who physically cannot leave something broken.
+
+I would not hesitate to bring Thomas back for a future project, and I would not hesitate to tell any organization he applies to that he is the real thing.`,
+      },
+      update: {},
+    });
+  }
+
   // ── Diego Ramirez student account ─────────────────────────────────────────
   const diegoEmail = "diego.ramirez@nivarro.demo";
   let diegoUser = await prisma.user.findUnique({ where: { email: diegoEmail } });
