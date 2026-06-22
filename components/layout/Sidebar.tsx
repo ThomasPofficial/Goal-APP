@@ -34,7 +34,7 @@ interface SidebarProps {
 export default function Sidebar({ userName, userEmail, geniusType, mobileOpen = false, onMobileClose, myOrgId, myOrgName, isOrg, collapsed = false, onToggleCollapse }: SidebarProps) {
   const pathname = usePathname();
 
-  const isNivarroAdmin = userEmail === "team@nivarro.co";
+  const isNivarroAdmin = userEmail === "team@nivarro.dev";
 
   const orgNav = myOrgId ? [
     { href: `/orgs/${myOrgId}`, label: myOrgName ?? "My Org", Icon: Briefcase },
