@@ -257,6 +257,14 @@ export async function POST(req: Request) {
     });
   }
 
+  // ── Ensure Thomas has no org ownership (transfer any accidental orgs to Nivarro team) ─
+  if (thomasUser && nivDevUser) {
+    await prisma.org.updateMany({
+      where: { createdById: thomasUser.id },
+      data: { createdById: nivDevUser.id },
+    });
+  }
+
   // ── Thomas Piacentine mock review (from Sunset Pines / Veterans Game Studio) ─
   if (thomasProfile && veteransProject && sunsetOrg) {
     const thomasReviewDeadline = new Date();
