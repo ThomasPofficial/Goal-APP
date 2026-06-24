@@ -179,11 +179,14 @@ export async function POST(req: Request) {
   } else {
     await prisma.user.update({ where: { email: nivDevEmail }, data: { passwordHash: nivDevHash } });
   }
-  let nivarroOrg = await prisma.org.findFirst({ where: { name: "Nivarro" } });
+  let nivarroOrg = await prisma.org.findFirst({
+    where: { name: { in: ["Nivarro", "Nivarro Team", "Nivarro DEV TEAM"] } },
+    orderBy: { createdAt: "asc" },
+  });
   if (!nivarroOrg) {
     nivarroOrg = await prisma.org.create({
       data: {
-        name: "Nivarro",
+        name: "Nivarro Team",
         tagline: "Where exceptional students find their first real work.",
         description:
           "Nivarro is the platform connecting high-potential students with orgs that are serious about the next generation. We run our own fellowship for students who demonstrate exceptional initiative across the platform.",
@@ -214,6 +217,15 @@ export async function POST(req: Request) {
     // Always re-link the org to the current user — guards against stale createdById after user recreation
     await prisma.org.update({ where: { id: nivarroOrg.id }, data: { createdById: nivDevUser.id } });
   }
+
+  // ── Nuclear cleanup: force ALL Nivarro-branded orgs to the correct owner ──
+  // This runs regardless of Thomas's user ID so stale createdById mismatches can't sneak through.
+  await prisma.org.updateMany({
+    where: {
+      name: { in: ["Nivarro", "Nivarro Team", "Nivarro DEV TEAM"] },
+    },
+    data: { createdById: nivDevUser.id },
+  });
 
   // ── Re-fetch veterans project so it's always defined below ───────────────
   const veteransProject =
