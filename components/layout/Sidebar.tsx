@@ -27,14 +27,13 @@ interface SidebarProps {
   myOrgId?: string | null;
   myOrgName?: string | null;
   isOrg?: boolean;
+  isNivarroAdmin?: boolean;
   collapsed?: boolean;
   onToggleCollapse?: () => void;
 }
 
-export default function Sidebar({ userName, userEmail, geniusType, mobileOpen = false, onMobileClose, myOrgId, myOrgName, isOrg, collapsed = false, onToggleCollapse }: SidebarProps) {
+export default function Sidebar({ userName, userEmail, geniusType, mobileOpen = false, onMobileClose, myOrgId, myOrgName, isOrg, isNivarroAdmin = false, collapsed = false, onToggleCollapse }: SidebarProps) {
   const pathname = usePathname();
-
-  const isNivarroAdmin = userEmail === "team@nivarro.dev";
 
   const orgNav = myOrgId ? [
     { href: `/orgs/${myOrgId}`, label: myOrgName ?? "My Org", Icon: Briefcase },
