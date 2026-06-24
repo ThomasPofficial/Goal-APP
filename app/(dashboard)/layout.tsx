@@ -14,23 +14,22 @@ export default async function DashboardLayout({
     redirect("/login");
   }
 
-  const [profile, myOrg, nivarroPlatformUser] = await Promise.all([
+  const role = session.user.role ?? "STUDENT";
+  const isOrg = role === "ORG" || role === "ADMIN";
+  const isNivarroAdmin = role === "ADMIN";
+
+  const [profile, myOrg] = await Promise.all([
     prisma.profile.findUnique({
       where: { userId: session.user.id },
       select: { displayName: true, geniusType: true },
     }),
-    prisma.org.findFirst({
-      where: { createdById: session.user.id },
-      select: { id: true, name: true },
-    }),
-    prisma.user.findUnique({
-      where: { email: "team@nivarro.dev" },
-      select: { id: true },
-    }),
+    isOrg
+      ? prisma.org.findFirst({
+          where: { createdById: session.user.id },
+          select: { id: true, name: true },
+        })
+      : Promise.resolve(null),
   ]);
-
-  // DB lookup — immune to JWT email propagation issues
-  const isNivarroAdmin = !!nivarroPlatformUser && session.user.id === nivarroPlatformUser.id;
 
   return (
     <div className="min-h-screen" style={{ background: "var(--bg)" }}>
@@ -40,7 +39,7 @@ export default async function DashboardLayout({
         geniusType={(profile?.geniusType as GeniusType | null) ?? null}
         myOrgId={myOrg?.id ?? null}
         myOrgName={myOrg?.name ?? null}
-        isOrg={!!myOrg}
+        isOrg={isOrg}
         isNivarroAdmin={isNivarroAdmin}
       />
       <main className="dashboard-main min-h-screen pt-14 pb-[60px] md:pt-0 md:pb-0">

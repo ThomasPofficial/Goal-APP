@@ -80,6 +80,12 @@ export async function POST(req: Request) {
     });
   }
 
+  // Promote the creating user to ORG role so their sidebar switches immediately
+  await prisma.user.update({
+    where: { id: session.user.id },
+    data: { role: "ORG" },
+  });
+
   return NextResponse.json({ org }, { status: 201 });
 }
 

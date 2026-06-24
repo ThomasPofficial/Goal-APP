@@ -174,11 +174,40 @@ export async function POST(req: Request) {
   let nivDevUser = await prisma.user.findUnique({ where: { email: nivDevEmail } });
   if (!nivDevUser) {
     nivDevUser = await prisma.user.create({
-      data: { name: "Nivarro Team", email: nivDevEmail, passwordHash: nivDevHash },
+      data: { name: "Nivarro Team", email: nivDevEmail, passwordHash: nivDevHash, role: "ADMIN" },
     });
   } else {
-    await prisma.user.update({ where: { email: nivDevEmail }, data: { passwordHash: nivDevHash } });
+    await prisma.user.update({ where: { email: nivDevEmail }, data: { passwordHash: nivDevHash, role: "ADMIN" } });
   }
+  // ── Set roles for all known org accounts ─────────────────────────────────
+  const orgEmails = [
+    "ridgepoint@nivarro.demo",
+    "sunsetpines@nivarro.demo",
+    "org@nivarro.demo",
+  ];
+  for (const email of orgEmails) {
+    await prisma.user.updateMany({ where: { email }, data: { role: "ORG" } });
+  }
+  // Ensure Thomas and all student demo accounts are explicitly STUDENT
+  const studentEmails = [
+    "thomas@piacentine.dev",
+    "student@nivarro.demo",
+    "priya@nivarro.io",
+    "marcus@nivarro.io",
+    "zoe@nivarro.io",
+    "elena@nivarro.demo",
+    "james@nivarro.demo",
+    "amara@nivarro.demo",
+    "noah@nivarro.demo",
+    "maya@nivarro.demo",
+    "diego.ramirez@nivarro.demo",
+    "aiko.tanaka@nivarro.demo",
+    "jordan.hayes@nivarro.demo",
+  ];
+  for (const email of studentEmails) {
+    await prisma.user.updateMany({ where: { email }, data: { role: "STUDENT" } });
+  }
+
   // Look up Nivarro org: by current ownership, then by unique structural combo (paid+verified+FELLOWSHIP)
   let nivarroOrg =
     (await prisma.org.findFirst({ where: { createdById: nivDevUser.id } })) ??

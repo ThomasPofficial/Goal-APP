@@ -61,6 +61,12 @@ model PasswordResetToken {
 // CORE DOMAIN
 // ─────────────────────────────────────────────
 
+enum UserRole {
+  STUDENT
+  ORG
+  ADMIN
+}
+
 model User {
   id            String    @id @default(cuid())
   name          String?
@@ -68,6 +74,7 @@ model User {
   emailVerified DateTime?
   image         String?
   passwordHash  String?
+  role          UserRole  @default(STUDENT)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 

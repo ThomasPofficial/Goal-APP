@@ -40,6 +40,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               name: true,
               image: true,
               passwordHash: true,
+              role: true,
             },
           });
 
@@ -53,6 +54,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             email: user.email,
             name: user.name,
             image: user.image,
+            role: user.role,
           };
         } catch {
           return null;
@@ -75,6 +77,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (user) {
         token.id = user.id;
         token.email = user.email;
+        token.role = (user as { role?: string }).role ?? "STUDENT";
       }
       return token;
     },
@@ -84,6 +87,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
       if (token?.email) {
         session.user.email = token.email as string;
+      }
+      if (token?.role) {
+        session.user.role = token.role as string;
       }
       return session;
     },
