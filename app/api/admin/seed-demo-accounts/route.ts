@@ -179,10 +179,11 @@ export async function POST(req: Request) {
   } else {
     await prisma.user.update({ where: { email: nivDevEmail }, data: { passwordHash: nivDevHash } });
   }
-  let nivarroOrg = await prisma.org.findFirst({
-    where: { name: { in: ["Nivarro", "Nivarro Team", "Nivarro DEV TEAM"] } },
-    orderBy: { createdAt: "asc" },
-  });
+  // Look up Nivarro org by ownership first, then by canonical fields we set — never by name
+  let nivarroOrg =
+    (await prisma.org.findFirst({ where: { createdById: nivDevUser.id } })) ??
+    (await prisma.org.findFirst({ where: { website: "https://nivarro.com" } })) ??
+    (await prisma.org.findFirst({ where: { contactEmail: "team@nivarro.co" } }));
   if (!nivarroOrg) {
     nivarroOrg = await prisma.org.create({
       data: {
@@ -218,11 +219,15 @@ export async function POST(req: Request) {
     await prisma.org.update({ where: { id: nivarroOrg.id }, data: { createdById: nivDevUser.id } });
   }
 
-  // ── Nuclear cleanup: force ALL Nivarro-branded orgs to the correct owner ──
-  // This runs regardless of Thomas's user ID so stale createdById mismatches can't sneak through.
+  // ── Nuclear cleanup: force any Nivarro platform org to the correct owner ──
+  // Anchored on fields WE set (website, contactEmail) — immune to name changes and
+  // stale Thomas createdById values.
   await prisma.org.updateMany({
     where: {
-      name: { in: ["Nivarro", "Nivarro Team", "Nivarro DEV TEAM"] },
+      OR: [
+        { website: "https://nivarro.com" },
+        { contactEmail: "team@nivarro.co" },
+      ],
     },
     data: { createdById: nivDevUser.id },
   });
