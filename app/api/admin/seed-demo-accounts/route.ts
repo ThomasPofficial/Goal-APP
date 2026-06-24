@@ -179,11 +179,10 @@ export async function POST(req: Request) {
   } else {
     await prisma.user.update({ where: { email: nivDevEmail }, data: { passwordHash: nivDevHash } });
   }
-  // Look up Nivarro org by ownership first, then by canonical fields we set — never by name
+  // Look up Nivarro org: by current ownership, then by unique structural combo (paid+verified+FELLOWSHIP)
   let nivarroOrg =
     (await prisma.org.findFirst({ where: { createdById: nivDevUser.id } })) ??
-    (await prisma.org.findFirst({ where: { website: "https://nivarro.com" } })) ??
-    (await prisma.org.findFirst({ where: { contactEmail: "team@nivarro.co" } }));
+    (await prisma.org.findFirst({ where: { isPaid: true, verified: true, category: "FELLOWSHIP" } }));
   if (!nivarroOrg) {
     nivarroOrg = await prisma.org.create({
       data: {
@@ -219,16 +218,12 @@ export async function POST(req: Request) {
     await prisma.org.update({ where: { id: nivarroOrg.id }, data: { createdById: nivDevUser.id } });
   }
 
-  // ── Nuclear cleanup: force any Nivarro platform org to the correct owner ──
-  // Anchored on fields WE set (website, contactEmail) — immune to name changes and
-  // stale Thomas createdById values.
+  // ── Nuclear cleanup: force the Nivarro platform org to the correct owner ──
+  // Uses the unique combination isPaid+verified+FELLOWSHIP — only the Nivarro
+  // platform org in this DB has all three. Immune to name changes, missing
+  // website/contactEmail fields, and stale createdById values.
   await prisma.org.updateMany({
-    where: {
-      OR: [
-        { website: "https://nivarro.com" },
-        { contactEmail: "team@nivarro.co" },
-      ],
-    },
+    where: { isPaid: true, verified: true, category: "FELLOWSHIP" },
     data: { createdById: nivDevUser.id },
   });
 

@@ -14,7 +14,7 @@ export default async function DashboardLayout({
     redirect("/login");
   }
 
-  const [profile, myOrg] = await Promise.all([
+  const [profile, myOrg, nivarroPlatformUser] = await Promise.all([
     prisma.profile.findUnique({
       where: { userId: session.user.id },
       select: { displayName: true, geniusType: true },
@@ -23,7 +23,14 @@ export default async function DashboardLayout({
       where: { createdById: session.user.id },
       select: { id: true, name: true },
     }),
+    prisma.user.findUnique({
+      where: { email: "team@nivarro.dev" },
+      select: { id: true },
+    }),
   ]);
+
+  // DB lookup — immune to JWT email propagation issues
+  const isNivarroAdmin = !!nivarroPlatformUser && session.user.id === nivarroPlatformUser.id;
 
   return (
     <div className="min-h-screen" style={{ background: "var(--bg)" }}>
@@ -34,6 +41,7 @@ export default async function DashboardLayout({
         myOrgId={myOrg?.id ?? null}
         myOrgName={myOrg?.name ?? null}
         isOrg={!!myOrg}
+        isNivarroAdmin={isNivarroAdmin}
       />
       <main className="dashboard-main min-h-screen pt-14 pb-[60px] md:pt-0 md:pb-0">
         <div className="max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-8">

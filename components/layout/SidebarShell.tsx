@@ -15,6 +15,7 @@ interface Props {
   myOrgId?: string | null;
   myOrgName?: string | null;
   isOrg?: boolean;
+  isNivarroAdmin?: boolean;
 }
 
 const STUDENT_BOTTOM_TABS = [
@@ -25,7 +26,7 @@ const STUDENT_BOTTOM_TABS = [
   { href: "/messages",  label: "Messages", Icon: MessageSquare },
 ];
 
-export default function SidebarShell({ userName, userEmail, geniusType, myOrgId, myOrgName, isOrg }: Props) {
+export default function SidebarShell({ userName, userEmail, geniusType, myOrgId, myOrgName, isOrg, isNivarroAdmin }: Props) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const pathname = usePathname();
@@ -141,6 +142,7 @@ export default function SidebarShell({ userName, userEmail, geniusType, myOrgId,
         myOrgId={myOrgId}
         myOrgName={myOrgName}
         isOrg={isOrg}
+        isNivarroAdmin={isNivarroAdmin}
         collapsed={collapsed}
         onToggleCollapse={toggleCollapse}
       />
