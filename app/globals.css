@@ -23,15 +23,15 @@
 
   /* ── OLED black surfaces — true zero ── */
   --n-bg:       #000000;
-  --n-bg2:      #000000;
-  --n-surface:  #060606;
-  --n-surface2: #0c0c0c;
-  --n-surface3: #141414;
-  --n-border:   rgba(255,255,255,0.04);
-  --n-border-md:rgba(59,130,246,0.22);
-  --n-text:     #F0F4FF;
-  --n-text2:    #8AA4C8;
-  --n-muted:    #3A506A;
+  --n-bg2:      #050505;
+  --n-surface:  #0A0A0C;
+  --n-surface2: #111116;
+  --n-surface3: #18181E;
+  --n-border:   rgba(255,255,255,0.07);
+  --n-border-md:rgba(59,130,246,0.28);
+  --n-text:     #F4F7FF;
+  --n-text2:    #C4D8EF;
+  --n-muted:    #7096B4;
 
   /* ── Active (dark default) ── */
   --bg:        var(--n-bg);
@@ -125,16 +125,16 @@ html, body {
 
 h1, h2, h3, h4 {
   font-family: var(--font-body);
-  font-weight: 700;
-  letter-spacing: -0.025em;
-  line-height: 1.15;
+  font-weight: bold;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
   color: var(--text);
   margin: 0;
 }
 
-h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); letter-spacing: -0.035em; }
+h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); letter-spacing: 0.02em; }
 h2 { font-size: clamp(1.3rem, 3vw, 1.9rem); }
-h3 { font-size: clamp(1.05rem, 2vw, 1.3rem); }
+h3 { font-size: clamp(1.05rem, 2vw, 1.3rem); letter-spacing: 0.06em; }
 
 p { line-height: 1.65; margin: 0; }
 
@@ -506,10 +506,37 @@ body.day input[type="datetime-local"] { color-scheme: light; }
 }
 .spy-pulse { animation: spy-pulse 2.4s ease-in-out infinite; }
 
-/* Horizontal scroll section — thin drag-hint fade on right edge */
-.scroll-fade-right {
-  -webkit-mask-image: linear-gradient(to right, black 85%, transparent 100%);
-  mask-image: linear-gradient(to right, black 85%, transparent 100%);
+/* ─────────────────────────────────────────
+   FLOATING MISSION CARD — Bond/MI6 tactile
+───────────────────────────────────────── */
+
+.spy-card {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid rgba(59,130,246,0.16);
+  box-shadow: 0 4px 28px rgba(0,0,0,0.75), 0 1px 0 rgba(255,255,255,0.025);
+  transition: box-shadow 220ms ease, border-color 220ms ease, transform 180ms ease;
+}
+.spy-card:hover {
+  border-color: rgba(59,130,246,0.45);
+  box-shadow: 0 8px 48px rgba(0,0,0,0.85), 0 0 28px rgba(59,130,246,0.12), 0 1px 0 rgba(255,255,255,0.04);
+  transform: translateY(-2px);
+}
+
+/* ─────────────────────────────────────────
+   HUD SECTION HEADER
+───────────────────────────────────────── */
+
+.hud-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.hud-section-line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, rgba(59,130,246,0.4), transparent);
 }
 
 /* ─────────────────────────────────────────
