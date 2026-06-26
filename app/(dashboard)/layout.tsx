@@ -24,10 +24,17 @@ export default async function DashboardLayout({
       select: { displayName: true, geniusType: true },
     }),
     isOrg
-      ? prisma.org.findFirst({
-          where: { createdById: session.user.id },
-          select: { id: true, name: true },
-        })
+      ? isNivarroAdmin
+        // ADMIN: look up the platform org by structural identity — works for any
+        // admin email (team.nivarro@gmail.com, team@nivarro.dev, etc.)
+        ? prisma.org.findFirst({
+            where: { isPaid: true, verified: true, category: "FELLOWSHIP" },
+            select: { id: true, name: true },
+          })
+        : prisma.org.findFirst({
+            where: { createdById: session.user.id },
+            select: { id: true, name: true },
+          })
       : Promise.resolve(null),
   ]);
 
