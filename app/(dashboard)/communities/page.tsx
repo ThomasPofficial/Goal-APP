@@ -73,12 +73,12 @@ export default function CommunitiesPage() {
           ▸ Intelligence Network
         </span>
         <h1 style={{
-          fontFamily: "var(--font-body)", fontSize: 32, fontWeight: "bold",
-          color: "#FFFFFF", margin: "0 0 12px", letterSpacing: "0.01em",
+          fontFamily: "var(--font-body)", fontSize: 40, fontWeight: "bold",
+          color: "#FFFFFF", margin: "0 0 14px", letterSpacing: "0.01em",
         }}>
           Communities
         </h1>
-        <p style={{ fontSize: 16, color: "var(--text2)", fontFamily: "var(--font-body)", lineHeight: 1.6, maxWidth: 560, margin: 0 }}>
+        <p style={{ fontSize: 17, color: "#D4E6F8", fontFamily: "var(--font-body)", lineHeight: 1.65, maxWidth: 560, margin: 0 }}>
           Find your people. Every community is a network, a study group, and a launchpad.
         </p>
       </div>
@@ -95,18 +95,18 @@ export default function CommunitiesPage() {
                 <span style={{ fontSize: 11, letterSpacing: "0.16em", textTransform: "uppercase", color: c.color, fontFamily: "var(--font-mono)", fontWeight: "bold" }}>
                   {c.category}
                 </span>
-                <span style={{ fontSize: 13, color: "var(--muted)", fontFamily: "var(--font-body)" }}>
+                <span style={{ fontSize: 14, color: "#8AAAC8", fontFamily: "var(--font-body)" }}>
                   {c.members.toLocaleString()} members
                 </span>
               </div>
 
               {/* Name */}
-              <p style={{ fontSize: 20, fontWeight: "bold", color: "#FFFFFF", lineHeight: 1.25, fontFamily: "var(--font-body)", margin: 0 }}>
+              <p style={{ fontSize: 23, fontWeight: "bold", color: "#FFFFFF", lineHeight: 1.2, fontFamily: "var(--font-body)", margin: 0 }}>
                 {c.name}
               </p>
 
               {/* Description */}
-              <p style={{ fontSize: 14, color: "var(--text2)", lineHeight: 1.65, fontFamily: "var(--font-body)", flex: 1, margin: 0 }}>
+              <p style={{ fontSize: 15, color: "#D4E6F8", lineHeight: 1.7, fontFamily: "var(--font-body)", flex: 1, margin: 0 }}>
                 {c.desc}
               </p>
 
@@ -126,7 +126,7 @@ export default function CommunitiesPage() {
               {/* CTA */}
               <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 14 }}>
                 <button style={{
-                  fontSize: 14, fontWeight: "bold", color: "#60A5FA",
+                  fontSize: 16, fontWeight: "bold", color: "#60A5FA",
                   fontFamily: "var(--font-body)", background: "none", border: "none",
                   cursor: "pointer", padding: 0,
                 }}>
