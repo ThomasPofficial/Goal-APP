@@ -57,14 +57,14 @@ function SectionHeader({ tag, title, href, linkLabel }: { tag: string; title: st
       </span>
       <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
         <h2 style={{
-          fontFamily: "var(--font-body)", fontSize: 26, fontWeight: "bold",
+          fontFamily: "var(--font-body)", fontSize: 32, fontWeight: "bold",
           color: "#FFFFFF", margin: 0, letterSpacing: "0.01em", lineHeight: 1,
         }}>
           {title}
         </h2>
         <Link href={href} style={{
-          fontFamily: "var(--font-body)", fontSize: 14, fontWeight: "600",
-          color: "var(--muted)", textDecoration: "none", letterSpacing: "0.01em",
+          fontFamily: "var(--font-body)", fontSize: 15, fontWeight: "600",
+          color: "var(--n-text2)", textDecoration: "none", letterSpacing: "0.01em",
           transition: "color 120ms",
         }}
           onMouseEnter={(e) => (e.currentTarget.style.color = "#FFFFFF")}
@@ -205,7 +205,7 @@ export default function DashboardClient({ profile, spaces, traitsDone, tutorialD
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 24 }}>
           {FILTERS.map((f) => (
             <button key={f} onClick={() => setActiveFilter(f)} style={{
-              padding: "6px 16px", fontSize: 13,
+              padding: "7px 18px", fontSize: 14,
               fontFamily: "var(--font-body)", fontWeight: activeFilter === f ? "bold" : "normal",
               letterSpacing: "0.02em",
               background: activeFilter === f ? "#FFFFFF" : "transparent",
@@ -293,12 +293,12 @@ function ProjectCard({ space }: { space: SpaceRow }) {
         <span style={{ marginLeft: "auto", fontSize: 10, letterSpacing: "0.12em", color: "var(--muted)", fontFamily: "var(--font-mono)" }}>OP</span>
       </div>
 
-      <p style={{ fontSize: 20, fontWeight: "bold", color: "#FFFFFF", lineHeight: 1.2, fontFamily: "var(--font-body)", flex: 1, margin: 0 }}>
+      <p style={{ fontSize: 24, fontWeight: "bold", color: "#FFFFFF", lineHeight: 1.2, fontFamily: "var(--font-body)", flex: 1, margin: 0 }}>
         {space.name}
       </p>
 
       <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 14 }}>
-        <span style={{ fontSize: 14, fontWeight: "bold", color: "#60A5FA", fontFamily: "var(--font-body)" }}>
+        <span style={{ fontSize: 16, fontWeight: "bold", color: "#60A5FA", fontFamily: "var(--font-body)" }}>
           Resume →
         </span>
       </div>
@@ -341,12 +341,12 @@ function CommunityCard({ community }: { community: typeof MOCK_COMMUNITIES[0] })
           </span>
         </div>
 
-        <p style={{ fontSize: 19, fontWeight: "bold", color: "#FFFFFF", lineHeight: 1.25, fontFamily: "var(--font-body)", flex: 1, margin: 0 }}>
+        <p style={{ fontSize: 23, fontWeight: "bold", color: "#FFFFFF", lineHeight: 1.25, fontFamily: "var(--font-body)", flex: 1, margin: 0 }}>
           {community.name}
         </p>
 
         <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 12 }}>
-          <span style={{ fontSize: 14, fontWeight: "bold", color: "#60A5FA", fontFamily: "var(--font-body)" }}>
+          <span style={{ fontSize: 16, fontWeight: "bold", color: "#60A5FA", fontFamily: "var(--font-body)" }}>
             Join →
           </span>
         </div>
@@ -372,10 +372,10 @@ function OppCardComp({ opp, onSaveToggle }: { opp: OppCard; onSaveToggle: () => 
                 {opp.org.name}
               </span>
             </div>
-            <p style={{ fontSize: 16, fontWeight: "bold", color: "#FFFFFF", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontFamily: "var(--font-body)", margin: 0 }}>
+            <p style={{ fontSize: 19, fontWeight: "bold", color: "#FFFFFF", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontFamily: "var(--font-body)", margin: 0 }}>
               {opp.title}
             </p>
-            <p style={{ fontSize: 13, color: "var(--text2)", lineHeight: 1.5, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", marginTop: 4, fontFamily: "var(--font-body)" }}>
+            <p style={{ fontSize: 14, color: "var(--n-text2)", lineHeight: 1.6, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", marginTop: 5, fontFamily: "var(--font-body)" }}>
               {opp.description ?? ""}
             </p>
           </div>
