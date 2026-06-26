@@ -1,18 +1,11 @@
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans, DM_Mono } from "next/font/google";
+import { DM_Mono } from "next/font/google";
 import "./globals.css";
 import SessionProvider from "@/components/providers/SessionProvider";
 import PostHogProvider from "@/components/providers/PostHogProvider";
 import PostHogIdentify from "@/components/providers/PostHogIdentify";
 import { Suspense } from "react";
 import PostHogPageView from "@/components/providers/PostHogPageView";
-
-const plusJakarta = Plus_Jakarta_Sans({
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700", "800"],
-  variable: "--font-display",
-  display: "swap",
-});
 
 const dmMono = DM_Mono({
   subsets: ["latin"],
@@ -33,7 +26,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${plusJakarta.variable} ${dmMono.variable}`}>
+    <html lang="en" className={dmMono.variable}>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
