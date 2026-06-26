@@ -6,8 +6,8 @@
 ───────────────────────────────────────── */
 
 :root {
-  /* Next.js font sets --font-display via className on <html> */
-  --font-body: var(--font-display, 'Plus Jakarta Sans', system-ui, sans-serif);
+  /* Times New Roman — spy/editorial feel */
+  --font-body: 'Times New Roman', Times, serif;
   --font-mono: 'DM Mono', 'JetBrains Mono', monospace;
 
   /* ── Accent — electric blue, unchanged ── */
@@ -494,6 +494,23 @@ body.day .card:hover {
 body.day input[type="date"],
 body.day input[type="time"],
 body.day input[type="datetime-local"] { color-scheme: light; }
+
+/* ─────────────────────────────────────────
+   SPY / HUD UTILITIES
+───────────────────────────────────────── */
+
+/* Slow pulsing dot — active project indicator */
+@keyframes spy-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.25; }
+}
+.spy-pulse { animation: spy-pulse 2.4s ease-in-out infinite; }
+
+/* Horizontal scroll section — thin drag-hint fade on right edge */
+.scroll-fade-right {
+  -webkit-mask-image: linear-gradient(to right, black 85%, transparent 100%);
+  mask-image: linear-gradient(to right, black 85%, transparent 100%);
+}
 
 /* ─────────────────────────────────────────
    LEGACY TAILWIND OVERRIDES
