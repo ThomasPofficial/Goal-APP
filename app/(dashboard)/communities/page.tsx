@@ -42,7 +42,7 @@ const COMMUNITIES = [
   },
   {
     id: "c7", name: "Finance Forward",
-    desc: "Students breaking into investment banking, PE, and hedge funds. Deal analysis and cold-outreach.",
+    desc: "Students breaking into investment banking, PE, and hedge funds. Deal analysis and cold-outreach strategies.",
     members: 187, category: "Finance", color: "#84CC16",
     tags: ["IB", "PE", "Markets"],
   },
@@ -63,67 +63,74 @@ const COMMUNITIES = [
 export default function CommunitiesPage() {
   return (
     <div>
-      {/* HUD header */}
-      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 6 }}>
-        <span style={{ color: "var(--blue)", fontFamily: "var(--font-mono)", fontSize: 10 }}>▸</span>
-        <span style={{ fontFamily: "var(--font-body)", fontSize: 11, fontWeight: "bold", letterSpacing: "0.22em", color: "var(--text)", textTransform: "uppercase" }}>
-          [ Communities ]
+      {/* Header */}
+      <div style={{ marginBottom: 32 }}>
+        <span style={{
+          display: "block", marginBottom: 8,
+          fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: "0.2em",
+          textTransform: "uppercase", color: "#60A5FA",
+        }}>
+          ▸ Intelligence Network
         </span>
-        <div style={{ flex: 1, height: 1, background: "linear-gradient(to right, rgba(59,130,246,0.4), transparent)" }} />
+        <h1 style={{
+          fontFamily: "var(--font-body)", fontSize: 32, fontWeight: "bold",
+          color: "#FFFFFF", margin: "0 0 12px", letterSpacing: "0.01em",
+        }}>
+          Communities
+        </h1>
+        <p style={{ fontSize: 16, color: "var(--text2)", fontFamily: "var(--font-body)", lineHeight: 1.6, maxWidth: 560, margin: 0 }}>
+          Find your people. Every community is a network, a study group, and a launchpad.
+        </p>
       </div>
-      <p style={{ fontSize: 14, color: "var(--text2)", marginBottom: 32, fontFamily: "var(--font-body)", lineHeight: 1.6 }}>
-        Find your people. Every community is a network, a study group, and a launchpad.
-      </p>
 
       {/* Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {COMMUNITIES.map((c) => (
-          <div
-            key={c.id}
-            className="spy-card bracket-card"
-            style={{ display: "flex", flexDirection: "column", overflow: "hidden" }}
-          >
-            <div style={{ height: 2, background: c.color, flexShrink: 0 }} />
-            <div style={{ padding: "20px", display: "flex", flexDirection: "column", gap: 12, flex: 1 }}>
+          <div key={c.id} className="spy-card bracket-card" style={{ display: "flex", flexDirection: "column", overflow: "hidden" }}>
+            <div style={{ height: 4, background: c.color, flexShrink: 0 }} />
+            <div style={{ padding: "22px", display: "flex", flexDirection: "column", gap: 14, flex: 1 }}>
 
               {/* Category row */}
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <span style={{ fontSize: 9, letterSpacing: "0.2em", color: c.color, fontFamily: "var(--font-mono)", textTransform: "uppercase" }}>
+                <span style={{ fontSize: 11, letterSpacing: "0.16em", textTransform: "uppercase", color: c.color, fontFamily: "var(--font-mono)", fontWeight: "bold" }}>
                   {c.category}
                 </span>
-                <span style={{ fontSize: 9, letterSpacing: "0.1em", color: "var(--muted)", fontFamily: "var(--font-mono)" }}>
+                <span style={{ fontSize: 13, color: "var(--muted)", fontFamily: "var(--font-body)" }}>
                   {c.members.toLocaleString()} members
                 </span>
               </div>
 
               {/* Name */}
-              <p style={{ fontSize: 17, fontWeight: "bold", color: "var(--text)", lineHeight: 1.25, fontFamily: "var(--font-body)" }}>
+              <p style={{ fontSize: 20, fontWeight: "bold", color: "#FFFFFF", lineHeight: 1.25, fontFamily: "var(--font-body)", margin: 0 }}>
                 {c.name}
               </p>
 
               {/* Description */}
-              <p style={{ fontSize: 13, color: "var(--text2)", lineHeight: 1.65, flex: 1, fontFamily: "var(--font-body)" }}>
+              <p style={{ fontSize: 14, color: "var(--text2)", lineHeight: 1.65, fontFamily: "var(--font-body)", flex: 1, margin: 0 }}>
                 {c.desc}
               </p>
 
               {/* Tags */}
               <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                 {c.tags.map((t) => (
-                  <span
-                    key={t}
-                    style={{ fontSize: 8, letterSpacing: "0.16em", textTransform: "uppercase", padding: "2px 7px", background: `${c.color}18`, color: c.color, fontFamily: "var(--font-mono)" }}
-                  >
+                  <span key={t} style={{
+                    fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase",
+                    padding: "3px 8px", background: c.color, color: "#FFFFFF",
+                    fontFamily: "var(--font-mono)", fontWeight: "bold",
+                  }}>
                     {t}
                   </span>
                 ))}
               </div>
 
               {/* CTA */}
-              <div style={{ borderTop: "1px solid var(--border)", paddingTop: 12 }}>
-                <button
-                  style={{ fontSize: 9, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--blue)", fontFamily: "var(--font-mono)", background: "none", border: "none", cursor: "pointer", padding: 0 }}
-                >
-                  Join Community ›
+              <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 14 }}>
+                <button style={{
+                  fontSize: 14, fontWeight: "bold", color: "#60A5FA",
+                  fontFamily: "var(--font-body)", background: "none", border: "none",
+                  cursor: "pointer", padding: 0,
+                }}>
+                  Join community →
                 </button>
               </div>
             </div>
@@ -131,9 +138,8 @@ export default function CommunitiesPage() {
         ))}
       </div>
 
-      {/* Footer note */}
-      <p style={{ marginTop: 40, textAlign: "center", fontSize: 11, color: "var(--muted)", fontFamily: "var(--font-mono)", letterSpacing: "0.1em" }}>
-        MORE COMMUNITIES LAUNCHING SOON — SUGGEST ONE VIA PLATFORM FEEDBACK
+      <p style={{ marginTop: 48, textAlign: "center", fontSize: 13, color: "var(--muted)", fontFamily: "var(--font-body)" }}>
+        More communities launching soon — suggest one via platform feedback.
       </p>
     </div>
   );
