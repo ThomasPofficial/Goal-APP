@@ -179,6 +179,14 @@ export async function POST(req: Request) {
   } else {
     await prisma.user.update({ where: { email: nivDevEmail }, data: { passwordHash: nivDevHash, role: "ADMIN" } });
   }
+  // ── Promote the real Nivarro admin account to ADMIN role ─────────────────
+  // team.nivarro@gmail.com is the actual login used by the Nivarro team —
+  // updateMany is safe if the user doesn't exist (affects 0 rows).
+  await prisma.user.updateMany({
+    where: { email: "team.nivarro@gmail.com" },
+    data: { role: "ADMIN" },
+  });
+
   // ── Set roles for all known org accounts ─────────────────────────────────
   const orgEmails = [
     "ridgepoint@nivarro.demo",
