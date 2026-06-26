@@ -7,7 +7,8 @@
 
 :root {
   /* Times New Roman — spy/editorial feel */
-  --font-body: 'Times New Roman', Times, serif;
+  --font-body:    'Times New Roman', Times, serif;
+  --font-display: 'Times New Roman', Times, serif;
   --font-mono: 'DM Mono', 'JetBrains Mono', monospace;
 
   /* ── Accent — electric blue, unchanged ── */
@@ -114,7 +115,7 @@ html, body {
   min-height: 100%;
   background: var(--bg);
   color: var(--text);
-  font-family: var(--font-body);
+  font-family: 'Times New Roman', Times, serif !important;
   -webkit-font-smoothing: antialiased;
   transition: background 0.3s ease, color 0.3s ease;
 }
