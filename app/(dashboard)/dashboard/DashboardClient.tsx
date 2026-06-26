@@ -10,30 +10,19 @@ import PlatformUpdatesCard from "@/components/ui/PlatformUpdatesCard";
 import type { GeniusTypeKey } from "@/lib/geniusTypes";
 
 interface ProfileData {
-  displayName: string;
-  handle: string | null;
-  avatarUrl: string | null;
-  geniusType: GeniusTypeKey | null;
-  secondaryGeniusType: GeniusTypeKey | null;
-  currentFocus: string | null;
-  savedCount: number;
+  displayName: string; handle: string | null; avatarUrl: string | null;
+  geniusType: GeniusTypeKey | null; secondaryGeniusType: GeniusTypeKey | null;
+  currentFocus: string | null; savedCount: number;
 }
-
 interface SpaceRow { id: string; name: string; hasUnread: boolean; }
-
 interface TutorialData {
-  hasGeniusType: boolean;
-  traitsDone: boolean;
-  hasTeam: boolean;
-  hasApplied: boolean;
-  hasBrowsedOrgs: boolean;
+  hasGeniusType: boolean; traitsDone: boolean; hasTeam: boolean;
+  hasApplied: boolean; hasBrowsedOrgs: boolean;
 }
-
 interface TickerItem {
   id: string; title: string; category: string; deadline: string | null;
   org: { id: string; name: string };
 }
-
 interface OppCard {
   id: string; title: string; description: string | null; category: string;
   deadline: string | null; isRemote: boolean; saved: boolean;
@@ -47,42 +36,50 @@ const CATEGORY_COLORS: Record<string, string> = {
 };
 
 const MOCK_COMMUNITIES = [
-  { id: "c1", name: "Nivarro Design Guild",  members: 234, category: "Design",         color: "#6366F1" },
-  { id: "c2", name: "The Builder's Circle",  members: 412, category: "Engineering",    color: "#14B8A6" },
-  { id: "c3", name: "Founders Under 20",     members: 189, category: "Entrepreneurship", color: "#F59E0B" },
-  { id: "c4", name: "Social Impact Network", members: 156, category: "Impact",         color: "#10B981" },
-  { id: "c5", name: "Pre-Med Pipeline",      members: 298, category: "Healthcare",     color: "#06B6D4" },
-  { id: "c6", name: "Code & Coffee",         members: 521, category: "Community",      color: "#F97316" },
+  { id: "c1", name: "Nivarro Design Guild",  members: 234, category: "Design",          color: "#6366F1" },
+  { id: "c2", name: "The Builder's Circle",  members: 412, category: "Engineering",     color: "#14B8A6" },
+  { id: "c3", name: "Founders Under 20",     members: 189, category: "Entrepreneurship",color: "#F59E0B" },
+  { id: "c4", name: "Social Impact Network", members: 156, category: "Impact",          color: "#10B981" },
+  { id: "c5", name: "Pre-Med Pipeline",      members: 298, category: "Healthcare",      color: "#06B6D4" },
+  { id: "c6", name: "Code & Coffee",         members: 521, category: "Community",       color: "#F97316" },
 ];
 
-/* ── Shared HUD section header ─────────────────────────────── */
-function HudHeader({ label, href, linkLabel }: { label: string; href: string; linkLabel: string }) {
+/* ── Section header — spy tag + big Spotify-scale title ───── */
+function SectionHeader({ tag, title, href, linkLabel }: { tag: string; title: string; href: string; linkLabel: string }) {
   return (
-    <div className="hud-section">
-      <span style={{ color: "var(--blue)", fontFamily: "var(--font-mono)", fontSize: 10, lineHeight: 1 }}>▸</span>
+    <div style={{ marginBottom: 24 }}>
       <span style={{
-        fontFamily: "var(--font-body)", fontSize: 11, fontWeight: "bold",
-        letterSpacing: "0.22em", color: "var(--text)", textTransform: "uppercase",
+        display: "block", marginBottom: 6,
+        fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: "0.2em",
+        textTransform: "uppercase", color: "#60A5FA",
       }}>
-        [ {label} ]
+        ▸ {tag}
       </span>
-      <div className="hud-section-line" />
-      <Link href={href} style={{
-        fontFamily: "var(--font-mono)", fontSize: 9, letterSpacing: "0.14em",
-        color: "var(--muted)", textTransform: "uppercase", textDecoration: "none",
-        transition: "color 120ms",
-      }}
-        onMouseEnter={(e) => (e.currentTarget.style.color = "var(--blue)")}
-        onMouseLeave={(e) => (e.currentTarget.style.color = "var(--muted)")}
-      >
-        {linkLabel} ›
-      </Link>
+      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
+        <h2 style={{
+          fontFamily: "var(--font-body)", fontSize: 26, fontWeight: "bold",
+          color: "#FFFFFF", margin: 0, letterSpacing: "0.01em", lineHeight: 1,
+        }}>
+          {title}
+        </h2>
+        <Link href={href} style={{
+          fontFamily: "var(--font-body)", fontSize: 14, fontWeight: "600",
+          color: "var(--muted)", textDecoration: "none", letterSpacing: "0.01em",
+          transition: "color 120ms",
+        }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = "#FFFFFF")}
+          onMouseLeave={(e) => (e.currentTarget.style.color = "var(--muted)")}
+        >
+          {linkLabel} →
+        </Link>
+      </div>
     </div>
   );
 }
 
 export default function DashboardClient({ profile, spaces, traitsDone, tutorialDismissed, tutorial }: {
-  profile: ProfileData; spaces: SpaceRow[]; traitsDone: boolean; tutorialDismissed?: boolean; tutorial: TutorialData;
+  profile: ProfileData; spaces: SpaceRow[]; traitsDone: boolean;
+  tutorialDismissed?: boolean; tutorial: TutorialData;
 }) {
   const [activeFilter, setActiveFilter] = useState("ALL");
   const [opportunities, setOpportunities] = useState<OppCard[]>([]);
@@ -129,43 +126,49 @@ export default function DashboardClient({ profile, spaces, traitsDone, tutorialD
   const FILTERS = ["ALL", "INTERNSHIP", "FELLOWSHIP", "COMPETITION", "ACCELERATOR", "BOOTCAMP", "RESEARCH"];
 
   return (
-    <div className="space-y-10">
+    <div style={{ display: "flex", flexDirection: "column", gap: 48 }}>
 
       {/* ── Intel widgets ─────────────────────────── */}
-      <WelcomeCard hasGeniusType={tutorial.hasGeniusType} />
-      <PlatformUpdatesCard />
-      <TutorialWidget {...tutorial} serverDismissed={tutorialDismissed} />
+      <div>
+        <WelcomeCard hasGeniusType={tutorial.hasGeniusType} />
+        <PlatformUpdatesCard />
+        <TutorialWidget {...tutorial} serverDismissed={tutorialDismissed} />
 
-      {!traitsDone && (
-        <Link href="/quiz?tab=traits" className="bracket-card flex items-center justify-between gap-3 px-4 py-3 transition-colors group" style={{ background: "rgba(59,130,246,0.04)", border: "1px solid rgba(59,130,246,0.18)" }}>
-          <div className="flex items-center gap-3">
-            <span style={{ fontSize: 16 }}>✦</span>
-            <div>
-              <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>Complete your Skill Card</p>
-              <p className="text-xs" style={{ color: "var(--text2)" }}>Take the Traits Quiz to identify your 5 core strengths</p>
+        {!traitsDone && (
+          <Link href="/quiz?tab=traits" className="bracket-card" style={{
+            display: "flex", alignItems: "center", justifyContent: "space-between",
+            gap: 12, padding: "16px 20px", background: "rgba(59,130,246,0.06)",
+            border: "1px solid rgba(59,130,246,0.25)", textDecoration: "none",
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+              <span style={{ fontSize: 18 }}>✦</span>
+              <div>
+                <p style={{ fontSize: 15, fontWeight: "bold", color: "#FFFFFF", fontFamily: "var(--font-body)", margin: 0 }}>Complete your Skill Card</p>
+                <p style={{ fontSize: 13, color: "var(--text2)", fontFamily: "var(--font-body)", margin: "2px 0 0" }}>Take the Traits Quiz to identify your 5 core strengths</p>
+              </div>
             </div>
-          </div>
-          <span className="text-xs font-medium group-hover:translate-x-0.5 transition-transform" style={{ color: "var(--gold)" }}>Start →</span>
-        </Link>
-      )}
+            <span style={{ fontSize: 14, fontWeight: "bold", color: "#60A5FA", fontFamily: "var(--font-body)", flexShrink: 0 }}>Start →</span>
+          </Link>
+        )}
+      </div>
 
       {/* ── Projects ──────────────────────────────── */}
       <section>
-        <HudHeader label="Projects" href="/teams" linkLabel="View All" />
+        <SectionHeader tag="Field Operations" title="Projects" href="/teams" linkLabel="View all" />
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           {spaces.map((s) => <ProjectCard key={s.id} space={s} />)}
           <NewProjectButton />
         </div>
         {spaces.length === 0 && (
-          <p className="text-xs mt-3" style={{ color: "var(--muted)", fontFamily: "var(--font-mono)", letterSpacing: "0.1em" }}>
-            NO ACTIVE OPERATIONS — join a team to get started.
+          <p style={{ marginTop: 12, fontSize: 13, color: "var(--muted)", fontFamily: "var(--font-body)" }}>
+            No active projects yet — join a team to get started.
           </p>
         )}
       </section>
 
       {/* ── Communities ───────────────────────────── */}
       <section>
-        <HudHeader label="Communities" href="/communities" linkLabel="View All" />
+        <SectionHeader tag="Intelligence Network" title="Communities" href="/communities" linkLabel="View all" />
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           {MOCK_COMMUNITIES.map((c) => <CommunityCard key={c.id} community={c} />)}
         </div>
@@ -173,20 +176,20 @@ export default function DashboardClient({ profile, spaces, traitsDone, tutorialD
 
       {/* ── Live ticker ───────────────────────────── */}
       {ticker.length > 0 && (
-        <div className="overflow-hidden flex items-center gap-3" style={{ height: 36, background: "var(--surface)", borderTop: "1px solid var(--border)", borderBottom: "1px solid var(--border)" }}>
-          <div className="flex items-center gap-1.5 flex-shrink-0 px-3" style={{ borderRight: "1px solid var(--border)", height: "100%" }}>
+        <div style={{ overflow: "hidden", display: "flex", alignItems: "center", height: 40, background: "var(--surface)", borderTop: "1px solid var(--border)", borderBottom: "1px solid var(--border)" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0, padding: "0 16px", borderRight: "1px solid var(--border)", height: "100%" }}>
             <span className="live-dot" />
-            <span className="text-[9px] font-bold tracking-[0.2em] uppercase" style={{ color: "var(--blue)", fontFamily: "var(--font-mono)" }}>LIVE</span>
+            <span style={{ fontSize: 11, fontWeight: "bold", letterSpacing: "0.2em", textTransform: "uppercase", color: "#60A5FA", fontFamily: "var(--font-mono)" }}>LIVE</span>
           </div>
-          <div className="overflow-hidden flex-1">
+          <div style={{ overflow: "hidden", flex: 1 }}>
             <div className="ticker-track">
               {[...ticker, ...ticker].map((item, i) => (
-                <Link key={`${item.id}-${i}`} href={`/orgs/${item.org.id}`} className="inline-flex items-center gap-3 text-xs flex-shrink-0 transition-colors" style={{ color: "var(--text2)", textDecoration: "none" }}>
-                  <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5" style={{ color: CATEGORY_COLORS[item.category] ?? "var(--text2)", background: `${CATEGORY_COLORS[item.category] ?? "#888"}18` }}>{item.category}</span>
+                <Link key={`${item.id}-${i}`} href={`/orgs/${item.org.id}`} style={{ display: "inline-flex", alignItems: "center", gap: 12, fontSize: 13, flexShrink: 0, color: "var(--text2)", textDecoration: "none" }}>
+                  <span style={{ fontSize: 11, fontWeight: "bold", letterSpacing: "0.1em", textTransform: "uppercase", padding: "2px 7px", color: "#fff", background: CATEGORY_COLORS[item.category] ?? "#555" }}>{item.category}</span>
                   <span style={{ color: "var(--muted)" }}>{item.org.name}</span>
-                  <span style={{ color: "var(--text)", fontWeight: 500 }}>{item.title}</span>
-                  {item.deadline && <span style={{ color: "var(--muted)", fontFamily: "var(--font-mono)", fontSize: 10 }}>· {format(new Date(item.deadline), "MMM d")}</span>}
-                  <span style={{ color: "rgba(59,130,246,0.3)" }}>·</span>
+                  <span style={{ color: "#FFFFFF", fontWeight: 600 }}>{item.title}</span>
+                  {item.deadline && <span style={{ color: "var(--muted)", fontFamily: "var(--font-mono)", fontSize: 11 }}>· {format(new Date(item.deadline), "MMM d")}</span>}
+                  <span style={{ color: "rgba(96,165,250,0.35)" }}>·</span>
                 </Link>
               ))}
             </div>
@@ -196,70 +199,47 @@ export default function DashboardClient({ profile, spaces, traitsDone, tutorialD
 
       {/* ── Opportunities ─────────────────────────── */}
       <section>
-        <HudHeader label="Opportunities" href="/orgs" linkLabel="Browse Orgs" />
+        <SectionHeader tag="Dossier" title="Opportunities" href="/orgs" linkLabel="Browse all" />
 
         {/* Filters */}
-        <div className="flex gap-2 flex-wrap mb-5">
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 24 }}>
           {FILTERS.map((f) => (
-            <button
-              key={f}
-              onClick={() => setActiveFilter(f)}
-              style={{
-                padding: "4px 12px",
-                fontSize: 9,
-                fontFamily: "var(--font-mono)",
-                letterSpacing: "0.14em",
-                textTransform: "uppercase",
-                background: activeFilter === f ? "var(--blue)" : "transparent",
-                border: `1px solid ${activeFilter === f ? "var(--blue)" : "rgba(59,130,246,0.22)"}`,
-                color: activeFilter === f ? "#fff" : "var(--text2)",
-                cursor: "pointer",
-                transition: "all 120ms",
-              }}
-            >
+            <button key={f} onClick={() => setActiveFilter(f)} style={{
+              padding: "6px 16px", fontSize: 13,
+              fontFamily: "var(--font-body)", fontWeight: activeFilter === f ? "bold" : "normal",
+              letterSpacing: "0.02em",
+              background: activeFilter === f ? "#FFFFFF" : "transparent",
+              border: `1px solid ${activeFilter === f ? "#FFFFFF" : "rgba(255,255,255,0.18)"}`,
+              color: activeFilter === f ? "#000000" : "var(--text2)",
+              cursor: "pointer", transition: "all 120ms",
+            }}>
               {f === "ALL" ? "All" : f.charAt(0) + f.slice(1).toLowerCase()}
             </button>
           ))}
         </div>
 
         {feedLoading ? (
-          <div className="space-y-3">
-            {[1, 2, 3].map((i) => <div key={i} className="h-32 animate-pulse" style={{ background: "var(--surface)", border: "1px solid var(--border)" }} />)}
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            {[1, 2, 3].map((i) => <div key={i} style={{ height: 128, background: "var(--surface)", border: "1px solid var(--border)", animation: "pulse 1.5s infinite" }} />)}
           </div>
         ) : opportunities.length === 0 ? (
-          <div className="text-center py-16">
-            <p className="text-sm mb-3" style={{ color: "var(--text2)" }}>No opportunities found.</p>
-            <button
-              onClick={() => setActiveFilter("ALL")}
-              style={{ fontSize: 9, fontFamily: "var(--font-mono)", letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--blue)", background: "none", border: "none", cursor: "pointer", padding: 0 }}
-            >
-              Clear Filter ›
+          <div style={{ textAlign: "center", padding: "64px 0" }}>
+            <p style={{ fontSize: 16, color: "var(--text2)", fontFamily: "var(--font-body)", marginBottom: 16 }}>No opportunities found.</p>
+            <button onClick={() => setActiveFilter("ALL")} style={{ fontSize: 14, color: "#60A5FA", fontFamily: "var(--font-body)", background: "none", border: "none", cursor: "pointer", fontWeight: "bold" }}>
+              Clear filter →
             </button>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             {opportunities.map((opp) => <OppCardComp key={opp.id} opp={opp} onSaveToggle={() => toggleSave(opp.id, opp.saved)} />)}
             {hasMore && (
-              <div className="flex justify-center pt-2">
-                <button
-                  onClick={() => { const next = page + 1; setPage(next); fetchFeed(next, activeFilter); }}
-                  disabled={loadingMore}
-                  className="spy-card bracket-card"
-                  style={{
-                    padding: "8px 24px",
-                    fontSize: 9,
-                    fontFamily: "var(--font-mono)",
-                    letterSpacing: "0.18em",
-                    textTransform: "uppercase",
-                    color: "var(--text2)",
-                    background: "var(--surface)",
-                    border: "1px solid rgba(59,130,246,0.18)",
-                    cursor: "pointer",
-                    opacity: loadingMore ? 0.5 : 1,
-                    transition: "all 120ms",
-                  }}
-                >
-                  {loadingMore ? "Loading…" : "Load More ›"}
+              <div style={{ display: "flex", justifyContent: "center", paddingTop: 8 }}>
+                <button onClick={() => { const next = page + 1; setPage(next); fetchFeed(next, activeFilter); }} disabled={loadingMore} className="spy-card bracket-card" style={{
+                  padding: "10px 28px", fontSize: 14, fontFamily: "var(--font-body)", fontWeight: "bold",
+                  color: "var(--text2)", background: "var(--surface)", border: "1px solid rgba(255,255,255,0.15)",
+                  cursor: "pointer", opacity: loadingMore ? 0.5 : 1,
+                }}>
+                  {loadingMore ? "Loading…" : "Load more"}
                 </button>
               </div>
             )}
@@ -268,25 +248,23 @@ export default function DashboardClient({ profile, spaces, traitsDone, tutorialD
       </section>
 
       {/* ── Feedback ──────────────────────────────── */}
-      <div className="bracket-card" style={{ background: "var(--surface)", border: "1px solid var(--border)", padding: "20px" }}>
-        <p style={{ fontFamily: "var(--font-mono)", fontSize: 9, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--muted)", marginBottom: 10 }}>
-          ▸ [ Platform Feedback ]
+      <div className="bracket-card" style={{ background: "var(--surface)", border: "1px solid var(--border)", padding: "24px" }}>
+        <p style={{ fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: "0.18em", textTransform: "uppercase", color: "#60A5FA", marginBottom: 12 }}>
+          ▸ Platform Feedback
         </p>
         {feedbackSent ? (
-          <p className="text-xs" style={{ color: "#4ade80", fontFamily: "var(--font-mono)", letterSpacing: "0.1em" }}>TRANSMISSION RECEIVED.</p>
+          <p style={{ fontSize: 15, color: "#4ade80", fontFamily: "var(--font-body)" }}>Transmission received.</p>
         ) : (
-          <div className="flex gap-2">
-            <input
-              value={feedback}
-              onChange={(e) => setFeedback(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && sendFeedback()}
-              placeholder="Report anomaly or missing asset…"
-              style={{ flex: 1, fontSize: 13, padding: "8px 12px", background: "var(--surface2)", border: "1px solid var(--border-md)", color: "var(--text)", fontFamily: "var(--font-body)", outline: "none" }}
-            />
-            <button
-              onClick={sendFeedback}
-              style={{ padding: "8px 16px", fontSize: 9, fontFamily: "var(--font-mono)", letterSpacing: "0.14em", textTransform: "uppercase", background: "var(--blue)", color: "#fff", border: "none", cursor: "pointer" }}
-            >
+          <div style={{ display: "flex", gap: 8 }}>
+            <input value={feedback} onChange={(e) => setFeedback(e.target.value)} onKeyDown={(e) => e.key === "Enter" && sendFeedback()} placeholder="Report anomaly or missing asset…" style={{
+              flex: 1, fontSize: 14, padding: "10px 14px",
+              background: "var(--surface2)", border: "1px solid var(--border-md)",
+              color: "#FFFFFF", fontFamily: "var(--font-body)", outline: "none",
+            }} />
+            <button onClick={sendFeedback} style={{
+              padding: "10px 20px", fontSize: 14, fontFamily: "var(--font-body)", fontWeight: "bold",
+              background: "#3B82F6", color: "#FFFFFF", border: "none", cursor: "pointer",
+            }}>
               Send
             </button>
           </div>
@@ -300,34 +278,28 @@ export default function DashboardClient({ profile, spaces, traitsDone, tutorialD
 /* ── Project card ─────────────────────────────────────────── */
 function ProjectCard({ space }: { space: SpaceRow }) {
   return (
-    <Link
-      href={`/teams/${space.id}`}
-      className="spy-card bracket-card"
-      style={{ padding: "20px", display: "flex", flexDirection: "column", gap: 12, textDecoration: "none", minHeight: 140 }}
-    >
-      {/* Status */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <span
-            className={space.hasUnread ? "spy-pulse" : undefined}
-            style={{ display: "inline-block", width: 5, height: 5, borderRadius: "50%", background: space.hasUnread ? "#3B82F6" : "var(--muted)", flexShrink: 0 }}
-          />
-          <span style={{ fontSize: 9, letterSpacing: "0.2em", color: space.hasUnread ? "var(--blue)" : "var(--muted)", fontFamily: "var(--font-mono)", textTransform: "uppercase" }}>
-            {space.hasUnread ? "Active" : "Standby"}
-          </span>
-        </div>
-        <span style={{ fontSize: 8, letterSpacing: "0.12em", color: "var(--muted)", fontFamily: "var(--font-mono)" }}>FIELD / OP</span>
+    <Link href={`/teams/${space.id}`} className="spy-card bracket-card" style={{
+      padding: "22px", display: "flex", flexDirection: "column", gap: 14,
+      textDecoration: "none", minHeight: 160,
+    }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <span className={space.hasUnread ? "spy-pulse" : undefined} style={{
+          display: "inline-block", width: 7, height: 7, borderRadius: "50%",
+          background: space.hasUnread ? "#60A5FA" : "var(--muted)", flexShrink: 0,
+        }} />
+        <span style={{ fontSize: 11, letterSpacing: "0.16em", textTransform: "uppercase", color: space.hasUnread ? "#60A5FA" : "var(--muted)", fontFamily: "var(--font-mono)" }}>
+          {space.hasUnread ? "Active" : "Standby"}
+        </span>
+        <span style={{ marginLeft: "auto", fontSize: 10, letterSpacing: "0.12em", color: "var(--muted)", fontFamily: "var(--font-mono)" }}>OP</span>
       </div>
 
-      {/* Name */}
-      <p style={{ fontSize: 16, fontWeight: "bold", color: "var(--text)", lineHeight: 1.25, fontFamily: "var(--font-body)", flex: 1 }}>
+      <p style={{ fontSize: 20, fontWeight: "bold", color: "#FFFFFF", lineHeight: 1.2, fontFamily: "var(--font-body)", flex: 1, margin: 0 }}>
         {space.name}
       </p>
 
-      {/* CTA */}
-      <div style={{ borderTop: "1px solid var(--border)", paddingTop: 10, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <span style={{ fontSize: 9, letterSpacing: "0.18em", color: "var(--blue)", fontFamily: "var(--font-mono)", textTransform: "uppercase" }}>
-          Resume ›
+      <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 14 }}>
+        <span style={{ fontSize: 14, fontWeight: "bold", color: "#60A5FA", fontFamily: "var(--font-body)" }}>
+          Resume →
         </span>
       </div>
     </Link>
@@ -336,21 +308,17 @@ function ProjectCard({ space }: { space: SpaceRow }) {
 
 function NewProjectButton() {
   return (
-    <Link
-      href="/teams"
-      className="spy-card bracket-card"
-      style={{
-        padding: "20px", display: "flex", flexDirection: "column", alignItems: "center",
-        justifyContent: "center", gap: 8, textDecoration: "none", minHeight: 140,
-        border: "1px dashed rgba(59,130,246,0.25)",
-        boxShadow: "none",
-        background: "transparent",
-      }}
+    <Link href="/teams" style={{
+      display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+      gap: 10, minHeight: 160, textDecoration: "none",
+      border: "1px dashed rgba(255,255,255,0.2)", background: "transparent",
+      transition: "border-color 150ms",
+    }}
+      onMouseEnter={(e) => (e.currentTarget.style.borderColor = "rgba(96,165,250,0.5)")}
+      onMouseLeave={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.2)")}
     >
-      <span style={{ fontSize: 20, color: "var(--muted)" }}>+</span>
-      <span style={{ fontSize: 9, letterSpacing: "0.18em", color: "var(--muted)", fontFamily: "var(--font-mono)", textTransform: "uppercase" }}>
-        New Operation
-      </span>
+      <span style={{ fontSize: 28, color: "var(--muted)", lineHeight: 1 }}>+</span>
+      <span style={{ fontSize: 13, color: "var(--muted)", fontFamily: "var(--font-body)", fontWeight: "600" }}>New project</span>
     </Link>
   );
 }
@@ -358,27 +326,28 @@ function NewProjectButton() {
 /* ── Community card ───────────────────────────────────────── */
 function CommunityCard({ community }: { community: typeof MOCK_COMMUNITIES[0] }) {
   return (
-    <Link
-      href="/communities"
-      className="spy-card bracket-card"
-      style={{ display: "flex", flexDirection: "column", textDecoration: "none", overflow: "hidden", minHeight: 140 }}
-    >
-      <div style={{ height: 2, background: community.color, flexShrink: 0 }} />
-      <div style={{ padding: "16px 20px", display: "flex", flexDirection: "column", gap: 10, flex: 1 }}>
+    <Link href="/communities" className="spy-card bracket-card" style={{
+      display: "flex", flexDirection: "column", textDecoration: "none",
+      overflow: "hidden", minHeight: 160,
+    }}>
+      <div style={{ height: 4, background: community.color, flexShrink: 0 }} />
+      <div style={{ padding: "18px 22px", display: "flex", flexDirection: "column", gap: 10, flex: 1 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <span style={{ fontSize: 9, letterSpacing: "0.2em", color: community.color, fontFamily: "var(--font-mono)", textTransform: "uppercase" }}>
+          <span style={{ fontSize: 11, letterSpacing: "0.16em", textTransform: "uppercase", color: community.color, fontFamily: "var(--font-mono)", fontWeight: "bold" }}>
             {community.category}
           </span>
-          <span style={{ fontSize: 9, letterSpacing: "0.1em", color: "var(--muted)", fontFamily: "var(--font-mono)" }}>
-            {community.members.toLocaleString()}
+          <span style={{ fontSize: 12, color: "var(--muted)", fontFamily: "var(--font-body)" }}>
+            {community.members.toLocaleString()} members
           </span>
         </div>
-        <p style={{ fontSize: 15, fontWeight: "bold", color: "var(--text)", lineHeight: 1.3, fontFamily: "var(--font-body)", flex: 1 }}>
+
+        <p style={{ fontSize: 19, fontWeight: "bold", color: "#FFFFFF", lineHeight: 1.25, fontFamily: "var(--font-body)", flex: 1, margin: 0 }}>
           {community.name}
         </p>
-        <div style={{ borderTop: "1px solid var(--border)", paddingTop: 10 }}>
-          <span style={{ fontSize: 9, letterSpacing: "0.18em", color: "var(--blue)", fontFamily: "var(--font-mono)", textTransform: "uppercase" }}>
-            Join ›
+
+        <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 12 }}>
+          <span style={{ fontSize: 14, fontWeight: "bold", color: "#60A5FA", fontFamily: "var(--font-body)" }}>
+            Join →
           </span>
         </div>
       </div>
@@ -388,31 +357,37 @@ function CommunityCard({ community }: { community: typeof MOCK_COMMUNITIES[0] })
 
 /* ── Opportunity card ─────────────────────────────────────── */
 function OppCardComp({ opp, onSaveToggle }: { opp: OppCard; onSaveToggle: () => void }) {
-  const accent = opp.org.accentColor ?? CATEGORY_COLORS[opp.category] ?? "var(--gold)";
+  const accent = opp.org.accentColor ?? CATEGORY_COLORS[opp.category] ?? "#3B82F6";
   return (
-    <div className="spy-card bracket-card flex" style={{ height: "128px" }}>
-      <div style={{ width: 2, background: accent, flexShrink: 0 }} />
-      <div style={{ flex: 1, padding: "16px", display: "flex", flexDirection: "column", justifyContent: "space-between", minWidth: 0 }}>
+    <div className="spy-card bracket-card" style={{ display: "flex", minHeight: 128 }}>
+      <div style={{ width: 3, background: accent, flexShrink: 0 }} />
+      <div style={{ flex: 1, padding: "16px 20px", display: "flex", flexDirection: "column", justifyContent: "space-between", minWidth: 0 }}>
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-              <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", padding: "1px 6px", color: accent, background: `${accent}20`, fontFamily: "var(--font-mono)" }}>{opp.category}</span>
-              <span style={{ fontSize: 11, color: "var(--muted)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{opp.org.name}</span>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+              <span style={{ fontSize: 11, fontWeight: "bold", letterSpacing: "0.1em", textTransform: "uppercase", padding: "2px 8px", color: "#FFFFFF", background: accent, fontFamily: "var(--font-mono)" }}>
+                {opp.category}
+              </span>
+              <span style={{ fontSize: 13, color: "var(--muted)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontFamily: "var(--font-body)" }}>
+                {opp.org.name}
+              </span>
             </div>
-            <p style={{ fontSize: 14, fontWeight: 600, color: "var(--text)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{opp.title}</p>
-            <p style={{ fontSize: 11, color: "var(--text2)", lineHeight: 1.5, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", minHeight: "2.4em", marginTop: 2 }}>
+            <p style={{ fontSize: 16, fontWeight: "bold", color: "#FFFFFF", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontFamily: "var(--font-body)", margin: 0 }}>
+              {opp.title}
+            </p>
+            <p style={{ fontSize: 13, color: "var(--text2)", lineHeight: 1.5, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", marginTop: 4, fontFamily: "var(--font-body)" }}>
               {opp.description ?? ""}
             </p>
           </div>
-          <button onClick={onSaveToggle} style={{ flexShrink: 0, padding: "4px", color: opp.saved ? "var(--gold)" : "var(--muted)", background: "none", border: "none", cursor: "pointer", transition: "color 80ms" }} title={opp.saved ? "Unsave" : "Save"}>
-            <Save size={15} fill={opp.saved ? "currentColor" : "none"} />
+          <button onClick={onSaveToggle} style={{ flexShrink: 0, padding: 6, color: opp.saved ? "#60A5FA" : "var(--muted)", background: "none", border: "none", cursor: "pointer", transition: "color 80ms" }}>
+            <Save size={16} fill={opp.saved ? "currentColor" : "none"} />
           </button>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          {opp.deadline && <span style={{ fontSize: 10, color: "var(--muted)", fontFamily: "var(--font-mono)" }}>Due {format(new Date(opp.deadline), "MMM d, yyyy")}</span>}
-          {opp.isRemote && <span style={{ fontSize: 10, padding: "1px 6px", background: "var(--surface2)", color: "var(--text2)" }}>Remote</span>}
-          <Link href={`/orgs/${opp.org.id}`} style={{ marginLeft: "auto", fontSize: 10, display: "flex", alignItems: "center", gap: 4, color: "var(--gold)", textDecoration: "none" }}>
-            View org <ExternalLink size={11} />
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 8 }}>
+          {opp.deadline && <span style={{ fontSize: 12, color: "var(--muted)", fontFamily: "var(--font-body)" }}>Due {format(new Date(opp.deadline), "MMM d, yyyy")}</span>}
+          {opp.isRemote && <span style={{ fontSize: 12, padding: "1px 8px", background: "var(--surface2)", color: "var(--text2)", fontFamily: "var(--font-body)" }}>Remote</span>}
+          <Link href={`/orgs/${opp.org.id}`} style={{ marginLeft: "auto", fontSize: 13, display: "flex", alignItems: "center", gap: 4, color: "#60A5FA", textDecoration: "none", fontWeight: "bold", fontFamily: "var(--font-body)" }}>
+            View org <ExternalLink size={12} />
           </Link>
         </div>
       </div>

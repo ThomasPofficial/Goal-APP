@@ -21,17 +21,17 @@
   --gold-dim:    var(--blue-dim);
   --gold-glow:   var(--blue-glow);
 
-  /* ── OLED black surfaces — true zero ── */
+  /* ── OLED black surfaces ── */
   --n-bg:       #000000;
-  --n-bg2:      #050505;
-  --n-surface:  #0A0A0C;
-  --n-surface2: #111116;
-  --n-surface3: #18181E;
-  --n-border:   rgba(255,255,255,0.07);
-  --n-border-md:rgba(59,130,246,0.28);
-  --n-text:     #F4F7FF;
-  --n-text2:    #C4D8EF;
-  --n-muted:    #7096B4;
+  --n-bg2:      #060608;
+  --n-surface:  #0E0E14;
+  --n-surface2: #14141C;
+  --n-surface3: #1C1C28;
+  --n-border:   rgba(255,255,255,0.10);
+  --n-border-md:rgba(255,255,255,0.16);
+  --n-text:     #FFFFFF;
+  --n-text2:    #D4E6F8;
+  --n-muted:    #8AAAC8;
 
   /* ── Active (dark default) ── */
   --bg:        var(--n-bg);
