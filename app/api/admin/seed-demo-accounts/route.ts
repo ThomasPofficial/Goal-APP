@@ -179,13 +179,20 @@ export async function POST(req: Request) {
   } else {
     await prisma.user.update({ where: { email: nivDevEmail }, data: { passwordHash: nivDevHash, role: "ADMIN" } });
   }
-  // ── Promote the real Nivarro admin account to ADMIN role ─────────────────
-  // team.nivarro@gmail.com is the actual login used by the Nivarro team —
-  // updateMany is safe if the user doesn't exist (affects 0 rows).
-  await prisma.user.updateMany({
-    where: { email: "team.nivarro@gmail.com" },
-    data: { role: "ADMIN" },
-  });
+  // ── Real Nivarro admin account (team.nivarro@gmail.com) ──────────────────
+  const realAdminHash = await bcrypt.hash("nivarro2026", 10);
+  const realAdminEmail = "team.nivarro@gmail.com";
+  const existingRealAdmin = await prisma.user.findUnique({ where: { email: realAdminEmail } });
+  if (!existingRealAdmin) {
+    await prisma.user.create({
+      data: { name: "Nivarro Team", email: realAdminEmail, passwordHash: realAdminHash, role: "ADMIN" },
+    });
+  } else {
+    await prisma.user.update({
+      where: { email: realAdminEmail },
+      data: { passwordHash: realAdminHash, role: "ADMIN" },
+    });
+  }
 
   // ── Set roles for all known org accounts ─────────────────────────────────
   const orgEmails = [
