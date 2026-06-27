@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -24,21 +24,21 @@ export default function OrgNewClient() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Step 1 — Basics
+  // Step 1 â€” Basics
   const [name, setName] = useState("");
   const [category, setCategory] = useState<OrgCategory | "">("");
   const [website, setWebsite] = useState("");
   const [founded, setFounded] = useState("");
   const [hqLocation, setHqLocation] = useState("");
 
-  // Step 2 — Brand
+  // Step 2 â€” Brand
   const [logoLetter, setLogoLetter] = useState("");
   const [logoBg, setLogoBg] = useState("#0a1535");
   const [logoColor, setLogoColor] = useState("#ffffff");
-  const [accentColor, setAccentColor] = useState("#3B82F6");
+  const [accentColor, setAccentColor] = useState("#E8893A");
   const [tagline, setTagline] = useState("");
 
-  // Step 3 — Mission
+  // Step 3 â€” Mission
   const [description, setDescription] = useState("");
   const [whatWeSeek, setWhatWeSeek] = useState("");
   const [whatInternsBuild, setWhatInternsBuild] = useState("");
@@ -46,7 +46,7 @@ export default function OrgNewClient() {
   const [values, setValues] = useState<string[]>([]);
   const [newValue, setNewValue] = useState("");
 
-  // Step 4 — Project (first listing)
+  // Step 4 â€” Project (first listing)
   const [projectTitle, setProjectTitle] = useState("");
   const [projectDescription, setProjectDescription] = useState("");
   const [openSpots, setOpenSpots] = useState(3);
@@ -145,7 +145,7 @@ export default function OrgNewClient() {
         <h1 className="text-xl font-bold mb-1" style={{ color: "var(--text)", letterSpacing: "-0.03em" }}>
           Create Organization
         </h1>
-        <p className="text-xs" style={{ color: "var(--text2)" }}>Fill in details carefully — this is what students see first.</p>
+        <p className="text-xs" style={{ color: "var(--text2)" }}>Fill in details carefully â€” this is what students see first.</p>
       </div>
 
       {/* Step indicators */}
@@ -160,19 +160,19 @@ export default function OrgNewClient() {
                 <div style={{
                   width: 22, height: 22, display: "flex", alignItems: "center", justifyContent: "center",
                   fontSize: 10, fontWeight: 700, fontFamily: "var(--font-mono)",
-                  background: isDone ? "var(--blue)" : isActive ? "rgba(59,130,246,0.12)" : "var(--surface2)",
-                  color: isDone ? "#fff" : isActive ? "var(--blue)" : "var(--muted)",
-                  border: isActive ? "1px solid var(--blue)" : "1px solid var(--border-md)",
+                  background: isDone ? "var(--amber)" : isActive ? "rgba(232,137,58,0.12)" : "var(--surface2)",
+                  color: isDone ? "#fff" : isActive ? "var(--amber)" : "var(--muted)",
+                  border: isActive ? "1px solid var(--amber)" : "1px solid var(--border-md)",
                   transition: "all 0.15s",
                 }}>
-                  {isDone ? "✓" : num}
+                  {isDone ? "âœ“" : num}
                 </div>
                 <span style={{ fontSize: 11, color: isActive ? "var(--text)" : "var(--muted)", fontWeight: isActive ? 600 : 400 }}>
                   {label}
                 </span>
               </div>
               {idx < STEP_LABELS.length - 1 && (
-                <div style={{ width: 16, height: 1, background: isDone ? "var(--blue)" : "var(--border-md)" }} />
+                <div style={{ width: 16, height: 1, background: isDone ? "var(--amber)" : "var(--border-md)" }} />
               )}
             </div>
           );
@@ -181,7 +181,7 @@ export default function OrgNewClient() {
 
       <div className="bracket-card" style={{ background: "var(--surface)", border: "1px solid var(--border-md)", padding: "1.75rem" }}>
 
-        {/* ── Step 1: Basics ── */}
+        {/* â”€â”€ Step 1: Basics â”€â”€ */}
         {step === 1 && (
           <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
             <Field label="Organization name" required>
@@ -189,7 +189,7 @@ export default function OrgNewClient() {
             </Field>
             <Field label="Category" required>
               <select value={category} onChange={(e) => setCategory(e.target.value as OrgCategory)} style={inputStyle}>
-                <option value="">Select a category…</option>
+                <option value="">Select a categoryâ€¦</option>
                 {CATEGORIES.map((c) => <option key={c} value={c}>{c.charAt(0) + c.slice(1).toLowerCase()}</option>)}
               </select>
             </Field>
@@ -207,7 +207,7 @@ export default function OrgNewClient() {
           </div>
         )}
 
-        {/* ── Step 2: Brand ── */}
+        {/* â”€â”€ Step 2: Brand â”€â”€ */}
         {step === 2 && (
           <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
             <div className="flex items-center gap-4">
@@ -242,7 +242,7 @@ export default function OrgNewClient() {
           </div>
         )}
 
-        {/* ── Step 3: Mission ── */}
+        {/* â”€â”€ Step 3: Mission â”€â”€ */}
         {step === 3 && (
           <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
             <Field label="Description" required hint={`${description.trim().length}/100 min`} hintOk={description.trim().length >= 100}>
@@ -257,7 +257,7 @@ export default function OrgNewClient() {
             <Field label="Core values">
               <div className="flex flex-wrap gap-1.5 mb-2">
                 {values.map((v) => (
-                  <span key={v} className="inline-flex items-center gap-1 text-xs px-2 py-1" style={{ background: "rgba(59,130,246,0.1)", border: "1px solid rgba(59,130,246,0.25)", color: "var(--blue)" }}>
+                  <span key={v} className="inline-flex items-center gap-1 text-xs px-2 py-1" style={{ background: "rgba(232,137,58,0.1)", border: "1px solid rgba(232,137,58,0.25)", color: "var(--amber)" }}>
                     {v}
                     <button onClick={() => setValues(values.filter((x) => x !== v))} style={{ background: "none", border: "none", cursor: "pointer", color: "inherit", padding: 0, lineHeight: 1 }}>
                       <X size={10} />
@@ -278,17 +278,17 @@ export default function OrgNewClient() {
           </div>
         )}
 
-        {/* ── Step 4: Project Details ── */}
+        {/* â”€â”€ Step 4: Project Details â”€â”€ */}
         {step === 4 && (
           <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
             <p className="text-xs mb-2" style={{ color: "var(--text2)" }}>
               This creates your first project listing. Students apply to specific projects, not just your org.
             </p>
             <Field label="Project title" required>
-              <input value={projectTitle} onChange={(e) => setProjectTitle(e.target.value)} placeholder="e.g. Product Design Intern — Summer 2026" autoFocus style={inputStyle} />
+              <input value={projectTitle} onChange={(e) => setProjectTitle(e.target.value)} placeholder="e.g. Product Design Intern â€” Summer 2026" autoFocus style={inputStyle} />
             </Field>
             <Field label="What students will do" required hint={`${projectDescription.trim().length}/60 min`} hintOk={projectDescription.trim().length >= 60}>
-              <textarea value={projectDescription} onChange={(e) => setProjectDescription(e.target.value)} placeholder="Concrete, specific — what will they actually work on? What will they ship?" rows={4} style={{ ...inputStyle, resize: "vertical", minHeight: 96 }} />
+              <textarea value={projectDescription} onChange={(e) => setProjectDescription(e.target.value)} placeholder="Concrete, specific â€” what will they actually work on? What will they ship?" rows={4} style={{ ...inputStyle, resize: "vertical", minHeight: 96 }} />
             </Field>
             <Field label="Impact statement">
               <input value={impactStatement} onChange={(e) => setImpactStatement(e.target.value)} placeholder="Why does this project matter? What's the outcome?" style={inputStyle} />
@@ -299,7 +299,7 @@ export default function OrgNewClient() {
                 <input type="number" min={1} max={20} value={openSpots} onChange={(e) => setOpenSpots(Number(e.target.value))} style={inputStyle} />
               </Field>
               <Field label="Hours/week">
-                <input value={hoursPerWeek} onChange={(e) => setHoursPerWeek(e.target.value)} placeholder="e.g. 8–12 hours" style={inputStyle} />
+                <input value={hoursPerWeek} onChange={(e) => setHoursPerWeek(e.target.value)} placeholder="e.g. 8â€“12 hours" style={inputStyle} />
               </Field>
               <Field label="Duration">
                 <input value={duration} onChange={(e) => setDuration(e.target.value)} placeholder="e.g. 10 weeks" style={inputStyle} />
@@ -339,7 +339,7 @@ export default function OrgNewClient() {
             <Field label="Preferred Genius Types">
               <div className="flex gap-2 flex-wrap mt-1">
                 {GENIUS_TYPES.map((g) => (
-                  <button key={g} onClick={() => toggleArr(preferredGeniusTypes, g, setPreferredGeniusTypes)} className="text-xs px-2.5 py-1 font-medium transition-all" style={{ border: `1px solid ${preferredGeniusTypes.includes(g) ? "var(--blue)" : "var(--border-md)"}`, background: preferredGeniusTypes.includes(g) ? "rgba(59,130,246,0.1)" : "transparent", color: preferredGeniusTypes.includes(g) ? "var(--blue)" : "var(--text2)", cursor: "pointer" }}>
+                  <button key={g} onClick={() => toggleArr(preferredGeniusTypes, g, setPreferredGeniusTypes)} className="text-xs px-2.5 py-1 font-medium transition-all" style={{ border: `1px solid ${preferredGeniusTypes.includes(g) ? "var(--amber)" : "var(--border-md)"}`, background: preferredGeniusTypes.includes(g) ? "rgba(232,137,58,0.1)" : "transparent", color: preferredGeniusTypes.includes(g) ? "var(--amber)" : "var(--text2)", cursor: "pointer" }}>
                     {g}
                   </button>
                 ))}
@@ -349,7 +349,7 @@ export default function OrgNewClient() {
             <Field label="Grade eligibility (leave empty for all grades)">
               <div className="flex gap-2 flex-wrap mt-1">
                 {GRADES.map((g) => (
-                  <button key={g} onClick={() => toggleArr(gradeEligibility, g, setGradeEligibility as (v: number[]) => void)} className="text-xs px-2.5 py-1 font-medium transition-all" style={{ border: `1px solid ${gradeEligibility.includes(g) ? "var(--blue)" : "var(--border-md)"}`, background: gradeEligibility.includes(g) ? "rgba(59,130,246,0.1)" : "transparent", color: gradeEligibility.includes(g) ? "var(--blue)" : "var(--text2)", cursor: "pointer" }}>
+                  <button key={g} onClick={() => toggleArr(gradeEligibility, g, setGradeEligibility as (v: number[]) => void)} className="text-xs px-2.5 py-1 font-medium transition-all" style={{ border: `1px solid ${gradeEligibility.includes(g) ? "var(--amber)" : "var(--border-md)"}`, background: gradeEligibility.includes(g) ? "rgba(232,137,58,0.1)" : "transparent", color: gradeEligibility.includes(g) ? "var(--amber)" : "var(--text2)", cursor: "pointer" }}>
                     Grade {g}
                   </button>
                 ))}
@@ -359,7 +359,7 @@ export default function OrgNewClient() {
             <Field label="Application materials">
               <div className="flex flex-wrap gap-2 mt-1">
                 {APP_MATERIALS.map((m) => (
-                  <button key={m} onClick={() => toggleArr(appMaterials, m, setAppMaterials)} className="text-xs px-2.5 py-1 font-medium transition-all" style={{ border: `1px solid ${appMaterials.includes(m) ? "var(--blue)" : "var(--border-md)"}`, background: appMaterials.includes(m) ? "rgba(59,130,246,0.1)" : "transparent", color: appMaterials.includes(m) ? "var(--blue)" : "var(--text2)", cursor: "pointer" }}>
+                  <button key={m} onClick={() => toggleArr(appMaterials, m, setAppMaterials)} className="text-xs px-2.5 py-1 font-medium transition-all" style={{ border: `1px solid ${appMaterials.includes(m) ? "var(--amber)" : "var(--border-md)"}`, background: appMaterials.includes(m) ? "rgba(232,137,58,0.1)" : "transparent", color: appMaterials.includes(m) ? "var(--amber)" : "var(--text2)", cursor: "pointer" }}>
                     {m}
                   </button>
                 ))}
@@ -374,8 +374,8 @@ export default function OrgNewClient() {
                 </select>
               </Field>
               <Field label="Auto-accept teams?">
-                <button onClick={() => setAutoAccept(!autoAccept)} className="text-xs px-3 py-2 font-medium transition-all mt-1" style={{ border: `1px solid ${autoAccept ? "var(--blue)" : "var(--border-md)"}`, background: autoAccept ? "rgba(59,130,246,0.1)" : "transparent", color: autoAccept ? "var(--blue)" : "var(--text2)", cursor: "pointer", width: "100%" }}>
-                  {autoAccept ? "Yes — auto-accept" : "No — manual review"}
+                <button onClick={() => setAutoAccept(!autoAccept)} className="text-xs px-3 py-2 font-medium transition-all mt-1" style={{ border: `1px solid ${autoAccept ? "var(--amber)" : "var(--border-md)"}`, background: autoAccept ? "rgba(232,137,58,0.1)" : "transparent", color: autoAccept ? "var(--amber)" : "var(--text2)", cursor: "pointer", width: "100%" }}>
+                  {autoAccept ? "Yes â€” auto-accept" : "No â€” manual review"}
                 </button>
               </Field>
             </div>
@@ -396,7 +396,7 @@ export default function OrgNewClient() {
           ) : (
             <button onClick={handleSubmit} disabled={!canAdvance() || submitting} className="btn-primary flex items-center gap-1.5" style={{ opacity: canAdvance() && !submitting ? 1 : 0.5, cursor: canAdvance() && !submitting ? "pointer" : "default" }}>
               {submitting && <Loader2 size={13} className="animate-spin" />}
-              {submitting ? "Creating…" : "Create organization"}
+              {submitting ? "Creatingâ€¦" : "Create organization"}
             </button>
           )}
         </div>
@@ -405,7 +405,7 @@ export default function OrgNewClient() {
   );
 }
 
-// ── Shared styles ──
+// â”€â”€ Shared styles â”€â”€
 
 interface FieldProps { label: string; required?: boolean; hint?: string; hintOk?: boolean; children: React.ReactNode; }
 
@@ -416,7 +416,7 @@ function Field({ label, required, hint, hintOk, children }: FieldProps) {
         <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "var(--text2)", letterSpacing: "0.06em", textTransform: "uppercase" }}>
           {label} {required && <span style={{ color: "#f87171" }}>*</span>}
         </label>
-        {hint && <span style={{ fontSize: 10, fontFamily: "var(--font-mono)", color: hintOk ? "var(--blue)" : "var(--muted)" }}>{hint}</span>}
+        {hint && <span style={{ fontSize: 10, fontFamily: "var(--font-mono)", color: hintOk ? "var(--amber)" : "var(--muted)" }}>{hint}</span>}
       </div>
       {children}
     </div>
@@ -433,3 +433,4 @@ const colorPickerStyle: React.CSSProperties = {
   width: 32, height: 32, border: "1px solid var(--border-md)",
   cursor: "pointer", padding: 2, background: "var(--bg)", flexShrink: 0,
 };
+

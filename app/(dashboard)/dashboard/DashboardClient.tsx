@@ -230,7 +230,7 @@ export default function DashboardClient({ profile, spaces, traitsDone, tutorialD
         ) : opportunities.length === 0 ? (
           <div style={{ textAlign: "center", padding: "64px 0" }}>
             <p style={{ fontSize: 16, color: "var(--text2)", fontFamily: "var(--font-body)", marginBottom: 16 }}>No opportunities found.</p>
-            <button onClick={() => setActiveFilter("ALL")} style={{ fontSize: 14, color: "#60A5FA", fontFamily: "var(--font-body)", background: "none", border: "none", cursor: "pointer", fontWeight: "bold" }}>
+            <button onClick={() => setActiveFilter("ALL")} style={{ fontSize: 12, color: "var(--amber)", fontFamily: "var(--font-mono)", background: "none", border: "none", cursor: "pointer", fontWeight: "700", letterSpacing: "0.1em", textTransform: "uppercase" }}>
               Clear filter →
             </button>
           </div>

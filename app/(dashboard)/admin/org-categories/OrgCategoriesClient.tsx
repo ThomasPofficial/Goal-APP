@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { format } from "date-fns";
@@ -37,7 +37,7 @@ export default function OrgCategoriesClient({ orgs: initial }: { orgs: OrgRow[] 
   return (
     <div className="max-w-5xl mx-auto py-8 px-4">
       <h1 className="text-xl font-semibold mb-1" style={{ color: "var(--text)" }}>Org Classification</h1>
-      <p className="text-sm mb-6" style={{ color: "var(--muted)" }}>Private · only visible to team@nivarro.co</p>
+      <p className="text-sm mb-6" style={{ color: "var(--muted)" }}>Private Â· only visible to team@nivarro.co</p>
 
       <div className="space-y-2">
         {orgs.map((org) => (
@@ -50,11 +50,11 @@ export default function OrgCategoriesClient({ orgs: initial }: { orgs: OrgRow[] 
             <button
               onClick={() => update(org.id, { verified: !org.verified })}
               disabled={saving === org.id}
-              title={org.verified ? "Verified — click to unverify" : "Unverified — click to verify"}
+              title={org.verified ? "Verified â€” click to unverify" : "Unverified â€” click to verify"}
               style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}
             >
               <svg width="18" height="18" viewBox="0 0 14 14" fill="none">
-                <circle cx="7" cy="7" r="7" fill={org.verified ? "#3B82F6" : "var(--surface3)"} />
+                <circle cx="7" cy="7" r="7" fill={org.verified ? "var(--amber)" : "var(--surface3)"} />
                 <path d="M4 7l2 2 4-4" stroke={org.verified ? "#fff" : "var(--muted)"} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </button>
@@ -63,7 +63,7 @@ export default function OrgCategoriesClient({ orgs: initial }: { orgs: OrgRow[] 
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium truncate" style={{ color: "var(--text)" }}>{org.name}</p>
               <p className="text-[11px]" style={{ color: "var(--muted)" }}>
-                {org.category} · {org._count.projects} project{org._count.projects !== 1 ? "s" : ""} · {org._count.teams} team{org._count.teams !== 1 ? "s" : ""} · joined {format(new Date(org.createdAt), "MMM d yyyy")}
+                {org.category} Â· {org._count.projects} project{org._count.projects !== 1 ? "s" : ""} Â· {org._count.teams} team{org._count.teams !== 1 ? "s" : ""} Â· joined {format(new Date(org.createdAt), "MMM d yyyy")}
               </p>
             </div>
 
@@ -75,7 +75,7 @@ export default function OrgCategoriesClient({ orgs: initial }: { orgs: OrgRow[] 
               className="text-xs px-2 py-1 rounded"
               style={{ background: "var(--surface2)", border: "1px solid var(--border-md)", color: "var(--text2)" }}
             >
-              <option value="">— unclassified —</option>
+              <option value="">â€” unclassified â€”</option>
               {ORG_TYPES.map((t) => (
                 <option key={t.value} value={t.value}>{t.label}</option>
               ))}
@@ -85,8 +85,9 @@ export default function OrgCategoriesClient({ orgs: initial }: { orgs: OrgRow[] 
       </div>
 
       <p className="text-xs mt-6" style={{ color: "var(--muted)" }}>
-        NONPROFIT = never pays · PAY_LATER = free now, charged when Nivarro monetizes · COLLEGE = academic / university program
+        NONPROFIT = never pays Â· PAY_LATER = free now, charged when Nivarro monetizes Â· COLLEGE = academic / university program
       </p>
     </div>
   );
 }
+
