@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { DM_Mono } from "next/font/google";
+import { Anton, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import SessionProvider from "@/components/providers/SessionProvider";
 import PostHogProvider from "@/components/providers/PostHogProvider";
@@ -7,9 +7,23 @@ import PostHogIdentify from "@/components/providers/PostHogIdentify";
 import { Suspense } from "react";
 import PostHogPageView from "@/components/providers/PostHogPageView";
 
-const dmMono = DM_Mono({
+const anton = Anton({
   subsets: ["latin"],
-  weight: ["400", "500"],
+  weight: "400",
+  variable: "--font-display",
+  display: "swap",
+});
+
+const inter = Inter({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-body",
+  display: "swap",
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500", "700"],
   variable: "--font-mono",
   display: "swap",
 });
@@ -26,13 +40,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={dmMono.variable}>
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-      </head>
+    <html lang="en" className={`${anton.variable} ${inter.variable} ${jetbrainsMono.variable}`}>
       <body className="antialiased" style={{ background: "var(--bg)", color: "var(--text)" }}>
-        {/* Inline script prevents flash of wrong theme on load */}
         <script
           dangerouslySetInnerHTML={{
             __html: `try{if(localStorage.getItem('nivarro-theme')==='light')document.body.classList.add('day')}catch(e){}`,

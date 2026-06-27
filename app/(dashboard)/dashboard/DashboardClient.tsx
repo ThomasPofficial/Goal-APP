@@ -45,31 +45,32 @@ const MOCK_COMMUNITIES = [
   { id: "c6", name: "Code & Coffee",         members: 521, category: "Community",       color: "#F97316" },
 ];
 
-/* ── Section header — spy tag + big Spotify-scale title ───── */
+/* ── Section header — spy tag + big display title ───── */
 function SectionHeader({ tag, title, href, linkLabel }: { tag: string; title: string; href: string; linkLabel: string }) {
   return (
     <div style={{ marginBottom: 24 }}>
       <span style={{
-        display: "block", marginBottom: 6,
-        fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: "0.2em",
-        textTransform: "uppercase", color: "#60A5FA",
+        display: "block", marginBottom: 8,
+        fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: "0.22em",
+        textTransform: "uppercase", color: "var(--amber)",
       }}>
         ▸ {tag}
       </span>
       <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
         <h2 style={{
-          fontFamily: "var(--font-body)", fontSize: 32, fontWeight: "bold",
-          color: "#FFFFFF", margin: 0, letterSpacing: "0.01em", lineHeight: 1,
+          fontFamily: "var(--font-display)", fontSize: "clamp(28px, 3.5vw, 42px)",
+          fontWeight: 400, color: "var(--cream)", margin: 0,
+          textTransform: "uppercase", letterSpacing: "-0.01em", lineHeight: 0.95,
         }}>
           {title}
         </h2>
         <Link href={href} style={{
-          fontFamily: "var(--font-body)", fontSize: 15, fontWeight: "600",
-          color: "var(--n-text2)", textDecoration: "none", letterSpacing: "0.01em",
-          transition: "color 120ms",
+          fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: "700",
+          color: "var(--ink-mute)", textDecoration: "none", letterSpacing: "0.12em",
+          textTransform: "uppercase", transition: "color 120ms",
         }}
-          onMouseEnter={(e) => (e.currentTarget.style.color = "#FFFFFF")}
-          onMouseLeave={(e) => (e.currentTarget.style.color = "var(--muted)")}
+          onMouseEnter={(e) => (e.currentTarget.style.color = "var(--amber)")}
+          onMouseLeave={(e) => (e.currentTarget.style.color = "var(--ink-mute)")}
         >
           {linkLabel} →
         </Link>
@@ -141,8 +142,8 @@ export default function DashboardClient({ profile, spaces, traitsDone, tutorialD
         {!traitsDone && (
           <Link href="/quiz?tab=traits" className="bracket-card" style={{
             display: "flex", alignItems: "center", justifyContent: "space-between",
-            gap: 12, padding: "16px 20px", background: "rgba(59,130,246,0.06)",
-            border: "1px solid rgba(59,130,246,0.25)", textDecoration: "none",
+            gap: 12, padding: "16px 20px", background: "rgba(232,137,58,0.06)",
+            border: "1px solid rgba(232,137,58,0.25)", textDecoration: "none",
           }}>
             <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
               <span style={{ fontSize: 18 }}>✦</span>
@@ -151,7 +152,7 @@ export default function DashboardClient({ profile, spaces, traitsDone, tutorialD
                 <p style={{ fontSize: 13, color: "var(--text2)", fontFamily: "var(--font-body)", margin: "2px 0 0" }}>Take the Traits Quiz to identify your 5 core strengths</p>
               </div>
             </div>
-            <span style={{ fontSize: 14, fontWeight: "bold", color: "#60A5FA", fontFamily: "var(--font-body)", flexShrink: 0 }}>Start →</span>
+            <span style={{ fontSize: 12, fontWeight: "700", color: "var(--amber)", fontFamily: "var(--font-mono)", letterSpacing: "0.14em", textTransform: "uppercase", flexShrink: 0 }}>Start →</span>
           </Link>
         )}
       </div>
@@ -183,7 +184,7 @@ export default function DashboardClient({ profile, spaces, traitsDone, tutorialD
         <div style={{ overflow: "hidden", display: "flex", alignItems: "center", height: 40, background: "var(--surface)", borderTop: "1px solid var(--border)", borderBottom: "1px solid var(--border)" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0, padding: "0 16px", borderRight: "1px solid var(--border)", height: "100%" }}>
             <span className="live-dot" />
-            <span style={{ fontSize: 11, fontWeight: "bold", letterSpacing: "0.2em", textTransform: "uppercase", color: "#60A5FA", fontFamily: "var(--font-mono)" }}>LIVE</span>
+            <span style={{ fontSize: 11, fontWeight: "bold", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--amber)", fontFamily: "var(--font-mono)" }}>LIVE</span>
           </div>
           <div style={{ overflow: "hidden", flex: 1 }}>
             <div className="ticker-track">
@@ -193,7 +194,7 @@ export default function DashboardClient({ profile, spaces, traitsDone, tutorialD
                   <span style={{ color: "var(--muted)" }}>{item.org.name}</span>
                   <span style={{ color: "#FFFFFF", fontWeight: 600 }}>{item.title}</span>
                   {item.deadline && <span style={{ color: "var(--muted)", fontFamily: "var(--font-mono)", fontSize: 11 }}>· {format(new Date(item.deadline), "MMM d")}</span>}
-                  <span style={{ color: "rgba(96,165,250,0.35)" }}>·</span>
+                  <span style={{ color: "rgba(232,137,58,0.35)" }}>·</span>
                 </Link>
               ))}
             </div>
@@ -212,9 +213,9 @@ export default function DashboardClient({ profile, spaces, traitsDone, tutorialD
               padding: "7px 18px", fontSize: 14,
               fontFamily: "var(--font-body)", fontWeight: activeFilter === f ? "bold" : "normal",
               letterSpacing: "0.02em",
-              background: activeFilter === f ? "#FFFFFF" : "transparent",
-              border: `1px solid ${activeFilter === f ? "#FFFFFF" : "rgba(255,255,255,0.18)"}`,
-              color: activeFilter === f ? "#000000" : "var(--text2)",
+              background: activeFilter === f ? "var(--amber)" : "transparent",
+              border: `1px solid ${activeFilter === f ? "var(--amber)" : "rgba(232,137,58,0.2)"}`,
+              color: activeFilter === f ? "#000" : "var(--ink-mute)",
               cursor: "pointer", transition: "all 120ms",
             }}>
               {f === "ALL" ? "All" : f.charAt(0) + f.slice(1).toLowerCase()}
@@ -239,8 +240,9 @@ export default function DashboardClient({ profile, spaces, traitsDone, tutorialD
             {hasMore && (
               <div style={{ display: "flex", justifyContent: "center", paddingTop: 8 }}>
                 <button onClick={() => { const next = page + 1; setPage(next); fetchFeed(next, activeFilter); }} disabled={loadingMore} className="spy-card bracket-card" style={{
-                  padding: "10px 28px", fontSize: 14, fontFamily: "var(--font-body)", fontWeight: "bold",
-                  color: "var(--text2)", background: "var(--surface)", border: "1px solid rgba(255,255,255,0.15)",
+                  padding: "10px 28px", fontSize: 12, fontFamily: "var(--font-mono)", fontWeight: "700",
+                  letterSpacing: "0.12em", textTransform: "uppercase",
+                  color: "var(--ink-mute)", background: "var(--surface)", border: "1px solid rgba(232,137,58,0.18)",
                   cursor: "pointer", opacity: loadingMore ? 0.5 : 1,
                 }}>
                   {loadingMore ? "Loading…" : "Load more"}
@@ -253,7 +255,7 @@ export default function DashboardClient({ profile, spaces, traitsDone, tutorialD
 
       {/* ── Feedback ──────────────────────────────── */}
       <div className="bracket-card" style={{ background: "var(--surface)", border: "1px solid var(--border)", padding: "24px" }}>
-        <p style={{ fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: "0.18em", textTransform: "uppercase", color: "#60A5FA", marginBottom: 12 }}>
+        <p style={{ fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--amber)", marginBottom: 12 }}>
           ▸ Platform Feedback
         </p>
         {feedbackSent ? (
@@ -266,8 +268,9 @@ export default function DashboardClient({ profile, spaces, traitsDone, tutorialD
               color: "#FFFFFF", fontFamily: "var(--font-body)", outline: "none",
             }} />
             <button onClick={sendFeedback} style={{
-              padding: "10px 20px", fontSize: 14, fontFamily: "var(--font-body)", fontWeight: "bold",
-              background: "#3B82F6", color: "#FFFFFF", border: "none", cursor: "pointer",
+              padding: "10px 20px", fontSize: 12, fontFamily: "var(--font-mono)", fontWeight: "700",
+              letterSpacing: "0.12em", textTransform: "uppercase",
+              background: "var(--amber)", color: "#000", border: "none", cursor: "pointer",
             }}>
               Send
             </button>
@@ -289,20 +292,20 @@ function ProjectCard({ space }: { space: SpaceRow }) {
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
         <span className={space.hasUnread ? "spy-pulse" : undefined} style={{
           display: "inline-block", width: 7, height: 7, borderRadius: "50%",
-          background: space.hasUnread ? "#60A5FA" : "var(--muted)", flexShrink: 0,
+          background: space.hasUnread ? "var(--amber)" : "var(--ink-mute)", flexShrink: 0,
         }} />
-        <span style={{ fontSize: 11, letterSpacing: "0.16em", textTransform: "uppercase", color: space.hasUnread ? "#60A5FA" : "var(--muted)", fontFamily: "var(--font-mono)" }}>
+        <span style={{ fontSize: 11, letterSpacing: "0.16em", textTransform: "uppercase", color: space.hasUnread ? "var(--amber)" : "var(--ink-mute)", fontFamily: "var(--font-mono)" }}>
           {space.hasUnread ? "Active" : "Standby"}
         </span>
-        <span style={{ marginLeft: "auto", fontSize: 10, letterSpacing: "0.12em", color: "var(--muted)", fontFamily: "var(--font-mono)" }}>OP</span>
+        <span style={{ marginLeft: "auto", fontSize: 10, letterSpacing: "0.12em", color: "var(--ink-mute)", fontFamily: "var(--font-mono)" }}>OP</span>
       </div>
 
-      <p style={{ fontSize: 24, fontWeight: "bold", color: "#FFFFFF", lineHeight: 1.2, fontFamily: "var(--font-body)", flex: 1, margin: 0 }}>
+      <p style={{ fontSize: 22, fontWeight: "bold", color: "var(--cream)", lineHeight: 1.2, fontFamily: "var(--font-body)", flex: 1, margin: 0 }}>
         {space.name}
       </p>
 
-      <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 14 }}>
-        <span style={{ fontSize: 16, fontWeight: "bold", color: "#60A5FA", fontFamily: "var(--font-body)" }}>
+      <div style={{ borderTop: "1px solid var(--hairline)", paddingTop: 14 }}>
+        <span style={{ fontSize: 12, fontWeight: "700", color: "var(--amber)", fontFamily: "var(--font-mono)", letterSpacing: "0.14em", textTransform: "uppercase" }}>
           Resume →
         </span>
       </div>
@@ -315,14 +318,14 @@ function NewProjectButton() {
     <Link href="/teams" style={{
       display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
       gap: 10, minHeight: 160, textDecoration: "none",
-      border: "1px dashed rgba(255,255,255,0.2)", background: "transparent",
+      border: "1px dashed rgba(232,137,58,0.18)", background: "transparent",
       transition: "border-color 150ms",
     }}
-      onMouseEnter={(e) => (e.currentTarget.style.borderColor = "rgba(96,165,250,0.5)")}
-      onMouseLeave={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.2)")}
+      onMouseEnter={(e) => (e.currentTarget.style.borderColor = "rgba(232,137,58,0.5)")}
+      onMouseLeave={(e) => (e.currentTarget.style.borderColor = "rgba(232,137,58,0.18)")}
     >
-      <span style={{ fontSize: 28, color: "var(--muted)", lineHeight: 1 }}>+</span>
-      <span style={{ fontSize: 13, color: "var(--muted)", fontFamily: "var(--font-body)", fontWeight: "600" }}>New project</span>
+      <span style={{ fontSize: 28, color: "var(--ink-mute)", lineHeight: 1 }}>+</span>
+      <span style={{ fontSize: 13, color: "var(--ink-mute)", fontFamily: "var(--font-body)", fontWeight: "600" }}>New project</span>
     </Link>
   );
 }
@@ -334,23 +337,23 @@ function CommunityCard({ community }: { community: typeof MOCK_COMMUNITIES[0] })
       display: "flex", flexDirection: "column", textDecoration: "none",
       overflow: "hidden", minHeight: 160,
     }}>
-      <div style={{ height: 4, background: community.color, flexShrink: 0 }} />
+      <div style={{ height: 3, background: community.color, flexShrink: 0 }} />
       <div style={{ padding: "18px 22px", display: "flex", flexDirection: "column", gap: 10, flex: 1 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <span style={{ fontSize: 11, letterSpacing: "0.16em", textTransform: "uppercase", color: community.color, fontFamily: "var(--font-mono)", fontWeight: "bold" }}>
+          <span style={{ fontSize: 11, letterSpacing: "0.16em", textTransform: "uppercase", color: community.color, fontFamily: "var(--font-mono)", fontWeight: "700" }}>
             {community.category}
           </span>
-          <span style={{ fontSize: 12, color: "var(--muted)", fontFamily: "var(--font-body)" }}>
-            {community.members.toLocaleString()} members
+          <span style={{ fontSize: 11, color: "var(--ink-mute)", fontFamily: "var(--font-mono)", letterSpacing: "0.08em" }}>
+            {community.members.toLocaleString()} mbrs
           </span>
         </div>
 
-        <p style={{ fontSize: 23, fontWeight: "bold", color: "#FFFFFF", lineHeight: 1.25, fontFamily: "var(--font-body)", flex: 1, margin: 0 }}>
+        <p style={{ fontSize: 21, fontWeight: "bold", color: "var(--cream)", lineHeight: 1.25, fontFamily: "var(--font-body)", flex: 1, margin: 0 }}>
           {community.name}
         </p>
 
-        <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 12 }}>
-          <span style={{ fontSize: 16, fontWeight: "bold", color: "#60A5FA", fontFamily: "var(--font-body)" }}>
+        <div style={{ borderTop: "1px solid var(--hairline)", paddingTop: 12 }}>
+          <span style={{ fontSize: 12, fontWeight: "700", color: "var(--amber)", fontFamily: "var(--font-mono)", letterSpacing: "0.14em", textTransform: "uppercase" }}>
             Join →
           </span>
         </div>
@@ -383,14 +386,14 @@ function OppCardComp({ opp, onSaveToggle }: { opp: OppCard; onSaveToggle: () => 
               {opp.description ?? ""}
             </p>
           </div>
-          <button onClick={onSaveToggle} style={{ flexShrink: 0, padding: 6, color: opp.saved ? "#60A5FA" : "var(--muted)", background: "none", border: "none", cursor: "pointer", transition: "color 80ms" }}>
+          <button onClick={onSaveToggle} style={{ flexShrink: 0, padding: 6, color: opp.saved ? "var(--amber)" : "var(--ink-mute)", background: "none", border: "none", cursor: "pointer", transition: "color 80ms" }}>
             <Save size={16} fill={opp.saved ? "currentColor" : "none"} />
           </button>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 8 }}>
           {opp.deadline && <span style={{ fontSize: 12, color: "var(--muted)", fontFamily: "var(--font-body)" }}>Due {format(new Date(opp.deadline), "MMM d, yyyy")}</span>}
           {opp.isRemote && <span style={{ fontSize: 12, padding: "1px 8px", background: "var(--surface2)", color: "var(--text2)", fontFamily: "var(--font-body)" }}>Remote</span>}
-          <Link href={`/orgs/${opp.org.id}`} style={{ marginLeft: "auto", fontSize: 13, display: "flex", alignItems: "center", gap: 4, color: "#60A5FA", textDecoration: "none", fontWeight: "bold", fontFamily: "var(--font-body)" }}>
+          <Link href={`/orgs/${opp.org.id}`} style={{ marginLeft: "auto", fontSize: 11, display: "flex", alignItems: "center", gap: 4, color: "var(--amber)", textDecoration: "none", fontWeight: "700", fontFamily: "var(--font-mono)", letterSpacing: "0.1em", textTransform: "uppercase" }}>
             View org <ExternalLink size={12} />
           </Link>
         </div>

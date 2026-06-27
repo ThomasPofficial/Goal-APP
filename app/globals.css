@@ -6,28 +6,41 @@
 ───────────────────────────────────────── */
 
 :root {
-  /* Times New Roman — spy/editorial feel */
-  --font-body:    'Times New Roman', Times, serif;
-  --font-display: 'Times New Roman', Times, serif;
-  --font-mono: 'DM Mono', 'JetBrains Mono', monospace;
+  --font-body:    'Inter', sans-serif;
+  --font-display: 'Anton', sans-serif;
+  --font-mono:    'JetBrains Mono', monospace;
 
-  /* ── Accent — electric blue, unchanged ── */
+  /* ── Amber / gold accent ── */
+  --amber:         #E8893A;
+  --amber-dim:     #B86B2E;
+  --gold:          #E6BE7A;
+  --gold-light:    #F2EDE4;
+  --gold-dim:      #6B6560;
+  --gold-glow:     rgba(232,137,58,0.35);
+  --cream:         #F2EDE4;
+  --ink-mute:      #6B6560;
+  --hairline:      rgba(232,137,58,.22);
+
+  /* ── Category accents ── */
+  --cat-design:    #A78BFA;
+  --cat-eng:       #22D3EE;
+  --cat-ent:       #E8893A;
+  --cat-impact:    #4ADE80;
+  --cat-health:    #38BDF8;
+  --cat-community: #FB923C;
+
+  /* ── Blue — kept for backward compat ── */
   --blue:        #3B82F6;
   --blue-bright: #60A5FA;
   --blue-dim:    #1E3A5F;
   --blue-glow:   rgba(59,130,246,0.35);
 
-  --gold:        var(--blue);
-  --gold-light:  var(--blue-bright);
-  --gold-dim:    var(--blue-dim);
-  --gold-glow:   var(--blue-glow);
-
-  /* ── OLED black surfaces ── */
-  --n-bg:       #000000;
-  --n-bg2:      #060608;
-  --n-surface:  #0E0E14;
-  --n-surface2: #14141C;
-  --n-surface3: #1C1C28;
+  /* ── Warm near-black surfaces ── */
+  --n-bg:       #0A0807;
+  --n-bg2:      #080605;
+  --n-surface:  #121010;
+  --n-surface2: #0E0C0B;
+  --n-surface3: #1A1715;
   --n-border:   rgba(255,255,255,0.10);
   --n-border-md:rgba(255,255,255,0.16);
   --n-text:     #FFFFFF;
@@ -115,7 +128,7 @@ html, body {
   min-height: 100%;
   background: var(--bg);
   color: var(--text);
-  font-family: 'Times New Roman', Times, serif !important;
+  font-family: var(--font-body);
   font-size: 16px;
   font-weight: 400;
   -webkit-font-smoothing: antialiased;
@@ -128,7 +141,7 @@ html, body {
 ───────────────────────────────────────── */
 
 h1, h2, h3, h4 {
-  font-family: 'Times New Roman', Times, serif !important;
+  font-family: var(--font-body);
   font-weight: bold;
   letter-spacing: 0.02em;
   line-height: 1.15;
@@ -148,17 +161,17 @@ p { line-height: 1.7; margin: 0; font-size: 1rem; }
 
 ::-webkit-scrollbar { width: 3px; height: 3px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(59,130,246,0.2); border-radius: 0; }
-::-webkit-scrollbar-thumb:hover { background: rgba(59,130,246,0.4); }
+::-webkit-scrollbar-thumb { background: rgba(232,137,58,0.2); border-radius: 0; }
+::-webkit-scrollbar-thumb:hover { background: rgba(232,137,58,0.4); }
 
 /* ─────────────────────────────────────────
    SELECTION & FOCUS
 ───────────────────────────────────────── */
 
-::selection { background: rgba(59,130,246,0.25); color: var(--text); }
+::selection { background: rgba(232,137,58,0.25); color: var(--text); }
 
 :focus-visible {
-  outline: 1px solid var(--blue);
+  outline: 1px solid var(--amber);
   outline-offset: 2px;
 }
 
@@ -182,8 +195,8 @@ p { line-height: 1.7; margin: 0; font-size: 1rem; }
 
   input:focus, textarea:focus, select:focus {
     outline: none;
-    border-color: var(--blue);
-    box-shadow: 0 0 0 1px rgba(59,130,246,0.3);
+    border-color: var(--amber);
+    box-shadow: 0 0 0 1px rgba(232,137,58,0.3);
   }
 }
 
@@ -216,7 +229,7 @@ a, button {
 }
 
 .card:hover {
-  border-color: rgba(59,130,246,0.22);
+  border-color: rgba(232,137,58,0.22);
   box-shadow: var(--glow-card);
   transform: translateY(-1px);
 }
@@ -246,8 +259,8 @@ body.day .card:hover {
   top: 0;
   bottom: 0;
   width: 2px;
-  background: var(--blue);
-  box-shadow: 0 0 8px rgba(59,130,246,0.6);
+  background: var(--amber);
+  box-shadow: 0 0 8px rgba(232,137,58,0.6);
 }
 
 /* ─────────────────────────────────────────
@@ -317,7 +330,7 @@ body.day .card:hover {
   width: 10px;
   height: 10px;
   border-style: solid;
-  border-color: rgba(59,130,246,0.35);
+  border-color: rgba(232,137,58,0.35);
   pointer-events: none;
   z-index: 2;
   transition: border-color 150ms, width 150ms, height 150ms;
@@ -326,10 +339,10 @@ body.day .card:hover {
 .bracket-card::after  { bottom: 0; right: 0; border-width: 0 1px 1px 0; }
 .bracket-card:hover::before,
 .bracket-card:hover::after {
-  border-color: rgba(59,130,246,0.7);
+  border-color: rgba(232,137,58,0.7);
   width: 14px;
   height: 14px;
-  box-shadow: 0 0 8px rgba(59,130,246,0.3);
+  box-shadow: 0 0 8px rgba(232,137,58,0.3);
 }
 
 /* ─────────────────────────────────────────
@@ -517,13 +530,13 @@ body.day input[type="datetime-local"] { color-scheme: light; }
 .spy-card {
   position: relative;
   background: var(--surface);
-  border: 1px solid rgba(59,130,246,0.16);
+  border: 1px solid rgba(232,137,58,0.12);
   box-shadow: 0 4px 28px rgba(0,0,0,0.75), 0 1px 0 rgba(255,255,255,0.025);
   transition: box-shadow 220ms ease, border-color 220ms ease, transform 180ms ease;
 }
 .spy-card:hover {
-  border-color: rgba(59,130,246,0.45);
-  box-shadow: 0 8px 48px rgba(0,0,0,0.85), 0 0 28px rgba(59,130,246,0.12), 0 1px 0 rgba(255,255,255,0.04);
+  border-color: rgba(232,137,58,0.40);
+  box-shadow: 0 8px 48px rgba(0,0,0,0.85), 0 0 28px rgba(232,137,58,0.12), 0 1px 0 rgba(255,255,255,0.04);
   transform: translateY(-2px);
 }
 
@@ -540,7 +553,7 @@ body.day input[type="datetime-local"] { color-scheme: light; }
 .hud-section-line {
   flex: 1;
   height: 1px;
-  background: linear-gradient(to right, rgba(59,130,246,0.4), transparent);
+  background: linear-gradient(to right, rgba(232,137,58,0.4), transparent);
 }
 
 /* ─────────────────────────────────────────
