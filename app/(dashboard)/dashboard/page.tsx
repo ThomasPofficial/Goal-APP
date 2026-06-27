@@ -9,13 +9,16 @@ export default async function DashboardPage() {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
   const userId = session.user.id;
+  const userRole = (session.user as { role?: string }).role ?? "STUDENT";
 
-  // Org accounts go straight to their org dashboard
-  const myOrg = await prisma.org.findFirst({
-    where: { createdById: userId },
-    select: { id: true },
-  });
-  if (myOrg) redirect(`/orgs/${myOrg.id}`);
+  // Only redirect ORG/ADMIN accounts to their org dashboard — students stay here
+  if (userRole === "ORG" || userRole === "ADMIN") {
+    const myOrg = await prisma.org.findFirst({
+      where: { createdById: userId },
+      select: { id: true },
+    });
+    if (myOrg) redirect(`/orgs/${myOrg.id}`);
+  }
 
   const cookieStore = await cookies();
   const tutorialDismissed = cookieStore.get("nv_tutorial_dismissed")?.value === "1";
