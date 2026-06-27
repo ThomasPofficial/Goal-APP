@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nivarro</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --amber: #E8893A;
+  --amber-dim: rgba(232,137,58,0.7);
+  --surface: #0D0D12;
+  --border: rgba(255,255,255,0.07);
+}
+
+body {
+  font-family: 'Times New Roman', Times, serif;
+  background: #060608;
+  color: #fff;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── SIDEBAR ─────────────────────────── */
+.sidebar {
+  position: fixed; left: 0; top: 0; height: 100%; width: 224px;
+  background: #000; border-right: 1px solid rgba(255,255,255,0.05);
+  display: flex; flex-direction: column; z-index: 40;
+}
+.logo {
+  padding: 22px 20px 18px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.logo-row { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
+.hex {
+  width: 26px; height: 26px; flex-shrink: 0; background: var(--amber);
+  clip-path: polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);
+  box-shadow: 0 0 14px rgba(232,137,58,0.55);
+}
+.logo-text {
+  font-size: 18px; font-weight: 900; letter-spacing: 0.22em;
+  text-transform: uppercase; color: #fff;
+  -webkit-text-stroke: 0.4px #fff;
+}
+.logo-text b { color: var(--amber); }
+.logo-sub {
+  font-family: 'Courier New', monospace; font-size: 9px;
+  letter-spacing: 0.35em; text-transform: uppercase;
+  color: rgba(232,137,58,0.4); padding-left: 36px;
+}
+.nav { flex: 1; padding: 14px 10px; display: flex; flex-direction: column; gap: 1px; }
+.ni {
+  display: flex; align-items: center; gap: 11px; height: 40px; padding: 0 14px;
+  color: rgba(255,255,255,0.35); font-size: 14px; font-weight: 700;
+  letter-spacing: 0.01em; text-decoration: none; transition: color 100ms;
+}
+.ni.active { color: #fff; }
+.ni:hover { color: rgba(255,255,255,0.8); }
+.side-foot {
+  padding: 18px 20px; border-top: 1px solid rgba(255,255,255,0.05);
+  display: flex; align-items: center; gap: 10px;
+}
+.av {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--amber), #B45309);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 900; color: #000; flex-shrink: 0;
+}
+.u-name { font-size: 14px; font-weight: 800; color: #fff; }
+.u-type { font-family: 'Courier New', monospace; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--amber); }
+
+/* ── MAIN ───────────────────────────── */
+.main { margin-left: 224px; }
+
+/* ── HERO REGION — photo + DASHBOARD title ── */
+.hero {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  padding: 60px 52px 72px;
+  min-height: 380px;
+}
+
+/* Ops-room background — dramatically vivid scene simulation */
+.hero-bg {
+  position: absolute; inset: 0; z-index: 0;
+  transform: scale(1.03);
+  background:
+    /* ── DESK LAMP — hot bright amber source, center-right ── */
+    radial-gradient(circle 90px at 74% 78%, rgba(255,210,80,0.95) 0%, rgba(255,160,40,0.75) 15%, rgba(200,100,20,0.45) 40%, transparent 70%),
+    /* lamp cone spilling down */
+    radial-gradient(ellipse 32% 55% at 74% 95%, rgba(180,90,10,0.55) 0%, transparent 65%),
+    /* warm amber wash across right floor */
+    radial-gradient(ellipse 45% 40% at 82% 88%, rgba(140,60,5,0.45) 0%, transparent 70%),
+    /* ── HOLOGRAPHIC WORLD MAP DISPLAY — blue-teal wall ── */
+    radial-gradient(ellipse 55% 70% at 85% 28%, rgba(0,180,255,0.22) 0%, rgba(0,120,200,0.18) 35%, rgba(0,60,120,0.10) 65%, transparent 85%),
+    /* map surface brightness */
+    radial-gradient(ellipse 40% 45% at 90% 22%, rgba(40,200,255,0.15) 0%, transparent 60%),
+    /* ── MAGENTA DATA SPIKE — top far right ── */
+    radial-gradient(ellipse 12% 38% at 97% 12%, rgba(220,0,160,0.35) 0%, rgba(180,0,120,0.20) 40%, transparent 70%),
+    /* ── MONITOR GLOW — multiple screens right side ── */
+    radial-gradient(ellipse 20% 18% at 96% 45%, rgba(0,160,220,0.18) 0%, transparent 70%),
+    radial-gradient(ellipse 15% 14% at 92% 62%, rgba(0,140,200,0.12) 0%, transparent 70%),
+    /* ── COLD AMBIENT FILL — the room's base tone ── */
+    radial-gradient(ellipse 70% 80% at 78% 40%, rgba(8,30,55,0.85) 0%, rgba(4,15,30,0.6) 60%, transparent 85%),
+    /* ── TACTICAL GRID — subtle cyan lines ── */
+    repeating-linear-gradient(0deg,   transparent, transparent 38px, rgba(0,200,255,0.025) 38px, rgba(0,200,255,0.025) 39px),
+    repeating-linear-gradient(90deg,  transparent, transparent 38px, rgba(0,200,255,0.025) 38px, rgba(0,200,255,0.025) 39px),
+    /* ── BASE ── */
+    linear-gradient(135deg, #020408 0%, #060D18 38%, #0A1422 65%, #0E1620 100%);
+}
+
+/* World map dot constellation (right half) */
+.hero-bg::before {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    /* dot nodes on the map */
+    radial-gradient(circle 2px at 68% 18%, rgba(0,220,255,0.9) 0%, transparent 100%),
+    radial-gradient(circle 2px at 78% 24%, rgba(0,200,255,0.8) 0%, transparent 100%),
+    radial-gradient(circle 2px at 88% 20%, rgba(0,200,255,0.7) 0%, transparent 100%),
+    radial-gradient(circle 2px at 84% 32%, rgba(0,200,255,0.7) 0%, transparent 100%),
+    radial-gradient(circle 3px at 92% 15%, rgba(255,50,200,0.9) 0%, transparent 100%),
+    radial-gradient(circle 2px at 72% 30%, rgba(0,220,255,0.6) 0%, transparent 100%),
+    radial-gradient(circle 1.5px at 95% 28%, rgba(0,200,255,0.6) 0%, transparent 100%),
+    radial-gradient(circle 1.5px at 76% 16%, rgba(0,220,255,0.7) 0%, transparent 100%),
+    /* connection lines between dots (thin glowing) */
+    linear-gradient(to right, transparent 67%, rgba(0,200,255,0.06) 68%, rgba(0,200,255,0.06) 94%, transparent 95%);
+}
+
+/* Fruit bowl + scatter of warm objects on desk */
+.hero-bg::after {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    /* fruit bowl — concentrated warm glow pool on desk surface */
+    radial-gradient(ellipse 14% 8% at 80% 90%, rgba(200,120,20,0.5) 0%, transparent 80%),
+    radial-gradient(ellipse 8% 6% at 77% 92%, rgba(180,100,15,0.4) 0%, transparent 80%),
+    /* laptop/tablet screen faint blue on desk */
+    radial-gradient(ellipse 10% 6% at 66% 85%, rgba(60,120,200,0.2) 0%, transparent 70%);
+}
+
+/* Vignette — only top/bottom edges, NOT the right side (let scene breathe) */
+.hero-vig {
+  position: absolute; inset: 0; z-index: 1;
+  background:
+    linear-gradient(to bottom, rgba(2,4,8,0.7) 0%, transparent 18%),
+    linear-gradient(to top,    rgba(2,4,8,0.5) 0%, transparent 22%);
+}
+/* Scrim — left pocket fully dark, right side fully open */
+.hero-scrim {
+  position: absolute; inset: 0; z-index: 2;
+  background: linear-gradient(100deg,
+    rgba(2,4,8,0.97) 0%,
+    rgba(2,4,8,0.92) 24%,
+    rgba(2,4,8,0.65) 42%,
+    rgba(2,4,8,0.20) 58%,
+    transparent 68%
+  );
+}
+/* Amber bloom rising from bottom — echoes the desk lamp */
+.hero-bloom {
+  position: absolute; inset: 0; z-index: 3;
+  background: linear-gradient(0deg, rgba(180,80,10,0.22) 0%, rgba(140,60,5,0.10) 18%, transparent 35%);
+  mix-blend-mode: screen;
+}
+/* Scanlines */
+.hero-scan {
+  position: absolute; inset: 0; z-index: 4; pointer-events: none;
+  background: repeating-linear-gradient(to bottom, transparent 0px, transparent 3px, rgba(0,0,0,0.08) 3px, rgba(0,0,0,0.08) 4px);
+}
+
+/* Content in the pocket */
+.hero-content { position: relative; z-index: 10; max-width: 600px; }
+
+.hero-eyebrow {
+  display: flex; align-items: center; gap: 10px;
+  font-family: 'Courier New', monospace; font-size: 11px;
+  letter-spacing: 0.28em; text-transform: uppercase;
+  color: var(--amber); font-weight: 700; margin-bottom: 10px;
+}
+.hero-eyebrow::before {
+  content: ''; width: 22px; height: 1px;
+  background: var(--amber); opacity: 0.7; flex-shrink: 0;
+}
+
+.hero-title {
+  font-size: clamp(56px, 7vw, 96px);
+  font-weight: 900;
+  color: #E9C87A;
+  text-transform: uppercase;
+  line-height: 0.92;
+  letter-spacing: -0.025em;
+  -webkit-text-stroke: 0.5px #E9C87A;
+  text-shadow: 0 4px 40px rgba(0,0,0,0.6), 0 0 80px rgba(233,168,80,0.08);
+  margin-bottom: 18px;
+}
+
+.hero-body {
+  font-size: 16px; color: rgba(255,255,255,0.55);
+  line-height: 1.6; max-width: 400px;
+}
+
+/* ── CONTENT SECTIONS ────────────────── */
+.content { padding: 0 52px 80px; display: flex; flex-direction: column; gap: 52px; }
+
+/* Section label */
+.sec-label {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 20px;
+  font-family: 'Courier New', monospace; font-size: 11px;
+  letter-spacing: 0.26em; text-transform: uppercase;
+  color: var(--amber); font-weight: 700;
+}
+.sec-label::before { content: '▸'; }
+
+/* Section row for title + view all */
+.sec-row { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 20px; }
+.sec-title {
+  font-size: 40px; font-weight: 900; color: #fff;
+  letter-spacing: -0.025em; line-height: 1;
+  -webkit-text-stroke: 0.5px #fff;
+  text-transform: uppercase;
+}
+.view-all {
+  font-family: 'Courier New', monospace; font-size: 12px;
+  font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--amber); text-decoration: none; transition: opacity 100ms;
+}
+.view-all:hover { opacity: 0.7; }
+
+/* ── PROJECT CARDS ───────────────────── */
+.proj-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+
+.proj-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 22px 24px 20px;
+  display: flex; flex-direction: column; gap: 14px;
+  min-height: 150px; text-decoration: none; cursor: pointer;
+  transition: border-color 160ms, transform 160ms;
+  position: relative;
+}
+.proj-card::before {
+  content: ''; position: absolute; top: 7px; left: 7px;
+  width: 10px; height: 10px;
+  border-top: 1px solid rgba(232,137,58,0.25);
+  border-left: 1px solid rgba(232,137,58,0.25);
+}
+.proj-card::after {
+  content: ''; position: absolute; bottom: 7px; right: 7px;
+  width: 10px; height: 10px;
+  border-bottom: 1px solid rgba(232,137,58,0.25);
+  border-right: 1px solid rgba(232,137,58,0.25);
+}
+.proj-card:hover { border-color: rgba(232,137,58,0.35); transform: translateY(-3px); }
+
+.proj-status { display: flex; align-items: center; gap: 8px; }
+.dot {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+  background: var(--amber); box-shadow: 0 0 8px rgba(232,137,58,0.7);
+  animation: pulse 2s infinite;
+}
+.dot.off { background: rgba(255,255,255,0.2); box-shadow: none; animation: none; }
+@keyframes pulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(232,137,58,0.7); }
+  50%      { box-shadow: 0 0 0 7px rgba(232,137,58,0); }
+}
+.status-lbl {
+  font-family: 'Courier New', monospace; font-size: 11px;
+  letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--amber); font-weight: 700;
+}
+.status-lbl.off { color: rgba(255,255,255,0.25); }
+.op-badge { margin-left: auto; font-family: 'Courier New', monospace; font-size: 10px; letter-spacing: 0.14em; color: rgba(255,255,255,0.18); }
+
+.proj-name {
+  font-size: 22px; font-weight: 900; color: #fff;
+  line-height: 1.15; letter-spacing: -0.01em; flex: 1;
+  -webkit-text-stroke: 0.4px #fff;
+}
+.proj-cta {
+  font-size: 14px; font-weight: 800; color: var(--amber);
+  letter-spacing: 0.04em;
+  border-top: 1px solid rgba(255,255,255,0.07); padding-top: 14px;
+}
+
+.new-proj {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 8px; min-height: 150px; background: transparent;
+  border: 1.5px dashed rgba(255,255,255,0.1);
+  cursor: pointer; text-decoration: none; transition: border-color 150ms;
+}
+.new-proj:hover { border-color: rgba(232,137,58,0.35); }
+.new-proj::before, .new-proj::after { display: none; }
+.plus-icon { font-size: 28px; color: rgba(255,255,255,0.15); line-height: 1; }
+.new-lbl { font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.22); letter-spacing: 0.08em; }
+
+/* ── COMMUNITY CARDS ─────────────────── */
+.comm-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+
+.comm-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  display: flex; align-items: flex-start; gap: 16px;
+  padding: 20px 22px;
+  text-decoration: none; cursor: pointer;
+  transition: border-color 160ms, transform 160ms;
+  position: relative;
+  overflow: hidden;
+}
+/* Colored top border */
+.comm-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: var(--cc);
+}
+.comm-card:hover { transform: translateY(-3px); border-color: rgba(255,255,255,0.14); }
+
+.comm-icon {
+  width: 44px; height: 44px; border-radius: 8px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; background: var(--cc-bg);
+}
+.comm-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.comm-meta { display: flex; align-items: baseline; justify-content: space-between; }
+.comm-cat {
+  font-family: 'Courier New', monospace; font-size: 11px;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  font-weight: 800; color: var(--cc);
+}
+.comm-count { font-size: 12px; color: rgba(255,255,255,0.28); font-family: 'Courier New', monospace; }
+.comm-name {
+  font-size: 20px; font-weight: 900; color: #fff;
+  line-height: 1.1; letter-spacing: -0.01em;
+  -webkit-text-stroke: 0.35px #fff;
+}
+.comm-join {
+  font-size: 14px; font-weight: 800; color: var(--amber);
+  letter-spacing: 0.04em; margin-top: 4px;
+}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-row">
+      <div class="hex"></div>
+      <span class="logo-text">NI<b>VARRO</b></span>
+    </div>
+    <div class="logo-sub">Intelligence Platform</div>
+  </div>
+  <nav class="nav">
+    <a class="ni active" href="#">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      Dashboard
+    </a>
+    <a class="ni" href="#">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      Communities
+    </a>
+    <a class="ni" href="#">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Peers
+    </a>
+    <a class="ni" href="#">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+      Orgs
+    </a>
+    <a class="ni" href="#">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      Messages
+    </a>
+  </nav>
+  <div class="side-foot">
+    <div class="av">T</div>
+    <div><div class="u-name">Thomas P.</div><div class="u-type">Visionary</div></div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- HERO — ops room bleeds from right, DASHBOARD title in pocket -->
+  <div class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-vig"></div>
+    <div class="hero-scrim"></div>
+    <div class="hero-bloom"></div>
+    <div class="hero-scan"></div>
+
+    <div class="hero-content">
+      <div class="hero-eyebrow">Nivarro Operations</div>
+      <h1 class="hero-title">Dashboard</h1>
+      <p class="hero-body">Track active projects and engage across our intelligence network.</p>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- PROJECTS -->
+    <section>
+      <div class="sec-label">Projects</div>
+      <div class="proj-grid">
+
+        <a class="proj-card" href="#">
+          <div class="proj-status">
+            <div class="dot"></div>
+            <span class="status-lbl">Active</span>
+            <span class="op-badge">OP</span>
+          </div>
+          <p class="proj-name">Nivarro Brand Refresh</p>
+          <div class="proj-cta">Resume →</div>
+        </a>
+
+        <a class="proj-card" href="#">
+          <div class="proj-status">
+            <div class="dot off"></div>
+            <span class="status-lbl off">Standby</span>
+            <span class="op-badge">OP</span>
+          </div>
+          <p class="proj-name">Campus Launch Strategy</p>
+          <div class="proj-cta">Resume →</div>
+        </a>
+
+        <a class="new-proj" href="#">
+          <span class="plus-icon">+</span>
+          <span class="new-lbl">New project</span>
+        </a>
+
+      </div>
+    </section>
+
+    <!-- COMMUNITIES -->
+    <section>
+      <div class="sec-label">Intelligence Network</div>
+      <div class="sec-row">
+        <h2 class="sec-title">Communities</h2>
+        <a class="view-all" href="#">View All →</a>
+      </div>
+      <div class="comm-grid">
+
+        <a class="comm-card" href="#" style="--cc:#7C3AED;--cc-bg:rgba(124,58,237,0.18);">
+          <div class="comm-icon">🌸</div>
+          <div class="comm-info">
+            <div class="comm-meta">
+              <span class="comm-cat" style="color:#A78BFA;">Design</span>
+              <span class="comm-count">234 members</span>
+            </div>
+            <p class="comm-name">Nivarro Design Guild</p>
+            <div class="comm-join">Join →</div>
+          </div>
+        </a>
+
+        <a class="comm-card" href="#" style="--cc:#0D9488;--cc-bg:rgba(13,148,136,0.18);">
+          <div class="comm-icon">⚙️</div>
+          <div class="comm-info">
+            <div class="comm-meta">
+              <span class="comm-cat" style="color:#14B8A6;">Engineering</span>
+              <span class="comm-count">412 members</span>
+            </div>
+            <p class="comm-name">The Builder's Circle</p>
+            <div class="comm-join">Join →</div>
+          </div>
+        </a>
+
+        <a class="comm-card" href="#" style="--cc:#D97706;--cc-bg:rgba(217,119,6,0.18);">
+          <div class="comm-icon">🚀</div>
+          <div class="comm-info">
+            <div class="comm-meta">
+              <span class="comm-cat" style="color:#F59E0B;">Entrepreneurship</span>
+              <span class="comm-count">189 members</span>
+            </div>
+            <p class="comm-name">Founders Under 20</p>
+            <div class="comm-join">Join →</div>
+          </div>
+        </a>
+
+        <a class="comm-card" href="#" style="--cc:#059669;--cc-bg:rgba(5,150,105,0.18);">
+          <div class="comm-icon">🌿</div>
+          <div class="comm-info">
+            <div class="comm-meta">
+              <span class="comm-cat" style="color:#10B981;">Impact</span>
+              <span class="comm-count">156 members</span>
+            </div>
+            <p class="comm-name">Social Impact Network</p>
+            <div class="comm-join">Join →</div>
+          </div>
+        </a>
+
+        <a class="comm-card" href="#" style="--cc:#0891B2;--cc-bg:rgba(8,145,178,0.18);">
+          <div class="comm-icon">✚</div>
+          <div class="comm-info">
+            <div class="comm-meta">
+              <span class="comm-cat" style="color:#06B6D4;">Healthcare</span>
+              <span class="comm-count">298 members</span>
+            </div>
+            <p class="comm-name">Pre-Med Pipeline</p>
+            <div class="comm-join">Join →</div>
+          </div>
+        </a>
+
+        <a class="comm-card" href="#" style="--cc:#C2410C;--cc-bg:rgba(194,65,12,0.18);">
+          <div class="comm-icon">☕</div>
+          <div class="comm-info">
+            <div class="comm-meta">
+              <span class="comm-cat" style="color:#F97316;">Community</span>
+              <span class="comm-count">521 members</span>
+            </div>
+            <p class="comm-name">Code &amp; Coffee</p>
+            <div class="comm-join">Join →</div>
+          </div>
+        </a>
+
+      </div>
+    </section>
+
+  </div>
+</main>
+</body>
+</html>
