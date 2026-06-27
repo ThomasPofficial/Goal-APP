@@ -64,14 +64,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ],
   callbacks: {
     async redirect({ url, baseUrl }) {
-      const pub =
-        process.env.NEXT_PUBLIC_AUTH_URL ||
-        process.env.AUTH_URL ||
-        process.env.NEXTAUTH_URL ||
-        baseUrl;
-      if (url.startsWith("/")) return `${pub}${url}`;
-      if (url.startsWith(pub)) return url;
-      return pub;
+      // Strip trailing slash so we never produce double-slash URLs
+      const base = baseUrl.replace(/\/$/, "");
+      // Relative paths are always safe
+      if (url.startsWith("/")) return `${base}${url}`;
+      // Absolute same-origin URLs are safe
+      try {
+        if (new URL(url).origin === new URL(base).origin) return url;
+      } catch {}
+      // Anything else (cross-origin) → send to dashboard
+      return `${base}/dashboard`;
     },
     async jwt({ token, user }) {
       if (user) {

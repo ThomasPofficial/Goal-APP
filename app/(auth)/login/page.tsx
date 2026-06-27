@@ -30,7 +30,7 @@ function LoginForm() {
       // Re-thrown NEXT_REDIRECT errors are expected — let them bubble
       const digest = (err as { digest?: string })?.digest ?? "";
       if (digest.startsWith("NEXT_REDIRECT")) throw err;
-      setError("Something went wrong. Please try again.");
+      setError("Unable to connect. Please wait a moment and try again.");
       setLoading(false);
     }
   }
@@ -82,7 +82,7 @@ function LoginForm() {
         type="submit"
         disabled={loading}
         className="w-full flex items-center justify-center gap-2 text-sm py-2.5 mt-2 disabled:opacity-60 disabled:cursor-not-allowed"
-        style={{ background: "linear-gradient(135deg, #0a3ea0, #1060d8)", color: "#fff", fontFamily: "var(--font-body, sans-serif)", fontWeight: 700, borderRadius: 10, boxShadow: "0 4px 20px rgba(16,96,216,0.45)", border: "none" }}
+        style={{ background: "var(--amber, #E8893A)", color: "#000", fontFamily: "var(--font-mono, monospace)", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", borderRadius: 6, boxShadow: "0 4px 20px rgba(232,137,58,0.35)", border: "none" }}
       >
         {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
         {loading ? "Signing in..." : "Sign in"}
