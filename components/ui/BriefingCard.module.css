@@ -9,32 +9,15 @@
   margin-bottom: 8px;
 }
 
-/* Real photo — full bleed, fades in from right */
+/* Real photo — full bleed, no fade or mask */
 .photo {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center right;
+  object-position: center;
   z-index: 0;
-  -webkit-mask-image: linear-gradient(to right, transparent 0%, rgba(0,0,0,0.35) 28%, black 52%);
-  mask-image: linear-gradient(to right, transparent 0%, rgba(0,0,0,0.35) 28%, black 52%);
-}
-
-/* Left dark pocket — ensures text contrast regardless of photo content */
-.scrim {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  background: linear-gradient(
-    to right,
-    rgba(10,8,7,0.97) 0%,
-    rgba(10,8,7,0.80) 22%,
-    rgba(10,8,7,0.35) 46%,
-    transparent 62%
-  );
-  pointer-events: none;
 }
 
 /* Warm amber bloom at the bottom edge */
@@ -88,6 +71,7 @@
   color: var(--amber);
   font-weight: 700;
   margin-bottom: 14px;
+  text-shadow: 0 1px 8px rgba(0,0,0,0.8);
 }
 
 .eyebrowLine {
@@ -108,6 +92,7 @@
   line-height: 0.88;
   letter-spacing: -0.01em;
   margin: 0 0 18px;
+  text-shadow: 0 2px 32px rgba(0,0,0,0.9), 0 0 80px rgba(0,0,0,0.7);
 }
 
 .sub {
@@ -117,4 +102,5 @@
   text-transform: uppercase;
   color: var(--ink-mute);
   margin: 0;
+  text-shadow: 0 1px 8px rgba(0,0,0,0.9);
 }
