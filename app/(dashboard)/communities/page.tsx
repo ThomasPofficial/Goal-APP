@@ -67,14 +67,15 @@ export default function CommunitiesPage() {
       <div style={{ marginBottom: 32 }}>
         <span style={{
           display: "block", marginBottom: 8,
-          fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: "0.2em",
-          textTransform: "uppercase", color: "#60A5FA",
+          fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: "0.22em",
+          textTransform: "uppercase", color: "var(--amber)",
         }}>
           ▸ Intelligence Network
         </span>
         <h1 style={{
-          fontFamily: "var(--font-body)", fontSize: 40, fontWeight: "bold",
-          color: "#FFFFFF", margin: "0 0 14px", letterSpacing: "0.01em",
+          fontFamily: "var(--font-display)", fontSize: "clamp(48px, 6vw, 80px)", fontWeight: 400,
+          color: "var(--gold)", margin: "0 0 14px", textTransform: "uppercase",
+          letterSpacing: "-0.01em", lineHeight: 0.9,
         }}>
           Communities
         </h1>
@@ -95,18 +96,18 @@ export default function CommunitiesPage() {
                 <span style={{ fontSize: 11, letterSpacing: "0.16em", textTransform: "uppercase", color: c.color, fontFamily: "var(--font-mono)", fontWeight: "bold" }}>
                   {c.category}
                 </span>
-                <span style={{ fontSize: 14, color: "#8AAAC8", fontFamily: "var(--font-body)" }}>
-                  {c.members.toLocaleString()} members
+                <span style={{ fontSize: 11, color: "var(--ink-mute)", fontFamily: "var(--font-mono)", letterSpacing: "0.08em" }}>
+                  {c.members.toLocaleString()} mbrs
                 </span>
               </div>
 
               {/* Name */}
-              <p style={{ fontSize: 23, fontWeight: "bold", color: "#FFFFFF", lineHeight: 1.2, fontFamily: "var(--font-body)", margin: 0 }}>
+              <p style={{ fontSize: 21, fontWeight: "bold", color: "var(--cream)", lineHeight: 1.2, fontFamily: "var(--font-body)", margin: 0 }}>
                 {c.name}
               </p>
 
               {/* Description */}
-              <p style={{ fontSize: 15, color: "#D4E6F8", lineHeight: 1.7, fontFamily: "var(--font-body)", flex: 1, margin: 0 }}>
+              <p style={{ fontSize: 14, color: "var(--muted)", lineHeight: 1.65, fontFamily: "var(--font-body)", flex: 1, margin: 0 }}>
                 {c.desc}
               </p>
 
@@ -126,11 +127,11 @@ export default function CommunitiesPage() {
               {/* CTA */}
               <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 14 }}>
                 <button style={{
-                  fontSize: 16, fontWeight: "bold", color: "#60A5FA",
-                  fontFamily: "var(--font-body)", background: "none", border: "none",
-                  cursor: "pointer", padding: 0,
+                  fontSize: 12, fontWeight: "700", color: "var(--amber)",
+                  fontFamily: "var(--font-mono)", background: "none", border: "none",
+                  cursor: "pointer", padding: 0, letterSpacing: "0.14em", textTransform: "uppercase",
                 }}>
-                  Join community →
+                  Join →
                 </button>
               </div>
             </div>
