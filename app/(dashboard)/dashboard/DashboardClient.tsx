@@ -128,7 +128,35 @@ export default function DashboardClient({ profile, spaces, traitsDone, tutorialD
   const FILTERS = ["ALL", "INTERNSHIP", "FELLOWSHIP", "COMPETITION", "ACCELERATOR", "BOOTCAMP", "RESEARCH"];
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 48 }}>
+    <>
+      {/* Ops-room wallpaper — fixed behind all content; sidebar covers the left portion */}
+      <div
+        aria-hidden
+        style={{
+          position: "fixed",
+          inset: 0,
+          zIndex: 0,
+          pointerEvents: "none",
+          overflow: "hidden",
+        }}
+      >
+        <img
+          src="/ops-room.png"
+          alt=""
+          draggable={false}
+          style={{
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            objectPosition: "center",
+            opacity: 0.52,
+            display: "block",
+            userSelect: "none",
+          }}
+        />
+      </div>
+
+      <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", gap: 48 }}>
 
       {/* ── Briefing hero ─────────────────────────── */}
       <BriefingCard />
@@ -279,6 +307,7 @@ export default function DashboardClient({ profile, spaces, traitsDone, tutorialD
       </div>
 
     </div>
+    </>
   );
 }
 
