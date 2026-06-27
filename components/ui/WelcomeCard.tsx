@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
@@ -10,25 +10,25 @@ const DISMISS_AFTER_MS = 22000;
 
 const GENIUS_TYPES = [
   {
-    emoji: "⚡",
+    emoji: "âš¡",
     label: "Dynamo",
     color: "#F59E0B",
-    line: "You think in systems and move fast. You see the full product before anyone else does — then you build it.",
+    line: "You think in systems and move fast. You see the full product before anyone else does â€” then you build it.",
   },
   {
-    emoji: "🔥",
+    emoji: "ðŸ”¥",
     label: "Blaze",
     color: "#EF4444",
-    line: "You change the energy of a room. Orgs don't just want your skills — they want you in the room.",
+    line: "You change the energy of a room. Orgs don't just want your skills â€” they want you in the room.",
   },
   {
-    emoji: "🎯",
+    emoji: "ðŸŽ¯",
     label: "Tempo",
     color: "#10B981",
     line: "You turn big ideas into working plans. You're the reason ambitious projects actually ship.",
   },
   {
-    emoji: "🛡️",
+    emoji: "ðŸ›¡ï¸",
     label: "Steel",
     color: "#6366F1",
     line: "You go deep where others go fast. You find what's wrong before it breaks, and you fix it right.",
@@ -118,10 +118,10 @@ export default function WelcomeCard({ hasGeniusType }: { hasGeniusType: boolean 
       {/* Mission */}
       <div className="px-5 pt-5 pb-5" style={{ borderBottom: "1px solid var(--border)" }}>
         <p className="leading-relaxed mb-4" style={{ color: "var(--text)", fontSize: "0.9rem", lineHeight: 1.72 }}>
-          We connect young people — high schoolers, college students, the ones who are hungry but stuck — to real opportunities in business and tech. The internships that build resumes. The programs that open rooms they were never supposed to be in. The experiences that turn potential into proof.
+          We connect young people â€” high schoolers, college students, the ones who are hungry but stuck â€” to real opportunities in business and tech. The internships that build resumes. The programs that open rooms they were never supposed to be in. The experiences that turn potential into proof.
         </p>
         <p className="leading-relaxed" style={{ color: "var(--text2)", fontStyle: "italic", fontSize: "0.875rem", lineHeight: 1.72 }}>
-          When that happens, something bigger follows. They find their people. They discover what they are actually built for. They go home feeling like their work meant something — and years from now, they pour that back into the communities they came from.
+          When that happens, something bigger follows. They find their people. They discover what they are actually built for. They go home feeling like their work meant something â€” and years from now, they pour that back into the communities they came from.
         </p>
       </div>
 
@@ -185,3 +185,4 @@ export default function WelcomeCard({ hasGeniusType }: { hasGeniusType: boolean 
     </div>
   );
 }
+

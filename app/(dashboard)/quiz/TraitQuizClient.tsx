@@ -310,8 +310,8 @@ export default function TraitQuizClient({ alreadyCompleted, existingTraits, exis
               onClick={() => setSelected(i)}
               className="w-full text-left px-4 py-3 border text-sm transition-all flex items-center gap-3"
               style={{
-                background: selected === i ? "rgba(59,130,246,0.08)" : "var(--surface2)",
-                borderColor: selected === i ? "var(--blue)" : "var(--border)",
+                background: selected === i ? "rgba(232,137,58,0.08)" : "var(--surface2)",
+                borderColor: selected === i ? "var(--amber)" : "var(--border)",
                 color: selected === i ? "var(--text)" : "var(--text2)",
               }}
             >

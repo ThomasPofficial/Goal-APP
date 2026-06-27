@@ -177,7 +177,7 @@ function OrgCard({ org }: { org: Org }) {
               </p>
               {org.verified && (
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="flex-shrink-0" title="Verified organization">
-                  <circle cx="7" cy="7" r="7" fill="#3B82F6" />
+                  <circle cx="7" cy="7" r="7" fill="var(--amber)" />
                   <path d="M4 7l2 2 4-4" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               )}
@@ -204,7 +204,7 @@ function OrgCard({ org }: { org: Org }) {
           {focusTags.length > 0 ? (
             <div className="flex flex-wrap gap-1 mb-2">
               {focusTags.slice(0, 3).map((tag) => (
-                <span key={tag} className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: "rgba(59,130,246,0.1)", border: "1px solid var(--border-md)", color: "var(--blue)" }}>
+                <span key={tag} className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: "rgba(232,137,58,0.1)", border: "1px solid rgba(232,137,58,0.25)", color: "var(--amber)" }}>
                   {tag}
                 </span>
               ))}

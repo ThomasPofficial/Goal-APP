@@ -280,7 +280,7 @@ export default function OrgDetailClient({
               <span
                 key={tag}
                 className="text-[10px] px-1.5 py-0.5 rounded-full"
-                style={{ background: "rgba(59,130,246,0.1)", border: "1px solid var(--border-md)", color: "var(--blue)" }}
+                style={{ background: "rgba(232,137,58,0.1)", border: "1px solid rgba(232,137,58,0.25)", color: "var(--amber)" }}
               >
                 {tag}
               </span>

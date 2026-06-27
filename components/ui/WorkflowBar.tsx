@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
@@ -109,11 +109,11 @@ export default function WorkflowBar() {
                   className="flex items-center gap-1 px-2 py-0.5 text-[11px] font-semibold transition-all"
                   style={{
                     background: isActive ? "rgba(59,130,246,0.18)" : "rgba(59,130,246,0.08)",
-                    border: isActive ? "1px solid rgba(59,130,246,0.5)" : "1px solid rgba(59,130,246,0.25)",
+                    border: isActive ? "1px solid rgba(59,130,246,0.5)" : "1px solid rgba(232,137,58,0.25)",
                     color: "var(--blue)",
                   }}
                 >
-                  {isDone ? "✓" : stepNum}{isActive ? <span className="hidden sm:inline ml-1">{label}</span> : null}
+                  {isDone ? "âœ“" : stepNum}{isActive ? <span className="hidden sm:inline ml-1">{label}</span> : null}
                 </Link>
               ) : (
                 <div
@@ -148,7 +148,7 @@ export default function WorkflowBar() {
       {/* Actions */}
       <div className="flex items-center gap-2 flex-shrink-0">
         <Link href={continueUrl} className="btn-primary px-3 py-1.5 text-xs">
-          {ctaLabel} →
+          {ctaLabel} â†’
         </Link>
         <button
           onClick={abandon}
@@ -163,3 +163,4 @@ export default function WorkflowBar() {
     </div>
   );
 }
+
