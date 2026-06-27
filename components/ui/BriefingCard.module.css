@@ -1,0 +1,198 @@
+/* ── Briefing Hero — Spotify promo card wearing a tuxedo ── */
+
+.panel {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 21 / 9;
+  overflow: hidden;
+  isolation: isolate;
+  border-radius: 2px;
+}
+
+/* ── Layer 0: background (ops-room CSS atmosphere) ── */
+.bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  transform: scale(1.05); /* hides blur edge bleed */
+  filter: brightness(0.82) saturate(0.72);
+  background-image:
+    /* teal data bloom mid-right */
+    radial-gradient(ellipse 65% 55% at 74% 42%, rgba(14,52,78,0.92) 0%, transparent 65%),
+    /* amber desk-lamp pool bottom-left */
+    radial-gradient(ellipse 38% 38% at 18% 82%, rgba(90,45,8,0.55) 0%, transparent 55%),
+    /* secondary cool bloom far right */
+    radial-gradient(ellipse 42% 60% at 88% 65%, rgba(8,30,24,0.75) 0%, transparent 62%),
+    /* tactical grid lines */
+    repeating-linear-gradient(0deg,   transparent, transparent 39px, rgba(96,165,250,0.028) 39px, rgba(96,165,250,0.028) 40px),
+    repeating-linear-gradient(90deg,  transparent, transparent 39px, rgba(96,165,250,0.028) 39px, rgba(96,165,250,0.028) 40px),
+    /* base gradient */
+    linear-gradient(135deg, #05080F 0%, #09152A 38%, #0C1D2C 62%, #101820 100%);
+}
+
+/* subtle teal / magenta data-spike accents on the right half */
+.bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 48% 35% at 80% 36%, rgba(20,184,166,0.10) 0%, transparent 70%),
+    radial-gradient(ellipse 28% 45% at 93% 58%, rgba(59,130,246,0.07) 0%, transparent 70%);
+}
+
+/* ── Layer 1: vignette — corners collapse to near-black ── */
+.vignette {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: radial-gradient(120% 120% at 50% 50%, transparent 28%, rgba(6,6,10,0.97) 100%);
+}
+
+/* ── Layer 2: directional scrim — carves the readable left pocket ── */
+.scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: linear-gradient(
+    108deg,
+    rgba(6,6,10,0.96) 0%,
+    rgba(6,6,10,0.80) 28%,
+    rgba(6,6,10,0.42) 52%,
+    transparent 72%
+  );
+}
+
+/* ── Layer 3: warm amber bloom — desk-lamp echo from the bottom ── */
+.bloom {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  background: linear-gradient(0deg, rgba(232,137,58,0.15) 0%, transparent 30%);
+  mix-blend-mode: screen;
+}
+
+/* ── Layer 4: scanline texture ── */
+.scan {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0px, transparent 3px,
+    rgba(0,0,0,0.09) 3px, rgba(0,0,0,0.09) 4px
+  );
+}
+
+/* ── Layer 10: content lives in the dark pocket ── */
+.content {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 0 0 52px;
+  max-width: 520px;
+  animation: briefIn 0.65s ease both;
+}
+
+@keyframes briefIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .content { animation: none; }
+}
+
+/* ── Typography ── */
+.eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: 'DM Mono', 'Courier New', monospace;
+  font-size: 11px;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: #E8893A;
+  font-weight: 700;
+  margin-bottom: 14px;
+}
+
+.eyebrow::before {
+  content: '';
+  display: inline-block;
+  width: 18px;
+  height: 1px;
+  background: #E8893A;
+  opacity: 0.65;
+  flex-shrink: 0;
+}
+
+/* Pale warm gold — lighter than the CTA amber, max contrast in the dark pocket */
+.title {
+  font-family: 'Times New Roman', Times, serif;
+  font-size: clamp(28px, 3.6vw, 52px);
+  font-weight: 900;
+  color: #E9D3A0;
+  text-transform: uppercase;
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+  -webkit-text-stroke: 0.3px #E9D3A0;
+  text-shadow: 0 2px 24px rgba(0,0,0,0.65);
+  margin-bottom: 16px;
+  max-width: 400px;
+}
+
+/* Soft off-white — never runs past the midpoint of the frame */
+.body {
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 15px;
+  color: rgba(255,255,255,0.65);
+  line-height: 1.65;
+  max-width: 340px;
+  margin-bottom: 28px;
+}
+
+/* Single green-pill CTA equivalent — amber here */
+.cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 28px;
+  border-radius: 999px;
+  background: #E8893A;
+  color: #000;
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: background 140ms, transform 140ms;
+  box-shadow: 0 4px 22px rgba(232,137,58,0.38);
+  align-self: flex-start;
+}
+
+.cta:hover {
+  background: #F59E0B;
+  transform: translateY(-2px);
+}
+
+/* Classification stamp — top-right corner */
+.classify {
+  position: absolute;
+  top: 22px;
+  right: 26px;
+  z-index: 10;
+  font-family: 'DM Mono', 'Courier New', monospace;
+  font-size: 9px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.18);
+  border: 1px solid rgba(255,255,255,0.08);
+  padding: 4px 10px;
+}
