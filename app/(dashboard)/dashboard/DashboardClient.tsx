@@ -7,6 +7,7 @@ import { ExternalLink, Save } from "lucide-react";
 import TutorialWidget from "@/components/ui/TutorialWidget";
 import WelcomeCard from "@/components/ui/WelcomeCard";
 import PlatformUpdatesCard from "@/components/ui/PlatformUpdatesCard";
+import BriefingCard from "@/components/ui/BriefingCard";
 import type { GeniusTypeKey } from "@/lib/geniusTypes";
 
 interface ProfileData {
@@ -127,6 +128,9 @@ export default function DashboardClient({ profile, spaces, traitsDone, tutorialD
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 48 }}>
+
+      {/* ── Briefing hero ─────────────────────────── */}
+      <BriefingCard />
 
       {/* ── Intel widgets ─────────────────────────── */}
       <div>
