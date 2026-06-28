@@ -2,14 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { X, ChevronLeft, ChevronRight, LayoutDashboard, Users, Building2, UsersRound, MessageSquare, Bell, Briefcase, Megaphone, Globe } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, LayoutDashboard, Users, Building2, UsersRound, MessageSquare, Bell, Briefcase, Megaphone, Globe, MapPin, GraduationCap, HeartHandshake } from "lucide-react";
 import AccountMenu from "./AccountMenu";
 import ThemeToggle from "./ThemeToggle";
 import NivarroMark from "@/components/ui/NivarroMark";
 import { cn } from "@/lib/utils";
 import type { GeniusType } from "@/data/traits";
 
-const STUDENT_NAV = [
+const STUDENT_NAV_BASE = [
   { href: "/dashboard",      label: "Dashboard",     Icon: LayoutDashboard },
   { href: "/communities",    label: "Communities",   Icon: Globe },
   { href: "/peers",          label: "Peers",         Icon: Users },
@@ -17,6 +17,7 @@ const STUDENT_NAV = [
   { href: "/teams",          label: "Teams",         Icon: UsersRound },
   { href: "/messages",       label: "Messages",      Icon: MessageSquare },
   { href: "/notifications",  label: "Notifications", Icon: Bell },
+  { href: "/campaigns/new",  label: "Fundraise",     Icon: HeartHandshake },
 ];
 
 interface SidebarProps {
@@ -47,7 +48,15 @@ export default function Sidebar({ userName, userEmail, geniusType, mobileOpen = 
     ] : []),
   ] : [];
 
-  const navItems = isOrg ? orgNav : STUDENT_NAV;
+  const studentNav = [
+    ...STUDENT_NAV_BASE,
+    ...(isNivarroAdmin ? [
+      { href: "/school/destinations", label: "Destinations", Icon: MapPin },
+      { href: "/school/alumni",       label: "Alumni Net",   Icon: GraduationCap },
+    ] : []),
+  ];
+
+  const navItems = isOrg ? orgNav : studentNav;
   const homeHref = isOrg && myOrgId ? `/orgs/${myOrgId}` : "/dashboard";
 
   const isActive = (href: string) => {
