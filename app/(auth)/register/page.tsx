@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Loader2 } from "lucide-react";
+import { loginAction } from "@/app/actions/auth";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -17,16 +18,24 @@ export default function RegisterPage() {
     e.preventDefault();
     setError("");
     setLoading(true);
-    const res = await fetch("/api/auth/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password }),
-    });
-    const data = await res.json();
-    setLoading(false);
-    if (!res.ok) {
-      setError(data.error ?? "Something went wrong.");
-    } else {
+    try {
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, password }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error ?? "Something went wrong.");
+        setLoading(false);
+        return;
+      }
+      // Auto sign-in immediately after registration
+      await loginAction(email, password, "/dashboard");
+    } catch (err: unknown) {
+      const digest = (err as { digest?: string })?.digest ?? "";
+      if (digest.startsWith("NEXT_REDIRECT")) throw err;
+      // loginAction failed — fall back to login page with success message
       router.push("/login?registered=1");
     }
   }
@@ -80,7 +89,7 @@ export default function RegisterPage() {
         </div>
         <div>
           <label style={labelStyle}>Password</label>
-          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Minimum 6 characters" minLength={6} required style={inputStyle} />
+          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Minimum 8 characters" minLength={8} required style={inputStyle} />
         </div>
 
         {error && (
