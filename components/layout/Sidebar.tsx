@@ -18,12 +18,12 @@ const STUDENT_NAV_BASE = [
   { href: "/teams",          label: "Teams",         Icon: UsersRound },
   { href: "/messages",       label: "Messages",      Icon: MessageSquare },
   { href: "/notifications",  label: "Notifications", Icon: Bell },
-  { href: "/campaigns/new",  label: "Fundraise",     Icon: HeartHandshake },
 ];
 
 const SCHOOL_NAV = [
-  { href: "/school/destinations", label: "Destinations", Icon: MapPin },
-  { href: "/school/alumni",       label: "Alumni Net",   Icon: GraduationCap },
+  { href: "/school/destinations", label: "Destinations",  Icon: MapPin },
+  { href: "/school/alumni",       label: "Alumni Net",    Icon: GraduationCap },
+  { href: "/campaigns/new",       label: "Fundraise",     Icon: HeartHandshake },
 ];
 
 interface SidebarProps {
