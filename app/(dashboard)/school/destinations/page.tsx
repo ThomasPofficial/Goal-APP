@@ -2,11 +2,8 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
-import dynamic from "next/dynamic";
 import colleges from "@/lib/colleges.json";
-
-const DestinationsMap = dynamic(() => import("@/components/school/DestinationsMap"), { ssr: false });
-const BrochureButton = dynamic(() => import("@/components/school/BrochureButton"), { ssr: false });
+import { DestinationsMap, BrochureButton } from "./DynamicComponents";
 
 type CollegeData = { lat: number; lng: number; state: string };
 const collegeData = colleges as Record<string, CollegeData>;
