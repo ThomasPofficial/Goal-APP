@@ -7,6 +7,12 @@ export default async function AlumniPage() {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
 
+  const dbUser = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { role: true },
+  });
+  if (dbUser?.role !== "SCHOOL" && dbUser?.role !== "ADMIN") redirect("/dashboard");
+
   const alumni = await prisma.user.findMany({
     where: { isAlumni: true },
     select: {

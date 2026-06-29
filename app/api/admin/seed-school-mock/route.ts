@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import bcrypt from "bcryptjs";
 
 export async function POST(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -8,6 +9,19 @@ export async function POST(req: Request) {
   }
 
   try {
+    // ── Upsert school demo account ─────────────────────────────────────────
+    const schoolHash = await bcrypt.hash("demo2026", 10);
+    await prisma.user.upsert({
+      where: { email: "school@nivarro.demo" },
+      update: { role: "SCHOOL", passwordHash: schoolHash },
+      create: {
+        name: "Demo School",
+        email: "school@nivarro.demo",
+        passwordHash: schoolHash,
+        role: "SCHOOL",
+      },
+    });
+
     // ── Mark priya, marcus, zoe as alumni + set profile fields ────────────
     const priya = await prisma.user.findUnique({ where: { email: "priya@nivarro.io" } });
     if (priya) {
@@ -128,6 +142,7 @@ export async function POST(req: Request) {
     return NextResponse.json({
       ok: true,
       message: "School mock data seeded successfully",
+      schoolAccount: "school@nivarro.demo / demo2026",
       alumni: ["priya@nivarro.io", "marcus@nivarro.io", "zoe@nivarro.io"],
       destinations: destinations.map((d) => `${d.email} → ${d.college}`),
     });

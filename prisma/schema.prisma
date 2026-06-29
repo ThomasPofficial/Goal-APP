@@ -65,6 +65,7 @@ enum UserRole {
   STUDENT
   ORG
   ADMIN
+  SCHOOL
 }
 
 model User {

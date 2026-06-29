@@ -15,6 +15,12 @@ export default async function DestinationsPage() {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
 
+  const dbUser = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { role: true },
+  });
+  if (dbUser?.role !== "SCHOOL" && dbUser?.role !== "ADMIN") redirect("/dashboard");
+
   const profiles = await prisma.profile.findMany({
     where: { intendedCollege: { not: null } },
     select: {
@@ -29,9 +35,7 @@ export default async function DestinationsPage() {
   for (const p of profiles) {
     if (!p.intendedCollege) continue;
     if (!destinationMap[p.intendedCollege]) destinationMap[p.intendedCollege] = { students: [] };
-    destinationMap[p.intendedCollege].students.push(
-      p.displayName ?? "Anonymous"
-    );
+    destinationMap[p.intendedCollege].students.push(p.displayName ?? "Anonymous");
   }
 
   const destinations = Object.entries(destinationMap)
@@ -54,10 +58,10 @@ export default async function DestinationsPage() {
     <div style={{ maxWidth: 900 }}>
       <div style={{ marginBottom: 24, display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
         <div>
-          <h1 style={{ fontSize: 24, fontWeight: 800, color: "var(--text)", margin: 0, letterSpacing: "-0.03em" }}>
+          <h1 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(22px, 3vw, 36px)", letterSpacing: "-0.02em", color: "var(--text)", margin: 0 }}>
             College Destinations
           </h1>
-          <p style={{ fontSize: 14, color: "var(--text2)", marginTop: 4, marginBottom: 0 }}>
+          <p style={{ fontSize: 14, color: "var(--n-text2)", marginTop: 4, marginBottom: 0 }}>
             Where Nivarro students are heading — hover a pin to see who&apos;s going where.
           </p>
         </div>
@@ -76,21 +80,21 @@ export default async function DestinationsPage() {
             key={label}
             style={{
               flex: "1 1 120px",
-              background: "var(--n-bg2)",
+              background: "var(--surface)",
               border: "1px solid var(--border)",
-              borderRadius: 10,
+              borderRadius: 0,
               padding: "14px 18px",
             }}
           >
-            <p style={{ margin: 0, fontSize: 26, fontWeight: 800, color: "var(--blue)", letterSpacing: "-0.04em" }}>{value}</p>
-            <p style={{ margin: "2px 0 0", fontSize: 12, color: "var(--text2)", fontWeight: 500 }}>{label}</p>
+            <p style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: 36, color: "var(--amber)", letterSpacing: "-0.04em", lineHeight: 1 }}>{value}</p>
+            <p style={{ margin: "4px 0 0", fontFamily: "var(--font-mono)", fontSize: 10, letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--n-muted)" }}>{label}</p>
           </div>
         ))}
       </div>
 
       <Suspense fallback={
-        <div style={{ height: 480, background: "var(--n-bg2)", borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <span style={{ color: "var(--text2)", fontSize: 14 }}>Loading map…</span>
+        <div style={{ height: 480, background: "var(--surface)", borderRadius: 0, display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid var(--border)" }}>
+          <span style={{ color: "var(--n-text2)", fontSize: 14 }}>Loading map…</span>
         </div>
       }>
         <DestinationsMap destinations={destinations} />
@@ -98,9 +102,9 @@ export default async function DestinationsPage() {
 
       {destinations.length > 0 && (
         <div style={{ marginTop: 24 }}>
-          <h2 style={{ fontSize: 14, fontWeight: 700, color: "var(--text)", marginBottom: 12, letterSpacing: "-0.01em" }}>
+          <p style={{ fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--amber)", margin: "0 0 12px" }}>
             All Destinations
-          </h2>
+          </p>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 8 }}>
             {destinations
               .sort((a, b) => b.students.length - a.students.length)
@@ -108,17 +112,17 @@ export default async function DestinationsPage() {
                 <div
                   key={d.college}
                   style={{
-                    background: "var(--n-bg2)",
+                    background: "var(--surface)",
                     border: "1px solid var(--border)",
-                    borderRadius: 8,
+                    borderRadius: 0,
                     padding: "10px 14px",
                   }}
                 >
                   <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: "var(--text)" }}>{d.college}</p>
-                  <p style={{ margin: "3px 0 0", fontSize: 12, color: "var(--blue)" }}>
+                  <p style={{ margin: "3px 0 0", fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--amber)", letterSpacing: "0.05em" }}>
                     {d.students.length} student{d.students.length !== 1 ? "s" : ""}
                   </p>
-                  <p style={{ margin: "2px 0 0", fontSize: 11, color: "var(--text2)" }}>
+                  <p style={{ margin: "2px 0 0", fontSize: 11, color: "var(--n-text2)" }}>
                     {d.students.join(", ")}
                   </p>
                 </div>
@@ -128,8 +132,8 @@ export default async function DestinationsPage() {
       )}
 
       {destinations.length === 0 && (
-        <div style={{ marginTop: 20, padding: "32px 24px", background: "var(--n-bg2)", borderRadius: 12, border: "1px solid var(--border)", textAlign: "center" }}>
-          <p style={{ color: "var(--text2)", fontSize: 14, margin: 0 }}>
+        <div style={{ marginTop: 20, padding: "32px 24px", background: "var(--surface)", borderRadius: 0, border: "1px solid var(--border)", textAlign: "center" }}>
+          <p style={{ color: "var(--n-text2)", fontSize: 14, margin: 0 }}>
             No college destinations set yet. Students can update their intended college in their profile.
           </p>
         </div>

@@ -42,10 +42,10 @@ export default function AlumniClient({ alumni }: Props) {
   return (
     <div style={{ maxWidth: 900 }}>
       <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: 24, fontWeight: 800, color: "var(--text)", margin: 0, letterSpacing: "-0.03em" }}>
+        <h1 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(22px, 3vw, 36px)", letterSpacing: "-0.02em", color: "var(--text)", margin: 0 }}>
           Alumni Network
         </h1>
-        <p style={{ fontSize: 14, color: "var(--text2)", marginTop: 4, marginBottom: 0 }}>
+        <p style={{ fontSize: 14, color: "var(--n-text2)", marginTop: 4, marginBottom: 0 }}>
           {alumni.length} Nivarro alumni — connect, learn, and get mentored.
         </p>
       </div>
@@ -58,12 +58,15 @@ export default function AlumniClient({ alumni }: Props) {
             onClick={() => setFilter(f)}
             style={{
               padding: "6px 14px",
-              borderRadius: 20,
-              border: "1px solid var(--border)",
-              background: filter === f ? "var(--blue)" : "transparent",
-              color: filter === f ? "#fff" : "var(--text2)",
-              fontSize: 13,
-              fontWeight: 600,
+              borderRadius: 0,
+              border: filter === f ? "1px solid var(--amber)" : "1px solid var(--border)",
+              background: filter === f ? "var(--amber)" : "transparent",
+              color: filter === f ? "#000" : "var(--n-text2)",
+              fontFamily: "var(--font-mono)",
+              fontSize: 11,
+              fontWeight: 700,
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
               cursor: "pointer",
               transition: "all 0.15s",
             }}
@@ -78,11 +81,13 @@ export default function AlumniClient({ alumni }: Props) {
             onChange={(e) => setIndustryFilter(e.target.value)}
             style={{
               padding: "6px 12px",
-              borderRadius: 20,
+              borderRadius: 0,
               border: "1px solid var(--border)",
-              background: "var(--n-bg2)",
-              color: "var(--text2)",
-              fontSize: 13,
+              background: "var(--surface)",
+              color: "var(--n-text2)",
+              fontFamily: "var(--font-mono)",
+              fontSize: 11,
+              letterSpacing: "0.05em",
               cursor: "pointer",
             }}
           >
@@ -95,9 +100,9 @@ export default function AlumniClient({ alumni }: Props) {
       </div>
 
       {visible.length === 0 && (
-        <div style={{ padding: "40px 24px", background: "var(--n-bg2)", borderRadius: 12, border: "1px solid var(--border)", textAlign: "center" }}>
-          <GraduationCap size={32} style={{ color: "var(--text2)", margin: "0 auto 12px" }} />
-          <p style={{ color: "var(--text2)", fontSize: 14, margin: 0 }}>
+        <div style={{ padding: "40px 24px", background: "var(--surface)", borderRadius: 0, border: "1px solid var(--border)", textAlign: "center" }}>
+          <GraduationCap size={32} style={{ color: "var(--n-text2)", margin: "0 auto 12px" }} />
+          <p style={{ color: "var(--n-text2)", fontSize: 14, margin: 0 }}>
             {filter === "mentors" ? "No alumni have opened mentorship yet." : "No alumni found."}
           </p>
         </div>
@@ -108,9 +113,9 @@ export default function AlumniClient({ alumni }: Props) {
           <div
             key={a.id}
             style={{
-              background: "var(--n-bg2)",
+              background: "var(--surface)",
               border: "1px solid var(--border)",
-              borderRadius: 12,
+              borderRadius: 0,
               padding: "18px",
               display: "flex",
               flexDirection: "column",
@@ -120,10 +125,10 @@ export default function AlumniClient({ alumni }: Props) {
             {/* Header */}
             <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
               {a.avatarUrl ? (
-                <img src={a.avatarUrl} alt={a.displayName} width={44} height={44} style={{ borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
+                <img src={a.avatarUrl} alt={a.displayName} width={44} height={44} style={{ borderRadius: 0, objectFit: "cover", flexShrink: 0 }} />
               ) : (
-                <div style={{ width: 44, height: 44, borderRadius: "50%", background: "var(--blue)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  <span style={{ color: "#fff", fontWeight: 700, fontSize: 16 }}>{a.displayName[0]?.toUpperCase()}</span>
+                <div style={{ width: 44, height: 44, borderRadius: 0, background: "var(--amber)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <span style={{ color: "#000", fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 18 }}>{a.displayName[0]?.toUpperCase()}</span>
                 </div>
               )}
               <div style={{ flex: 1, minWidth: 0 }}>
@@ -134,19 +139,19 @@ export default function AlumniClient({ alumni }: Props) {
                 </p>
                 <div style={{ display: "flex", gap: 6, marginTop: 3, flexWrap: "wrap" }}>
                   {a.graduationYear && (
-                    <span style={{ fontSize: 11, color: "var(--blue)", fontWeight: 600, display: "flex", alignItems: "center", gap: 3 }}>
+                    <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--amber)", fontWeight: 700, letterSpacing: "0.08em", display: "flex", alignItems: "center", gap: 3 }}>
                       <GraduationCap size={11} /> {`'${String(a.graduationYear).slice(-2)}`}
                     </span>
                   )}
                   {a.industry && (
-                    <span style={{ fontSize: 11, color: "var(--text2)", display: "flex", alignItems: "center", gap: 3 }}>
+                    <span style={{ fontSize: 11, color: "var(--n-text2)", display: "flex", alignItems: "center", gap: 3 }}>
                       <Briefcase size={11} /> {a.industry}
                     </span>
                   )}
                 </div>
               </div>
               {a.isAvailableToMentor && (
-                <span style={{ fontSize: 10, fontWeight: 700, color: "#22c55e", background: "rgba(34,197,94,0.12)", padding: "2px 7px", borderRadius: 10, whiteSpace: "nowrap" }}>
+                <span style={{ fontFamily: "var(--font-mono)", fontSize: 9, fontWeight: 700, color: "var(--amber)", background: "rgba(232,137,58,0.15)", padding: "2px 7px", borderRadius: 0, letterSpacing: "0.1em", whiteSpace: "nowrap" }}>
                   MENTOR
                 </span>
               )}
@@ -155,8 +160,8 @@ export default function AlumniClient({ alumni }: Props) {
             {/* College */}
             {a.intendedCollege && (
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <BookOpen size={12} style={{ color: "var(--text2)", flexShrink: 0 }} />
-                <span style={{ fontSize: 12, color: "var(--text2)" }}>{a.intendedCollege}</span>
+                <BookOpen size={12} style={{ color: "var(--n-text2)", flexShrink: 0 }} />
+                <span style={{ fontSize: 12, color: "var(--n-text2)" }}>{a.intendedCollege}</span>
               </div>
             )}
 
@@ -166,7 +171,7 @@ export default function AlumniClient({ alumni }: Props) {
                 {a.orgs.map((org) => (
                   <span
                     key={org}
-                    style={{ fontSize: 11, padding: "2px 8px", background: "rgba(74,128,240,0.1)", color: "var(--blue)", borderRadius: 8, fontWeight: 500 }}
+                    style={{ fontSize: 11, padding: "2px 8px", background: "rgba(232,137,58,0.1)", color: "var(--amber)", borderRadius: 0, fontWeight: 500 }}
                   >
                     {org}
                   </span>
@@ -176,7 +181,7 @@ export default function AlumniClient({ alumni }: Props) {
 
             {/* Bio */}
             {a.bio && (
-              <p style={{ margin: 0, fontSize: 12, color: "var(--text2)", lineHeight: 1.5, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+              <p style={{ margin: 0, fontSize: 12, color: "var(--n-text2)", lineHeight: 1.5, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
                 {a.bio}
               </p>
             )}
@@ -189,12 +194,15 @@ export default function AlumniClient({ alumni }: Props) {
                 style={{
                   marginTop: "auto",
                   padding: "8px 0",
-                  borderRadius: 8,
-                  border: requestedIds.has(a.id) ? "1px solid rgba(34,197,94,0.3)" : "1px solid var(--blue)",
-                  background: requestedIds.has(a.id) ? "rgba(34,197,94,0.1)" : "var(--blue)",
-                  color: requestedIds.has(a.id) ? "#22c55e" : "#fff",
-                  fontSize: 13,
-                  fontWeight: 600,
+                  borderRadius: 0,
+                  border: requestedIds.has(a.id) ? "1px solid rgba(232,137,58,0.4)" : "1px solid var(--amber)",
+                  background: requestedIds.has(a.id) ? "rgba(232,137,58,0.1)" : "var(--amber)",
+                  color: requestedIds.has(a.id) ? "var(--amber)" : "#000",
+                  fontFamily: "var(--font-mono)",
+                  fontSize: 11,
+                  fontWeight: 700,
+                  letterSpacing: "0.08em",
+                  textTransform: "uppercase",
                   cursor: requestedIds.has(a.id) ? "default" : "pointer",
                   display: "flex",
                   alignItems: "center",
