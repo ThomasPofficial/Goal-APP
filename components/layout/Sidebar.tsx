@@ -20,6 +20,11 @@ const STUDENT_NAV_BASE = [
   { href: "/campaigns/new",  label: "Fundraise",     Icon: HeartHandshake },
 ];
 
+const SCHOOL_NAV = [
+  { href: "/school/destinations", label: "Destinations", Icon: MapPin },
+  { href: "/school/alumni",       label: "Alumni Net",   Icon: GraduationCap },
+];
+
 interface SidebarProps {
   userName?: string | null;
   userEmail?: string | null;
@@ -30,11 +35,12 @@ interface SidebarProps {
   myOrgName?: string | null;
   isOrg?: boolean;
   isNivarroAdmin?: boolean;
+  isSchool?: boolean;
   collapsed?: boolean;
   onToggleCollapse?: () => void;
 }
 
-export default function Sidebar({ userName, userEmail, geniusType, mobileOpen = false, onMobileClose, myOrgId, myOrgName, isOrg, isNivarroAdmin = false, collapsed = false, onToggleCollapse }: SidebarProps) {
+export default function Sidebar({ userName, userEmail, geniusType, mobileOpen = false, onMobileClose, myOrgId, myOrgName, isOrg, isNivarroAdmin = false, isSchool = false, collapsed = false, onToggleCollapse }: SidebarProps) {
   const pathname = usePathname();
 
   const orgNav = myOrgId ? [
@@ -50,14 +56,11 @@ export default function Sidebar({ userName, userEmail, geniusType, mobileOpen = 
 
   const studentNav = [
     ...STUDENT_NAV_BASE,
-    ...(isNivarroAdmin ? [
-      { href: "/school/destinations", label: "Destinations", Icon: MapPin },
-      { href: "/school/alumni",       label: "Alumni Net",   Icon: GraduationCap },
-    ] : []),
+    ...(isNivarroAdmin ? SCHOOL_NAV : []),
   ];
 
-  const navItems = isOrg ? orgNav : studentNav;
-  const homeHref = isOrg && myOrgId ? `/orgs/${myOrgId}` : "/dashboard";
+  const navItems = isSchool ? SCHOOL_NAV : isOrg ? orgNav : studentNav;
+  const homeHref = isSchool ? "/school/destinations" : isOrg && myOrgId ? `/orgs/${myOrgId}` : "/dashboard";
 
   const isActive = (href: string) => {
     if (isOrg && myOrgId && href === `/orgs/${myOrgId}`) return pathname.startsWith(`/orgs/${myOrgId}`);

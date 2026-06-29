@@ -25,6 +25,7 @@ export default async function DashboardLayout({
   });
 
   const role = dbUser?.role ?? "STUDENT";
+  const isSchool = role === "SCHOOL";
   const isOrg = role === "ORG" || role === "ADMIN";
   const isNivarroAdmin = role === "ADMIN";
   const profile = dbUser?.profile ?? null;
@@ -58,6 +59,7 @@ export default async function DashboardLayout({
         myOrgName={myOrg?.name ?? null}
         isOrg={isOrg}
         isNivarroAdmin={isNivarroAdmin}
+        isSchool={isSchool}
       />
       <main className="dashboard-main min-h-screen pt-14 pb-[60px] md:pt-0 md:pb-0">
         <div className="max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-8">

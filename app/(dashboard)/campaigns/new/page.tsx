@@ -76,17 +76,17 @@ export default function CampaignsNewPage() {
   return (
     <div style={{ maxWidth: 720 }}>
       <div style={{ marginBottom: 28 }}>
-        <h1 style={{ fontSize: 24, fontWeight: 800, color: "var(--text)", margin: 0, letterSpacing: "-0.03em" }}>
+        <h1 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(22px, 3vw, 36px)", letterSpacing: "-0.02em", color: "var(--text)", margin: 0 }}>
           AI Fundraising Page Generator
         </h1>
-        <p style={{ fontSize: 14, color: "var(--text2)", marginTop: 4, marginBottom: 0 }}>
+        <p style={{ fontSize: 14, color: "var(--n-text2)", marginTop: 4, marginBottom: 0 }}>
           Describe your cause and let Claude write compelling fundraising copy in seconds.
         </p>
       </div>
 
       {/* Input area */}
-      <div style={{ background: "var(--n-bg2)", border: "1px solid var(--border)", borderRadius: 12, padding: 20, marginBottom: 20 }}>
-        <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "var(--text)", marginBottom: 8 }}>
+      <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 0, padding: 20, marginBottom: 20 }}>
+        <label style={{ display: "block", fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--amber)", marginBottom: 8 }}>
           What are you raising funds for?
         </label>
         <textarea
@@ -97,7 +97,7 @@ export default function CampaignsNewPage() {
           style={{
             width: "100%",
             padding: "10px 12px",
-            borderRadius: 8,
+            borderRadius: 0,
             border: "1px solid var(--border)",
             background: "var(--bg)",
             color: "var(--text)",
@@ -114,12 +114,15 @@ export default function CampaignsNewPage() {
           style={{
             marginTop: 12,
             padding: "10px 20px",
-            borderRadius: 8,
+            borderRadius: 0,
             border: "none",
-            background: generating || !causeInput.trim() ? "var(--n-bg3)" : "var(--blue)",
-            color: generating || !causeInput.trim() ? "var(--text2)" : "#fff",
-            fontSize: 14,
-            fontWeight: 600,
+            background: generating || !causeInput.trim() ? "var(--n-bg3)" : "var(--amber)",
+            color: generating || !causeInput.trim() ? "var(--n-text2)" : "#000",
+            fontFamily: "var(--font-mono)",
+            fontSize: 12,
+            fontWeight: 700,
+            letterSpacing: "0.1em",
+            textTransform: "uppercase",
             cursor: generating || !causeInput.trim() ? "not-allowed" : "pointer",
             display: "flex",
             alignItems: "center",
@@ -136,27 +139,27 @@ export default function CampaignsNewPage() {
       </div>
 
       {error && (
-        <div style={{ padding: "12px 16px", background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", borderRadius: 8, marginBottom: 16 }}>
+        <div style={{ padding: "12px 16px", background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", borderRadius: 0, marginBottom: 16 }}>
           <p style={{ margin: 0, fontSize: 13, color: "#ef4444" }}>{error}</p>
         </div>
       )}
 
       {/* Generated campaign preview */}
       {campaign && (
-        <div style={{ background: "var(--n-bg2)", border: "1px solid var(--border)", borderRadius: 12, overflow: "hidden" }}>
+        <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 0, overflow: "hidden" }}>
           {/* Hero */}
-          <div style={{ padding: "32px 28px 24px", background: "linear-gradient(135deg, rgba(74,128,240,0.15) 0%, rgba(74,128,240,0.03) 100%)", borderBottom: "1px solid var(--border)" }}>
-            <h2 style={{ fontSize: 26, fontWeight: 900, color: "var(--text)", margin: "0 0 8px", letterSpacing: "-0.03em", lineHeight: 1.2 }}>
+          <div style={{ padding: "32px 28px 24px", background: "linear-gradient(135deg, rgba(232,137,58,0.12) 0%, rgba(232,137,58,0.03) 100%)", borderBottom: "1px solid var(--border)" }}>
+            <h2 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(20px, 2.5vw, 30px)", letterSpacing: "-0.02em", color: "var(--text)", margin: "0 0 8px", lineHeight: 1.2 }}>
               {campaign.headline}
             </h2>
-            <p style={{ fontSize: 16, color: "var(--blue)", fontWeight: 600, margin: 0 }}>
+            <p style={{ fontSize: 16, color: "var(--amber)", fontWeight: 600, margin: 0 }}>
               {campaign.subheadline}
             </p>
           </div>
 
           {/* Body */}
           <div style={{ padding: "24px 28px" }}>
-            <div style={{ fontSize: 14, color: "var(--text2)", lineHeight: 1.7, whiteSpace: "pre-wrap" }}>
+            <div style={{ fontSize: 14, color: "var(--n-text2)", lineHeight: 1.7, whiteSpace: "pre-wrap" }}>
               {campaign.body}
             </div>
 
@@ -165,12 +168,15 @@ export default function CampaignsNewPage() {
               style={{
                 marginTop: 24,
                 padding: "12px 24px",
-                borderRadius: 10,
+                borderRadius: 0,
                 border: "none",
-                background: "var(--blue)",
-                color: "#fff",
-                fontSize: 15,
+                background: "var(--amber)",
+                color: "#000",
+                fontFamily: "var(--font-mono)",
+                fontSize: 13,
                 fontWeight: 700,
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
                 cursor: "pointer",
                 display: "flex",
                 alignItems: "center",
@@ -185,7 +191,7 @@ export default function CampaignsNewPage() {
           <div style={{ padding: "12px 28px", borderTop: "1px solid var(--border)", display: "flex", gap: 12 }}>
             <button
               onClick={generate}
-              style={{ fontSize: 12, color: "var(--text2)", background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}
+              style={{ fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--n-text2)", background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}
             >
               <Sparkles size={12} /> Regenerate
             </button>
@@ -196,10 +202,10 @@ export default function CampaignsNewPage() {
       {/* Pledge modal */}
       {showPledge && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
-          <div style={{ background: "var(--n-bg2)", borderRadius: 16, padding: 28, width: "100%", maxWidth: 440, position: "relative", boxShadow: "0 24px 64px rgba(0,0,0,0.5)" }}>
+          <div style={{ background: "var(--surface)", borderRadius: 0, border: "1px solid var(--border)", padding: 28, width: "100%", maxWidth: 440, position: "relative", boxShadow: "0 24px 64px rgba(0,0,0,0.5)" }}>
             <button
               onClick={() => setShowPledge(false)}
-              style={{ position: "absolute", top: 12, right: 12, background: "none", border: "none", color: "var(--text2)", cursor: "pointer" }}
+              style={{ position: "absolute", top: 12, right: 12, background: "none", border: "none", color: "var(--n-text2)", cursor: "pointer" }}
             >
               <X size={18} />
             </button>
@@ -207,15 +213,15 @@ export default function CampaignsNewPage() {
             {pledgeDone ? (
               <div style={{ textAlign: "center", padding: "24px 0" }}>
                 <CheckCircle size={48} style={{ color: "#22c55e", margin: "0 auto 16px" }} />
-                <h3 style={{ fontSize: 18, fontWeight: 800, color: "var(--text)", margin: "0 0 8px" }}>Pledge Recorded!</h3>
-                <p style={{ color: "var(--text2)", fontSize: 14, margin: 0 }}>
+                <h3 style={{ fontFamily: "var(--font-display)", fontSize: 22, letterSpacing: "-0.02em", color: "var(--text)", margin: "0 0 8px" }}>Pledge Recorded!</h3>
+                <p style={{ color: "var(--n-text2)", fontSize: 14, margin: 0 }}>
                   Thank you for your support. A confirmation has been sent to your email.
                 </p>
               </div>
             ) : (
               <>
-                <h3 style={{ fontSize: 18, fontWeight: 800, color: "var(--text)", margin: "0 0 4px" }}>Make a Pledge</h3>
-                <p style={{ color: "var(--text2)", fontSize: 13, margin: "0 0 20px" }}>
+                <h3 style={{ fontFamily: "var(--font-display)", fontSize: 22, letterSpacing: "-0.02em", color: "var(--text)", margin: "0 0 4px" }}>Make a Pledge</h3>
+                <p style={{ color: "var(--n-text2)", fontSize: 13, margin: "0 0 20px" }}>
                   Fill in your details to pledge your support.
                 </p>
 
@@ -227,7 +233,7 @@ export default function CampaignsNewPage() {
                     { key: "amount", label: "Pledge Amount ($, optional)", type: "number", placeholder: "50", required: false },
                   ].map(({ key, label, type, placeholder, required }) => (
                     <div key={key}>
-                      <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "var(--text)", marginBottom: 4 }}>{label}</label>
+                      <label style={{ display: "block", fontFamily: "var(--font-mono)", fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--n-text2)", marginBottom: 4 }}>{label}</label>
                       <input
                         type={type}
                         placeholder={placeholder}
@@ -237,7 +243,7 @@ export default function CampaignsNewPage() {
                         style={{
                           width: "100%",
                           padding: "8px 12px",
-                          borderRadius: 8,
+                          borderRadius: 0,
                           border: "1px solid var(--border)",
                           background: "var(--bg)",
                           color: "var(--text)",
@@ -258,12 +264,15 @@ export default function CampaignsNewPage() {
                     disabled={pledging}
                     style={{
                       padding: "10px 0",
-                      borderRadius: 8,
+                      borderRadius: 0,
                       border: "none",
-                      background: "var(--blue)",
-                      color: "#fff",
-                      fontSize: 14,
+                      background: "var(--amber)",
+                      color: "#000",
+                      fontFamily: "var(--font-mono)",
+                      fontSize: 12,
                       fontWeight: 700,
+                      letterSpacing: "0.1em",
+                      textTransform: "uppercase",
                       cursor: pledging ? "not-allowed" : "pointer",
                       display: "flex",
                       alignItems: "center",
