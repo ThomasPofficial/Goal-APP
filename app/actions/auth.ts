@@ -47,24 +47,29 @@ export async function requestPasswordReset(
       },
     });
 
-    const resetUrl = `${process.env.AUTH_URL}/reset-password?token=${rawToken}`;
+    const appUrl = (process.env.NEXTAUTH_URL ?? process.env.AUTH_URL ?? "https://goal-app-3.onrender.com").replace(/\/$/, "");
+    const resetUrl = `${appUrl}/reset-password?token=${rawToken}`;
 
     const result = await getResendClient().emails.send({
       from: process.env.FROM_EMAIL ?? "noreply@nivarro.co",
       to: user.email,
       subject: "Reset your Nivarro password",
       html: `
-        <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:24px">
-          <h2 style="color:#4a80f0;margin-bottom:8px">Reset your password</h2>
-          <p style="color:#909098;margin-bottom:24px">
+        <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:24px;background:#080809;border-radius:8px">
+          <div style="margin-bottom:20px">
+            <span style="font-family:sans-serif;font-size:13px;letter-spacing:0.12em;color:#fff;font-weight:700">NI<span style="color:#E8893A">VARRO</span></span>
+          </div>
+          <h2 style="color:#fff;margin-bottom:8px;font-size:20px;font-weight:600">Reset your password</h2>
+          <p style="color:#909098;margin-bottom:24px;font-size:14px;line-height:1.6">
             Click the button below to set a new password. This link expires in 1 hour.
           </p>
           <a href="${resetUrl}"
-             style="display:inline-block;background:#4a80f0;color:#080809;font-weight:600;
-                    text-decoration:none;padding:12px 24px;border-radius:6px">
+             style="display:inline-block;background:#E8893A;color:#000;font-weight:700;
+                    text-decoration:none;padding:12px 28px;border-radius:0;font-size:13px;
+                    letter-spacing:0.08em;text-transform:uppercase">
             Reset Password
           </a>
-          <p style="color:#58586a;font-size:12px;margin-top:24px">
+          <p style="color:#58586a;font-size:12px;margin-top:28px">
             If you didn't request this, you can ignore this email.
           </p>
         </div>
