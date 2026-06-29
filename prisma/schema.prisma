@@ -121,6 +121,8 @@ model Profile {
   graduationYear      Int?
   isAvailableToMentor Boolean     @default(false)
   industry            String?
+  schoolId            String?     // references User.id where role=SCHOOL
+  staffTitle          String?     // "Dean", "Counselor", "AP History Teacher", etc.
   createdAt           DateTime    @default(now())
   updatedAt           DateTime    @updatedAt
 

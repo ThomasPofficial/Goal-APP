@@ -1,0 +1,299 @@
+"use client";
+
+import { useState } from "react";
+import { GraduationCap, Briefcase, BookOpen, MessageCircle, CheckCircle, User } from "lucide-react";
+import Link from "next/link";
+
+interface StaffMember {
+  displayName: string;
+  staffTitle: string | null;
+  bio: string | null;
+  avatarUrl: string | null;
+  handle: string | null;
+  industry: string | null;
+}
+
+interface Alumnus {
+  id: string;
+  displayName: string;
+  handle: string | null;
+  avatarUrl: string | null;
+  bio: string | null;
+  industry: string | null;
+  graduationYear: number | null;
+  isAvailableToMentor: boolean;
+  intendedCollege: string | null;
+  orgs: string[];
+}
+
+interface Props {
+  schoolName: string;
+  schoolTagline: string;
+  staff: StaffMember[];
+  alumni: Alumnus[];
+  mentors: Alumnus[];
+  currentUserId: string;
+}
+
+function Avatar({ name, avatarUrl, size = 44 }: { name: string; avatarUrl: string | null; size?: number }) {
+  return avatarUrl ? (
+    <img src={avatarUrl} alt={name} width={size} height={size} style={{ borderRadius: 0, objectFit: "cover", flexShrink: 0 }} />
+  ) : (
+    <div style={{ width: size, height: size, borderRadius: 0, background: "var(--amber)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+      <span style={{ color: "#000", fontFamily: "var(--font-display)", fontWeight: 700, fontSize: size * 0.4 }}>{name[0]?.toUpperCase()}</span>
+    </div>
+  );
+}
+
+export default function SchoolHubClient({ schoolName, schoolTagline, staff, alumni, mentors, currentUserId: _ }: Props) {
+  const [alumniFilter, setAlumniFilter] = useState<"all" | "mentors">("all");
+  const [requestedIds, setRequestedIds] = useState<Set<string>>(new Set());
+
+  const visibleAlumni = alumniFilter === "mentors" ? alumni.filter((a) => a.isAvailableToMentor) : alumni;
+
+  return (
+    <div style={{ maxWidth: 900 }}>
+
+      {/* School banner */}
+      <div style={{ padding: "28px 32px", background: "linear-gradient(135deg, rgba(232,137,58,0.18) 0%, rgba(232,137,58,0.04) 100%)", border: "1px solid rgba(232,137,58,0.25)", borderRadius: 0, marginBottom: 24 }}>
+        <p style={{ fontFamily: "var(--font-mono)", fontSize: 10, letterSpacing: "0.25em", textTransform: "uppercase", color: "var(--amber)", margin: "0 0 6px" }}>
+          Private Community
+        </p>
+        <h1 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(24px, 4vw, 42px)", letterSpacing: "-0.02em", color: "var(--text)", margin: "0 0 6px", lineHeight: 1 }}>
+          {schoolName}
+        </h1>
+        <p style={{ fontSize: 14, color: "var(--n-text2)", margin: 0 }}>{schoolTagline}</p>
+      </div>
+
+      {/* Stats */}
+      <div style={{ display: "flex", gap: 12, marginBottom: 28, flexWrap: "wrap" }}>
+        {[
+          { label: "Alumni", value: alumni.length },
+          { label: "Mentors", value: mentors.length },
+          { label: "Staff", value: staff.length },
+        ].map(({ label, value }) => (
+          <div key={label} style={{ flex: "1 1 100px", background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 0, padding: "12px 18px" }}>
+            <p style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: 32, color: "var(--amber)", letterSpacing: "-0.04em", lineHeight: 1 }}>{value}</p>
+            <p style={{ margin: "3px 0 0", fontFamily: "var(--font-mono)", fontSize: 10, letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--n-muted)" }}>{label}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Staff */}
+      {staff.length > 0 && (
+        <section style={{ marginBottom: 32 }}>
+          <p style={{ fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--amber)", margin: "0 0 12px" }}>
+            School Staff
+          </p>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 10 }}>
+            {staff.map((s) => (
+              <div key={s.displayName} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 0, padding: "16px 18px", display: "flex", gap: 12, alignItems: "flex-start" }}>
+                <Avatar name={s.displayName} avatarUrl={s.avatarUrl} size={40} />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "var(--text)" }}>
+                    {s.handle ? (
+                      <Link href={`/profile/${s.handle}`} style={{ color: "inherit", textDecoration: "none" }}>{s.displayName}</Link>
+                    ) : s.displayName}
+                  </p>
+                  {s.staffTitle && (
+                    <p style={{ margin: "2px 0 0", fontFamily: "var(--font-mono)", fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--amber)" }}>
+                      {s.staffTitle}
+                    </p>
+                  )}
+                  {s.bio && (
+                    <p style={{ margin: "6px 0 0", fontSize: 12, color: "var(--n-text2)", lineHeight: 1.5, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                      {s.bio}
+                    </p>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Mentors spotlight */}
+      {mentors.length > 0 && (
+        <section style={{ marginBottom: 32 }}>
+          <p style={{ fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--amber)", margin: "0 0 12px" }}>
+            Mentor Spotlight
+          </p>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 10 }}>
+            {mentors.map((m) => (
+              <MentorCard key={m.id} alumnus={m} requestedIds={requestedIds} onRequest={(id) => setRequestedIds((prev) => new Set(prev).add(id))} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Alumni network */}
+      <section>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, flexWrap: "wrap", gap: 8 }}>
+          <p style={{ fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--amber)", margin: 0 }}>
+            Alumni Network
+          </p>
+          <div style={{ display: "flex", gap: 6 }}>
+            {(["all", "mentors"] as const).map((f) => (
+              <button
+                key={f}
+                onClick={() => setAlumniFilter(f)}
+                style={{
+                  padding: "4px 12px",
+                  borderRadius: 0,
+                  border: alumniFilter === f ? "1px solid var(--amber)" : "1px solid var(--border)",
+                  background: alumniFilter === f ? "var(--amber)" : "transparent",
+                  color: alumniFilter === f ? "#000" : "var(--n-text2)",
+                  fontFamily: "var(--font-mono)",
+                  fontSize: 10,
+                  fontWeight: 700,
+                  letterSpacing: "0.1em",
+                  textTransform: "uppercase",
+                  cursor: "pointer",
+                }}
+              >
+                {f === "all" ? "All" : "Mentors"}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {visibleAlumni.length === 0 ? (
+          <div style={{ padding: "32px 24px", border: "1px solid var(--border)", background: "var(--surface)", borderRadius: 0, textAlign: "center" }}>
+            <GraduationCap size={28} style={{ color: "var(--n-text2)", margin: "0 auto 10px" }} />
+            <p style={{ color: "var(--n-text2)", fontSize: 14, margin: 0 }}>
+              {alumniFilter === "mentors" ? "No alumni have opened mentorship yet." : "No alumni yet."}
+            </p>
+          </div>
+        ) : (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 10 }}>
+            {visibleAlumni.map((a) => (
+              <AlumnusCard key={a.id} alumnus={a} requestedIds={requestedIds} onRequest={(id) => setRequestedIds((prev) => new Set(prev).add(id))} />
+            ))}
+          </div>
+        )}
+      </section>
+    </div>
+  );
+}
+
+function MentorCard({ alumnus: a, requestedIds, onRequest }: { alumnus: Alumnus; requestedIds: Set<string>; onRequest: (id: string) => void }) {
+  return (
+    <div style={{ background: "var(--surface)", border: "1px solid rgba(232,137,58,0.3)", borderRadius: 0, padding: "16px 18px", display: "flex", flexDirection: "column", gap: 10 }}>
+      <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+        <div style={{ width: 40, height: 40, borderRadius: 0, background: "var(--amber)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          {a.avatarUrl ? (
+            <img src={a.avatarUrl} alt={a.displayName} width={40} height={40} style={{ objectFit: "cover" }} />
+          ) : (
+            <span style={{ color: "#000", fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 16 }}>{a.displayName[0]?.toUpperCase()}</span>
+          )}
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "var(--text)" }}>
+            {a.handle ? <Link href={`/profile/${a.handle}`} style={{ color: "inherit", textDecoration: "none" }}>{a.displayName}</Link> : a.displayName}
+          </p>
+          <div style={{ display: "flex", gap: 6, marginTop: 2, flexWrap: "wrap" }}>
+            {a.graduationYear && (
+              <span style={{ fontFamily: "var(--font-mono)", fontSize: 9, color: "var(--amber)", fontWeight: 700, letterSpacing: "0.08em", display: "flex", alignItems: "center", gap: 2 }}>
+                <GraduationCap size={9} /> {`'${String(a.graduationYear).slice(-2)}`}
+              </span>
+            )}
+            {a.industry && (
+              <span style={{ fontSize: 11, color: "var(--n-text2)", display: "flex", alignItems: "center", gap: 2 }}>
+                <Briefcase size={9} /> {a.industry}
+              </span>
+            )}
+          </div>
+        </div>
+        <span style={{ fontFamily: "var(--font-mono)", fontSize: 9, color: "var(--amber)", background: "rgba(232,137,58,0.15)", padding: "2px 6px", borderRadius: 0, letterSpacing: "0.1em", whiteSpace: "nowrap" }}>
+          MENTOR
+        </span>
+      </div>
+      {a.bio && (
+        <p style={{ margin: 0, fontSize: 12, color: "var(--n-text2)", lineHeight: 1.5, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+          {a.bio}
+        </p>
+      )}
+      <button
+        onClick={() => onRequest(a.id)}
+        disabled={requestedIds.has(a.id)}
+        style={{
+          padding: "7px 0",
+          borderRadius: 0,
+          border: requestedIds.has(a.id) ? "1px solid rgba(232,137,58,0.4)" : "1px solid var(--amber)",
+          background: requestedIds.has(a.id) ? "rgba(232,137,58,0.1)" : "var(--amber)",
+          color: requestedIds.has(a.id) ? "var(--amber)" : "#000",
+          fontFamily: "var(--font-mono)",
+          fontSize: 10,
+          fontWeight: 700,
+          letterSpacing: "0.1em",
+          textTransform: "uppercase",
+          cursor: requestedIds.has(a.id) ? "default" : "pointer",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 5,
+          transition: "all 0.15s",
+          marginTop: "auto",
+        }}
+      >
+        {requestedIds.has(a.id) ? <><CheckCircle size={12} /> Sent</> : <><MessageCircle size={12} /> Request Mentorship</>}
+      </button>
+    </div>
+  );
+}
+
+function AlumnusCard({ alumnus: a, requestedIds, onRequest }: { alumnus: Alumnus; requestedIds: Set<string>; onRequest: (id: string) => void }) {
+  return (
+    <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 0, padding: "14px 16px", display: "flex", gap: 10, alignItems: "flex-start" }}>
+      <div style={{ width: 36, height: 36, borderRadius: 0, background: "var(--amber)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+        {a.avatarUrl ? (
+          <img src={a.avatarUrl} alt={a.displayName} width={36} height={36} style={{ objectFit: "cover" }} />
+        ) : (
+          <span style={{ color: "#000", fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 14 }}>{a.displayName[0]?.toUpperCase()}</span>
+        )}
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: "var(--text)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+          {a.handle ? <Link href={`/profile/${a.handle}`} style={{ color: "inherit", textDecoration: "none" }}>{a.displayName}</Link> : a.displayName}
+        </p>
+        <div style={{ display: "flex", gap: 8, marginTop: 2, flexWrap: "wrap", alignItems: "center" }}>
+          {a.graduationYear && (
+            <span style={{ fontFamily: "var(--font-mono)", fontSize: 9, color: "var(--amber)", letterSpacing: "0.08em", display: "flex", alignItems: "center", gap: 2 }}>
+              <GraduationCap size={9} /> {`'${String(a.graduationYear).slice(-2)}`}
+            </span>
+          )}
+          {a.industry && (
+            <span style={{ fontSize: 11, color: "var(--n-text2)" }}>{a.industry}</span>
+          )}
+          {a.intendedCollege && (
+            <span style={{ fontSize: 11, color: "var(--n-text2)", display: "flex", alignItems: "center", gap: 2 }}>
+              <BookOpen size={9} /> {a.intendedCollege.split(" ").slice(0, 2).join(" ")}
+            </span>
+          )}
+          {a.isAvailableToMentor && (
+            <span style={{ fontFamily: "var(--font-mono)", fontSize: 9, color: "var(--amber)", background: "rgba(232,137,58,0.15)", padding: "1px 5px", letterSpacing: "0.08em" }}>
+              MENTOR
+            </span>
+          )}
+        </div>
+      </div>
+      {a.isAvailableToMentor && (
+        <button
+          onClick={() => onRequest(a.id)}
+          disabled={requestedIds.has(a.id)}
+          title={requestedIds.has(a.id) ? "Request sent" : "Request mentorship"}
+          style={{
+            width: 28, height: 28, borderRadius: 0, border: "1px solid var(--amber)",
+            background: requestedIds.has(a.id) ? "rgba(232,137,58,0.1)" : "var(--amber)",
+            color: requestedIds.has(a.id) ? "var(--amber)" : "#000",
+            cursor: requestedIds.has(a.id) ? "default" : "pointer",
+            display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+            transition: "all 0.15s",
+          }}
+        >
+          {requestedIds.has(a.id) ? <CheckCircle size={12} /> : <MessageCircle size={12} />}
+        </button>
+      )}
+    </div>
+  );
+}

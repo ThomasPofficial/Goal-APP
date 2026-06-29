@@ -11,16 +11,102 @@ export async function POST(req: Request) {
   try {
     // ── Upsert school demo account ─────────────────────────────────────────
     const schoolHash = await bcrypt.hash("demo2026", 10);
-    await prisma.user.upsert({
+    const schoolUser = await prisma.user.upsert({
       where: { email: "school@nivarro.demo" },
       update: { role: "SCHOOL", passwordHash: schoolHash },
       create: {
-        name: "Demo School",
+        name: "Westside Academy",
         email: "school@nivarro.demo",
         passwordHash: schoolHash,
         role: "SCHOOL",
       },
     });
+
+    // Upsert the school's profile (name + tagline shown in hub banner)
+    const existingSchoolProfile = await prisma.profile.findUnique({ where: { userId: schoolUser.id } });
+    if (existingSchoolProfile) {
+      await prisma.profile.update({
+        where: { id: existingSchoolProfile.id },
+        data: { displayName: "Westside Academy", headline: "Empowering the next generation of leaders" },
+      });
+    } else {
+      await prisma.profile.create({
+        data: {
+          userId: schoolUser.id,
+          displayName: "Westside Academy",
+          headline: "Empowering the next generation of leaders",
+          bio: "A private community for Westside Academy students, alumni, and staff.",
+          onboardingComplete: true,
+        },
+      });
+    }
+
+    const schoolId = schoolUser.id;
+
+    // ── Seed school staff (dean + counselor + teacher) ─────────────────────
+    const staffMembers = [
+      {
+        email: "dean@westside.demo",
+        name: "Dr. Patricia Webb",
+        staffTitle: "Dean of Students",
+        bio: "20 years in education. I believe every student has a path worth building. Here to help you find yours.",
+        handle: "drwebb",
+      },
+      {
+        email: "counselor@westside.demo",
+        name: "Marcus Rivera",
+        staffTitle: "College Counselor",
+        bio: "Former admissions officer at Georgetown. I know what schools look for — and more importantly, I know how to help you show it.",
+        handle: "mrrivera",
+      },
+      {
+        email: "teacher@westside.demo",
+        name: "Dr. Aisha Patel",
+        staffTitle: "AP Computer Science & Robotics",
+        bio: "MIT alum, Google engineer turned teacher. I love when students build things that matter.",
+        handle: "drpatel",
+      },
+    ];
+
+    for (const staff of staffMembers) {
+      const staffUser = await prisma.user.upsert({
+        where: { email: staff.email },
+        update: { passwordHash: schoolHash },
+        create: {
+          name: staff.name,
+          email: staff.email,
+          passwordHash: schoolHash,
+          role: "STUDENT",
+        },
+      });
+
+      const existingProfile = await prisma.profile.findUnique({ where: { userId: staffUser.id } });
+      if (existingProfile) {
+        await prisma.profile.update({
+          where: { id: existingProfile.id },
+          data: {
+            displayName: staff.name,
+            handle: staff.handle,
+            bio: staff.bio,
+            staffTitle: staff.staffTitle,
+            schoolId,
+            onboardingComplete: true,
+          },
+        });
+      } else {
+        await prisma.profile.create({
+          data: {
+            userId: staffUser.id,
+            displayName: staff.name,
+            handle: staff.handle,
+            bio: staff.bio,
+            staffTitle: staff.staffTitle,
+            schoolId,
+            onboardingComplete: true,
+          },
+        });
+      }
+    }
 
     // ── Mark priya, marcus, zoe as alumni + set profile fields ────────────
     const priya = await prisma.user.findUnique({ where: { email: "priya@nivarro.io" } });
@@ -111,6 +197,30 @@ export async function POST(req: Request) {
       }
     }
 
+    // ── Link all demo students + alumni to school ──────────────────────────
+    const allDemoEmails = [
+      "thomas@piacentine.dev",
+      "diego.ramirez@nivarro.demo",
+      "aiko.tanaka@nivarro.demo",
+      "jordan.hayes@nivarro.demo",
+      "elena@nivarro.demo",
+      "james@nivarro.demo",
+      "amara@nivarro.demo",
+      "noah@nivarro.demo",
+      "maya@nivarro.demo",
+      "priya@nivarro.io",
+      "marcus@nivarro.io",
+      "zoe@nivarro.io",
+    ];
+
+    for (const email of allDemoEmails) {
+      const u = await prisma.user.findUnique({ where: { email } });
+      if (!u) continue;
+      const p = await prisma.profile.findUnique({ where: { userId: u.id } });
+      if (!p) continue;
+      await prisma.profile.update({ where: { id: p.id }, data: { schoolId } });
+    }
+
     // ── Student college destinations ───────────────────────────────────────
     const destinations: Array<{ email: string; college: string; major: string; year: number }> = [
       { email: "thomas@piacentine.dev",       college: "Stanford University",         major: "Computer Science",              year: 2027 },
@@ -142,8 +252,10 @@ export async function POST(req: Request) {
     return NextResponse.json({
       ok: true,
       message: "School mock data seeded successfully",
-      schoolAccount: "school@nivarro.demo / demo2026",
+      schoolAccount: "school@nivarro.demo / demo2026 (Westside Academy)",
+      staff: staffMembers.map((s) => `${s.name} — ${s.staffTitle}`),
       alumni: ["priya@nivarro.io", "marcus@nivarro.io", "zoe@nivarro.io"],
+      studentsLinked: allDemoEmails.length,
       destinations: destinations.map((d) => `${d.email} → ${d.college}`),
     });
   } catch (e: unknown) {
