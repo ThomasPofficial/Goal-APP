@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { X, ChevronLeft, ChevronRight, LayoutDashboard, Users, Building2, UsersRound, MessageSquare, Bell, Briefcase, Megaphone, Globe, MapPin, GraduationCap, HeartHandshake } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, LayoutDashboard, Users, Building2, UsersRound, MessageSquare, Bell, Briefcase, Megaphone, Globe, MapPin, GraduationCap, HeartHandshake, School } from "lucide-react";
 import AccountMenu from "./AccountMenu";
 import ThemeToggle from "./ThemeToggle";
 import NivarroMark from "@/components/ui/NivarroMark";
@@ -11,6 +11,7 @@ import type { GeniusType } from "@/data/traits";
 
 const STUDENT_NAV_BASE = [
   { href: "/dashboard",      label: "Dashboard",     Icon: LayoutDashboard },
+  { href: "/my-school",      label: "My School",     Icon: School },
   { href: "/communities",    label: "Communities",   Icon: Globe },
   { href: "/peers",          label: "Peers",         Icon: Users },
   { href: "/orgs",           label: "Orgs",          Icon: Building2 },

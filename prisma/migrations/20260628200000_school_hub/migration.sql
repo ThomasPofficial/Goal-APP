@@ -1,0 +1,3 @@
+ALTER TABLE "Profile"
+  ADD COLUMN IF NOT EXISTS "schoolId"   TEXT,
+  ADD COLUMN IF NOT EXISTS "staffTitle" TEXT;
