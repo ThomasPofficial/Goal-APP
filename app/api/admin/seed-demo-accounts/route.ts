@@ -549,10 +549,111 @@ I would not hesitate to bring Thomas back for a future project, and I would not 
     });
   }
 
+  // ── School mock seed (Westside Academy) ──────────────────────────────────
+  const schoolUser = await prisma.user.upsert({
+    where: { email: "school@nivarro.demo" },
+    update: { role: "SCHOOL", passwordHash: hash },
+    create: {
+      name: "Westside Academy",
+      email: "school@nivarro.demo",
+      passwordHash: hash,
+      role: "SCHOOL",
+    },
+  });
+  const existingSchoolProfile = await prisma.profile.findUnique({ where: { userId: schoolUser.id } });
+  if (existingSchoolProfile) {
+    await prisma.profile.update({
+      where: { id: existingSchoolProfile.id },
+      data: { displayName: "Westside Academy", headline: "Empowering the next generation of leaders" },
+    });
+  } else {
+    await prisma.profile.create({
+      data: {
+        userId: schoolUser.id,
+        displayName: "Westside Academy",
+        headline: "Empowering the next generation of leaders",
+        bio: "A private community for Westside Academy students, alumni, and staff.",
+        onboardingComplete: true,
+      },
+    });
+  }
+  const schoolId = schoolUser.id;
+
+  const staffMembers = [
+    { email: "dean@westside.demo",      name: "Dr. Patricia Webb", staffTitle: "Dean of Students",                  bio: "20 years in education. Every student has a path worth building. Here to help you find yours.", handle: "drwebb" },
+    { email: "counselor@westside.demo", name: "Marcus Rivera",     staffTitle: "College Counselor",                 bio: "Former admissions officer at Georgetown. I know what schools look for — and how to help you show it.", handle: "mrrivera" },
+    { email: "teacher@westside.demo",   name: "Dr. Aisha Patel",   staffTitle: "AP Computer Science & Robotics",   bio: "MIT alum, Google engineer turned teacher. I love when students build things that matter.", handle: "drpatel" },
+  ];
+  for (const staff of staffMembers) {
+    const staffUser = await prisma.user.upsert({
+      where: { email: staff.email },
+      update: { passwordHash: hash },
+      create: { name: staff.name, email: staff.email, passwordHash: hash, role: "STUDENT" },
+    });
+    const ep = await prisma.profile.findUnique({ where: { userId: staffUser.id } });
+    if (ep) {
+      await prisma.profile.update({ where: { id: ep.id }, data: { displayName: staff.name, handle: staff.handle, bio: staff.bio, staffTitle: staff.staffTitle, schoolId, onboardingComplete: true } });
+    } else {
+      await prisma.profile.create({ data: { userId: staffUser.id, displayName: staff.name, handle: staff.handle, bio: staff.bio, staffTitle: staff.staffTitle, schoolId, onboardingComplete: true } });
+    }
+  }
+
+  // Mark priya, marcus, zoe as alumni
+  for (const email of ["priya@nivarro.io", "marcus@nivarro.io", "zoe@nivarro.io"]) {
+    const u = await prisma.user.findUnique({ where: { email } });
+    if (u) await prisma.user.update({ where: { id: u.id }, data: { isAlumni: true } });
+  }
+  // Update alumni mentor availability
+  const alumniUpdates = [
+    { email: "priya@nivarro.io",  college: "Stanford University",          major: "Computer Science",           year: 2025, mentor: true,  industry: "Technology" },
+    { email: "marcus@nivarro.io", college: "University of Pennsylvania",   major: "Economics & Entrepreneurship", year: 2025, mentor: true,  industry: "Venture & Startups" },
+    { email: "zoe@nivarro.io",    college: "Carnegie Mellon University",   major: "Computer Science",           year: 2025, mentor: false, industry: "Engineering" },
+  ];
+  for (const a of alumniUpdates) {
+    const u = await prisma.user.findUnique({ where: { email: a.email } });
+    if (!u) continue;
+    const p = await prisma.profile.findUnique({ where: { userId: u.id } });
+    if (p) await prisma.profile.update({ where: { id: p.id }, data: { intendedCollege: a.college, intendedMajor: a.major, graduationYear: a.year, isAvailableToMentor: a.mentor, industry: a.industry } });
+  }
+
+  // Link all demo students + alumni to Westside Academy
+  const schoolLinkedEmails = [
+    "thomas@piacentine.dev", "diego.ramirez@nivarro.demo", "aiko.tanaka@nivarro.demo",
+    "jordan.hayes@nivarro.demo", "elena@nivarro.demo", "james@nivarro.demo",
+    "amara@nivarro.demo", "noah@nivarro.demo", "maya@nivarro.demo",
+    "priya@nivarro.io", "marcus@nivarro.io", "zoe@nivarro.io",
+  ];
+  for (const email of schoolLinkedEmails) {
+    const u = await prisma.user.findUnique({ where: { email } });
+    if (!u) continue;
+    const p = await prisma.profile.findUnique({ where: { userId: u.id } });
+    if (p) await prisma.profile.update({ where: { id: p.id }, data: { schoolId } });
+  }
+
+  // Student college destinations
+  const destinations = [
+    { email: "thomas@piacentine.dev",       college: "Stanford University",        major: "Computer Science",           year: 2027 },
+    { email: "diego.ramirez@nivarro.demo",  college: "UC Berkeley",                major: "EECS",                       year: 2028 },
+    { email: "aiko.tanaka@nivarro.demo",    college: "Carnegie Mellon University", major: "Human-Computer Interaction", year: 2027 },
+    { email: "jordan.hayes@nivarro.demo",   college: "MIT",                        major: "Computer Science",           year: 2028 },
+    { email: "elena@nivarro.demo",          college: "Yale University",            major: "Political Science",          year: 2027 },
+    { email: "james@nivarro.demo",          college: "University of Chicago",      major: "Economics",                  year: 2028 },
+    { email: "amara@nivarro.demo",          college: "Georgetown University",      major: "Government & Public Policy", year: 2027 },
+    { email: "noah@nivarro.demo",           college: "Harvard University",         major: "Government",                 year: 2028 },
+    { email: "maya@nivarro.demo",           college: "Columbia University",        major: "Political Science",          year: 2027 },
+  ];
+  for (const d of destinations) {
+    const u = await prisma.user.findUnique({ where: { email: d.email } });
+    if (!u) continue;
+    const p = await prisma.profile.findUnique({ where: { userId: u.id } });
+    if (p) await prisma.profile.update({ where: { id: p.id }, data: { intendedCollege: d.college, intendedMajor: d.major, graduationYear: d.year } });
+  }
+
   return NextResponse.json({
     ok: true,
     accounts: {
       orgs: [
+        { email: "school@nivarro.demo", password: "demo2026", note: "Westside Academy — SCHOOL role, /school/destinations + /school/alumni sidebar" },
         { email: "team@nivarro.dev", password: "nivarro2026", note: "Nivarro platform org — verified, paid, full visual identity" },
         { email: "ridgepoint@nivarro.demo", password: "ridgepoint2026", note: "Ridgepoint Policy Fellows — full admin dashboard + mock scholars" },
         { email: "org@nivarro.demo", password: "demo2026", note: "Blank org account — create your own org via /orgs/new" },
