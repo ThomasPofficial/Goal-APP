@@ -2,12 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import Anthropic from "@anthropic-ai/sdk";
 
-const anthropic = new Anthropic();
-
 export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  if (!process.env.ANTHROPIC_API_KEY) {
+    return NextResponse.json({ error: "AI generation is not configured on this server." }, { status: 503 });
   }
 
   const body = await req.json().catch(() => ({}));
@@ -20,13 +22,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Cause description is too long (max 1000 characters)." }, { status: 400 });
   }
 
-  const message = await anthropic.messages.create({
-    model: "claude-haiku-4-5-20251001",
-    max_tokens: 800,
-    messages: [
-      {
-        role: "user",
-        content: `You are a fundraising copywriter for a student-run organization. Write compelling donation page copy for the following cause:
+  const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+
+  let message: Awaited<ReturnType<typeof anthropic.messages.create>>;
+  try {
+    message = await anthropic.messages.create({
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 800,
+      messages: [
+        {
+          role: "user",
+          content: `You are a fundraising copywriter for a student-run organization. Write compelling donation page copy for the following cause:
 
 "${cause}"
 
@@ -38,9 +44,13 @@ Respond with ONLY a valid JSON object (no markdown, no code fences) with these e
 - causeText: The original cause input, verbatim
 
 Write with warmth, specificity, and student voice. Make donors feel the impact of their contribution.`,
-      },
-    ],
-  });
+        },
+      ],
+    });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "Unknown error";
+    return NextResponse.json({ error: `AI service error: ${msg}` }, { status: 502 });
+  }
 
   const rawText = message.content[0].type === "text" ? message.content[0].text : "";
 
