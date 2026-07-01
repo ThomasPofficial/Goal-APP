@@ -11,6 +11,8 @@ export default async function DashboardPage() {
   const userId = session.user.id;
   const userRole = (session.user as { role?: string }).role ?? "STUDENT";
 
+  if (userRole === "SCHOOL") redirect("/school/destinations");
+
   // Only redirect ORG/ADMIN accounts to their org dashboard — students stay here
   if (userRole === "ORG" || userRole === "ADMIN") {
     const myOrg = await prisma.org.findFirst({

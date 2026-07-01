@@ -19,12 +19,17 @@ export async function POST(req: Request) {
     data: { isAlumni: true },
   });
 
-  const profile = await prisma.profile.findUnique({ where: { userId: session.user.id } });
+  const [profile, dbUser] = await Promise.all([
+    prisma.profile.findUnique({ where: { userId: session.user.id } }),
+    prisma.user.findUnique({ where: { id: session.user.id }, select: { name: true, email: true } }),
+  ]);
+
   if (profile) {
     await prisma.profile.update({ where: { id: profile.id }, data: { graduationYear: year } });
   } else {
+    const fallbackName = dbUser?.name ?? dbUser?.email?.split("@")[0] ?? "Alumni";
     await prisma.profile.create({
-      data: { userId: session.user.id, graduationYear: year, onboardingComplete: false },
+      data: { userId: session.user.id, displayName: fallbackName, graduationYear: year, onboardingComplete: false },
     });
   }
 
