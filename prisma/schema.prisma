@@ -78,6 +78,7 @@ model User {
   role          UserRole  @default(STUDENT)
   isAlumni      Boolean   @default(false)
   createdAt     DateTime  @default(now())
+  schoolCode String? @unique
   updatedAt     DateTime  @updatedAt
 
   accounts              Account[]
@@ -123,6 +124,7 @@ model Profile {
   industry            String?
   schoolId            String?     // references User.id where role=SCHOOL
   staffTitle          String?     // "Dean", "Counselor", "AP History Teacher", etc.
+  phone String?
   createdAt           DateTime    @default(now())
   updatedAt           DateTime    @updatedAt
 
@@ -287,6 +289,9 @@ model Conversation {
   id        String           @id @default(cuid())
   type      ConversationType @default(DIRECT)
   teamId    String?
+  schoolId      String?
+  isPrivateRoom Boolean  @default(false)
+  communityName String?
   createdAt DateTime         @default(now())
   updatedAt DateTime         @updatedAt
 
@@ -299,6 +304,7 @@ enum ConversationType {
   DIRECT
   GROUP
   TEAM
+  COMMUNITY
 }
 
 model ConversationParticipant {
