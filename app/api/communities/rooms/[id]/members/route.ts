@@ -39,6 +39,16 @@ export async function GET(_req: Request, { params }: { params: Params }) {
   const room = await verifyRoomAccess(session.user.id, roomId);
   if (!room) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
+  // Issue 1: For private rooms, verify the requesting user is a participant
+  if (room.isPrivateRoom) {
+    const membership = await prisma.conversationParticipant.findUnique({
+      where: { conversationId_userId: { conversationId: roomId, userId: session.user.id } },
+    });
+    if (!membership) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+  }
+
   const participants = await prisma.conversationParticipant.findMany({
     where: { conversationId: roomId },
     include: {
