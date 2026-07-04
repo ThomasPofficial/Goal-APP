@@ -240,10 +240,10 @@ function RoomRow({ room, isActive, onSelect }: { room: RoomSummary; isActive: bo
       className="w-full flex items-center gap-3 py-2.5 text-left"
       style={{
         background: isActive ? "rgba(232,137,58,0.08)" : "transparent",
+        border: "none",
         borderLeft: `2px solid ${isActive ? "var(--amber)" : "transparent"}`,
         paddingLeft: isActive ? "10px" : "12px",
         paddingRight: "12px",
-        border: "none",
         cursor: "pointer",
       }}
     >
