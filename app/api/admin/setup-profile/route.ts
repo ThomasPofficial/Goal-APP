@@ -1,5 +1,6 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { ensureSchoolGeneralRoom } from "@/lib/communities";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -22,6 +23,7 @@ export async function GET(req: Request) {
       where: { userId: user.id },
       data: { onboardingComplete: true, geniusType: user.profile.geniusType ?? "DYNAMO" },
     });
+    await ensureSchoolGeneralRoom(user.id, user.id);
     return NextResponse.json({ ok: true, action: "updated", profile: updated.id });
   }
 
@@ -37,6 +39,8 @@ export async function GET(req: Request) {
       onboardingComplete: true,
     },
   });
+
+  await ensureSchoolGeneralRoom(user.id, user.id);
 
   return NextResponse.json({ ok: true, action: "created", profile: created.id, handle: uniqueHandle });
 }
