@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+﻿import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
@@ -10,18 +10,30 @@ export async function GET() {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const profile = await prisma.profile.findUnique({
-    where: { userId: session.user.id },
-    select: { schoolId: true },
+  const userRecord = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { role: true },
   });
-  if (!profile?.schoolId) {
+
+  let effectiveSchoolId: string | null = null;
+  if (userRecord?.role === 'SCHOOL') {
+    effectiveSchoolId = session.user.id;
+  } else {
+    const profile = await prisma.profile.findUnique({
+      where: { userId: session.user.id },
+      select: { schoolId: true },
+    });
+    effectiveSchoolId = profile?.schoolId ?? null;
+  }
+
+  if (!effectiveSchoolId) {
     return NextResponse.json({ rooms: [] });
   }
 
   const conversations = await prisma.conversation.findMany({
     where: {
       type: 'COMMUNITY',
-      schoolId: profile.schoolId,
+      schoolId: effectiveSchoolId,
       participants: { some: { userId: session.user.id } },
     },
     include: {
