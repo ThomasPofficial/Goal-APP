@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { ensureSchoolGeneralRoom } from "@/lib/communities";
 
 export async function POST(req: Request) {
   const session = await auth();
@@ -26,6 +27,10 @@ export async function POST(req: Request) {
 
   if (profile) {
     await prisma.profile.update({ where: { id: profile.id }, data: { graduationYear: year } });
+    // Auto-join the school's general community room if the alumni is school-linked
+    if (profile.schoolId) {
+      await ensureSchoolGeneralRoom(profile.schoolId, session.user.id);
+    }
   } else {
     const fallbackName = dbUser?.name ?? dbUser?.email?.split("@")[0] ?? "Alumni";
     await prisma.profile.create({
