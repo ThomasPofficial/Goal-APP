@@ -2,6 +2,7 @@
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import CommunitiesClient from "./CommunitiesClient";
+import { ensureSchoolGeneralRoom } from "@/lib/communities";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Communities — Nivarro" };
@@ -24,6 +25,12 @@ export default async function CommunitiesPage() {
 
   const isAdmin = user?.role === "SCHOOL";
   const schoolId = isAdmin ? session.user.id : (profile?.schoolId ?? null);
+
+  // Ensure the General Room exists for school admins (handles existing accounts
+  // that were created before this feature was added)
+  if (isAdmin) {
+    await ensureSchoolGeneralRoom(session.user.id, session.user.id);
+  }
 
   if (!schoolId) {
     return (
