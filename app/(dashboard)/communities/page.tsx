@@ -15,7 +15,7 @@ export default async function CommunitiesPage() {
   const [user, profile] = await Promise.all([
     prisma.user.findUnique({
       where: { id: session.user.id },
-      select: { role: true },
+      select: { role: true, schoolCode: true },
     }),
     prisma.profile.findUnique({
       where: { userId: session.user.id },
@@ -39,6 +39,7 @@ export default async function CommunitiesPage() {
         myUserId={session.user.id}
         isAdmin={false}
         initialRooms={[]}
+        schoolCode={null}
       />
     );
   }
@@ -73,6 +74,7 @@ export default async function CommunitiesPage() {
       myUserId={session.user.id}
       isAdmin={isAdmin}
       initialRooms={initialRooms}
+      schoolCode={isAdmin ? (user?.schoolCode ?? null) : null}
     />
   );
 }
