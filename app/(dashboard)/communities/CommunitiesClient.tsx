@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useSocket } from "@/lib/socket";
-import { Send } from "lucide-react";
+import { Send, Copy, Check, Pencil } from "lucide-react";
 
 interface RoomSummary {
   id: string;
@@ -26,6 +26,7 @@ interface Props {
   myUserId: string;
   isAdmin: boolean;
   initialRooms: RoomSummary[];
+  schoolCode: string | null;
 }
 
 // ── School Code Gate ──────────────────────────────────────────────────────────
@@ -94,9 +95,82 @@ function SchoolCodeGate({ onJoined }: { onJoined: () => void }) {
   );
 }
 
+// ── Admin Code Panel ─────────────────────────────────────────────────────────
+
+function AdminCodePanel({ initialCode }: { initialCode: string | null }) {
+  const [code, setCode] = useState(initialCode ?? "");
+  const [editing, setEditing] = useState(!initialCode);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  const save = async () => {
+    if (!code.trim() || saving) return;
+    setSaving(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/communities/school-code", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ schoolCode: code.trim().toLowerCase() }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setError(data.error ?? "Failed to save"); return; }
+      setEditing(false);
+    } finally { setSaving(false); }
+  };
+
+  const copy = () => {
+    navigator.clipboard.writeText(code);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div style={{ padding: "10px 20px", background: "rgba(0,0,0,0.2)", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+      <p style={{ fontSize: 11, fontFamily: "var(--font-mono)", letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--amber)", margin: 0 }}>
+        Invite code
+      </p>
+      {editing ? (
+        <>
+          <input
+            value={code}
+            onChange={(e) => setCode(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))}
+            onKeyDown={(e) => e.key === "Enter" && save()}
+            placeholder="e.g. lincolnhs2026"
+            style={{ fontSize: 13, padding: "4px 10px", borderRadius: 6, background: "var(--surface)", border: "1px solid var(--border-md)", color: "var(--text)", fontFamily: "var(--font-mono)", outline: "none", width: 180 }}
+            autoFocus
+          />
+          <button
+            onClick={save}
+            disabled={!code.trim() || saving}
+            style={{ fontSize: 12, padding: "4px 12px", borderRadius: 6, background: "var(--amber)", color: "#04070F", border: "none", cursor: "pointer", fontWeight: 700, opacity: !code.trim() || saving ? 0.5 : 1 }}
+          >
+            {saving ? "Saving…" : "Save"}
+          </button>
+          {error && <span style={{ fontSize: 12, color: "#ef4444" }}>{error}</span>}
+        </>
+      ) : (
+        <>
+          <code style={{ fontSize: 13, padding: "3px 10px", borderRadius: 6, background: "var(--surface)", border: "1px solid var(--border-md)", color: "var(--text)", fontFamily: "var(--font-mono)" }}>
+            {code}
+          </code>
+          <button onClick={copy} title="Copy" style={{ background: "none", border: "none", cursor: "pointer", color: "var(--muted)", padding: 0, display: "flex" }}>
+            {copied ? <Check style={{ width: 14, height: 14, color: "var(--amber)" }} /> : <Copy style={{ width: 14, height: 14 }} />}
+          </button>
+          <button onClick={() => setEditing(true)} title="Edit" style={{ background: "none", border: "none", cursor: "pointer", color: "var(--muted)", padding: 0, display: "flex" }}>
+            <Pencil style={{ width: 13, height: 13 }} />
+          </button>
+          <span style={{ fontSize: 11, color: "var(--muted)" }}>Share this with your students</span>
+        </>
+      )}
+    </div>
+  );
+}
+
 // ── Main Chat ─────────────────────────────────────────────────────────────────
 
-export default function CommunitiesClient({ schoolId, myUserId, initialRooms }: Props) {
+export default function CommunitiesClient({ schoolId, myUserId, isAdmin, initialRooms, schoolCode }: Props) {
   const socket = useSocket();
   const generalRoom = initialRooms.find((r) => !r.isPrivateRoom) ?? null;
   const roomId = generalRoom?.id ?? null;
@@ -105,7 +179,7 @@ export default function CommunitiesClient({ schoolId, myUserId, initialRooms }: 
   const [loading, setLoading] = useState(false);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
-  const [joined, setJoined] = useState(!!schoolId);
+  const [joined, setJoined] = useState(isAdmin || !!schoolId);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const loadMessages = useCallback(async (id: string) => {
@@ -178,6 +252,9 @@ export default function CommunitiesClient({ schoolId, myUserId, initialRooms }: 
           </p>
         )}
       </div>
+
+      {/* Admin invite code bar */}
+      {isAdmin && <AdminCodePanel initialCode={schoolCode} />}
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-5 py-4" style={{ background: "var(--bg)" }}>
