@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import DashboardClient from "./DashboardClient";
+import WhySchoolBanner from "@/components/school/WhySchoolBanner";
 import type { GeniusTypeKey } from "@/lib/geniusTypes";
 
 export default async function DashboardPage() {
@@ -60,6 +61,36 @@ export default async function DashboardPage() {
     },
   });
 
+  // Banner: show "Why [School]?" if student is school-linked and admin enabled visibility
+  let bannerData: { schoolName: string; studentsCount: number; collegesCount: number; jobsCount: number } | null = null;
+  if (profile?.schoolId) {
+    const [settings, schoolUser, studentCounts] = await Promise.all([
+      prisma.schoolBrochureSettings.findUnique({
+        where: { schoolId: profile.schoolId },
+        select: { visibility: true },
+      }),
+      prisma.user.findUnique({
+        where: { id: profile.schoolId },
+        select: { name: true, profile: { select: { displayName: true } } },
+      }),
+      prisma.studentBrochureData.findMany({
+        where: { profile: { schoolId: profile.schoolId } },
+        select: { college: true, jobTitle: true, employer: true, internshipTitle: true, internshipOrg: true },
+      }),
+    ]);
+
+    if (settings?.visibility === "STUDENTS") {
+      const colleges = new Set(studentCounts.map((s) => s.college).filter(Boolean)).size;
+      const jobs = studentCounts.filter((s) => (s.jobTitle && s.employer) || (s.internshipTitle && s.internshipOrg)).length;
+      bannerData = {
+        schoolName:    schoolUser?.profile?.displayName ?? schoolUser?.name ?? "Your School",
+        studentsCount: studentCounts.length,
+        collegesCount: colleges,
+        jobsCount:     jobs,
+      };
+    }
+  }
+
   const seenSpaces = new Set<string>();
   const spaces = (profile?.teamMemberships ?? [])
     .filter((m) => { if (seenSpaces.has(m.team.id)) return false; seenSpaces.add(m.team.id); return true; })
@@ -86,7 +117,16 @@ export default async function DashboardPage() {
     : false;
 
   return (
-    <DashboardClient
+    <>
+      {bannerData && (
+        <WhySchoolBanner
+          schoolName={bannerData.schoolName}
+          studentsCount={bannerData.studentsCount}
+          collegesCount={bannerData.collegesCount}
+          jobsCount={bannerData.jobsCount}
+        />
+      )}
+      <DashboardClient
       profile={{
         displayName: profile?.displayName ?? session.user.name ?? "there",
         handle: profile?.handle ?? null,
@@ -107,5 +147,6 @@ export default async function DashboardPage() {
         hasBrowsedOrgs: hasTeam || hasApplied,
       }}
     />
+    </>
   );
 }
