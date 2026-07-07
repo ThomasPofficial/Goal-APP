@@ -30,6 +30,7 @@ export default async function DashboardPage() {
     where: { userId },
     select: {
       id: true,
+      schoolId: true,
       displayName: true,
       handle: true,
       avatarUrl: true,
