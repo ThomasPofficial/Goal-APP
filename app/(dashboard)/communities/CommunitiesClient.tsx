@@ -127,8 +127,8 @@ function AdminCodePanel({ initialCode }: { initialCode: string | null }) {
   };
 
   return (
-    <div style={{ padding: "10px 20px", background: "rgba(0,0,0,0.2)", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-      <p style={{ fontSize: 11, fontFamily: "var(--font-mono)", letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--amber)", margin: 0 }}>
+    <div style={{ padding: "8px 20px", background: "rgba(0,0,0,0.15)", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+      <p style={{ fontSize: 11, fontFamily: "var(--font-mono)", letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--amber)", margin: 0, flexShrink: 0 }}>
         Invite code
       </p>
       {editing ? (
@@ -137,8 +137,8 @@ function AdminCodePanel({ initialCode }: { initialCode: string | null }) {
             value={code}
             onChange={(e) => setCode(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))}
             onKeyDown={(e) => e.key === "Enter" && save()}
-            placeholder="e.g. lincolnhs2026"
-            style={{ fontSize: 13, padding: "4px 10px", borderRadius: 6, background: "var(--surface)", border: "1px solid var(--border-md)", color: "var(--text)", fontFamily: "var(--font-mono)", outline: "none", width: 180 }}
+            placeholder="e.g. westsideacademy2026"
+            style={{ fontSize: 13, padding: "4px 10px", borderRadius: 6, background: "var(--surface)", border: "1px solid var(--border-md)", color: "var(--text)", fontFamily: "var(--font-mono)", outline: "none", width: 200 }}
             autoFocus
           />
           <button
@@ -155,13 +155,13 @@ function AdminCodePanel({ initialCode }: { initialCode: string | null }) {
           <code style={{ fontSize: 13, padding: "3px 10px", borderRadius: 6, background: "var(--surface)", border: "1px solid var(--border-md)", color: "var(--text)", fontFamily: "var(--font-mono)" }}>
             {code}
           </code>
-          <button onClick={copy} title="Copy" style={{ background: "none", border: "none", cursor: "pointer", color: "var(--muted)", padding: 0, display: "flex" }}>
+          <button onClick={copy} title="Copy code" style={{ background: "none", border: "none", cursor: "pointer", color: "var(--muted)", padding: 0, display: "flex" }}>
             {copied ? <Check style={{ width: 14, height: 14, color: "var(--amber)" }} /> : <Copy style={{ width: 14, height: 14 }} />}
           </button>
-          <button onClick={() => setEditing(true)} title="Edit" style={{ background: "none", border: "none", cursor: "pointer", color: "var(--muted)", padding: 0, display: "flex" }}>
+          <button onClick={() => setEditing(true)} title="Edit code" style={{ background: "none", border: "none", cursor: "pointer", color: "var(--muted)", padding: 0, display: "flex" }}>
             <Pencil style={{ width: 13, height: 13 }} />
           </button>
-          <span style={{ fontSize: 11, color: "var(--muted)" }}>Share this with your students</span>
+          <span style={{ fontSize: 11, color: "var(--muted)" }}>Share this with your students to add them</span>
         </>
       )}
     </div>
