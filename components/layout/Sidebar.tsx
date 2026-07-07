@@ -24,6 +24,7 @@ const STUDENT_NAV_BASE = [
 const SCHOOL_NAV = [
   { href: "/school/destinations", label: "Destinations",  Icon: MapPin },
   { href: "/school/alumni",       label: "Alumni Net",    Icon: GraduationCap },
+  { href: "/communities",         label: "Community",     Icon: Globe },
   { href: "/campaigns/new",       label: "Fundraise",     Icon: HeartHandshake },
 ];
 
