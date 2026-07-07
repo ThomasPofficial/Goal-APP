@@ -90,6 +90,7 @@ model User {
   participations        ConversationParticipant[]
   endorsementsGiven     PeerEndorsement[]         @relation("EndorsementsGiven")
   endorsementsReceived  PeerEndorsement[]         @relation("EndorsementsReceived")
+  campaigns             Campaign[]                @relation("SchoolCampaigns")
 }
 
 model Profile {
@@ -720,12 +721,47 @@ model PlatformUpdate {
 // ─────────────────────────────────────────────
 
 model CampaignPledge {
-  id           String   @id @default(cuid())
+  id           String    @id @default(cuid())
   causeText    String?
   donorName    String
   donorEmail   String
   donorPhone   String?
-  pledgeAmount Decimal? @db.Decimal(10, 2)
+  pledgeAmount Decimal?  @db.Decimal(10, 2)
+  campaignId   String?
+  campaign     Campaign? @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+  createdAt    DateTime  @default(now())
+}
+
+model Campaign {
+  id          String            @id @default(cuid())
+  slug        String?           @unique
+  schoolId    String
+  school      User              @relation("SchoolCampaigns", fields: [schoolId], references: [id])
+  cause       String            @db.Text
+  headline    String
+  subheadline String
+  body        String            @db.Text
+  ctaText     String
+  imageParams Json
+  videoUrl    String?
+  active      Boolean           @default(false)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  pledges     CampaignPledge[]
+  versions    CampaignVersion[]
+}
+
+model CampaignVersion {
+  id           String   @id @default(cuid())
+  campaignId   String
+  campaign     Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  cause        String   @db.Text
+  headline     String
+  subheadline  String
+  body         String   @db.Text
+  ctaText      String
+  imageParams  Json
+  restoredFrom String?
   createdAt    DateTime @default(now())
 }
 
