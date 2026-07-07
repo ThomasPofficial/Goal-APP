@@ -21,20 +21,27 @@ export default async function DestinationsPage() {
   if (dbUser?.role !== "SCHOOL" && dbUser?.role !== "ADMIN") redirect("/dashboard");
 
   const profiles = await prisma.profile.findMany({
-    where: { intendedCollege: { not: null } },
+    where: {
+      OR: [
+        { intendedCollege: { not: null } },
+        { confirmedCollege: { not: null } },
+      ],
+    },
     select: {
       displayName: true,
       intendedCollege: true,
       intendedMajor: true,
+      confirmedCollege: true,
       graduationYear: true,
     },
   });
 
   const destinationMap: Record<string, { students: string[]; major?: string }> = {};
   for (const p of profiles) {
-    if (!p.intendedCollege) continue;
-    if (!destinationMap[p.intendedCollege]) destinationMap[p.intendedCollege] = { students: [] };
-    destinationMap[p.intendedCollege].students.push(p.displayName ?? "Anonymous");
+    const destination = p.confirmedCollege ?? p.intendedCollege;
+    if (!destination) continue;
+    if (!destinationMap[destination]) destinationMap[destination] = { students: [] };
+    destinationMap[destination].students.push(p.displayName ?? "Anonymous");
   }
 
   const destinations = Object.entries(destinationMap)
