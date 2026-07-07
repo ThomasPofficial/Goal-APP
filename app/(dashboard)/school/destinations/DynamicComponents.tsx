@@ -10,3 +10,8 @@ export const BrochureButton = dynamic(
   () => import("@/components/school/BrochureButton"),
   { ssr: false }
 );
+
+export const BrochureCurationPanel = dynamic(
+  () => import("@/components/school/BrochureCurationPanel"),
+  { ssr: false }
+);
