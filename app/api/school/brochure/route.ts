@@ -101,9 +101,10 @@ export async function GET(req: Request) {
     logoMap,
   };
 
-  const buffer = await renderToBuffer(React.createElement(BrochureDocument, { data }));
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const buffer = await renderToBuffer(React.createElement(BrochureDocument, { data }) as any);
 
-  return new Response(buffer, {
+  return new Response(new Uint8Array(buffer), {
     headers: {
       "Content-Type":        "application/pdf",
       "Content-Disposition": `attachment; filename="nivarro-brochure.pdf"`,
