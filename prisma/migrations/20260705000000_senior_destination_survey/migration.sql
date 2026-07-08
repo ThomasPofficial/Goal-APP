@@ -26,9 +26,13 @@ CREATE UNIQUE INDEX IF NOT EXISTS "SurveyToken_token_key"       ON "SurveyToken"
 CREATE UNIQUE INDEX IF NOT EXISTS "SurveyToken_userId_year_key" ON "SurveyToken"("userId", "year");
 CREATE INDEX        IF NOT EXISTS "SurveyToken_userId_idx"      ON "SurveyToken"("userId");
 
-ALTER TABLE "SurveyToken"
-  ADD CONSTRAINT "SurveyToken_userId_fkey"
-  FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'SurveyToken_userId_fkey') THEN
+    ALTER TABLE "SurveyToken"
+      ADD CONSTRAINT "SurveyToken_userId_fkey"
+      FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+  END IF;
+END $$;
 
 -- LinkedinScanEvent table
 CREATE TABLE IF NOT EXISTS "LinkedinScanEvent" (
@@ -45,6 +49,10 @@ CREATE TABLE IF NOT EXISTS "LinkedinScanEvent" (
 CREATE INDEX IF NOT EXISTS "LinkedinScanEvent_userId_idx"     ON "LinkedinScanEvent"("userId");
 CREATE INDEX IF NOT EXISTS "LinkedinScanEvent_scannedAt_idx"  ON "LinkedinScanEvent"("scannedAt");
 
-ALTER TABLE "LinkedinScanEvent"
-  ADD CONSTRAINT "LinkedinScanEvent_userId_fkey"
-  FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'LinkedinScanEvent_userId_fkey') THEN
+    ALTER TABLE "LinkedinScanEvent"
+      ADD CONSTRAINT "LinkedinScanEvent_userId_fkey"
+      FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+  END IF;
+END $$;
