@@ -103,7 +103,7 @@ export default function CampaignsNewClient() {
             onChange={(e) => setCauseInput(e.target.value)}
             placeholder="e.g. We're raising money to send 12 students from our robotics club to the national championship in Dallas. We need $8,000 for travel, lodging, and registration fees."
             rows={5}
-            style={{ width: "100%", padding: "10px 12px", border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)", fontSize: 14, lineHeight: 1.5, resize: "vertical", fontFamily: "inherit", boxSizing: "border-box" }}
+            style={{ width: "100%", padding: "10px 12px", border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)", fontSize: 14, lineHeight: 1.5, resize: "vertical", fontFamily: "inherit", boxSizing: "border-box", borderRadius: 0 }}
           />
           <div style={{ marginTop: 12 }}>
             <label style={{ display: "block", fontFamily: "var(--font-mono)", fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--n-text2)", marginBottom: 4 }}>
@@ -114,14 +114,14 @@ export default function CampaignsNewClient() {
               value={videoUrl}
               onChange={(e) => setVideoUrl(e.target.value)}
               placeholder="https://youtube.com/watch?v=..."
-              style={{ width: "100%", padding: "8px 12px", border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)", fontSize: 13, fontFamily: "inherit", boxSizing: "border-box" }}
+              style={{ width: "100%", padding: "8px 12px", border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)", fontSize: 13, fontFamily: "inherit", boxSizing: "border-box", borderRadius: 0 }}
             />
           </div>
           {error && <p style={{ margin: "12px 0 0", fontSize: 13, color: "#ef4444" }}>{error}</p>}
           <button
             onClick={generate}
-            disabled={generating || !causeInput.trim()}
-            style={{ marginTop: 16, padding: "10px 20px", border: "none", background: generating || !causeInput.trim() ? "var(--n-bg3)" : "var(--amber)", color: generating || !causeInput.trim() ? "var(--n-text2)" : "#000", fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", cursor: generating || !causeInput.trim() ? "not-allowed" : "pointer", display: "flex", alignItems: "center", gap: 8 }}
+            disabled={generating || causeInput.trim().length < 10}
+            style={{ marginTop: 16, padding: "10px 20px", border: "none", background: generating || causeInput.trim().length < 10 ? "var(--n-bg3)" : "var(--amber)", color: generating || causeInput.trim().length < 10 ? "var(--n-text2)" : "#000", fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", cursor: generating || causeInput.trim().length < 10 ? "not-allowed" : "pointer", display: "flex", alignItems: "center", gap: 8, borderRadius: 0 }}
           >
             {generating ? <><Loader2 size={16} style={{ animation: "spin 1s linear infinite" }} /> Generating…</> : <><Sparkles size={16} /> Generate Campaign Page</>}
           </button>
@@ -137,13 +137,13 @@ export default function CampaignsNewClient() {
       <div style={{ maxWidth: 900 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20, flexWrap: "wrap" }}>
           <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--n-text2)" }}>Preview</span>
-          <button onClick={() => setView("input")} style={{ fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--n-text2)", background: "none", border: "1px solid var(--border)", padding: "4px 10px", cursor: "pointer" }}>
+          <button onClick={() => setView("input")} style={{ fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--n-text2)", background: "none", border: "1px solid var(--border)", padding: "4px 10px", cursor: "pointer", borderRadius: 0 }}>
             ← Edit Prompt
           </button>
-          <button onClick={generate} disabled={generating} style={{ fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--n-text2)", background: "none", border: "1px solid var(--border)", padding: "4px 10px", cursor: generating ? "not-allowed" : "pointer", display: "flex", alignItems: "center", gap: 4 }}>
+          <button onClick={generate} disabled={generating} style={{ fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--n-text2)", background: "none", border: "1px solid var(--border)", padding: "4px 10px", cursor: generating ? "not-allowed" : "pointer", display: "flex", alignItems: "center", gap: 4, borderRadius: 0 }}>
             {generating ? <><Loader2 size={12} style={{ animation: "spin 1s linear infinite" }} /> Regenerating…</> : <><RefreshCw size={12} /> Regenerate</>}
           </button>
-          <button onClick={publish} disabled={publishing} style={{ marginLeft: "auto", padding: "8px 20px", border: "none", background: "var(--amber)", color: "#000", fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", cursor: publishing ? "not-allowed" : "pointer", display: "flex", alignItems: "center", gap: 8 }}>
+          <button onClick={publish} disabled={publishing} style={{ marginLeft: "auto", padding: "8px 20px", border: "none", background: "var(--amber)", color: "#000", fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", cursor: publishing ? "not-allowed" : "pointer", display: "flex", alignItems: "center", gap: 8, borderRadius: 0 }}>
             {publishing ? <><Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} /> Publishing…</> : "Save & Publish →"}
           </button>
         </div>
@@ -159,7 +159,7 @@ export default function CampaignsNewClient() {
             <h2 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(24px, 3vw, 40px)", letterSpacing: "-0.02em", color: "var(--text)", margin: "0 0 12px", lineHeight: 1.2 }}>{generated.headline}</h2>
             <p style={{ fontSize: 18, color: "var(--amber)", fontWeight: 600, margin: "0 0 24px" }}>{generated.subheadline}</p>
             <div style={{ fontSize: 15, color: "var(--n-text2)", lineHeight: 1.75, whiteSpace: "pre-wrap", marginBottom: 32 }}>{generated.body}</div>
-            <button onClick={() => setShowPledge(true)} style={{ padding: "14px 28px", border: "none", background: "var(--amber)", color: "#000", fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 8 }}>
+            <button onClick={() => setShowPledge(true)} style={{ padding: "14px 28px", border: "none", background: "var(--amber)", color: "#000", fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 8, borderRadius: 0 }}>
               <Heart size={16} /> {generated.ctaText}
             </button>
           </div>
@@ -180,19 +180,19 @@ export default function CampaignsNewClient() {
           <p style={{ color: "var(--n-text2)", fontSize: 14, margin: 0 }}>Share this link with your community to start collecting pledges.</p>
         </div>
         <div style={{ display: "flex", gap: 8, marginBottom: 24 }}>
-          <input readOnly value={url} style={{ flex: 1, padding: "10px 12px", border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)", fontSize: 13, fontFamily: "var(--font-mono)" }} />
-          <button onClick={() => copyUrl(url)} style={{ padding: "10px 16px", border: "1px solid var(--border)", background: "var(--surface)", color: "var(--text)", fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
+          <input readOnly value={url} style={{ flex: 1, padding: "10px 12px", border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)", fontSize: 13, fontFamily: "var(--font-mono)", borderRadius: 0 }} />
+          <button onClick={() => copyUrl(url)} style={{ padding: "10px 16px", border: "1px solid var(--border)", background: "var(--surface)", color: "var(--text)", fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", cursor: "pointer", display: "flex", alignItems: "center", gap: 6, borderRadius: 0 }}>
             {copied ? <><Check size={14} /> Copied!</> : <><Copy size={14} /> Copy</>}
           </button>
-          <a href={url} target="_blank" rel="noopener noreferrer" style={{ padding: "10px 16px", border: "1px solid var(--border)", background: "var(--surface)", color: "var(--text)", fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", textDecoration: "none", display: "flex", alignItems: "center", gap: 6 }}>
+          <a href={url} target="_blank" rel="noopener noreferrer" style={{ padding: "10px 16px", border: "1px solid var(--border)", background: "var(--surface)", color: "var(--text)", fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", textDecoration: "none", display: "flex", alignItems: "center", gap: 6, borderRadius: 0 }}>
             <ExternalLink size={14} /> Open
           </a>
         </div>
         <div style={{ display: "flex", gap: 12 }}>
-          <button onClick={() => { setView("input"); setGenerated(null); setCauseInput(""); setVideoUrl(""); setPublishedSlug(null); }} style={{ padding: "10px 20px", border: "1px solid var(--border)", background: "var(--surface)", color: "var(--text)", fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", cursor: "pointer" }}>
+          <button onClick={() => { setView("input"); setGenerated(null); setCauseInput(""); setVideoUrl(""); setPublishedSlug(null); }} style={{ padding: "10px 20px", border: "1px solid var(--border)", background: "var(--surface)", color: "var(--text)", fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", cursor: "pointer", borderRadius: 0 }}>
             New Campaign
           </button>
-          <a href="/campaigns" style={{ padding: "10px 20px", border: "none", background: "var(--amber)", color: "#000", fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", textDecoration: "none", display: "inline-block" }}>
+          <a href="/campaigns" style={{ padding: "10px 20px", border: "none", background: "var(--amber)", color: "#000", fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", textDecoration: "none", display: "inline-block", borderRadius: 0 }}>
             My Campaigns →
           </a>
         </div>
