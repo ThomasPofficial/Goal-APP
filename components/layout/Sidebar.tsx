@@ -26,7 +26,7 @@ const SCHOOL_NAV = [
   { href: "/school/alumni",       label: "Alumni Net",    Icon: GraduationCap },
   { href: "/communities",         label: "Community",     Icon: Globe },
   { href: "/school/survey",       label: "Survey",        Icon: ClipboardList },
-  { href: "/campaigns/new",       label: "Fundraise",     Icon: HeartHandshake },
+  { href: "/campaigns",           label: "Fundraise",     Icon: HeartHandshake },
 ];
 
 interface SidebarProps {
