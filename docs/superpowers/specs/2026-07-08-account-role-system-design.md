@@ -9,7 +9,7 @@ Nivarro currently has four account types (`STUDENT`, `ORG`, `ADMIN`, `SCHOOL`) p
 
 **Explicitly out of scope:**
 - `ORG` role changes — external company accounts are a separate, unrelated feature area. (Future direction: ORG will become school-like but company-agnostic, with its own private community and paid membership — tracked outside this spec, not designed here.)
-- Building the actual feature UIs this permission system will gate (map visibility toggle UI, mentor-community admin grid, ad generator, brochure redesign, `/hq` panel UI). This spec defines the role/permission/data model; feature specs build on top of it.
+- Building the actual feature UIs this permission system will gate (map visibility toggle UI, mentor-community admin grid, ad generator, brochure redesign, full `/hq` panel UI). This spec defines the role/permission/data model — plus the minimal `EmergencyAccessGrant` activate/revoke API needed to enforce the ADMIN write guardrail — but not a built-out admin dashboard.
 - A general, app-wide undo engine. Change-log + revert is bounded to the school-admin-scoped mutations this spec introduces permission tiers for.
 - Staff invite email polish (magic links, branded emails) — a basic API to create/manage staff accounts is in scope; a polished invite UX is not.
 
@@ -64,6 +64,39 @@ Reuses the existing `Profile.schoolId` linkage pattern rather than introducing a
 | Approve/reject proposals | ❌ | ❌ | ✅ |
 | Manage staff accounts/tiers | ❌ | ❌ | ✅ |
 | Revert a change (see Change Log) | ❌ | ❌ | ✅ |
+
+## ADMIN Write Guardrails (Break-Glass Access)
+
+`ADMIN` (the Nivarro operator account) manages many independent school clients. Standing, unconditional write access to every school's data is a large blast radius if that single account is ever compromised, and it also invades each school's own administrative boundary unnecessarily for day-to-day oversight. So `ADMIN` write access is **not standing** — it's earned per-school, per-incident, and time-boxed.
+
+- **Reads:** `ADMIN` always has unconditional read access across every school — needed to support clients, review proposals, monitor health, etc.
+- **Writes:** `ADMIN` cannot write to a school's data by default. To make a change, `ADMIN` must first activate a scoped, time-boxed **emergency access grant** for that one specific school.
+
+```prisma
+model EmergencyAccessGrant {
+  id          String    @id @default(cuid())
+  adminUserId String
+  schoolId    String    // anchor school this grant applies to — scoped to ONE school
+  reason      String    // required, min length enforced at API layer
+  activatedAt DateTime  @default(now())
+  expiresAt   DateTime  // activatedAt + 30 minutes
+  revokedAt   DateTime?
+
+  admin  User @relation("EmergencyGrantsByAdmin", fields: [adminUserId], references: [id])
+  school User @relation("EmergencyGrantsForSchool", fields: [schoolId], references: [id], onDelete: Cascade)
+
+  @@index([adminUserId, schoolId, expiresAt])
+}
+```
+
+- `POST /api/admin/emergency-access/activate` — `ADMIN` only. Body: `{ schoolId, reason }` (reason required). Creates a grant with `expiresAt = now() + 30 minutes`. **Per-school scoping**: activating a grant for School A does not unlock School B — each school requires its own separate activation.
+- `POST /api/admin/emergency-access/revoke` — `ADMIN` can end their own grant early.
+- Grants auto-expire; there is no way to make one permanent. A new incident needs a new activation (and a new reason).
+- **Out-of-band alert (addition beyond what was explicitly asked — flagging so it can be trimmed):** activating a grant sends a Resend email to both founders' addresses immediately. If the `ADMIN` account is ever compromised, the legitimate founder finds out the moment break-glass is used, not after the fact.
+- Every write made while a grant is active is recorded in `ChangeLog` with `viaEmergencyGrantId` set, linking the change back to the reason and the grant — full auditability of exactly what was done and why during each break-glass window.
+- `canManageSchool()` / `canEditDirectly()` for `ADMIN` now require `hasActiveEmergencyGrant(adminUserId, schoolId)` to return true (an active, unexpired, unrevoked grant for that exact school) before permitting any write. Reads bypass this check entirely.
+
+**Side effect — this also directly addresses "keep the admin view simple":** since `ADMIN` no longer has standing edit rights, the eventual `/hq` panel doesn't need a full per-school editing suite duplicating each school's own admin UI. Its natural shape becomes a read-only oversight view across all clients (rosters, proposals, health) plus a single "activate emergency access" control per school when something genuinely needs fixing — not a parallel complex editor to maintain for every client.
 
 ## Proposal Model (unified for ALUMNI + EDITOR)
 
@@ -120,9 +153,11 @@ model ChangeLog {
   createdAt       DateTime  @default(now())
   revertedAt      DateTime?
   revertedByUserId String?
+  viaEmergencyGrantId String? // set when this change was made by ADMIN under an EmergencyAccessGrant
 
   school  User  @relation("SchoolChangeLogs", fields: [schoolId], references: [id], onDelete: Cascade)
   actor   User  @relation("ChangeActor", fields: [actorUserId], references: [id])
+  emergencyGrant EmergencyAccessGrant? @relation(fields: [viaEmergencyGrantId], references: [id])
 }
 
 enum ChangeAction {
@@ -153,12 +188,15 @@ type SchoolTier = "OWNER" | "EDITOR" | "VIEWER";
 function isNivarroAdmin(role: Role): boolean;
 function isAlumni(role: Role): boolean;
 function schoolTierOf(profile: { schoolAdminTier: SchoolTier | null }, isAnchor: boolean): SchoolTier | null;
-function canManageSchool(user: { role: Role; id: string }, targetSchoolId: string, tier: { schoolAdminTier: SchoolTier | null }): boolean;
+function canReadSchool(user: { role: Role }, targetSchoolId: string): boolean; // ADMIN always true; SCHOOL true only for own school
+function canManageSchool(user: { role: Role; id: string }, targetSchoolId: string, tier: { schoolAdminTier: SchoolTier | null }, activeGrant?: { schoolId: string; expiresAt: Date; revokedAt: Date | null }): boolean;
+// ^ for ADMIN, requires activeGrant.schoolId === targetSchoolId AND not expired/revoked. For SCHOOL, requires OWNER tier + own school.
 function canEditDirectly(tier: SchoolTier, resource: "brochure" | "destinations" | "communities" | "roster" | "campaigns"): boolean;
 function canPropose(role: Role, tier: SchoolTier | null, type: ProposalType): boolean;
 function canApproveProposal(tier: SchoolTier | null, role: Role): boolean;
 function canAccessAlumniDirectory(role: Role): boolean; // true for STUDENT, ALUMNI, SCHOOL, ADMIN
 function canRevertChange(tier: SchoolTier | null, role: Role): boolean;
+async function hasActiveEmergencyGrant(adminUserId: string, schoolId: string): Promise<boolean>; // DB-backed — checks EmergencyAccessGrant
 ```
 
 All ~25 existing call sites are updated to import and call these helpers instead of inline comparisons (see File Map).
@@ -198,6 +236,19 @@ CREATE TABLE IF NOT EXISTS "Proposal" (
   "resolvedAt" TIMESTAMP(3)
 );
 
+-- Emergency access grants (ADMIN break-glass writes)
+CREATE TABLE IF NOT EXISTS "EmergencyAccessGrant" (
+  "id" TEXT NOT NULL PRIMARY KEY,
+  "adminUserId" TEXT NOT NULL REFERENCES "User"("id"),
+  "schoolId" TEXT NOT NULL REFERENCES "User"("id") ON DELETE CASCADE,
+  "reason" TEXT NOT NULL,
+  "activatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "expiresAt" TIMESTAMP(3) NOT NULL,
+  "revokedAt" TIMESTAMP(3)
+);
+CREATE INDEX IF NOT EXISTS "EmergencyAccessGrant_admin_school_expiry_idx"
+  ON "EmergencyAccessGrant" ("adminUserId", "schoolId", "expiresAt");
+
 -- Change log
 CREATE TYPE "ChangeAction" AS ENUM ('CREATE', 'UPDATE', 'DELETE');
 CREATE TABLE IF NOT EXISTS "ChangeLog" (
@@ -211,7 +262,8 @@ CREATE TABLE IF NOT EXISTS "ChangeLog" (
   "afterJson" TEXT,
   "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
   "revertedAt" TIMESTAMP(3),
-  "revertedByUserId" TEXT REFERENCES "User"("id")
+  "revertedByUserId" TEXT REFERENCES "User"("id"),
+  "viaEmergencyGrantId" TEXT REFERENCES "EmergencyAccessGrant"("id")
 );
 ```
 
@@ -237,10 +289,11 @@ Note: Postgres requires `ALTER TYPE ... ADD VALUE` to run outside a transaction 
 | New: `app/api/school/staff/route.ts`, `app/api/school/staff/[userId]/route.ts` | List/create/update-tier/remove staff accounts (OWNER/ADMIN only) |
 | New: `app/api/proposals/route.ts`, `app/api/proposals/[id]/route.ts` | Create proposal (ALUMNI/EDITOR), list (OWNER/ADMIN), approve/reject (OWNER/ADMIN) |
 | New: `app/api/school/changelog/route.ts`, `app/api/school/changelog/[id]/revert/route.ts` | List change log, revert (OWNER/ADMIN only) |
+| New: `app/api/admin/emergency-access/activate/route.ts`, `.../revoke/route.ts` | ADMIN-only break-glass grant activation/revocation; activation sends a Resend alert email to both founders |
 
 ## Global Constraints
 
 - All school-scoped API routes must resolve the anchor `schoolId` and check tier via `canManageSchool()`/`canEditDirectly()` — never trust a client-supplied `schoolId` without verifying the caller's membership
-- `ADMIN` bypasses all school-scoped checks unconditionally
+- `ADMIN` has unconditional **read** access to every school. `ADMIN` **writes** require an active, per-school, time-boxed `EmergencyAccessGrant` with a stated reason — never standing access
 - Migrations: raw SQL files in `prisma/migrations/`, `ADD COLUMN IF NOT EXISTS` for safety, enum-value additions split into their own transaction per Postgres rules
 - No new npm packages
