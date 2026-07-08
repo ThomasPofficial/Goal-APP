@@ -128,6 +128,7 @@ model Profile {
   schoolId            String?     // references User.id where role=SCHOOL
   staffTitle          String?     // "Dean", "Counselor", "AP History Teacher", etc.
   phone String?
+  advancementEmail  String?
   // Alumni destination tracking
   linkedinUrl        String?
   employer           String?
@@ -801,6 +802,8 @@ model Campaign {
   imageParams Json
   videoUrl    String?
   active      Boolean           @default(false)
+  goalAmount        Decimal?  @db.Decimal(10, 2)
+  manualAdjustment  Decimal   @db.Decimal(10, 2) @default(0)
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
   pledges     CampaignPledge[]
