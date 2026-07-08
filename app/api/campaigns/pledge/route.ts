@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json().catch(() => ({}));
-  const { causeText, donorName, donorEmail, donorPhone, pledgeAmount } = body;
+  const { causeText, donorName, donorEmail, donorPhone, pledgeAmount, campaignId } = body;
 
   if (!donorName?.trim() || !donorEmail?.trim()) {
     return NextResponse.json({ error: "Name and email are required." }, { status: 400 });
@@ -23,6 +23,7 @@ export async function POST(req: NextRequest) {
       donorEmail: donorEmail.trim(),
       donorPhone: donorPhone?.trim() ?? null,
       pledgeAmount: pledgeAmount ? pledgeAmount : null,
+      campaignId: typeof campaignId === "string" ? campaignId : null,
     },
   });
 
