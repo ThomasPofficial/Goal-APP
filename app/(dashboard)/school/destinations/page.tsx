@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import colleges from "@/lib/colleges.json";
-import { DestinationsMap, BrochureButton } from "./DynamicComponents";
+import { DestinationsMap, BrochureButton, BrochureCurationPanel } from "./DynamicComponents";
 
 type CollegeData = { lat: number; lng: number; state: string };
 const collegeData = colleges as Record<string, CollegeData>;
@@ -11,6 +11,8 @@ const collegeData = colleges as Record<string, CollegeData>;
 export default async function DestinationsPage() {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
+
+  const schoolId = session.user.id;
 
   const dbUser = await prisma.user.findUnique({
     where: { id: session.user.id },
@@ -63,7 +65,7 @@ export default async function DestinationsPage() {
           </p>
         </div>
         <Suspense fallback={null}>
-          <BrochureButton destinations={destinations} totalStudents={totalStudents} states={states} />
+          <BrochureButton />
         </Suspense>
       </div>
 
@@ -135,6 +137,10 @@ export default async function DestinationsPage() {
           </p>
         </div>
       )}
+
+      <Suspense fallback={null}>
+        <BrochureCurationPanel schoolId={schoolId} />
+      </Suspense>
     </div>
   );
 }
