@@ -38,11 +38,119 @@ interface Props {
 
 type Tab = "students" | "alumni" | "staff" | "campaigns";
 
-export default function SchoolDetailClient({ school, members }: Props) {
+const inputStyle: React.CSSProperties = {
+  width: "100%",
+  padding: "8px 12px",
+  border: "1px solid var(--border)",
+  background: "var(--bg)",
+  color: "var(--text)",
+  fontSize: 13,
+  borderRadius: 0,
+  outline: "none",
+  fontFamily: "inherit",
+  boxSizing: "border-box",
+};
+
+const labelStyle: React.CSSProperties = {
+  display: "block",
+  fontSize: 11,
+  fontFamily: "var(--font-mono)",
+  letterSpacing: "0.08em",
+  color: "var(--muted)",
+  marginBottom: 6,
+  textTransform: "uppercase",
+};
+
+export default function SchoolDetailClient({ school, members: initialMembers }: Props) {
+  const [members, setMembers] = useState(initialMembers);
   const [activeTab, setActiveTab] = useState<Tab>("students");
   const [search, setSearch] = useState("");
   const [showAddModal, setShowAddModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
+
+  // Add Member modal form state
+  const [addRole, setAddRole] = useState<"STUDENT" | "ALUMNI" | "STAFF">("STUDENT");
+  const [addName, setAddName] = useState("");
+  const [addEmail, setAddEmail] = useState("");
+  const [addPhone, setAddPhone] = useState("");
+  const [addGradYear, setAddGradYear] = useState("");
+  const [addIntendedCollege, setAddIntendedCollege] = useState("");
+  const [addIntendedMajor, setAddIntendedMajor] = useState("");
+  const [addIndustry, setAddIndustry] = useState("");
+  const [addMentor, setAddMentor] = useState(false);
+  const [addJobTitle, setAddJobTitle] = useState("");
+  const [addError, setAddError] = useState<string | null>(null);
+  const [addLoading, setAddLoading] = useState(false);
+
+  const resetAddForm = () => {
+    setAddRole("STUDENT");
+    setAddName("");
+    setAddEmail("");
+    setAddPhone("");
+    setAddGradYear("");
+    setAddIntendedCollege("");
+    setAddIntendedMajor("");
+    setAddIndustry("");
+    setAddMentor(false);
+    setAddJobTitle("");
+    setAddError(null);
+    setAddLoading(false);
+  };
+
+  const refreshMembers = async () => {
+    try {
+      const res = await fetch(`/api/hq/schools/${school.id}`);
+      if (res.ok) {
+        const data = await res.json();
+        setMembers(data.members);
+      }
+    } catch {
+      // ignore refresh errors silently
+    }
+  };
+
+  const handleAddMember = async () => {
+    if (!addName.trim() || !addEmail.trim()) {
+      setAddError("Name and email are required.");
+      return;
+    }
+    if (addRole === "STAFF" && !addJobTitle.trim()) {
+      setAddError("Job title is required for staff.");
+      return;
+    }
+    setAddLoading(true);
+    setAddError(null);
+    try {
+      const res = await fetch(`/api/hq/schools/${school.id}/members`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          displayName: addName.trim(),
+          email: addEmail.trim(),
+          phone: addPhone.trim() || undefined,
+          role: addRole,
+          graduationYear: addGradYear ? Number(addGradYear) : undefined,
+          intendedCollege: addIntendedCollege.trim() || undefined,
+          intendedMajor: addIntendedMajor.trim() || undefined,
+          industry: addIndustry.trim() || undefined,
+          isAvailableToMentor: addMentor,
+          jobTitle: addJobTitle.trim() || undefined,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setAddError(data.error ?? "Failed to add member.");
+        setAddLoading(false);
+        return;
+      }
+      setShowAddModal(false);
+      resetAddForm();
+      await refreshMembers();
+    } catch {
+      setAddError("Network error. Please try again.");
+      setAddLoading(false);
+    }
+  };
 
   const displayName = school.profile?.displayName ?? school.email ?? school.id;
   const headline = school.profile?.headline ?? null;
@@ -287,7 +395,7 @@ export default function SchoolDetailClient({ school, members }: Props) {
                 Import CSV
               </button>
               <button
-                onClick={() => setShowAddModal(true)}
+                onClick={() => { resetAddForm(); setShowAddModal(true); }}
                 style={{
                   padding: "8px 16px",
                   background: "var(--amber)",
@@ -308,39 +416,7 @@ export default function SchoolDetailClient({ school, members }: Props) {
             </div>
           </div>
 
-          {/* Modal placeholders */}
-          {showAddModal && (
-            <div
-              style={{
-                border: "1px solid var(--border)",
-                background: "var(--surface)",
-                padding: "20px 24px",
-                marginBottom: 16,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <span style={{ fontSize: 14, color: "var(--muted)" }}>
-                Add Member Modal — coming soon
-              </span>
-              <button
-                onClick={() => setShowAddModal(false)}
-                style={{
-                  background: "none",
-                  border: "none",
-                  color: "var(--muted)",
-                  cursor: "pointer",
-                  fontSize: 18,
-                  lineHeight: 1,
-                  padding: 0,
-                }}
-              >
-                &times;
-              </button>
-            </div>
-          )}
-
+          {/* Import CSV placeholder */}
           {showImportModal && (
             <div
               style={{
@@ -547,6 +623,285 @@ export default function SchoolDetailClient({ school, members }: Props) {
               })}
             </div>
           )}
+        </div>
+      )}
+
+      {/* Add Member Modal */}
+      {showAddModal && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.6)",
+            zIndex: 50,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: 16,
+          }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowAddModal(false);
+              resetAddForm();
+            }
+          }}
+        >
+          <div
+            style={{
+              background: "var(--surface)",
+              border: "1px solid var(--border)",
+              borderRadius: 0,
+              padding: 28,
+              width: "100%",
+              maxWidth: 480,
+              position: "relative",
+              maxHeight: "90vh",
+              overflowY: "auto",
+            }}
+          >
+            {/* Close button */}
+            <button
+              onClick={() => { setShowAddModal(false); resetAddForm(); }}
+              style={{
+                position: "absolute",
+                top: 16,
+                right: 16,
+                background: "none",
+                border: "none",
+                color: "var(--muted)",
+                cursor: "pointer",
+                fontSize: 22,
+                lineHeight: 1,
+                padding: 0,
+              }}
+            >
+              &times;
+            </button>
+
+            <h2
+              style={{
+                fontFamily: "var(--font-display)",
+                fontSize: 20,
+                fontWeight: 700,
+                margin: "0 0 20px",
+                color: "var(--text)",
+              }}
+            >
+              Add Member
+            </h2>
+
+            {/* Role selector */}
+            <div style={{ marginBottom: 18 }}>
+              <label style={labelStyle}>Role</label>
+              <div style={{ display: "flex", gap: 8 }}>
+                {(["STUDENT", "ALUMNI", "STAFF"] as const).map((r) => (
+                  <button
+                    key={r}
+                    type="button"
+                    onClick={() => setAddRole(r)}
+                    style={{
+                      padding: "6px 14px",
+                      borderRadius: 0,
+                      border:
+                        addRole === r
+                          ? "1px solid var(--amber)"
+                          : "1px solid var(--border)",
+                      background: addRole === r ? "var(--amber)" : "transparent",
+                      color: addRole === r ? "#000" : "var(--muted)",
+                      fontFamily: "var(--font-mono)",
+                      fontSize: 11,
+                      fontWeight: 700,
+                      letterSpacing: "0.08em",
+                      textTransform: "uppercase",
+                      cursor: "pointer",
+                    }}
+                  >
+                    {r === "STUDENT" ? "Student" : r === "ALUMNI" ? "Alumni" : "Staff"}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Full Name */}
+            <div style={{ marginBottom: 14 }}>
+              <label style={labelStyle}>Full Name *</label>
+              <input
+                type="text"
+                value={addName}
+                onChange={(e) => setAddName(e.target.value)}
+                placeholder="Jane Smith"
+                style={inputStyle}
+              />
+            </div>
+
+            {/* Email */}
+            <div style={{ marginBottom: 14 }}>
+              <label style={labelStyle}>Email *</label>
+              <input
+                type="email"
+                value={addEmail}
+                onChange={(e) => setAddEmail(e.target.value)}
+                placeholder="jane@school.edu"
+                style={inputStyle}
+              />
+            </div>
+
+            {/* Phone */}
+            <div style={{ marginBottom: 14 }}>
+              <label style={labelStyle}>Phone</label>
+              <input
+                type="tel"
+                value={addPhone}
+                onChange={(e) => setAddPhone(e.target.value)}
+                placeholder="+1 (555) 000-0000"
+                style={inputStyle}
+              />
+            </div>
+
+            {/* Student-specific fields */}
+            {addRole === "STUDENT" && (
+              <>
+                <div style={{ marginBottom: 14 }}>
+                  <label style={labelStyle}>Graduation Year</label>
+                  <input
+                    type="number"
+                    value={addGradYear}
+                    onChange={(e) => setAddGradYear(e.target.value)}
+                    placeholder="2026"
+                    style={inputStyle}
+                  />
+                </div>
+                <div style={{ marginBottom: 14 }}>
+                  <label style={labelStyle}>Intended College</label>
+                  <input
+                    type="text"
+                    value={addIntendedCollege}
+                    onChange={(e) => setAddIntendedCollege(e.target.value)}
+                    placeholder="MIT"
+                    style={inputStyle}
+                  />
+                </div>
+                <div style={{ marginBottom: 14 }}>
+                  <label style={labelStyle}>Intended Major</label>
+                  <input
+                    type="text"
+                    value={addIntendedMajor}
+                    onChange={(e) => setAddIntendedMajor(e.target.value)}
+                    placeholder="Computer Science"
+                    style={inputStyle}
+                  />
+                </div>
+              </>
+            )}
+
+            {/* Alumni-specific fields */}
+            {addRole === "ALUMNI" && (
+              <>
+                <div style={{ marginBottom: 14 }}>
+                  <label style={labelStyle}>Graduation Year</label>
+                  <input
+                    type="number"
+                    value={addGradYear}
+                    onChange={(e) => setAddGradYear(e.target.value)}
+                    placeholder="2020"
+                    style={inputStyle}
+                  />
+                </div>
+                <div style={{ marginBottom: 14 }}>
+                  <label style={labelStyle}>Industry</label>
+                  <input
+                    type="text"
+                    value={addIndustry}
+                    onChange={(e) => setAddIndustry(e.target.value)}
+                    placeholder="Technology"
+                    style={inputStyle}
+                  />
+                </div>
+                <div style={{ marginBottom: 14 }}>
+                  <label style={labelStyle}>College Attended</label>
+                  <input
+                    type="text"
+                    value={addIntendedCollege}
+                    onChange={(e) => setAddIntendedCollege(e.target.value)}
+                    placeholder="Stanford University"
+                    style={inputStyle}
+                  />
+                </div>
+                <div style={{ marginBottom: 18, display: "flex", alignItems: "center", gap: 10 }}>
+                  <input
+                    type="checkbox"
+                    id="addMentor"
+                    checked={addMentor}
+                    onChange={(e) => setAddMentor(e.target.checked)}
+                    style={{ width: 16, height: 16, cursor: "pointer", accentColor: "var(--amber)" }}
+                  />
+                  <label
+                    htmlFor="addMentor"
+                    style={{
+                      fontSize: 13,
+                      color: "var(--text)",
+                      cursor: "pointer",
+                      userSelect: "none",
+                    }}
+                  >
+                    Open to mentoring students
+                  </label>
+                </div>
+              </>
+            )}
+
+            {/* Staff-specific fields */}
+            {addRole === "STAFF" && (
+              <div style={{ marginBottom: 14 }}>
+                <label style={labelStyle}>Job Title *</label>
+                <input
+                  type="text"
+                  value={addJobTitle}
+                  onChange={(e) => setAddJobTitle(e.target.value)}
+                  placeholder="School Counselor"
+                  style={inputStyle}
+                />
+              </div>
+            )}
+
+            {/* Error */}
+            {addError && (
+              <p
+                style={{
+                  color: "#e05",
+                  fontSize: 13,
+                  margin: "0 0 12px",
+                  fontFamily: "var(--font-mono)",
+                }}
+              >
+                {addError}
+              </p>
+            )}
+
+            {/* Submit */}
+            <button
+              onClick={handleAddMember}
+              disabled={addLoading}
+              style={{
+                width: "100%",
+                padding: "10px 0",
+                background: "var(--amber)",
+                border: "1px solid var(--amber)",
+                color: "#000",
+                fontFamily: "var(--font-mono)",
+                fontSize: 12,
+                fontWeight: 700,
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                cursor: addLoading ? "not-allowed" : "pointer",
+                borderRadius: 0,
+                opacity: addLoading ? 0.7 : 1,
+                marginTop: 4,
+              }}
+            >
+              {addLoading ? "Adding…" : "Add Member"}
+            </button>
+          </div>
         </div>
       )}
     </div>
