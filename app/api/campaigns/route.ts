@@ -7,6 +7,11 @@ export async function GET() {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const dbUser = await prisma.user.findUnique({ where: { id: session.user.id }, select: { role: true } });
+  if (dbUser?.role !== "SCHOOL" && dbUser?.role !== "ADMIN") {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   const campaigns = await prisma.campaign.findMany({
     where: { schoolId: session.user.id },
     orderBy: { createdAt: "desc" },
@@ -31,6 +36,11 @@ export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const dbUser2 = await prisma.user.findUnique({ where: { id: session.user.id }, select: { role: true } });
+  if (dbUser2?.role !== "SCHOOL" && dbUser2?.role !== "ADMIN") {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   const body = await req.json().catch(() => ({}));
   const { campaignId } = body;
   if (!campaignId) return NextResponse.json({ error: "campaignId required" }, { status: 400 });
@@ -42,10 +52,21 @@ export async function POST(req: NextRequest) {
 
   const slug = generateSlug(campaign.headline);
 
-  const published = await prisma.campaign.update({
-    where: { id: campaignId },
-    data: { slug, active: true },
-  });
-
-  return NextResponse.json({ slug: published.slug });
+  try {
+    const published = await prisma.campaign.update({
+      where: { id: campaignId },
+      data: { slug, active: true },
+    });
+    return NextResponse.json({ slug: published.slug });
+  } catch (err: unknown) {
+    if (typeof err === "object" && err !== null && "code" in err && (err as { code: string }).code === "P2002") {
+      const retry = generateSlug(campaign.headline);
+      const published2 = await prisma.campaign.update({
+        where: { id: campaignId },
+        data: { slug: retry, active: true },
+      });
+      return NextResponse.json({ slug: published2.slug });
+    }
+    throw err;
+  }
 }

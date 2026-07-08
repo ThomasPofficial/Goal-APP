@@ -53,7 +53,7 @@ export default function PledgeModal({ campaignId, ctaText, onClose }: Props) {
           <div style={{ textAlign: "center", padding: "24px 0" }}>
             <CheckCircle size={48} style={{ color: "#22c55e", margin: "0 auto 16px" }} />
             <h3 style={{ fontFamily: "var(--font-display)", fontSize: 22, letterSpacing: "-0.02em", color: "var(--text)", margin: "0 0 8px" }}>Pledge Recorded!</h3>
-            <p style={{ color: "var(--n-text2)", fontSize: 14, margin: 0 }}>Thank you. A confirmation has been sent to your email.</p>
+            <p style={{ color: "var(--n-text2)", fontSize: 14, margin: 0 }}>Thank you. Your pledge has been recorded!</p>
           </div>
         ) : (
           <>

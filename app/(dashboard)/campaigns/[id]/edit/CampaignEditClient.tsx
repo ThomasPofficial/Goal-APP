@@ -129,8 +129,8 @@ export default function CampaignEditClient({ campaign: initial, versions: initia
 
         <button
           onClick={regenerate}
-          disabled={generating || !causeInput.trim()}
-          style={{ padding: "10px 0", border: "none", background: generating || !causeInput.trim() ? "var(--n-bg3)" : "var(--amber)", color: generating || !causeInput.trim() ? "var(--n-text2)" : "#000", fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", cursor: generating || !causeInput.trim() ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
+          disabled={generating || causeInput.trim().length < 10}
+          style={{ padding: "10px 0", border: "none", background: generating || causeInput.trim().length < 10 ? "var(--n-bg3)" : "var(--amber)", color: generating || causeInput.trim().length < 10 ? "var(--n-text2)" : "#000", fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", cursor: generating || causeInput.trim().length < 10 ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
         >
           {generating
             ? <><Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} /> Regenerating…</>

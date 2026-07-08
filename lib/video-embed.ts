@@ -6,7 +6,7 @@ export interface VideoEmbed {
 
 export function extractVideoId(rawUrl: string): VideoEmbed | null {
   const ytMatch = rawUrl.match(
-    /(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/
   );
   if (ytMatch) {
     return {
