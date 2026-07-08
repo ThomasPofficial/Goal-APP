@@ -43,7 +43,7 @@ export default function VersionHistoryDrawer({ versions, onRestore, onClose }: P
                   {i === 0 && (
                     <span style={{ flexShrink: 0, fontFamily: "var(--font-mono)", fontSize: 9, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--amber)", padding: "1px 6px", border: "1px solid var(--amber)" }}>Current</span>
                   )}
-                  {v.restoredFrom && (
+                  {v.restoredFrom && i > 0 && (
                     <span style={{ flexShrink: 0, fontFamily: "var(--font-mono)", fontSize: 9, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--n-text2)" }}>Restored</span>
                   )}
                 </div>
@@ -52,7 +52,7 @@ export default function VersionHistoryDrawer({ versions, onRestore, onClose }: P
                 </p>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                   <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--n-text2)" }}>
-                    {new Date(v.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                    {new Date(v.createdAt).toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
                   </span>
                   {i > 0 && (
                     <button

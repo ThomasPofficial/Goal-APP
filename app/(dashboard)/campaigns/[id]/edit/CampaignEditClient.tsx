@@ -67,7 +67,7 @@ export default function CampaignEditClient({ campaign: initial, versions: initia
     try {
       const res = await fetch(`/api/campaigns/${current.id}/versions/${versionId}/restore`, { method: "POST" });
       if (!res.ok) throw new Error("Restore failed");
-      const data = await res.json() as CampaignData;
+      const data = await res.json() as { cause: string; headline: string; subheadline: string; body: string; ctaText: string; imageParams: ImageParams };
       setCurrent((prev) => ({ ...prev, ...data }));
       setCauseInput(data.cause);
       await refreshVersions();
