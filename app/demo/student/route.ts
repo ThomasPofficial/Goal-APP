@@ -11,16 +11,13 @@ export async function GET() {
       redirectTo: "/dashboard",
     });
   } catch (error) {
-    const digest = (error as { digest?: string })?.digest ?? "";
-    if (digest.startsWith("NEXT_REDIRECT")) throw error;
-    return NextResponse.json(
-      {
-        debug: true,
-        name: (error as Error)?.name,
-        message: (error as Error)?.message,
-        digest,
-      },
-      { status: 500 }
-    );
+    return NextResponse.json({
+      debug: true,
+      name: (error as Error)?.name,
+      message: (error as Error)?.message,
+      digest: (error as { digest?: string })?.digest,
+      stack: (error as Error)?.stack?.split("\n").slice(0, 5),
+    });
   }
+  return NextResponse.json({ debug: true, note: "signIn returned without throwing" });
 }
