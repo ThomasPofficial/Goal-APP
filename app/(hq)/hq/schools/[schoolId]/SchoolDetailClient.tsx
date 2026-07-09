@@ -82,6 +82,23 @@ export default function SchoolDetailClient({ school, members: initialMembers }: 
   const [addError, setAddError] = useState<string | null>(null);
   const [addLoading, setAddLoading] = useState(false);
 
+  // Edit Member modal state
+  const [editingMember, setEditingMember] = useState<Member | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editPhone, setEditPhone] = useState("");
+  const [editGradYear, setEditGradYear] = useState("");
+  const [editIntendedCollege, setEditIntendedCollege] = useState("");
+  const [editIntendedMajor, setEditIntendedMajor] = useState("");
+  const [editIndustry, setEditIndustry] = useState("");
+  const [editMentor, setEditMentor] = useState(false);
+  const [editJobTitle, setEditJobTitle] = useState("");
+  const [editError, setEditError] = useState<string | null>(null);
+  const [editLoading, setEditLoading] = useState(false);
+
+  // Remove state
+  const [removingId, setRemovingId] = useState<string | null>(null);
+  const [removeError, setRemoveError] = useState<string | null>(null);
+
   const resetAddForm = () => {
     setAddRole("STUDENT");
     setAddName("");
@@ -149,6 +166,101 @@ export default function SchoolDetailClient({ school, members: initialMembers }: 
     } catch {
       setAddError("Network error. Please try again.");
       setAddLoading(false);
+    }
+  };
+
+  const openEditModal = (m: Member) => {
+    setEditingMember(m);
+    setEditName(m.displayName);
+    setEditPhone(m.phone ?? "");
+    setEditGradYear(m.graduationYear ? String(m.graduationYear) : "");
+    setEditIntendedCollege(m.intendedCollege ?? "");
+    setEditIntendedMajor(m.intendedMajor ?? "");
+    setEditIndustry(m.industry ?? "");
+    setEditMentor(m.isAvailableToMentor);
+    setEditJobTitle(m.staffTitle ?? "");
+    setEditError(null);
+    setEditLoading(false);
+  };
+
+  const closeEditModal = () => {
+    setEditingMember(null);
+    setEditError(null);
+    setEditLoading(false);
+  };
+
+  const handleEditMember = async () => {
+    if (!editingMember) return;
+    if (!editName.trim()) {
+      setEditError("Display name is required.");
+      return;
+    }
+    setEditLoading(true);
+    setEditError(null);
+    try {
+      const isStaff = editingMember.staffTitle !== null;
+      const isAlumni = editingMember.isAlumni;
+      const res = await fetch(
+        `/api/hq/schools/${school.id}/members/${editingMember.userId}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            displayName: editName.trim(),
+            phone: editPhone.trim() || undefined,
+            ...(isStaff
+              ? { jobTitle: editJobTitle.trim() || undefined }
+              : isAlumni
+              ? {
+                  graduationYear: editGradYear ? Number(editGradYear) : undefined,
+                  industry: editIndustry.trim() || undefined,
+                  intendedCollege: editIntendedCollege.trim() || undefined,
+                  isAvailableToMentor: editMentor,
+                }
+              : {
+                  graduationYear: editGradYear ? Number(editGradYear) : undefined,
+                  intendedCollege: editIntendedCollege.trim() || undefined,
+                  intendedMajor: editIntendedMajor.trim() || undefined,
+                }),
+          }),
+        }
+      );
+      const data = await res.json();
+      if (!res.ok) {
+        setEditError(data.error ?? "Failed to save changes.");
+        setEditLoading(false);
+        return;
+      }
+      closeEditModal();
+      await refreshMembers();
+    } catch {
+      setEditError("Network error. Please try again.");
+      setEditLoading(false);
+    }
+  };
+
+  const handleRemoveMember = async (m: Member) => {
+    const confirmed = window.confirm(
+      `Remove ${m.displayName} from this school? They will lose access to the school community.`
+    );
+    if (!confirmed) return;
+    setRemovingId(m.userId);
+    setRemoveError(null);
+    try {
+      const res = await fetch(
+        `/api/hq/schools/${school.id}/members/${m.userId}`,
+        { method: "DELETE" }
+      );
+      if (!res.ok) {
+        const data = await res.json();
+        setRemoveError(data.error ?? "Failed to remove member.");
+      } else {
+        await refreshMembers();
+      }
+    } catch {
+      setRemoveError("Network error. Please try again.");
+    } finally {
+      setRemovingId(null);
     }
   };
 
@@ -468,6 +580,41 @@ export default function SchoolDetailClient({ school, members: initialMembers }: 
             </div>
           )}
 
+          {/* Remove error */}
+          {removeError && (
+            <div
+              style={{
+                border: "1px solid rgba(239,68,68,0.4)",
+                background: "rgba(239,68,68,0.08)",
+                padding: "10px 14px",
+                marginBottom: 12,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 10,
+              }}
+            >
+              <span style={{ fontSize: 13, color: "#ef4444", fontFamily: "var(--font-mono)" }}>
+                {removeError}
+              </span>
+              <button
+                onClick={() => setRemoveError(null)}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "#ef4444",
+                  cursor: "pointer",
+                  fontSize: 18,
+                  lineHeight: 1,
+                  padding: 0,
+                  flexShrink: 0,
+                }}
+              >
+                &times;
+              </button>
+            </div>
+          )}
+
           {/* Member rows */}
           {tabMembers.length > 0 && (
             <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
@@ -583,39 +730,39 @@ export default function SchoolDetailClient({ school, members: initialMembers }: 
                       {m.userId.slice(0, 8)}…
                     </span>
 
-                    {/* Action stubs */}
+                    {/* Actions */}
                     <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
                       <button
-                        disabled
-                        title="Edit (coming soon)"
+                        onClick={() => openEditModal(m)}
+                        title="Edit member"
                         style={{
                           padding: "5px 10px",
                           background: "transparent",
                           border: "1px solid var(--border)",
-                          color: "var(--muted)",
-                          cursor: "not-allowed",
+                          color: "var(--n-text2)",
+                          cursor: "pointer",
                           borderRadius: 0,
                           fontSize: 12,
-                          opacity: 0.5,
                         }}
                       >
                         ✏
                       </button>
                       <button
-                        disabled
-                        title="Remove (coming soon)"
+                        onClick={() => handleRemoveMember(m)}
+                        disabled={removingId === m.userId}
+                        title="Remove member"
                         style={{
                           padding: "5px 10px",
                           background: "transparent",
-                          border: "1px solid var(--border)",
-                          color: "var(--muted)",
-                          cursor: "not-allowed",
+                          border: `1px solid ${removingId === m.userId ? "var(--border)" : "rgba(239,68,68,0.4)"}`,
+                          color: removingId === m.userId ? "var(--muted)" : "#ef4444",
+                          cursor: removingId === m.userId ? "not-allowed" : "pointer",
                           borderRadius: 0,
                           fontSize: 12,
-                          opacity: 0.5,
+                          opacity: removingId === m.userId ? 0.6 : 1,
                         }}
                       >
-                        🗑
+                        {removingId === m.userId ? "Removing…" : "🗑"}
                       </button>
                     </div>
                   </div>
@@ -623,6 +770,235 @@ export default function SchoolDetailClient({ school, members: initialMembers }: 
               })}
             </div>
           )}
+        </div>
+      )}
+
+      {/* Edit Member Modal */}
+      {editingMember && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.6)",
+            zIndex: 50,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: 16,
+          }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) closeEditModal();
+          }}
+        >
+          <div
+            style={{
+              background: "var(--surface)",
+              border: "1px solid var(--border)",
+              borderRadius: 0,
+              padding: 28,
+              width: "100%",
+              maxWidth: 480,
+              position: "relative",
+              maxHeight: "90vh",
+              overflowY: "auto",
+            }}
+          >
+            {/* Close button */}
+            <button
+              onClick={closeEditModal}
+              style={{
+                position: "absolute",
+                top: 16,
+                right: 16,
+                background: "none",
+                border: "none",
+                color: "var(--muted)",
+                cursor: "pointer",
+                fontSize: 22,
+                lineHeight: 1,
+                padding: 0,
+              }}
+            >
+              &times;
+            </button>
+
+            <h2
+              style={{
+                fontFamily: "var(--font-display)",
+                fontSize: 20,
+                fontWeight: 700,
+                margin: "0 0 20px",
+                color: "var(--text)",
+              }}
+            >
+              Edit Member
+            </h2>
+
+            {/* Display Name */}
+            <div style={{ marginBottom: 14 }}>
+              <label style={labelStyle}>Display Name *</label>
+              <input
+                type="text"
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                placeholder="Jane Smith"
+                style={inputStyle}
+              />
+            </div>
+
+            {/* Phone */}
+            <div style={{ marginBottom: 14 }}>
+              <label style={labelStyle}>Phone</label>
+              <input
+                type="tel"
+                value={editPhone}
+                onChange={(e) => setEditPhone(e.target.value)}
+                placeholder="+1 (555) 000-0000"
+                style={inputStyle}
+              />
+            </div>
+
+            {/* Role-specific fields */}
+            {editingMember.staffTitle !== null ? (
+              /* Staff fields */
+              <div style={{ marginBottom: 14 }}>
+                <label style={labelStyle}>Job Title</label>
+                <input
+                  type="text"
+                  value={editJobTitle}
+                  onChange={(e) => setEditJobTitle(e.target.value)}
+                  placeholder="School Counselor"
+                  style={inputStyle}
+                />
+              </div>
+            ) : editingMember.isAlumni ? (
+              /* Alumni fields */
+              <>
+                <div style={{ marginBottom: 14 }}>
+                  <label style={labelStyle}>Graduation Year</label>
+                  <input
+                    type="number"
+                    value={editGradYear}
+                    onChange={(e) => setEditGradYear(e.target.value)}
+                    placeholder="2020"
+                    style={inputStyle}
+                  />
+                </div>
+                <div style={{ marginBottom: 14 }}>
+                  <label style={labelStyle}>Industry</label>
+                  <input
+                    type="text"
+                    value={editIndustry}
+                    onChange={(e) => setEditIndustry(e.target.value)}
+                    placeholder="Technology"
+                    style={inputStyle}
+                  />
+                </div>
+                <div style={{ marginBottom: 14 }}>
+                  <label style={labelStyle}>College Attended</label>
+                  <input
+                    type="text"
+                    value={editIntendedCollege}
+                    onChange={(e) => setEditIntendedCollege(e.target.value)}
+                    placeholder="Stanford University"
+                    style={inputStyle}
+                  />
+                </div>
+                <div style={{ marginBottom: 18, display: "flex", alignItems: "center", gap: 10 }}>
+                  <input
+                    type="checkbox"
+                    id="editMentor"
+                    checked={editMentor}
+                    onChange={(e) => setEditMentor(e.target.checked)}
+                    style={{ width: 16, height: 16, cursor: "pointer", accentColor: "var(--amber)" }}
+                  />
+                  <label
+                    htmlFor="editMentor"
+                    style={{
+                      fontSize: 13,
+                      color: "var(--text)",
+                      cursor: "pointer",
+                      userSelect: "none",
+                    }}
+                  >
+                    Open to mentoring students
+                  </label>
+                </div>
+              </>
+            ) : (
+              /* Student fields */
+              <>
+                <div style={{ marginBottom: 14 }}>
+                  <label style={labelStyle}>Graduation Year</label>
+                  <input
+                    type="number"
+                    value={editGradYear}
+                    onChange={(e) => setEditGradYear(e.target.value)}
+                    placeholder="2026"
+                    style={inputStyle}
+                  />
+                </div>
+                <div style={{ marginBottom: 14 }}>
+                  <label style={labelStyle}>Intended College</label>
+                  <input
+                    type="text"
+                    value={editIntendedCollege}
+                    onChange={(e) => setEditIntendedCollege(e.target.value)}
+                    placeholder="MIT"
+                    style={inputStyle}
+                  />
+                </div>
+                <div style={{ marginBottom: 14 }}>
+                  <label style={labelStyle}>Intended Major</label>
+                  <input
+                    type="text"
+                    value={editIntendedMajor}
+                    onChange={(e) => setEditIntendedMajor(e.target.value)}
+                    placeholder="Computer Science"
+                    style={inputStyle}
+                  />
+                </div>
+              </>
+            )}
+
+            {/* Error */}
+            {editError && (
+              <p
+                style={{
+                  color: "#e05",
+                  fontSize: 13,
+                  margin: "0 0 12px",
+                  fontFamily: "var(--font-mono)",
+                }}
+              >
+                {editError}
+              </p>
+            )}
+
+            {/* Submit */}
+            <button
+              onClick={handleEditMember}
+              disabled={editLoading}
+              style={{
+                width: "100%",
+                padding: "10px 0",
+                background: "var(--amber)",
+                border: "1px solid var(--amber)",
+                color: "#000",
+                fontFamily: "var(--font-mono)",
+                fontSize: 12,
+                fontWeight: 700,
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                cursor: editLoading ? "not-allowed" : "pointer",
+                borderRadius: 0,
+                opacity: editLoading ? 0.7 : 1,
+                marginTop: 4,
+              }}
+            >
+              {editLoading ? "Saving…" : "Save Changes"}
+            </button>
+          </div>
         </div>
       )}
 
