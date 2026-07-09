@@ -23,28 +23,28 @@ export default function DemoPage() {
         </p>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-4">
         <Link
           href="/demo/student"
-          className="w-full flex items-center gap-3 text-sm py-3 px-4"
-          style={{ background: "var(--surface2)", color: "var(--text)", border: "1px solid var(--border-md)", borderRadius: 6 }}
+          className="w-full flex items-center gap-4 py-5 px-6"
+          style={{ background: "var(--surface2)", color: "var(--text)", border: "1px solid var(--border-md)", borderRadius: 8 }}
         >
-          <GraduationCap className="w-5 h-5" style={{ color: "var(--amber, #E8893A)" }} />
+          <GraduationCap className="w-8 h-8 flex-shrink-0" style={{ color: "var(--amber, #E8893A)" }} />
           <span>
-            <span className="block font-semibold">Explore as a Student</span>
-            <span className="block text-xs" style={{ color: "var(--muted)" }}>Profile, community, mentorship</span>
+            <span className="block font-semibold text-lg">Explore as a Student</span>
+            <span className="block text-sm mt-0.5" style={{ color: "var(--muted)" }}>Profile, community, mentorship</span>
           </span>
         </Link>
 
         <Link
           href="/demo/school"
-          className="w-full flex items-center gap-3 text-sm py-3 px-4"
-          style={{ background: "var(--amber, #E8893A)", color: "#000", borderRadius: 6, fontWeight: 600, boxShadow: "0 4px 20px rgba(232,137,58,0.35)" }}
+          className="w-full flex items-center gap-4 py-5 px-6"
+          style={{ background: "var(--amber, #E8893A)", color: "#000", borderRadius: 8, fontWeight: 600, boxShadow: "0 4px 20px rgba(232,137,58,0.35)" }}
         >
-          <School className="w-5 h-5" />
+          <School className="w-8 h-8 flex-shrink-0" />
           <span>
-            <span className="block font-semibold">Explore as a School Admin</span>
-            <span className="block text-xs" style={{ opacity: 0.75 }}>Roster, brochure, communities, campaigns</span>
+            <span className="block font-semibold text-lg">Explore as a School Admin</span>
+            <span className="block text-sm mt-0.5" style={{ opacity: 0.75 }}>Roster, brochure, communities, campaigns</span>
           </span>
         </Link>
       </div>
