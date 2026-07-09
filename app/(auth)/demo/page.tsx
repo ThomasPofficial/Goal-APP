@@ -25,7 +25,7 @@ export default function DemoPage() {
 
       <div className="space-y-4">
         <Link
-          href="/demo/student"
+          href="/login?email=thomas%40piacentine.dev&password=demo2026&auto=1"
           className="w-full flex items-center gap-4 py-5 px-6"
           style={{ background: "var(--surface2)", color: "var(--text)", border: "1px solid var(--border-md)", borderRadius: 8 }}
         >
@@ -37,7 +37,7 @@ export default function DemoPage() {
         </Link>
 
         <Link
-          href="/demo/school"
+          href="/login?email=school%40nivarro.demo&password=demo2026&auto=1"
           className="w-full flex items-center gap-4 py-5 px-6"
           style={{ background: "var(--amber, #E8893A)", color: "#000", borderRadius: 8, fontWeight: 600, boxShadow: "0 4px 20px rgba(232,137,58,0.35)" }}
         >
