@@ -1,19 +1,26 @@
+import { NextResponse } from "next/server";
 import { signIn } from "@/lib/auth";
 
-// Passwordless demo entry point — signs the visitor straight into the
-// Westside Academy student demo account. Share this link directly with
-// prospects; no login screen, no credentials to type.
-//
-// force-dynamic: without this, Next.js can statically pre-render this
-// GET handler at build time (since it reads nothing from the request),
-// which would execute signIn() once at build and cache that response
-// for every visitor forever.
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  await signIn("credentials", {
-    email: "thomas@piacentine.dev",
-    password: "demo2026",
-    redirectTo: "/dashboard",
-  });
+  try {
+    await signIn("credentials", {
+      email: "thomas@piacentine.dev",
+      password: "demo2026",
+      redirectTo: "/dashboard",
+    });
+  } catch (error) {
+    const digest = (error as { digest?: string })?.digest ?? "";
+    if (digest.startsWith("NEXT_REDIRECT")) throw error;
+    return NextResponse.json(
+      {
+        debug: true,
+        name: (error as Error)?.name,
+        message: (error as Error)?.message,
+        digest,
+      },
+      { status: 500 }
+    );
+  }
 }
