@@ -12,7 +12,6 @@ import type { GeniusType } from "@/data/traits";
 const STUDENT_NAV_BASE = [
   { href: "/dashboard",      label: "Dashboard",     Icon: LayoutDashboard },
   { href: "/my-school",      label: "My School",     Icon: School },
-  { href: "/alumni",         label: "Alumni",        Icon: GraduationCap },
   { href: "/communities",    label: "Communities",   Icon: Globe },
   { href: "/peers",          label: "Peers",         Icon: Users },
   { href: "/orgs",           label: "Orgs",          Icon: Building2 },
