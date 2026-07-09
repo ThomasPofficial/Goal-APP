@@ -64,17 +64,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ],
   callbacks: {
     async redirect({ url, baseUrl }) {
-      const TRUSTED_ORIGINS = [
-        "https://app.nivarro.co",
-        "https://goal-app-3.onrender.com",
-        baseUrl.replace(/\/$/, ""),
-      ];
-      if (url.startsWith("/")) return `https://app.nivarro.co${url}`;
+      // In production, AUTH_URL may be misconfigured — ignore baseUrl and
+      // always use the canonical app domain so login redirects land correctly.
+      const canonicalBase =
+        process.env.NODE_ENV === "production"
+          ? "https://app.nivarro.co"
+          : baseUrl.replace(/\/$/, "");
+      if (url.startsWith("/")) return `${canonicalBase}${url}`;
       try {
-        const origin = new URL(url).origin;
-        if (TRUSTED_ORIGINS.some((o) => o === origin)) return url;
+        if (new URL(url).origin === canonicalBase) return url;
       } catch {}
-      return "https://app.nivarro.co/dashboard";
+      return `${canonicalBase}/dashboard`;
     },
     async jwt({ token, user }) {
       if (user) {
