@@ -44,9 +44,21 @@ interface ParsedRow {
   jobTitle: string;
 }
 
+interface Campaign {
+  id: string;
+  title: string;
+  cause: string;
+  goalAmount: number | null;
+  manualAdjustment: number;
+  pledgeTotal: number;
+  active: boolean;
+  createdAt: string;
+}
+
 interface Props {
   school: School;
   members: Member[];
+  campaigns: Campaign[];
 }
 
 type Tab = "students" | "alumni" | "staff" | "campaigns";
@@ -101,12 +113,24 @@ const labelStyle: React.CSSProperties = {
   textTransform: "uppercase",
 };
 
-export default function SchoolDetailClient({ school, members: initialMembers }: Props) {
+export default function SchoolDetailClient({ school, members: initialMembers, campaigns: initialCampaigns }: Props) {
   const [members, setMembers] = useState(initialMembers);
   const [activeTab, setActiveTab] = useState<Tab>("students");
   const [search, setSearch] = useState("");
   const [showAddModal, setShowAddModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
+
+  // Campaign state
+  const [campaigns, setCampaigns] = useState<Campaign[]>(initialCampaigns);
+  const [adjustAmounts, setAdjustAmounts] = useState<Record<string, string>>({});
+  const [adjusting, setAdjusting] = useState<Record<string, boolean>>({});
+  const [adjustErrors, setAdjustErrors] = useState<Record<string, string>>({});
+  const [showNewCampaignModal, setShowNewCampaignModal] = useState(false);
+  const [newCampaignTitle, setNewCampaignTitle] = useState("");
+  const [newCampaignCause, setNewCampaignCause] = useState("");
+  const [newCampaignGoal, setNewCampaignGoal] = useState("");
+  const [newCampaignError, setNewCampaignError] = useState<string | null>(null);
+  const [newCampaignLoading, setNewCampaignLoading] = useState(false);
 
   // Add Member modal form state
   const [addRole, setAddRole] = useState<"STUDENT" | "ALUMNI" | "STAFF">("STUDENT");
@@ -174,6 +198,93 @@ export default function SchoolDetailClient({ school, members: initialMembers }: 
       }
     } catch {
       // ignore refresh errors silently
+    }
+  };
+
+  const refreshCampaigns = async () => {
+    try {
+      const res = await fetch(`/api/hq/schools/${school.id}/campaigns`);
+      if (res.ok) {
+        const data = await res.json();
+        setCampaigns(data);
+      }
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleAdjust = async (campaignId: string) => {
+    const amountStr = adjustAmounts[campaignId] ?? "";
+    const amount = parseFloat(amountStr);
+    if (!amount || amount <= 0) {
+      setAdjustErrors((prev) => ({ ...prev, [campaignId]: "Enter an amount greater than 0." }));
+      return;
+    }
+    setAdjusting((prev) => ({ ...prev, [campaignId]: true }));
+    setAdjustErrors((prev) => ({ ...prev, [campaignId]: "" }));
+    try {
+      const res = await fetch(`/api/campaigns/${campaignId}/adjust`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setAdjustErrors((prev) => ({ ...prev, [campaignId]: data.error ?? "Failed to update." }));
+      } else {
+        setCampaigns((prev) =>
+          prev.map((c) =>
+            c.id === campaignId
+              ? { ...c, manualAdjustment: data.newTotal }
+              : c
+          )
+        );
+        setAdjustAmounts((prev) => ({ ...prev, [campaignId]: "" }));
+      }
+    } catch {
+      setAdjustErrors((prev) => ({ ...prev, [campaignId]: "Network error. Please try again." }));
+    } finally {
+      setAdjusting((prev) => ({ ...prev, [campaignId]: false }));
+    }
+  };
+
+  const handleCreateCampaign = async () => {
+    if (!newCampaignTitle.trim() || !newCampaignCause.trim()) {
+      setNewCampaignError("Title and cause are required.");
+      return;
+    }
+    if (!newCampaignGoal || Number(newCampaignGoal) <= 0) {
+      setNewCampaignError("Goal amount is required and must be greater than 0.");
+      return;
+    }
+    setNewCampaignLoading(true);
+    setNewCampaignError(null);
+    try {
+      const res = await fetch(`/api/hq/schools/${school.id}/campaigns`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: newCampaignTitle.trim(),
+          cause: newCampaignCause.trim(),
+          goalAmount: Number(newCampaignGoal),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setNewCampaignError(data.error ?? "Failed to create campaign.");
+        setNewCampaignLoading(false);
+        return;
+      }
+      setShowNewCampaignModal(false);
+      setNewCampaignTitle("");
+      setNewCampaignCause("");
+      setNewCampaignGoal("");
+      setNewCampaignError(null);
+      await refreshCampaigns();
+    } catch {
+      setNewCampaignError("Network error. Please try again.");
+    } finally {
+      setNewCampaignLoading(false);
     }
   };
 
@@ -566,11 +677,407 @@ export default function SchoolDetailClient({ school, members: initialMembers }: 
         })}
       </div>
 
-      {/* Campaigns placeholder */}
+      {/* Campaigns tab */}
       {activeTab === "campaigns" && (
-        <p style={{ color: "var(--muted)" }}>
-          Campaign management — coming in a future update.
-        </p>
+        <div>
+          {/* Top bar */}
+          <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 16 }}>
+            <button
+              onClick={() => {
+                setNewCampaignTitle("");
+                setNewCampaignCause("");
+                setNewCampaignGoal("");
+                setNewCampaignError(null);
+                setShowNewCampaignModal(true);
+              }}
+              style={{
+                padding: "8px 16px",
+                background: "var(--amber)",
+                border: "1px solid var(--amber)",
+                color: "#000",
+                fontSize: 12,
+                fontWeight: 700,
+                fontFamily: "var(--font-mono)",
+                letterSpacing: "0.06em",
+                textTransform: "uppercase",
+                cursor: "pointer",
+                borderRadius: 0,
+                whiteSpace: "nowrap",
+              }}
+            >
+              + New Campaign
+            </button>
+          </div>
+
+          {/* Empty state */}
+          {campaigns.length === 0 && (
+            <div
+              style={{
+                border: "1px solid var(--border)",
+                background: "var(--surface)",
+                padding: "48px 32px",
+                textAlign: "center",
+                borderRadius: 0,
+              }}
+            >
+              <p style={{ color: "var(--muted)", fontSize: 14, margin: 0 }}>
+                No campaigns yet. Create one with the button above.
+              </p>
+            </div>
+          )}
+
+          {/* Campaign list */}
+          {campaigns.length > 0 && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {campaigns.map((c) => {
+                const pct = c.goalAmount
+                  ? Math.min(((c.pledgeTotal + c.manualAdjustment) / c.goalAmount) * 100, 100)
+                  : 0;
+                const adjAmount = adjustAmounts[c.id] ?? "";
+                const isAdjusting = adjusting[c.id] ?? false;
+                const adjError = adjustErrors[c.id] ?? "";
+
+                return (
+                  <div
+                    key={c.id}
+                    style={{
+                      border: "1px solid var(--border)",
+                      background: "var(--surface)",
+                      padding: "16px 18px",
+                      borderRadius: 0,
+                    }}
+                  >
+                    {/* Header row */}
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "flex-start",
+                        justifyContent: "space-between",
+                        gap: 12,
+                        marginBottom: 10,
+                      }}
+                    >
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div
+                          style={{
+                            fontWeight: 700,
+                            fontSize: 15,
+                            color: "var(--text)",
+                            marginBottom: 2,
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                          }}
+                        >
+                          {c.title}
+                        </div>
+                        <div
+                          style={{
+                            fontSize: 12,
+                            color: "var(--muted)",
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                          }}
+                        >
+                          {c.cause}
+                        </div>
+                      </div>
+                      <span
+                        style={{
+                          fontFamily: "var(--font-mono)",
+                          fontSize: 10,
+                          fontWeight: 700,
+                          letterSpacing: "0.1em",
+                          color: c.active ? "var(--amber)" : "var(--muted)",
+                          background: c.active
+                            ? "rgba(232,137,58,0.12)"
+                            : "rgba(255,255,255,0.06)",
+                          padding: "2px 8px",
+                          borderRadius: 0,
+                          whiteSpace: "nowrap",
+                          flexShrink: 0,
+                          border: c.active
+                            ? "1px solid rgba(232,137,58,0.3)"
+                            : "1px solid var(--border)",
+                        }}
+                      >
+                        {c.active ? "ACTIVE" : "INACTIVE"}
+                      </span>
+                    </div>
+
+                    {/* Progress bar */}
+                    {c.goalAmount != null && (
+                      <div style={{ marginBottom: 8 }}>
+                        <div
+                          style={{
+                            width: "100%",
+                            height: 8,
+                            background: "var(--surface)",
+                            border: "1px solid var(--border)",
+                            overflow: "hidden",
+                          }}
+                        >
+                          <div
+                            style={{
+                              width: `${pct}%`,
+                              height: "100%",
+                              background: "var(--amber)",
+                              transition: "width 0.3s ease",
+                            }}
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Stats */}
+                    <div
+                      style={{
+                        fontSize: 12,
+                        color: "var(--muted)",
+                        fontFamily: "var(--font-mono)",
+                        marginBottom: 14,
+                      }}
+                    >
+                      <span style={{ color: "var(--text)", fontWeight: 600 }}>
+                        ${c.pledgeTotal.toFixed(2)}
+                      </span>{" "}
+                      pledged &middot;{" "}
+                      <span style={{ color: "var(--text)", fontWeight: 600 }}>
+                        ${c.manualAdjustment.toFixed(2)}
+                      </span>{" "}
+                      manual
+                      {c.goalAmount != null && (
+                        <>
+                          {" "}
+                          &middot;{" "}
+                          <span style={{ color: "var(--text)", fontWeight: 600 }}>
+                            ${c.goalAmount.toFixed(2)}
+                          </span>{" "}
+                          goal
+                        </>
+                      )}
+                    </div>
+
+                    {/* Add Physical Check */}
+                    <div
+                      style={{
+                        borderTop: "1px solid var(--border)",
+                        paddingTop: 12,
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontSize: 11,
+                          fontFamily: "var(--font-mono)",
+                          letterSpacing: "0.08em",
+                          color: "var(--muted)",
+                          textTransform: "uppercase",
+                          marginBottom: 8,
+                        }}
+                      >
+                        Add Physical Check
+                      </div>
+                      <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                        <input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          value={adjAmount}
+                          onChange={(e) =>
+                            setAdjustAmounts((prev) => ({ ...prev, [c.id]: e.target.value }))
+                          }
+                          placeholder="0.00"
+                          style={{
+                            width: 120,
+                            padding: "6px 10px",
+                            border: "1px solid var(--border)",
+                            background: "var(--bg)",
+                            color: "var(--text)",
+                            fontSize: 13,
+                            borderRadius: 0,
+                            outline: "none",
+                            fontFamily: "inherit",
+                          }}
+                        />
+                        <button
+                          onClick={() => handleAdjust(c.id)}
+                          disabled={isAdjusting || !adjAmount}
+                          style={{
+                            padding: "6px 16px",
+                            background: adjAmount && !isAdjusting ? "var(--amber)" : "transparent",
+                            border: adjAmount && !isAdjusting
+                              ? "1px solid var(--amber)"
+                              : "1px solid var(--border)",
+                            color: adjAmount && !isAdjusting ? "#000" : "var(--muted)",
+                            fontFamily: "var(--font-mono)",
+                            fontSize: 11,
+                            fontWeight: 700,
+                            letterSpacing: "0.06em",
+                            textTransform: "uppercase",
+                            cursor: adjAmount && !isAdjusting ? "pointer" : "not-allowed",
+                            borderRadius: 0,
+                            whiteSpace: "nowrap",
+                            opacity: isAdjusting ? 0.6 : 1,
+                          }}
+                        >
+                          {isAdjusting
+                            ? "Saving…"
+                            : adjAmount
+                            ? `Add $${parseFloat(adjAmount || "0").toFixed(2)}`
+                            : "Add"}
+                        </button>
+                      </div>
+                      {adjError && (
+                        <p
+                          style={{
+                            fontSize: 12,
+                            color: "#ef4444",
+                            fontFamily: "var(--font-mono)",
+                            margin: "6px 0 0",
+                          }}
+                        >
+                          {adjError}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* New Campaign Modal */}
+          {showNewCampaignModal && (
+            <div
+              style={{
+                position: "fixed",
+                inset: 0,
+                background: "rgba(0,0,0,0.6)",
+                zIndex: 50,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: 16,
+              }}
+              onClick={(e) => {
+                if (e.target === e.currentTarget) setShowNewCampaignModal(false);
+              }}
+            >
+              <div
+                style={{
+                  background: "var(--surface)",
+                  border: "1px solid var(--border)",
+                  borderRadius: 0,
+                  padding: 28,
+                  width: "100%",
+                  maxWidth: 440,
+                  position: "relative",
+                }}
+              >
+                <button
+                  onClick={() => setShowNewCampaignModal(false)}
+                  style={{
+                    position: "absolute",
+                    top: 16,
+                    right: 16,
+                    background: "none",
+                    border: "none",
+                    color: "var(--muted)",
+                    cursor: "pointer",
+                    fontSize: 22,
+                    lineHeight: 1,
+                    padding: 0,
+                  }}
+                >
+                  &times;
+                </button>
+
+                <h2
+                  style={{
+                    fontFamily: "var(--font-display)",
+                    fontSize: 20,
+                    fontWeight: 700,
+                    margin: "0 0 20px",
+                    color: "var(--text)",
+                  }}
+                >
+                  New Campaign
+                </h2>
+
+                <div style={{ marginBottom: 14 }}>
+                  <label style={labelStyle}>Title *</label>
+                  <input
+                    type="text"
+                    value={newCampaignTitle}
+                    onChange={(e) => setNewCampaignTitle(e.target.value)}
+                    placeholder="Annual Giving Campaign"
+                    style={inputStyle}
+                  />
+                </div>
+
+                <div style={{ marginBottom: 14 }}>
+                  <label style={labelStyle}>Cause *</label>
+                  <input
+                    type="text"
+                    value={newCampaignCause}
+                    onChange={(e) => setNewCampaignCause(e.target.value)}
+                    placeholder="Scholarship Fund"
+                    style={inputStyle}
+                  />
+                </div>
+
+                <div style={{ marginBottom: 20 }}>
+                  <label style={labelStyle}>Goal Amount *</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={newCampaignGoal}
+                    onChange={(e) => setNewCampaignGoal(e.target.value)}
+                    placeholder="10000.00"
+                    style={inputStyle}
+                  />
+                </div>
+
+                {newCampaignError && (
+                  <p
+                    style={{
+                      color: "#e05",
+                      fontSize: 13,
+                      margin: "0 0 12px",
+                      fontFamily: "var(--font-mono)",
+                    }}
+                  >
+                    {newCampaignError}
+                  </p>
+                )}
+
+                <button
+                  onClick={handleCreateCampaign}
+                  disabled={newCampaignLoading}
+                  style={{
+                    width: "100%",
+                    padding: "10px 0",
+                    background: "var(--amber)",
+                    border: "1px solid var(--amber)",
+                    color: "#000",
+                    fontFamily: "var(--font-mono)",
+                    fontSize: 12,
+                    fontWeight: 700,
+                    letterSpacing: "0.1em",
+                    textTransform: "uppercase",
+                    cursor: newCampaignLoading ? "not-allowed" : "pointer",
+                    borderRadius: 0,
+                    opacity: newCampaignLoading ? 0.7 : 1,
+                  }}
+                >
+                  {newCampaignLoading ? "Creating…" : "Create Campaign"}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       )}
 
       {/* Member list tabs */}

@@ -106,5 +106,28 @@ export default async function SchoolDetailPage({
     profile: schoolUser.profile,
   };
 
-  return <SchoolDetailClient school={school} members={members} />;
+  // Fetch campaigns for this school
+  const rawCampaigns = await prisma.campaign.findMany({
+    where: { schoolId },
+    include: { pledges: { select: { pledgeAmount: true } } },
+    orderBy: { createdAt: "desc" },
+  });
+
+  const campaigns = rawCampaigns.map((c) => {
+    const pledgeTotal = c.pledges.reduce((sum, p) => {
+      return sum + (p.pledgeAmount ? parseFloat(p.pledgeAmount.toString()) : 0);
+    }, 0);
+    return {
+      id: c.id,
+      title: c.headline,
+      cause: c.cause,
+      goalAmount: c.goalAmount ? parseFloat(c.goalAmount.toString()) : null,
+      manualAdjustment: parseFloat(c.manualAdjustment.toString()),
+      pledgeTotal,
+      active: c.active,
+      createdAt: c.createdAt.toISOString(),
+    };
+  });
+
+  return <SchoolDetailClient school={school} members={members} campaigns={campaigns} />;
 }
