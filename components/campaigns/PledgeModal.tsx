@@ -6,10 +6,11 @@ import { X, Heart, CheckCircle, Loader2 } from "lucide-react";
 interface Props {
   campaignId: string;
   ctaText: string;
+  schoolId?: string;
   onClose: () => void;
 }
 
-export default function PledgeModal({ campaignId, ctaText, onClose }: Props) {
+export default function PledgeModal({ campaignId, ctaText, schoolId, onClose }: Props) {
   const [form, setForm] = useState({ name: "", email: "", phone: "", amount: "" });
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
@@ -29,6 +30,7 @@ export default function PledgeModal({ campaignId, ctaText, onClose }: Props) {
           donorEmail: form.email,
           donorPhone: form.phone || undefined,
           pledgeAmount: form.amount ? parseFloat(form.amount) : undefined,
+          schoolId: schoolId ?? undefined,
         }),
       });
       if (!res.ok) throw new Error("Failed to record pledge");

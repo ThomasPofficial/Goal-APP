@@ -16,7 +16,11 @@ interface GeneratedCampaign {
   videoUrl: string | null;
 }
 
-export default function CampaignsNewClient() {
+interface CampaignsNewClientProps {
+  schoolId?: string;
+}
+
+export default function CampaignsNewClient({ schoolId }: CampaignsNewClientProps) {
   const [view, setView] = useState<"input" | "preview" | "saved">("input");
   const [causeInput, setCauseInput] = useState("");
   const [videoUrl, setVideoUrl] = useState("");
@@ -168,7 +172,7 @@ export default function CampaignsNewClient() {
           </div>
           <div style={{ padding: "12px 40px", borderTop: "1px solid var(--border)", color: "var(--n-text2)", fontSize: 12, fontFamily: "var(--font-mono)" }}>Powered by Nivarro · app.nivarro.co</div>
         </div>
-        {showPledge && <PledgeModal campaignId={generated.campaignId} ctaText={generated.ctaText} onClose={() => setShowPledge(false)} />}
+        {showPledge && <PledgeModal campaignId={generated.campaignId} ctaText={generated.ctaText} schoolId={schoolId} onClose={() => setShowPledge(false)} />}
         <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
       </div>
     );

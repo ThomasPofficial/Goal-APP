@@ -4,7 +4,7 @@ import { getResendClient } from "@/lib/resend";
 
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => ({}));
-  const { causeText, donorName, donorEmail, donorPhone, pledgeAmount, campaignId } = body;
+  const { causeText, donorName, donorEmail, donorPhone, pledgeAmount, campaignId, schoolId } = body;
 
   if (!donorName?.trim() || !donorEmail?.trim()) {
     return NextResponse.json({ error: "Name and email are required." }, { status: 400 });
@@ -44,6 +44,39 @@ export async function POST(req: NextRequest) {
     });
   } catch {
     // Non-fatal — pledge is already recorded
+  }
+
+  if (schoolId && typeof schoolId === "string") {
+    try {
+      const schoolProfile = await prisma.profile.findFirst({
+        where: { userId: schoolId },
+        select: { advancementEmail: true, displayName: true },
+      });
+      if (schoolProfile?.advancementEmail) {
+        await getResendClient().emails.send({
+          from,
+          to: schoolProfile.advancementEmail,
+          subject: `New Pledge Received — ${donorName}`,
+          html: `
+            <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:24px;color:#1a1a1f">
+              <h2 style="color:#4a80f0;margin-bottom:8px">New Pledge Received</h2>
+              <p style="color:#58586a;line-height:1.6;margin:0 0 12px">
+                <strong>${escapeHtml(donorName)}</strong> has pledged <strong>${amountText}</strong>
+                ${causeText ? `for: <em>"${escapeHtml(causeText)}"</em>` : ""}.
+              </p>
+              <p style="color:#58586a;line-height:1.6;margin:0 0 12px">
+                Contact them to collect the physical check:<br/>
+                Email: <a href="mailto:${escapeHtml(donorEmail)}">${escapeHtml(donorEmail)}</a><br/>
+                ${donorPhone ? `Phone: ${escapeHtml(donorPhone)}` : ""}
+              </p>
+              <p style="color:#909098;font-size:13px;margin:0">— Nivarro Platform</p>
+            </div>
+          `,
+        });
+      }
+    } catch {
+      // Non-fatal — pledge is already recorded
+    }
   }
 
   return NextResponse.json({ id: pledge.id });

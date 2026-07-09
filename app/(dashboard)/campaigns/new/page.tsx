@@ -13,5 +13,10 @@ export default async function CampaignsNewPage() {
   });
   if (dbUser?.role !== "SCHOOL" && dbUser?.role !== "ADMIN") redirect("/dashboard");
 
-  return <CampaignsNewClient />;
+  const profile = await prisma.profile.findFirst({
+    where: { userId: session.user.id },
+    select: { schoolId: true },
+  });
+
+  return <CampaignsNewClient schoolId={profile?.schoolId ?? undefined} />;
 }
