@@ -13,8 +13,8 @@ services:
       - key: NEXTAUTH_SECRET
         sync: false
       - key: NEXT_PUBLIC_AUTH_URL
-        value: https://nivarro.co
+        value: https://app.nivarro.co
       - key: AUTH_URL
-        value: https://nivarro.co
+        value: https://app.nivarro.co
 </content>
 </invoke>

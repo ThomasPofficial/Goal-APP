@@ -64,16 +64,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ],
   callbacks: {
     async redirect({ url, baseUrl }) {
-      // Strip trailing slash so we never produce double-slash URLs
-      const base = baseUrl.replace(/\/$/, "");
-      // Relative paths are always safe
-      if (url.startsWith("/")) return `${base}${url}`;
-      // Absolute same-origin URLs are safe
+      const TRUSTED_ORIGINS = [
+        "https://app.nivarro.co",
+        "https://goal-app-3.onrender.com",
+        baseUrl.replace(/\/$/, ""),
+      ];
+      if (url.startsWith("/")) return `https://app.nivarro.co${url}`;
       try {
-        if (new URL(url).origin === new URL(base).origin) return url;
+        const origin = new URL(url).origin;
+        if (TRUSTED_ORIGINS.some((o) => o === origin)) return url;
       } catch {}
-      // Anything else (cross-origin) → send to dashboard
-      return `${base}/dashboard`;
+      return "https://app.nivarro.co/dashboard";
     },
     async jwt({ token, user }) {
       if (user) {
