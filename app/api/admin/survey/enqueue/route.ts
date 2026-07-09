@@ -14,6 +14,7 @@ function authorized(req: Request, role?: string | null): boolean {
 }
 
 export async function POST(req: Request) {
+  try {
   const session = await auth();
   if (!authorized(req, session?.user?.role as string | null))
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -86,4 +87,9 @@ export async function POST(req: Request) {
   }
 
   return NextResponse.json({ queued: pool.length, sent, skipped });
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : String(e);
+    console.error("[survey/enqueue]", msg);
+    return NextResponse.json({ error: msg }, { status: 500 });
+  }
 }
