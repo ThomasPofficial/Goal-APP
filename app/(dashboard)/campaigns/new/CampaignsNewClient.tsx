@@ -106,9 +106,12 @@ export default function CampaignsNewClient() {
             style={{ width: "100%", padding: "10px 12px", border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)", fontSize: 14, lineHeight: 1.5, resize: "vertical", fontFamily: "inherit", boxSizing: "border-box", borderRadius: 0 }}
           />
           <div style={{ marginTop: 12 }}>
-            <label style={{ display: "block", fontFamily: "var(--font-mono)", fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--n-text2)", marginBottom: 4 }}>
-              YouTube / Vimeo URL (optional)
+            <label style={{ display: "block", fontFamily: "var(--font-mono)", fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--n-text2)", marginBottom: 2 }}>
+              Campaign Video (optional)
             </label>
+            <p style={{ fontSize: 11, color: "var(--n-text2)", margin: "0 0 6px", lineHeight: 1.4 }}>
+              Paste a YouTube or Vimeo link to embed a video on your public fundraising page — great for a student pitch or team intro.
+            </p>
             <input
               type="url"
               value={videoUrl}
