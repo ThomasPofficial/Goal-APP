@@ -91,5 +91,5 @@ As with all schema changes in this repo, a manual SQL migration file (`prisma/mi
 - No real payment processing. `POST /api/communities/[id]/pay` is a stub that always succeeds; wiring an actual payment gateway is a distinct, later task.
 - `TeamApplication` / `OrgProject` flows — untouched; `CommunityMembership` is a separate, parallel model, not a reuse of `TeamApplication`.
 
-## Open item
-This spec assumes an org can have any number of communities, each independently priced. If the intent was one community per org, flag before implementation — nothing here forecloses either reading, but the schema above (`Community.orgId` is not unique) assumes many-per-org.
+## Confirmed
+An org can have any number of communities, each independently priced (`Community.orgId` is not unique). Confirmed with user 2026-07-10.
