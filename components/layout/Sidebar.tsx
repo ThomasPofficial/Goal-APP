@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { X, ChevronLeft, ChevronRight, LayoutDashboard, Users, Building2, UsersRound, MessageSquare, Bell, Briefcase, Megaphone, Globe, MapPin, GraduationCap, HeartHandshake, School, ClipboardList } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, LayoutDashboard, Users, Building2, UsersRound, MessageSquare, Bell, Briefcase, Megaphone, Globe, MapPin, GraduationCap, HeartHandshake, School, ClipboardList, User } from "lucide-react";
 import AccountMenu from "./AccountMenu";
 import ThemeToggle from "./ThemeToggle";
 import NivarroMark from "@/components/ui/NivarroMark";
@@ -36,6 +36,8 @@ const SCHOOL_NAV = [
   { href: "/communities",         label: "Community",     Icon: Globe },
   { href: "/school/survey",       label: "Survey",        Icon: ClipboardList },
   { href: "/campaigns",           label: "Fundraise",     Icon: HeartHandshake },
+  { href: "/school/mentorship",   label: "Mentorship",    Icon: UsersRound },
+  { href: "/school/roster",       label: "Roster",        Icon: Users },
 ];
 
 interface SidebarProps {
@@ -50,11 +52,13 @@ interface SidebarProps {
   isNivarroAdmin?: boolean;
   isSchool?: boolean;
   isStandard?: boolean;
+  isWalledStudent?: boolean;
+  isAlumni?: boolean;
   collapsed?: boolean;
   onToggleCollapse?: () => void;
 }
 
-export default function Sidebar({ userName, userEmail, geniusType, mobileOpen = false, onMobileClose, myOrgId, myOrgName, isOrg, isNivarroAdmin = false, isSchool = false, isStandard = false, collapsed = false, onToggleCollapse }: SidebarProps) {
+export default function Sidebar({ userName, userEmail, geniusType, mobileOpen = false, onMobileClose, myOrgId, myOrgName, isOrg, isNivarroAdmin = false, isSchool = false, isStandard = false, isWalledStudent = false, isAlumni = false, collapsed = false, onToggleCollapse }: SidebarProps) {
   const pathname = usePathname();
 
   const orgNav = myOrgId ? [
@@ -73,7 +77,16 @@ export default function Sidebar({ userName, userEmail, geniusType, mobileOpen = 
     ...(isNivarroAdmin ? SCHOOL_NAV : []),
   ];
 
-  const navItems = isSchool ? SCHOOL_NAV : isOrg ? orgNav : studentNav;
+  const walledNav = [
+    { href: "/dashboard",     label: "Dashboard",      Icon: LayoutDashboard },
+    { href: "/my-school",     label: "My School",      Icon: School },
+    { href: "/communities",   label: "Community Chat", Icon: Globe },
+    { href: "/mentorship",    label: "Mentorship",     Icon: HeartHandshake },
+    ...(isAlumni ? [{ href: "/profile", label: "Profile", Icon: User }] : []),
+    { href: "/notifications", label: "Notifications",  Icon: Bell },
+  ];
+
+  const navItems = isSchool ? SCHOOL_NAV : isOrg ? orgNav : isWalledStudent ? walledNav : studentNav;
   const homeHref = isSchool ? "/school/destinations" : isOrg && myOrgId ? `/orgs/${myOrgId}` : "/dashboard";
 
   const isActive = (href: string) => {

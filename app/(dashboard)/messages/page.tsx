@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import MessagesClient from './MessagesClient';
 import type { GeniusTypeKey } from '@/lib/geniusTypes';
+import { isWalledStudent } from '@/lib/accountGate';
 
 export default async function MessagesPage({
   searchParams,
@@ -11,6 +12,7 @@ export default async function MessagesPage({
 }) {
   const session = await auth();
   if (!session?.user?.id) redirect('/login');
+  if (await isWalledStudent(session.user.id)) redirect('/dashboard');
 
   const [myProfile, myOrg] = await Promise.all([
     prisma.profile.findUnique({

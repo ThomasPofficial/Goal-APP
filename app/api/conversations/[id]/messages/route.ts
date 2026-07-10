@@ -31,6 +31,12 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     },
   });
 
+  // Mark read on view — participant.lastReadAt drives unread indicators elsewhere (e.g. Notifications).
+  await prisma.conversationParticipant.update({
+    where: { id: participant.id },
+    data: { lastReadAt: new Date() },
+  });
+
   return NextResponse.json({ messages });
 }
 

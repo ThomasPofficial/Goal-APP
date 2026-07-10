@@ -5,10 +5,12 @@ import Link from "next/link";
 import type { GeniusTypeKey } from "@/lib/geniusTypes";
 import Avatar from "@/components/ui/Avatar";
 import { cn } from "@/lib/utils";
+import { isWalledStudent } from "@/lib/accountGate";
 
 export default async function TeamsPage() {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
+  if (await isWalledStudent(session.user.id)) redirect("/dashboard");
 
   const myProfile = await prisma.profile.findUnique({
     where: { userId: session.user.id },

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Menu, LayoutDashboard, Users, Building2, UsersRound, MessageSquare, Briefcase } from "lucide-react";
+import { Menu, LayoutDashboard, Users, Building2, UsersRound, MessageSquare, Briefcase, Bell, HeartHandshake, Globe } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Sidebar from "./Sidebar";
@@ -18,6 +18,8 @@ interface Props {
   isNivarroAdmin?: boolean;
   isSchool?: boolean;
   isStandard?: boolean;
+  isWalledStudent?: boolean;
+  isAlumni?: boolean;
 }
 
 const STUDENT_BOTTOM_TABS = [
@@ -28,7 +30,14 @@ const STUDENT_BOTTOM_TABS = [
   { href: "/messages",  label: "Messages",     Icon: MessageSquare },
 ];
 
-export default function SidebarShell({ userName, userEmail, geniusType, myOrgId, myOrgName, isOrg, isNivarroAdmin, isSchool, isStandard }: Props) {
+const WALLED_BOTTOM_TABS = [
+  { href: "/dashboard",     label: "Home",   Icon: LayoutDashboard },
+  { href: "/communities",   label: "Chat",   Icon: Globe },
+  { href: "/mentorship",    label: "Mentor", Icon: HeartHandshake },
+  { href: "/notifications", label: "Alerts", Icon: Bell },
+];
+
+export default function SidebarShell({ userName, userEmail, geniusType, myOrgId, myOrgName, isOrg, isNivarroAdmin, isSchool, isStandard, isWalledStudent, isAlumni }: Props) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const pathname = usePathname();
@@ -58,7 +67,7 @@ export default function SidebarShell({ userName, userEmail, geniusType, myOrgId,
     { href: "/messages", label: "Messages",  Icon: MessageSquare },
   ];
 
-  const bottomTabs = isOrg ? ORG_BOTTOM_TABS : STUDENT_BOTTOM_TABS;
+  const bottomTabs = isOrg ? ORG_BOTTOM_TABS : isWalledStudent ? WALLED_BOTTOM_TABS : STUDENT_BOTTOM_TABS;
 
   return (
     <>
@@ -147,6 +156,8 @@ export default function SidebarShell({ userName, userEmail, geniusType, myOrgId,
         isNivarroAdmin={isNivarroAdmin}
         isSchool={isSchool}
         isStandard={isStandard}
+        isWalledStudent={isWalledStudent}
+        isAlumni={isAlumni}
         collapsed={collapsed}
         onToggleCollapse={toggleCollapse}
       />

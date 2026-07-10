@@ -3,8 +3,10 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import DashboardClient from "./DashboardClient";
+import WalledDashboardClient from "./WalledDashboardClient";
 import WhySchoolBanner from "@/components/school/WhySchoolBanner";
 import type { GeniusTypeKey } from "@/lib/geniusTypes";
+import { isWalledStudent } from "@/lib/accountGate";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -21,6 +23,52 @@ export default async function DashboardPage() {
       select: { id: true },
     });
     if (myOrg) redirect(`/orgs/${myOrg.id}`);
+  }
+
+  // Student/Alum accounts get a school-context dashboard instead of the
+  // opportunities-focused one below (which surfaces Teams/Orgs data they're walled off from).
+  if (await isWalledStudent(userId)) {
+    const profile = await prisma.profile.findUnique({
+      where: { userId },
+      select: { displayName: true, schoolId: true },
+    });
+
+    const school = profile?.schoolId
+      ? await prisma.user.findUnique({
+          where: { id: profile.schoolId },
+          select: { name: true, profile: { select: { displayName: true, headline: true } } },
+        })
+      : null;
+
+    const activityConversations = await prisma.conversation.findMany({
+      where: {
+        type: { in: ["COMMUNITY", "MENTORSHIP"] },
+        participants: { some: { userId } },
+      },
+      select: {
+        type: true,
+        updatedAt: true,
+        participants: { where: { userId }, select: { lastReadAt: true } },
+        messages: { orderBy: { createdAt: "desc" }, take: 1, select: { createdAt: true } },
+      },
+    });
+
+    const isUnread = (c: (typeof activityConversations)[number]) => {
+      const lastReadAt = c.participants[0]?.lastReadAt ?? null;
+      const lastMessageAt = c.messages[0]?.createdAt ?? c.updatedAt;
+      return !lastReadAt || lastReadAt < lastMessageAt;
+    };
+    const hasUnreadCommunity = activityConversations.some((c) => c.type === "COMMUNITY" && isUnread(c));
+    const hasUnreadMentorship = activityConversations.some((c) => c.type === "MENTORSHIP" && isUnread(c));
+
+    return (
+      <WalledDashboardClient
+        displayName={profile?.displayName ?? session.user.name ?? "there"}
+        schoolName={school?.profile?.displayName ?? school?.name ?? "your school"}
+        hasUnreadCommunity={hasUnreadCommunity}
+        hasUnreadMentorship={hasUnreadMentorship}
+      />
+    );
   }
 
   const cookieStore = await cookies();

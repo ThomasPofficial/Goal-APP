@@ -20,6 +20,7 @@ export default async function DashboardLayout({
     where: { id: session.user.id },
     select: {
       role: true,
+      isAlumni: true,
       profile: { select: { displayName: true, geniusType: true, schoolId: true } },
     },
   });
@@ -30,9 +31,10 @@ export default async function DashboardLayout({
   const isNivarroAdmin = role === "ADMIN";
   const profile = dbUser?.profile ?? null;
   // Standard account = STUDENT role with no school affiliation (open self-serve signup).
-  // Student/Alum accounts (profile.schoolId set) keep the existing nav until their
-  // walled-off nav (school chat, mentorship messaging) is built separately.
   const isStandard = !isSchool && !isOrg && !profile?.schoolId;
+  // Student/Alum account = STUDENT role with a school affiliation — walled-off nav.
+  const isWalledStudent = role === "STUDENT" && !!profile?.schoolId;
+  const isAlumni = !!dbUser?.isAlumni;
 
   // Org lookup only runs for org/admin accounts.
   // ADMIN: structural query finds the platform org regardless of which email is logged in.
@@ -65,6 +67,8 @@ export default async function DashboardLayout({
         isNivarroAdmin={isNivarroAdmin}
         isSchool={isSchool}
         isStandard={isStandard}
+        isWalledStudent={isWalledStudent}
+        isAlumni={isAlumni}
       />
       <main className="dashboard-main min-h-screen pt-14 pb-[60px] md:pt-0 md:pb-0">
         <div className="max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-8">

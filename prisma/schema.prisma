@@ -80,6 +80,9 @@ model User {
   createdAt     DateTime  @default(now())
   schoolCode String? @unique
   updatedAt     DateTime  @updatedAt
+  // Meaningful only when role=SCHOOL: opt-in override that lets this school's
+  // students/alumni through the quiz wall (walled off by default, see isWalledStudent)
+  schoolQuizEnabled Boolean @default(false)
 
   accounts              Account[]
   sessions              Session[]
@@ -319,6 +322,7 @@ enum ConversationType {
   GROUP
   TEAM
   COMMUNITY
+  MENTORSHIP
 }
 
 model ConversationParticipant {

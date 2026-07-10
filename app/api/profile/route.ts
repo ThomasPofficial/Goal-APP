@@ -16,6 +16,12 @@ const patchSchema = z.object({
   onboardingComplete: z.boolean().optional(),
   geniusType: z.enum(["DYNAMO", "BLAZE", "TEMPO", "STEEL"]).nullable().optional(),
   secondaryGeniusType: z.enum(["DYNAMO", "BLAZE", "TEMPO", "STEEL"]).nullable().optional(),
+  linkedinUrl: z.string().max(300).optional(),
+  employer: z.string().max(200).optional(),
+  jobTitle: z.string().max(200).optional(),
+  confirmedCollege: z.string().max(200).optional(),
+  confirmedMajor: z.string().max(200).optional(),
+  isAvailableToMentor: z.boolean().optional(),
 });
 
 async function generateHandle(displayName: string, userId: string): Promise<string> {
@@ -80,6 +86,12 @@ export async function PATCH(req: NextRequest) {
   if (data.onboardingComplete !== undefined) updateData.onboardingComplete = data.onboardingComplete;
   if (data.geniusType !== undefined) updateData.geniusType = data.geniusType;
   if (data.secondaryGeniusType !== undefined) updateData.secondaryGeniusType = data.secondaryGeniusType;
+  if (data.linkedinUrl !== undefined) updateData.linkedinUrl = data.linkedinUrl;
+  if (data.employer !== undefined) updateData.employer = data.employer;
+  if (data.jobTitle !== undefined) updateData.jobTitle = data.jobTitle;
+  if (data.confirmedCollege !== undefined) updateData.confirmedCollege = data.confirmedCollege;
+  if (data.confirmedMajor !== undefined) updateData.confirmedMajor = data.confirmedMajor;
+  if (data.isAvailableToMentor !== undefined) updateData.isAvailableToMentor = data.isAvailableToMentor;
 
   const profile = await prisma.profile.update({
     where: { userId: session.user.id },

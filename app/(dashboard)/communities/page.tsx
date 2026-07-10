@@ -26,10 +26,11 @@ export default async function CommunitiesPage() {
   const isAdmin = user?.role === "SCHOOL";
   const schoolId = isAdmin ? session.user.id : (profile?.schoolId ?? null);
 
-  // Ensure the General Room exists for school admins (handles existing accounts
-  // that were created before this feature was added)
-  if (isAdmin) {
-    await ensureSchoolGeneralRoom(session.user.id, session.user.id);
+  // Ensure the General Room exists and the current user is a participant — for
+  // admins (their own school) and for any school-affiliated student/alum, who
+  // has no self-serve code-entry path into their school's room.
+  if (schoolId) {
+    await ensureSchoolGeneralRoom(schoolId, session.user.id);
   }
 
   if (!schoolId) {

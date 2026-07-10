@@ -2,10 +2,48 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import ProfileEditor from "./ProfileEditor";
+import AlumniProfileEditor from "./AlumniProfileEditor";
 
 export default async function ProfilePage() {
   const session = await auth();
   const userId = session!.user!.id;
+
+  const dbUser = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { role: true, isAlumni: true, profile: { select: { schoolId: true } } },
+  });
+  const walled = dbUser?.role === "STUDENT" && !!dbUser.profile?.schoolId;
+
+  if (walled && !dbUser?.isAlumni) {
+    redirect("/dashboard");
+  }
+
+  if (walled && dbUser?.isAlumni) {
+    const alumniProfile = await prisma.profile.findUnique({
+      where: { userId },
+      select: {
+        linkedinUrl: true,
+        employer: true,
+        jobTitle: true,
+        confirmedCollege: true,
+        confirmedMajor: true,
+        isAvailableToMentor: true,
+      },
+    });
+
+    return (
+      <AlumniProfileEditor
+        initialProfile={{
+          linkedinUrl: alumniProfile?.linkedinUrl ?? "",
+          employer: alumniProfile?.employer ?? "",
+          jobTitle: alumniProfile?.jobTitle ?? "",
+          confirmedCollege: alumniProfile?.confirmedCollege ?? "",
+          confirmedMajor: alumniProfile?.confirmedMajor ?? "",
+          isAvailableToMentor: alumniProfile?.isAvailableToMentor ?? false,
+        }}
+      />
+    );
+  }
 
   const [profile, allTraits] = await Promise.all([
     prisma.profile.findUnique({

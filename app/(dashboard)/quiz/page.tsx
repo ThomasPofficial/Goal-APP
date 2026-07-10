@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { redirect } from "next/navigation";
 import Link from "next/link";
 import QuizClient from "./QuizClient";
 import TraitQuizClient from "./TraitQuizClient";
@@ -17,6 +18,25 @@ export default async function QuizPage(props: {
 
   const session = await auth();
   const userId = session?.user?.id ?? null;
+
+  const dbUser = userId
+    ? await prisma.user.findUnique({
+        where: { id: userId },
+        select: { role: true, profile: { select: { schoolId: true } } },
+      })
+    : null;
+
+  const isSchoolAffiliatedStudent = dbUser?.role === "STUDENT" && !!dbUser.profile?.schoolId;
+
+  if (isSchoolAffiliatedStudent) {
+    const school = await prisma.user.findUnique({
+      where: { id: dbUser!.profile!.schoolId! },
+      select: { schoolQuizEnabled: true },
+    });
+    // Student/Alum accounts are walled off from the quiz by default — their school
+    // must opt them in via the Quiz toggle on the Roster page before this unlocks.
+    if (!school?.schoolQuizEnabled) redirect("/dashboard");
+  }
 
   const profile = userId
     ? await prisma.profile.findUnique({
