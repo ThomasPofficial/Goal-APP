@@ -17,17 +17,18 @@ interface Props {
   isOrg?: boolean;
   isNivarroAdmin?: boolean;
   isSchool?: boolean;
+  isStandard?: boolean;
 }
 
 const STUDENT_BOTTOM_TABS = [
-  { href: "/dashboard", label: "Home",     Icon: LayoutDashboard },
-  { href: "/peers",     label: "Peers",    Icon: Users },
-  { href: "/orgs",      label: "Orgs",     Icon: Building2 },
-  { href: "/teams",     label: "Teams",    Icon: UsersRound },
-  { href: "/messages",  label: "Messages", Icon: MessageSquare },
+  { href: "/dashboard", label: "Home",         Icon: LayoutDashboard },
+  { href: "/peers",     label: "Peers",        Icon: Users },
+  { href: "/orgs",      label: "Organizations", Icon: Building2 },
+  { href: "/teams",     label: "Teams",        Icon: UsersRound },
+  { href: "/messages",  label: "Messages",     Icon: MessageSquare },
 ];
 
-export default function SidebarShell({ userName, userEmail, geniusType, myOrgId, myOrgName, isOrg, isNivarroAdmin, isSchool }: Props) {
+export default function SidebarShell({ userName, userEmail, geniusType, myOrgId, myOrgName, isOrg, isNivarroAdmin, isSchool, isStandard }: Props) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const pathname = usePathname();
@@ -145,6 +146,7 @@ export default function SidebarShell({ userName, userEmail, geniusType, myOrgId,
         isOrg={isOrg}
         isNivarroAdmin={isNivarroAdmin}
         isSchool={isSchool}
+        isStandard={isStandard}
         collapsed={collapsed}
         onToggleCollapse={toggleCollapse}
       />

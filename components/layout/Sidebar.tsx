@@ -9,12 +9,22 @@ import NivarroMark from "@/components/ui/NivarroMark";
 import { cn } from "@/lib/utils";
 import type { GeniusType } from "@/data/traits";
 
+const STANDARD_NAV = [
+  { href: "/dashboard",      label: "Dashboard",     Icon: LayoutDashboard },
+  { href: "/communities",    label: "Communities",   Icon: Globe },
+  { href: "/peers",          label: "Peers",         Icon: Users },
+  { href: "/orgs",           label: "Organizations", Icon: Building2 },
+  { href: "/teams",          label: "Teams",         Icon: UsersRound },
+  { href: "/messages",       label: "Messages",      Icon: MessageSquare },
+  { href: "/notifications",  label: "Notifications", Icon: Bell },
+];
+
 const STUDENT_NAV_BASE = [
   { href: "/dashboard",      label: "Dashboard",     Icon: LayoutDashboard },
   { href: "/my-school",      label: "My School",     Icon: School },
   { href: "/communities",    label: "Communities",   Icon: Globe },
   { href: "/peers",          label: "Peers",         Icon: Users },
-  { href: "/orgs",           label: "Orgs",          Icon: Building2 },
+  { href: "/orgs",           label: "Organizations", Icon: Building2 },
   { href: "/teams",          label: "Teams",         Icon: UsersRound },
   { href: "/messages",       label: "Messages",      Icon: MessageSquare },
   { href: "/notifications",  label: "Notifications", Icon: Bell },
@@ -39,11 +49,12 @@ interface SidebarProps {
   isOrg?: boolean;
   isNivarroAdmin?: boolean;
   isSchool?: boolean;
+  isStandard?: boolean;
   collapsed?: boolean;
   onToggleCollapse?: () => void;
 }
 
-export default function Sidebar({ userName, userEmail, geniusType, mobileOpen = false, onMobileClose, myOrgId, myOrgName, isOrg, isNivarroAdmin = false, isSchool = false, collapsed = false, onToggleCollapse }: SidebarProps) {
+export default function Sidebar({ userName, userEmail, geniusType, mobileOpen = false, onMobileClose, myOrgId, myOrgName, isOrg, isNivarroAdmin = false, isSchool = false, isStandard = false, collapsed = false, onToggleCollapse }: SidebarProps) {
   const pathname = usePathname();
 
   const orgNav = myOrgId ? [
@@ -58,7 +69,7 @@ export default function Sidebar({ userName, userEmail, geniusType, mobileOpen = 
   ] : [];
 
   const studentNav = [
-    ...STUDENT_NAV_BASE,
+    ...(isStandard ? STANDARD_NAV : STUDENT_NAV_BASE),
     ...(isNivarroAdmin ? SCHOOL_NAV : []),
   ];
 
