@@ -19,17 +19,6 @@ const STANDARD_NAV = [
   { href: "/notifications",  label: "Notifications", Icon: Bell },
 ];
 
-const STUDENT_NAV_BASE = [
-  { href: "/dashboard",      label: "Dashboard",     Icon: LayoutDashboard },
-  { href: "/my-school",      label: "My School",     Icon: School },
-  { href: "/communities",    label: "Communities",   Icon: Globe },
-  { href: "/peers",          label: "Peers",         Icon: Users },
-  { href: "/orgs",           label: "Organizations", Icon: Building2 },
-  { href: "/teams",          label: "Teams",         Icon: UsersRound },
-  { href: "/messages",       label: "Messages",      Icon: MessageSquare },
-  { href: "/notifications",  label: "Notifications", Icon: Bell },
-];
-
 const SCHOOL_NAV = [
   { href: "/school/destinations", label: "Destinations",  Icon: MapPin },
   { href: "/school/alumni",       label: "Alumni Net",    Icon: GraduationCap },
@@ -51,14 +40,13 @@ interface SidebarProps {
   isOrg?: boolean;
   isNivarroAdmin?: boolean;
   isSchool?: boolean;
-  isStandard?: boolean;
   isWalledStudent?: boolean;
   isAlumni?: boolean;
   collapsed?: boolean;
   onToggleCollapse?: () => void;
 }
 
-export default function Sidebar({ userName, userEmail, geniusType, mobileOpen = false, onMobileClose, myOrgId, myOrgName, isOrg, isNivarroAdmin = false, isSchool = false, isStandard = false, isWalledStudent = false, isAlumni = false, collapsed = false, onToggleCollapse }: SidebarProps) {
+export default function Sidebar({ userName, userEmail, geniusType, mobileOpen = false, onMobileClose, myOrgId, myOrgName, isOrg, isNivarroAdmin = false, isSchool = false, isWalledStudent = false, isAlumni = false, collapsed = false, onToggleCollapse }: SidebarProps) {
   const pathname = usePathname();
 
   const orgNav = myOrgId ? [
@@ -73,7 +61,7 @@ export default function Sidebar({ userName, userEmail, geniusType, mobileOpen = 
   ] : [];
 
   const studentNav = [
-    ...(isStandard ? STANDARD_NAV : STUDENT_NAV_BASE),
+    ...STANDARD_NAV,
     ...(isNivarroAdmin ? SCHOOL_NAV : []),
   ];
 

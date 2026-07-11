@@ -1,9 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const PUBLIC_URL =
-  process.env.NEXT_PUBLIC_AUTH_URL ?? "https://nivarro.co";
-
 export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
@@ -23,12 +20,19 @@ export function proxy(req: NextRequest) {
     pathname.startsWith("/quiz") ||
     pathname.startsWith("/onboarding");
 
+  // Redirect relative to the incoming request's own origin (req.url), never an
+  // env-configured external URL. NEXT_PUBLIC_AUTH_URL can drift out of sync with
+  // the domain actually serving the request (e.g. still pointing at the raw
+  // *.onrender.com host after a custom domain was added) — that mismatch bounces
+  // the browser across origins mid-redirect, which splits the session cookie
+  // across two domains and makes a freshly-logged-in user see a stale session
+  // from whichever domain still has an old cookie.
   if (!hasSession && !isPublic) {
-    return NextResponse.redirect(new URL("/login", PUBLIC_URL));
+    return NextResponse.redirect(new URL("/login", req.url));
   }
 
   if (hasSession && (pathname === "/login" || pathname === "/register")) {
-    return NextResponse.redirect(new URL("/dashboard", PUBLIC_URL));
+    return NextResponse.redirect(new URL("/dashboard", req.url));
   }
 
   return NextResponse.next();

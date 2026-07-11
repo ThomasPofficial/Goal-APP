@@ -30,9 +30,8 @@ export default async function DashboardLayout({
   const isOrg = role === "ORG" || role === "ADMIN";
   const isNivarroAdmin = role === "ADMIN";
   const profile = dbUser?.profile ?? null;
-  // Standard account = STUDENT role with no school affiliation (open self-serve signup).
-  const isStandard = !isSchool && !isOrg && !profile?.schoolId;
   // Student/Alum account = STUDENT role with a school affiliation — walled-off nav.
+  // (Standard = STUDENT role with no school affiliation; that's just "none of the above" here.)
   const isWalledStudent = role === "STUDENT" && !!profile?.schoolId;
   const isAlumni = !!dbUser?.isAlumni;
 
@@ -66,7 +65,6 @@ export default async function DashboardLayout({
         isOrg={isOrg}
         isNivarroAdmin={isNivarroAdmin}
         isSchool={isSchool}
-        isStandard={isStandard}
         isWalledStudent={isWalledStudent}
         isAlumni={isAlumni}
       />

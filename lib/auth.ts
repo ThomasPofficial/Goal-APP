@@ -64,12 +64,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ],
   callbacks: {
     async redirect({ url, baseUrl }) {
-      // In production, AUTH_URL may be misconfigured — ignore baseUrl and
-      // always use the canonical app domain so login redirects land correctly.
-      const canonicalBase =
-        process.env.NODE_ENV === "production"
-          ? "https://app.nivarro.co"
-          : baseUrl.replace(/\/$/, "");
+      // AUTH_URL/NEXT_PUBLIC_AUTH_URL can drift out of sync with the domain
+      // actually serving the request (e.g. still pointing at the raw
+      // *.onrender.com host after a custom domain was added) — trusting
+      // NODE_ENV to gate that fallback is itself fragile, so key off baseUrl
+      // instead: only local dev's baseUrl points at localhost.
+      const canonicalBase = baseUrl.includes("localhost")
+        ? baseUrl.replace(/\/$/, "")
+        : "https://app.nivarro.co";
       if (url.startsWith("/")) return `${canonicalBase}${url}`;
       try {
         if (new URL(url).origin === canonicalBase) return url;

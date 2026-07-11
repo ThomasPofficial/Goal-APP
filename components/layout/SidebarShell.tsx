@@ -17,7 +17,6 @@ interface Props {
   isOrg?: boolean;
   isNivarroAdmin?: boolean;
   isSchool?: boolean;
-  isStandard?: boolean;
   isWalledStudent?: boolean;
   isAlumni?: boolean;
 }
@@ -37,7 +36,7 @@ const WALLED_BOTTOM_TABS = [
   { href: "/notifications", label: "Alerts", Icon: Bell },
 ];
 
-export default function SidebarShell({ userName, userEmail, geniusType, myOrgId, myOrgName, isOrg, isNivarroAdmin, isSchool, isStandard, isWalledStudent, isAlumni }: Props) {
+export default function SidebarShell({ userName, userEmail, geniusType, myOrgId, myOrgName, isOrg, isNivarroAdmin, isSchool, isWalledStudent, isAlumni }: Props) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const pathname = usePathname();
@@ -155,7 +154,6 @@ export default function SidebarShell({ userName, userEmail, geniusType, myOrgId,
         isOrg={isOrg}
         isNivarroAdmin={isNivarroAdmin}
         isSchool={isSchool}
-        isStandard={isStandard}
         isWalledStudent={isWalledStudent}
         isAlumni={isAlumni}
         collapsed={collapsed}
