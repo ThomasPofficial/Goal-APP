@@ -9,7 +9,7 @@ export default async function RosterPage() {
 
   const dbUser = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { role: true, schoolQuizEnabled: true },
+    select: { role: true },
   });
   if (dbUser?.role !== "SCHOOL") redirect("/dashboard");
 
@@ -46,5 +46,5 @@ export default async function RosterPage() {
     createdAt: p.user.createdAt.toISOString(),
   }));
 
-  return <RosterClient members={members} quizEnabled={dbUser.schoolQuizEnabled} />;
+  return <RosterClient members={members} />;
 }

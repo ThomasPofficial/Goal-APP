@@ -28,15 +28,8 @@ export default async function QuizPage(props: {
 
   const isSchoolAffiliatedStudent = dbUser?.role === "STUDENT" && !!dbUser.profile?.schoolId;
 
-  if (isSchoolAffiliatedStudent) {
-    const school = await prisma.user.findUnique({
-      where: { id: dbUser!.profile!.schoolId! },
-      select: { schoolQuizEnabled: true },
-    });
-    // Student/Alum accounts are walled off from the quiz by default — their school
-    // must opt them in via the Quiz toggle on the Roster page before this unlocks.
-    if (!school?.schoolQuizEnabled) redirect("/dashboard");
-  }
+  // Student/Alum accounts are walled off from the genius-type quiz entirely.
+  if (isSchoolAffiliatedStudent) redirect("/dashboard");
 
   const profile = userId
     ? await prisma.profile.findUnique({

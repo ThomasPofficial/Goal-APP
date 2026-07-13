@@ -34,7 +34,6 @@ interface ParsedRow {
 
 interface Props {
   members: Member[];
-  quizEnabled: boolean;
 }
 
 type Tab = "students" | "alumni" | "staff";
@@ -89,16 +88,12 @@ const labelStyle: React.CSSProperties = {
   textTransform: "uppercase",
 };
 
-export default function RosterClient({ members: initialMembers, quizEnabled: initialQuizEnabled }: Props) {
+export default function RosterClient({ members: initialMembers }: Props) {
   const [members, setMembers] = useState(initialMembers);
   const [activeTab, setActiveTab] = useState<Tab>("students");
   const [search, setSearch] = useState("");
   const [showAddModal, setShowAddModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
-
-  // Quiz toggle state
-  const [quizEnabled, setQuizEnabled] = useState(initialQuizEnabled);
-  const [quizToggling, setQuizToggling] = useState(false);
 
   // Add Member modal form state
   const [addRole, setAddRole] = useState<"STUDENT" | "ALUMNI" | "STAFF">("STUDENT");
@@ -166,24 +161,6 @@ export default function RosterClient({ members: initialMembers, quizEnabled: ini
       }
     } catch {
       // ignore refresh errors silently
-    }
-  };
-
-  const handleQuizToggle = async () => {
-    const next = !quizEnabled;
-    setQuizToggling(true);
-    setQuizEnabled(next);
-    try {
-      const res = await fetch("/api/school/settings", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ schoolQuizEnabled: next }),
-      });
-      if (!res.ok) setQuizEnabled(!next);
-    } catch {
-      setQuizEnabled(!next);
-    } finally {
-      setQuizToggling(false);
     }
   };
 
@@ -489,61 +466,6 @@ export default function RosterClient({ members: initialMembers, quizEnabled: ini
               {chip.label}
             </span>
           ))}
-        </div>
-
-        {/* Quiz toggle */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: 12,
-            marginTop: 14,
-            padding: "12px 16px",
-            background: "var(--surface)",
-            border: "1px solid var(--border)",
-            maxWidth: 420,
-          }}
-        >
-          <div>
-            <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: "var(--text)" }}>
-              Genius Type Quiz
-            </p>
-            <p style={{ margin: "2px 0 0", fontSize: 12, color: "var(--muted)" }}>
-              {quizEnabled ? "Students can take the quiz." : "Quiz is hidden from students."}
-            </p>
-          </div>
-          <button
-            onClick={handleQuizToggle}
-            disabled={quizToggling}
-            role="switch"
-            aria-checked={quizEnabled}
-            style={{
-              position: "relative",
-              width: 40,
-              height: 22,
-              borderRadius: 999,
-              border: "1px solid var(--border)",
-              background: quizEnabled ? "var(--amber)" : "var(--bg)",
-              cursor: quizToggling ? "not-allowed" : "pointer",
-              opacity: quizToggling ? 0.6 : 1,
-              flexShrink: 0,
-              transition: "background 0.15s",
-            }}
-          >
-            <span
-              style={{
-                position: "absolute",
-                top: 2,
-                left: quizEnabled ? 20 : 2,
-                width: 16,
-                height: 16,
-                borderRadius: "50%",
-                background: quizEnabled ? "#000" : "var(--muted)",
-                transition: "left 0.15s",
-              }}
-            />
-          </button>
         </div>
       </div>
 
