@@ -25,11 +25,11 @@ export default {
           inverse: "#0F0F11",
         },
 
-        // Amber accent (library lamp warmth)
+        // Brand accent (single navy accent — replaces the old gold system)
         amber: {
-          DEFAULT: "#C9A84C",
-          light: "#E3C06A",
-          dark: "#9E7D30",
+          DEFAULT: "#4A80F0",
+          light: "#6A9FFF",
+          dark: "#14507F",
           subtle: "rgba(74,128,240,0.10)",
         },
 
