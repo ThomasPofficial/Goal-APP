@@ -624,15 +624,15 @@ body.day input[type="datetime-local"] { color-scheme: light; }
 .bg-\[#16161a80\], .hover\:bg-\[#1e1e2480\]:hover { background-color: var(--surface2) !important; }
 .bg-\[#3a3a44\] { background-color: var(--surface3) !important; }
 
-.bg-\[#c9a84c10\], .bg-\[#c9a84c08\], .bg-\[#c9a84c15\] { background-color: rgba(59,130,246,0.07) !important; }
+.bg-\[#c9a84c10\], .bg-\[#c9a84c08\], .bg-\[#c9a84c15\] { background-color: rgba(74,128,240,0.07) !important; }
 .bg-\[#c9a84c20\] { background-color: rgba(74,128,240,0.13) !important; }
 .ring-\[#c9a84c30\] { --tw-ring-color: rgba(74,128,240,0.19) !important; }
-.border-\[#c9a84c30\] { border-color: rgba(59,130,246,0.2) !important; }
-.border-\[#c9a84c60\] { border-color: rgba(59,130,246,0.4) !important; }
-.border-\[rgba\(201\2C 168\2C 76\2C 0\.12\)\] { border-color: rgba(59,130,246,0.15) !important; }
-.border-\[rgba\(201\2C 168\2C 76\2C 0\.28\)\] { border-color: rgba(59,130,246,0.28) !important; }
-.border-\[rgba\(201\2C 168\2C 76\2C 0\.4\)\]  { border-color: rgba(59,130,246,0.4) !important; }
-.hover\:border-\[rgba\(201\2C 168\2C 76\2C 0\.28\)\]:hover { border-color: rgba(59,130,246,0.4) !important; }
-.hover\:border-\[rgba\(201\2C 168\2C 76\2C 0\.4\)\]:hover  { border-color: rgba(59,130,246,0.5) !important; }
-.hover\:border-\[rgba\(201\2C 168\2C 76\2C 0\.12\)\]:hover { border-color: rgba(59,130,246,0.25) !important; }
+.border-\[#c9a84c30\] { border-color: rgba(74,128,240,0.2) !important; }
+.border-\[#c9a84c60\] { border-color: rgba(74,128,240,0.4) !important; }
+.border-\[rgba\(201\2C 168\2C 76\2C 0\.12\)\] { border-color: rgba(74,128,240,0.15) !important; }
+.border-\[rgba\(201\2C 168\2C 76\2C 0\.28\)\] { border-color: rgba(74,128,240,0.28) !important; }
+.border-\[rgba\(201\2C 168\2C 76\2C 0\.4\)\]  { border-color: rgba(74,128,240,0.4) !important; }
+.hover\:border-\[rgba\(201\2C 168\2C 76\2C 0\.28\)\]:hover { border-color: rgba(74,128,240,0.4) !important; }
+.hover\:border-\[rgba\(201\2C 168\2C 76\2C 0\.4\)\]:hover  { border-color: rgba(74,128,240,0.5) !important; }
+.hover\:border-\[rgba\(201\2C 168\2C 76\2C 0\.12\)\]:hover { border-color: rgba(74,128,240,0.25) !important; }
 .focus\:border-\[rgba\(201\2C 168\2C 76\2C 0\.28\)\]:focus { border-color: rgba(59,130,246,0.5) !important; }
