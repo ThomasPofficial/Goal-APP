@@ -635,4 +635,4 @@ body.day input[type="datetime-local"] { color-scheme: light; }
 .hover\:border-\[rgba\(201\2C 168\2C 76\2C 0\.28\)\]:hover { border-color: rgba(74,128,240,0.4) !important; }
 .hover\:border-\[rgba\(201\2C 168\2C 76\2C 0\.4\)\]:hover  { border-color: rgba(74,128,240,0.5) !important; }
 .hover\:border-\[rgba\(201\2C 168\2C 76\2C 0\.12\)\]:hover { border-color: rgba(74,128,240,0.25) !important; }
-.focus\:border-\[rgba\(201\2C 168\2C 76\2C 0\.28\)\]:focus { border-color: rgba(59,130,246,0.5) !important; }
+.focus\:border-\[rgba\(201\2C 168\2C 76\2C 0\.28\)\]:focus { border-color: rgba(74,128,240,0.5) !important; }
