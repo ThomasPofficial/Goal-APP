@@ -211,6 +211,7 @@ export default function Sidebar({ userName, userEmail, geniusType, mobileOpen = 
             userName={userName}
             userEmail={userEmail}
             geniusType={geniusType}
+            isSchool={isSchool}
           />
         </div>
       )}

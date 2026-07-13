@@ -12,9 +12,10 @@ interface AccountMenuProps {
   userName?: string | null;
   userEmail?: string | null;
   geniusType?: GeniusType | null;
+  isSchool?: boolean;
 }
 
-export default function AccountMenu({ userName, userEmail, geniusType }: AccountMenuProps) {
+export default function AccountMenu({ userName, userEmail, geniusType, isSchool = false }: AccountMenuProps) {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const initials = getInitials(userName ?? "?");
@@ -69,32 +70,36 @@ export default function AccountMenu({ userName, userEmail, geniusType }: Account
             </div>
           </div>
 
-          <div className="mb-4 pb-4" style={{ borderBottom: "1px solid var(--border)" }}>
-            {genius ? (
-              <div
-                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold"
-                style={{ background: `${genius.color}18`, color: genius.color, border: `1px solid ${genius.color}30` }}
-              >
-                <span>{genius.icon}</span>{genius.label}
-              </div>
-            ) : (
-              <Link href="/quiz" onClick={() => setOpen(false)} className="text-xs" style={{ color: "var(--gold)" }}>
-                Take the Genius Quiz →
-              </Link>
-            )}
-          </div>
+          {!isSchool && (
+            <div className="mb-4 pb-4" style={{ borderBottom: "1px solid var(--border)" }}>
+              {genius ? (
+                <div
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold"
+                  style={{ background: `${genius.color}18`, color: genius.color, border: `1px solid ${genius.color}30` }}
+                >
+                  <span>{genius.icon}</span>{genius.label}
+                </div>
+              ) : (
+                <Link href="/quiz" onClick={() => setOpen(false)} className="text-xs" style={{ color: "var(--gold)" }}>
+                  Take the Genius Quiz →
+                </Link>
+              )}
+            </div>
+          )}
 
           <div className="space-y-0.5">
-            <Link
-              href="/profile"
-              onClick={() => setOpen(false)}
-              className="flex items-center gap-2.5 px-2 py-2 rounded-md text-sm transition-colors"
-              style={{ color: "var(--text2)" }}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.background = "var(--surface2)"; (e.currentTarget as HTMLAnchorElement).style.color = "var(--text)"; }}
-              onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.background = "transparent"; (e.currentTarget as HTMLAnchorElement).style.color = "var(--text2)"; }}
-            >
-              <User className="w-4 h-4 flex-shrink-0" />Edit Profile
-            </Link>
+            {!isSchool && (
+              <Link
+                href="/profile"
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-2.5 px-2 py-2 rounded-md text-sm transition-colors"
+                style={{ color: "var(--text2)" }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.background = "var(--surface2)"; (e.currentTarget as HTMLAnchorElement).style.color = "var(--text)"; }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.background = "transparent"; (e.currentTarget as HTMLAnchorElement).style.color = "var(--text2)"; }}
+              >
+                <User className="w-4 h-4 flex-shrink-0" />Edit Profile
+              </Link>
+            )}
             <form action={serverSignOut} className="w-full">
               <button
                 type="submit"
