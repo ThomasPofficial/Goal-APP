@@ -18,6 +18,8 @@ Account creation across the four user-facing types (Standard, Student, Alum, Adm
 
 Let an existing (canonical) school account create additional real logins for staff at the same school, each with full admin/teacher dashboard access (roster, CSV import, mentorship pairing, etc.) scoped to that same school — without introducing a payment flag, a permissions-tier system, or a separate `School` table.
 
+**Concurrency:** canonical and staff accounts are fully separate `User` rows with independent credentials and sessions — multiple people (canonical + any number of staff) can be logged into the app simultaneously from different devices with no conflict. Nothing about this design shares a login.
+
 ## Data model
 
 Add one nullable self-relation field to `User`:
@@ -71,7 +73,7 @@ This is the only change needed to make every existing school-scoped route (roste
 
 New routes, all requiring `getSchoolSession()` to succeed first:
 
-- **`POST /api/school/staff`** — body `{ name, email }`. Guard: reject with 403 unless the caller is canonical (`callerId === schoolId`) — a staff account cannot create another staff account. Duplicate-email check mirrors `/api/hq/schools`. Creates `User` with `role: SCHOOL`, `primarySchoolId: schoolId`, a random unusable password hash (`bcrypt.hash(randomUUID(), 10)`, matching every other invite-style account creation in the codebase), and a minimal `Profile` (`displayName: name`). The new hire gains access the same way every roster-imported account already does: they visit `/forgot-password` with their real email and set their own password via the existing `requestPasswordReset`/`resetPassword` server actions — no new email/invite plumbing required.
+- **`POST /api/school/staff`** — body `{ name, email }`. Guard: reject with 403 unless the caller is canonical (`callerId === schoolId`) — a staff account cannot create another staff account. Duplicate-email check mirrors `/api/hq/schools`. Creates `User` with `role: SCHOOL`, `primarySchoolId: schoolId`, a random unusable password hash (`bcrypt.hash(randomUUID(), 10)`, matching every other invite-style account creation in the codebase), and a minimal `Profile` (`displayName: name`). Then **automatically** sends a set-password email — no separate step for the admin, no "forgot password" self-service required from the new hire. Implementation: extract the token-generation + email-send body of `requestPasswordReset` (`app/actions/auth.ts`) into a shared helper (e.g. `sendPasswordSetupEmail(email, { welcome: boolean })`) that both the existing forgot-password action and this new endpoint call — same `PasswordResetToken` model and `/reset-password?token=...` link, just different subject/copy for the welcome case ("You've been added as staff at [School] — set your password to get started" vs. "Reset your password").
 - **`GET /api/school/staff`** — lists accounts where `primarySchoolId === schoolId` (canonical or staff may call this).
 - **`DELETE /api/school/staff/[userId]`** — canonical-only (403 otherwise). Deletes the staff `User` row. Note: this does not proactively invalidate an already-issued NextAuth JWT session for that user (nothing in the app currently does this for any account type); it stops working the next time their session is refreshed/expires. Acceptable given existing precedent — flagged here rather than silently assumed.
 
@@ -92,4 +94,4 @@ A new "Staff" panel on the existing `/school/roster` page (`RosterClient.tsx`), 
 - Unit/integration: `getSchoolSession()` resolves the same `schoolId` for canonical and staff callers; roster/import/mentorship routes behave identically regardless of which kind of `SCHOOL` account calls them.
 - `POST /api/school/staff` rejected (403) when called by a staff account.
 - `DELETE /api/school/staff/[userId]` rejected (403) when called by a staff account, or when `userId` doesn't belong to caller's school.
-- Manual/browser: create a staff account, use forgot-password to set a real password, log in, confirm roster page shows the same data as the canonical login.
+- Manual/browser: click "Add Teacher" from the canonical account, confirm a welcome email with a working set-password link arrives automatically, set a real password, log in as the new staff account while the canonical account stays logged in on another session, confirm both see identical roster data.
