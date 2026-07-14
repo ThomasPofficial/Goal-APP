@@ -99,11 +99,12 @@ export default function ApplyModal({
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
 
       <div
-        className="relative w-full sm:max-w-lg sm:rounded-2xl rounded-t-2xl overflow-hidden flex flex-col"
+        className="relative w-full sm:max-w-lg overflow-hidden flex flex-col"
         style={{
           background: "var(--surface)",
           border: "1px solid var(--border-md)",
           maxHeight: "90vh",
+          borderRadius: "var(--radius-lg)",
         }}
       >
         {/* Header */}
@@ -193,12 +194,13 @@ export default function ApplyModal({
                         key={peer.id}
                         onClick={() => !isDisabled && toggle(peer.id)}
                         className={cn(
-                          "w-full flex items-center gap-3 p-2.5 rounded-xl text-left transition-colors",
+                          "w-full flex items-center gap-3 p-2.5 text-left transition-colors",
                           isDisabled ? "opacity-30 cursor-not-allowed" : "cursor-pointer"
                         )}
                         style={{
                           background: isSelected ? "rgba(74,128,240,0.1)" : "var(--n-bg2)",
                           border: `1px solid ${isSelected ? "rgba(74,128,240,0.35)" : "var(--border)"}`,
+                          borderRadius: "var(--radius-md)",
                         }}
                       >
                         <Avatar
@@ -289,8 +291,8 @@ export default function ApplyModal({
             <button
               onClick={handleSubmit}
               disabled={submitting || !whyJoinValid}
-              className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-              style={{ background: "var(--blue)", color: "#05080F" }}
+              className="flex-1 py-2.5 text-sm font-semibold transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              style={{ background: "var(--blue)", color: "#05080F", borderRadius: "var(--radius-md)" }}
             >
               {submitting ? "Submitting…" : "Apply"}
             </button>
