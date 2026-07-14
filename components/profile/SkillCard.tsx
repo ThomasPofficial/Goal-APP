@@ -57,15 +57,21 @@ export default function SkillCard({
             <img
               src={data.avatarUrl}
               alt={data.displayName}
-              className={`rounded-full object-cover ring-1 ring-[#c9a84c30] ${
+              className={`rounded-full object-cover ${
                 compact ? "w-9 h-9" : "w-12 h-12"
               }`}
+              style={{ boxShadow: "0 0 0 1px rgba(74,128,240,0.19)" }}
             />
           ) : (
             <div
-              className={`rounded-full flex items-center justify-center font-bold bg-[#c9a84c20] text-[#c9a84c] ring-1 ring-[#c9a84c30] ${
+              className={`rounded-full flex items-center justify-center font-bold ${
                 compact ? "w-9 h-9 text-xs" : "w-12 h-12 text-sm"
               }`}
+              style={{
+                background: "rgba(74,128,240,0.13)",
+                color: "var(--accent)",
+                boxShadow: "0 0 0 1px rgba(74,128,240,0.19)",
+              }}
             >
               {initials}
             </div>
@@ -163,7 +169,7 @@ export default function SkillCard({
         {showActions && onAddToProject && (
           <button
             onClick={() => onAddToProject(data.userId)}
-            className="flex-1 text-xs font-medium text-[#c9a84c] hover:text-[#e3c06a] border border-[#c9a84c30] hover:border-[#c9a84c60] rounded-md py-1.5 transition-colors"
+            className="flex-1 text-xs font-medium text-[var(--accent)] hover:text-[var(--accent-hover)] border border-[rgba(74,128,240,0.19)] hover:border-[rgba(74,128,240,0.38)] rounded-md py-1.5 transition-colors"
           >
             Add to project
           </button>

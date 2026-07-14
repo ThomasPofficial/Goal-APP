@@ -349,10 +349,11 @@ export default function AnimalArchetypeCard({ animalKey, compact = false }: Anim
   if (compact) {
     return (
       <div
-        className="flex items-center gap-3 rounded-xl px-3 py-2"
+        className="flex items-center gap-3 px-3 py-2"
         style={{
           background: animal.bgColor,
           border: `1px solid ${animal.color}30`,
+          borderRadius: "var(--radius-md)",
         }}
       >
         <div
@@ -375,12 +376,13 @@ export default function AnimalArchetypeCard({ animalKey, compact = false }: Anim
 
   return (
     <div
-      className="rounded-2xl overflow-hidden flex flex-col"
+      className="overflow-hidden flex flex-col"
       style={{
         background: animal.bgColor,
         border: `1px solid ${animal.color}28`,
         minWidth: 160,
         maxWidth: 200,
+        borderRadius: "var(--radius-lg)",
       }}
     >
       {/* Sprite display area */}

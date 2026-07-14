@@ -52,12 +52,13 @@ export default function AccountMenu({ userName, userEmail, geniusType, isSchool 
     <div ref={containerRef} className="relative px-3 pb-4 pt-3" style={{ borderTop: "1px solid var(--border)" }}>
       {open && (
         <div
-          className="absolute bottom-full left-3 right-3 mb-2 rounded-xl p-4 z-50"
+          className="absolute bottom-full left-3 right-3 mb-2 p-4 z-50"
           style={{
             background: "var(--surface)",
             border: "1px solid var(--border-md)",
             boxShadow: "0 24px 48px rgba(0,0,0,0.5)",
             animation: "fadeIn 0.15s ease",
+            borderRadius: "var(--radius-lg)",
           }}
         >
           <div className="flex items-center gap-3 mb-4 pb-4" style={{ borderBottom: "1px solid var(--border)" }}>
