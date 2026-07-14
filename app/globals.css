@@ -248,7 +248,7 @@ a, button {
 }
 
 .card:hover {
-  border-color: rgba(232,137,58,0.22);
+  border-color: rgba(74,128,240,0.22);
   box-shadow: var(--glow-card);
   transform: translateY(-1px);
 }
