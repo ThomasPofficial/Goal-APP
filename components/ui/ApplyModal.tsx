@@ -292,7 +292,7 @@ export default function ApplyModal({
               onClick={handleSubmit}
               disabled={submitting || !whyJoinValid}
               className="flex-1 py-2.5 text-sm font-semibold transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-              style={{ background: "var(--blue)", color: "#05080F", borderRadius: "var(--radius-md)" }}
+              style={{ background: "var(--blue)", color: "var(--on-accent)", borderRadius: "var(--radius-md)" }}
             >
               {submitting ? "Submitting…" : "Apply"}
             </button>
