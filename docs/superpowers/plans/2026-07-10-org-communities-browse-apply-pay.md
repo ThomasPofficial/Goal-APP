@@ -1,34 +1,35 @@
-# Org Communities: Browse → Apply → Pay Implementation Plan
+# Org Communities: Browse → Apply → Join Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Give Standard accounts (`role=STUDENT`, no `schoolId`) a browse → apply → pay path into org-run communities, while leaving the existing school-code-gated community chat for Student/Alum/School accounts completely untouched.
+**Goal:** Give Standard accounts (`role=STUDENT`, no `schoolId`) a browse → apply → instant-access path into org-run communities, while leaving the existing school-code-gated community chat for Student/Alum/School accounts completely untouched.
 
-**Architecture:** Two new Prisma models (`Community`, `CommunityMembership`) plus a `PaymentStatus` enum, and one new optional/unique FK (`Conversation.communityId`). The final "paid + approved" state reuses the exact chat plumbing the school community already uses (`Conversation`/`Message`/`ConversationParticipant`, `/api/conversations/[id]/messages`, the `join_conversation`/`conversation_message` socket events) — extracted into a shared `CommunityChatRoom` component so both flows render chat identically. Payment is a stub endpoint that flips a status field; no real payment gateway is wired up in this pass.
+**Architecture:** One new Prisma model (`Community`) plus one new optional/unique FK (`Conversation.communityId`). Membership/approval reuses the existing `CommunityMembership` join model and the existing `ApplicationStatus` enum (`PENDING/ACCEPTED/REJECTED/WITHDRAWN`) — `ACCEPTED` grants access immediately, no payment or pricing concept at all in this pass. The final "joined" state reuses the exact chat plumbing the school community already uses (`Conversation`/`Message`/`ConversationParticipant`, `/api/conversations/[id]/messages`, the `join_conversation`/`conversation_message` socket events) — extracted into a shared `CommunityChatRoom` component so both flows render chat identically.
 
 **Tech Stack:** Next.js 15 App Router, Prisma/PostgreSQL, NextAuth v5. No test runner exists in this repo (no jest/vitest configured, no `*.test.*` files anywhere in `app/`) — verification steps use `npx tsc --noEmit`, `npx prisma validate`, `npx prisma generate`, and manual dev-server checks with `curl` (works fine for `localhost` — the SSL cert issue from project memory only affects real HTTPS endpoints, not local HTTP).
 
 ## Global Constraints
 
+- **Deviation from spec (2026-07-15, user decision):** the original spec (`docs/superpowers/specs/2026-07-10-org-communities-browse-apply-pay-design.md`) included pricing and a payment stub (`Community.priceCents`, `CommunityMembership.paymentStatus`, `PaymentStatus` enum, `POST /api/communities/[id]/pay`). User decided: instant access for now — an org accepting a join request grants access immediately, no pricing, no payment step, no `PaymentStatus` concept at all. Every task below has already been rewritten to drop pricing/payment entirely rather than stub it — do not reintroduce `priceCents`/`paymentStatus`/`PaymentStatus`/the pay route. Payment can be layered on later as a separate feature when there's a real gateway to wire up.
 - Manual SQL migration required for every schema change — `prisma generate` does not create migration files, and Render runs `prisma migrate deploy` at startup. Use `prisma/migrations/YYYYMMDDHHMMSS_description/migration.sql` with `IF NOT EXISTS`/`ADD COLUMN IF NOT EXISTS` guards.
-- Spec reference: `docs/superpowers/specs/2026-07-10-org-communities-browse-apply-pay-design.md`.
+- Spec reference: `docs/superpowers/specs/2026-07-10-org-communities-browse-apply-pay-design.md` (pricing/payment sections superseded by the deviation above).
 - **Deviation from spec:** the spec's API table lists `GET /api/communities` for browsing. This plan does not build that route — the Standard branch of `communities/page.tsx` queries Prisma directly instead, matching this codebase's existing convention (every other dashboard page, e.g. `app/(dashboard)/orgs/page.tsx`, `app/(dashboard)/communities/page.tsx`, fetches with Prisma in the server component rather than calling its own API). Building an unused GET route would be dead code. `POST /api/communities` (org creates a community) is the only method on that route.
-- Out of scope: real payment processing (Stripe or otherwise) — `POST /api/communities/[id]/pay` always succeeds. Community discovery/search/filtering beyond a flat list. Editing or deleting a community after creation. Any change to the existing school-code chat (`SchoolCodeGate`, `AdminCodePanel`, `ensureSchoolGeneralRoom`) beyond extracting its chat-rendering body into a shared component with identical output.
+- Out of scope: pricing/payment (see deviation above — deferred entirely, not stubbed). Community discovery/search/filtering beyond a flat list. Editing or deleting a community after creation. Any change to the existing school-code chat (`SchoolCodeGate`, `AdminCodePanel`, `ensureSchoolGeneralRoom`) beyond extracting its chat-rendering body into a shared component with identical output.
 - Follow existing code style in touched files: inline `style={{}}` props using `var(--...)` CSS variables (not Tailwind) in the communities components, matching `CommunitiesClient.tsx`; Tailwind classes + inline `style` for colors in `OrgDetailClient.tsx`, matching its existing panels (`AdminApplicationsPanel`). No comments unless explaining a non-obvious constraint.
 - Walled students (`role=STUDENT` with `profile.schoolId` set) must never be able to join an org community, including via direct API call — not just hidden in the UI. Enforced in Task 5 using the existing `lib/accountGate.ts::isWalledStudent` helper.
 
 ---
 
-## Task 1: Schema — `Community`, `CommunityMembership`, `PaymentStatus`
+## Task 1: Schema — `Community`, `CommunityMembership`
 
 **Files:**
 - Modify: `prisma/schema.prisma`
 - Create: `prisma/migrations/20260710010000_add_communities/migration.sql`
 
 **Interfaces:**
-- Produces: `Community` model (`id, orgId, name, description, priceCents, createdAt`), `CommunityMembership` model (`id, communityId, userId, status: ApplicationStatus, paymentStatus: PaymentStatus, submittedAt, decidedAt`), `PaymentStatus` enum (`NONE | PENDING_PAYMENT | PAID`), `Conversation.communityId` (optional, unique). Consumed by Task 2 (`ensureCommunityConversation`), Tasks 4–7 (API routes), Tasks 8–10 (UI).
+- Produces: `Community` model (`id, orgId, name, description, createdAt`), `CommunityMembership` model (`id, communityId, userId, status: ApplicationStatus, submittedAt, decidedAt`), `Conversation.communityId` (optional, unique). Consumed by Task 2 (`ensureCommunityConversation`), Tasks 4–6 (API routes), Tasks 8–10 (UI).
 
-- [ ] **Step 1: Add the `PaymentStatus` enum and the two new models**
+- [ ] **Step 1: Add the two new models**
 
 In `prisma/schema.prisma`, immediately after the `Conversation` model's closing brace (currently line 318, right before `enum ConversationType`), insert:
 
@@ -38,7 +39,6 @@ model Community {
   orgId       String
   name        String
   description String?
-  priceCents  Int?
   createdAt   DateTime @default(now())
 
   org          Org                   @relation(fields: [orgId], references: [id], onDelete: Cascade)
@@ -49,24 +49,17 @@ model Community {
 }
 
 model CommunityMembership {
-  id            String            @id @default(cuid())
-  communityId   String
-  userId        String
-  status        ApplicationStatus @default(PENDING)
-  paymentStatus PaymentStatus     @default(NONE)
-  submittedAt   DateTime          @default(now())
-  decidedAt     DateTime?
+  id          String            @id @default(cuid())
+  communityId String
+  userId      String
+  status      ApplicationStatus @default(PENDING)
+  submittedAt DateTime          @default(now())
+  decidedAt   DateTime?
 
   community Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([communityId, userId])
-}
-
-enum PaymentStatus {
-  NONE
-  PENDING_PAYMENT
-  PAID
 }
 
 ```
@@ -190,20 +183,12 @@ Replace with:
 Create `prisma/migrations/20260710010000_add_communities/migration.sql`:
 
 ```sql
--- CreateEnum
-DO $$ BEGIN
-  CREATE TYPE "PaymentStatus" AS ENUM ('NONE', 'PENDING_PAYMENT', 'PAID');
-EXCEPTION
-  WHEN duplicate_object THEN null;
-END $$;
-
 -- CreateTable
 CREATE TABLE IF NOT EXISTS "Community" (
     "id" TEXT NOT NULL,
     "orgId" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "description" TEXT,
-    "priceCents" INTEGER,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "Community_pkey" PRIMARY KEY ("id")
@@ -215,7 +200,6 @@ CREATE TABLE IF NOT EXISTS "CommunityMembership" (
     "communityId" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
     "status" "ApplicationStatus" NOT NULL DEFAULT 'PENDING',
-    "paymentStatus" "PaymentStatus" NOT NULL DEFAULT 'NONE',
     "submittedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "decidedAt" TIMESTAMP(3),
 
@@ -266,7 +250,7 @@ END $$;
 - [ ] **Step 6: Regenerate the Prisma client and validate**
 
 Run: `npx prisma generate`
-Expected: `Generated Prisma Client` with no errors, and `Community`, `CommunityMembership`, `PaymentStatus` available in `@prisma/client` types.
+Expected: `Generated Prisma Client` with no errors, and `Community`, `CommunityMembership` available in `@prisma/client` types.
 
 Run: `npx prisma validate`
 Expected: `The schema at prisma/schema.prisma is valid 🚀`
@@ -292,7 +276,7 @@ git commit -m "feat: add Community/CommunityMembership schema for org paid commu
 
 **Interfaces:**
 - Consumes: `Community`, `Conversation.communityId` (Task 1)
-- Produces: `ensureCommunityConversation(communityId: string, userId: string): Promise<{ id: string }>` — consumed by Task 6 (membership accept, free case) and Task 7 (pay stub).
+- Produces: `ensureCommunityConversation(communityId: string, userId: string): Promise<{ id: string }>` — consumed by Task 6 (membership accept, grants instant access).
 
 - [ ] **Step 1: Add the helper**
 
@@ -771,7 +755,7 @@ git commit -m "refactor: extract CommunityChatRoom for reuse by org communities"
 
 **Interfaces:**
 - Consumes: `Community` (Task 1)
-- Produces: `POST /api/communities` → `{ id, orgId, name, description, priceCents, createdAt }` — consumed by Task 10 (`OrgCommunitiesPanel`).
+- Produces: `POST /api/communities` → `{ id, orgId, name, description, createdAt }` — consumed by Task 10 (`OrgCommunitiesPanel`).
 
 - [ ] **Step 1: Write the route**
 
@@ -786,12 +770,9 @@ export async function POST(req: Request) {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { orgId, name, description, priceCents } = await req.json();
+  const { orgId, name, description } = await req.json();
   if (!orgId || typeof name !== "string" || !name.trim()) {
     return NextResponse.json({ error: "orgId and name are required" }, { status: 400 });
-  }
-  if (priceCents != null && (typeof priceCents !== "number" || priceCents < 0)) {
-    return NextResponse.json({ error: "priceCents must be a non-negative number or null" }, { status: 400 });
   }
 
   const org = await prisma.org.findUnique({ where: { id: orgId }, select: { createdById: true } });
@@ -805,7 +786,6 @@ export async function POST(req: Request) {
       orgId,
       name: name.trim(),
       description: typeof description === "string" && description.trim() ? description.trim() : null,
-      priceCents: priceCents ?? null,
     },
   });
 
@@ -826,10 +806,10 @@ With the dev server running and logged in as an org account in the browser (to g
 curl -s -X POST http://localhost:3000/api/communities \
   -H "Content-Type: application/json" \
   -H "Cookie: <paste your authjs.session-token cookie here>" \
-  -d '{"orgId":"<your org id>","name":"Test Community","description":"A test","priceCents":500}'
+  -d '{"orgId":"<your org id>","name":"Test Community","description":"A test"}'
 ```
 
-Expected: `200` with a JSON body containing `id`, `name: "Test Community"`, `priceCents: 500`.
+Expected: `200` with a JSON body containing `id`, `name: "Test Community"`.
 Also verify: calling with an `orgId` you do not own returns `403`.
 
 - [ ] **Step 4: Commit**
@@ -899,7 +879,7 @@ curl -s -X POST http://localhost:3000/api/communities/<community id>/apply \
   -H "Cookie: <paste Standard user's session cookie>"
 ```
 
-Expected: `200` with `status: "PENDING"`, `paymentStatus: "NONE"`.
+Expected: `200` with `status: "PENDING"`.
 Run the same command again: expected `409 Already requested`.
 
 - [ ] **Step 4: Commit**
@@ -918,7 +898,7 @@ git commit -m "feat: add POST /api/communities/[id]/apply"
 
 **Interfaces:**
 - Consumes: `CommunityMembership` (Task 1), `ensureCommunityConversation` (Task 2)
-- Produces: `PATCH /api/communities/[id]/membership` → `{ id, status, paymentStatus, conversationId: string | null }` — consumed by Task 10 (`OrgCommunitiesPanel`).
+- Produces: `PATCH /api/communities/[id]/membership` → `{ id, status, conversationId: string | null }` — consumed by Task 10 (`OrgCommunitiesPanel`).
 
 - [ ] **Step 1: Write the route**
 
@@ -942,7 +922,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
   const membership = await prisma.communityMembership.findUnique({
     where: { communityId_userId: { communityId: id, userId } },
-    include: { community: { select: { id: true, priceCents: true, org: { select: { createdById: true } } } } },
+    include: { community: { select: { id: true, org: { select: { createdById: true } } } } },
   });
   if (!membership) return NextResponse.json({ error: "Membership not found" }, { status: 404 });
   if (membership.community.org.createdById !== session.user.id) {
@@ -957,27 +937,17 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       where: { communityId_userId: { communityId: id, userId } },
       data: { status: "REJECTED", decidedAt: new Date() },
     });
-    return NextResponse.json({ id: updated.id, status: updated.status, paymentStatus: updated.paymentStatus, conversationId: null });
+    return NextResponse.json({ id: updated.id, status: updated.status, conversationId: null });
   }
-
-  const isFree = !membership.community.priceCents || membership.community.priceCents === 0;
 
   const updated = await prisma.communityMembership.update({
     where: { communityId_userId: { communityId: id, userId } },
-    data: {
-      status: "ACCEPTED",
-      decidedAt: new Date(),
-      paymentStatus: isFree ? "PAID" : "PENDING_PAYMENT",
-    },
+    data: { status: "ACCEPTED", decidedAt: new Date() },
   });
 
-  let conversationId: string | null = null;
-  if (isFree) {
-    const conv = await ensureCommunityConversation(membership.community.id, userId);
-    conversationId = conv.id;
-  }
+  const conv = await ensureCommunityConversation(membership.community.id, userId);
 
-  return NextResponse.json({ id: updated.id, status: updated.status, paymentStatus: updated.paymentStatus, conversationId });
+  return NextResponse.json({ id: updated.id, status: updated.status, conversationId: conv.id });
 }
 ```
 
@@ -988,7 +958,7 @@ Expected: no errors referencing `app/api/communities/[id]/membership/route.ts`.
 
 - [ ] **Step 3: Manual verification**
 
-Using the org owner's session cookie from Task 4 (community was created with `priceCents: 500`, so not free) and the Standard user's id from Task 5:
+Using the org owner's session cookie from Task 4 and the Standard user's id from Task 5:
 
 ```bash
 curl -s -X PATCH http://localhost:3000/api/communities/<community id>/membership \
@@ -997,10 +967,8 @@ curl -s -X PATCH http://localhost:3000/api/communities/<community id>/membership
   -d '{"userId":"<standard user id>","status":"ACCEPTED"}'
 ```
 
-Expected: `200` with `status: "ACCEPTED"`, `paymentStatus: "PENDING_PAYMENT"`, `conversationId: null` (since `priceCents` was 500, not free).
+Expected: `200` with `status: "ACCEPTED"` and a non-null `conversationId` — access is granted immediately, no payment step.
 Repeat the same call: expected `409 Already decided`.
-
-To verify the free path, create a second community via Task 4's route with `"priceCents": null`, apply to it as the Standard user (Task 5's route), then PATCH-accept it as the org owner — expected `paymentStatus: "PAID"` and a non-null `conversationId`.
 
 - [ ] **Step 4: Commit**
 
@@ -1011,84 +979,19 @@ git commit -m "feat: add PATCH /api/communities/[id]/membership for org accept/r
 
 ---
 
-## Task 7: `POST /api/communities/[id]/pay` (stub payment)
+## Task 7 (removed): payment stub
 
-**Files:**
-- Create: `app/api/communities/[id]/pay/route.ts`
-
-**Interfaces:**
-- Consumes: `CommunityMembership` (Task 1), `ensureCommunityConversation` (Task 2)
-- Produces: `POST /api/communities/[id]/pay` → `{ paymentStatus: "PAID", conversationId: string }` — consumed by Task 8 (`StandardCommunitiesClient`).
-
-- [ ] **Step 1: Write the route**
-
-Create `app/api/communities/[id]/pay/route.ts`:
-
-```typescript
-import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
-import { ensureCommunityConversation } from "@/lib/communities";
-import { NextResponse } from "next/server";
-
-export async function POST(_req: Request, { params }: { params: Promise<{ id: string }> }) {
-  const session = await auth();
-  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-  const { id } = await params;
-
-  const membership = await prisma.communityMembership.findUnique({
-    where: { communityId_userId: { communityId: id, userId: session.user.id } },
-  });
-  if (!membership) return NextResponse.json({ error: "Membership not found" }, { status: 404 });
-  if (membership.status !== "ACCEPTED" || membership.paymentStatus !== "PENDING_PAYMENT") {
-    return NextResponse.json({ error: "Nothing to pay" }, { status: 409 });
-  }
-
-  // Stub: no real payment gateway is wired up yet. This always succeeds.
-  await prisma.communityMembership.update({
-    where: { communityId_userId: { communityId: id, userId: session.user.id } },
-    data: { paymentStatus: "PAID" },
-  });
-
-  const conv = await ensureCommunityConversation(id, session.user.id);
-
-  return NextResponse.json({ paymentStatus: "PAID", conversationId: conv.id });
-}
-```
-
-- [ ] **Step 2: Type-check**
-
-Run: `npx tsc --noEmit`
-Expected: no errors referencing `app/api/communities/[id]/pay/route.ts`.
-
-- [ ] **Step 3: Manual verification**
-
-Continuing from Task 6's priced-community example (membership now `ACCEPTED` / `PENDING_PAYMENT`), as the Standard user:
-
-```bash
-curl -s -X POST http://localhost:3000/api/communities/<community id>/pay \
-  -H "Cookie: <Standard user's session cookie>"
-```
-
-Expected: `200` with `paymentStatus: "PAID"` and a non-null `conversationId`.
-Repeat the same call: expected `409 Nothing to pay`.
-
-- [ ] **Step 4: Commit**
-
-```bash
-git add "app/api/communities/[id]/pay/route.ts"
-git commit -m "feat: add POST /api/communities/[id]/pay stub"
-```
+**Removed per the instant-access deviation** — there is no payment step in this pass. Task numbering below keeps Tasks 8–10 as originally named (no renumbering) to avoid drift with the rest of this doc; treat "Task 7" as skipped.
 
 ---
 
-## Task 8: `StandardCommunitiesClient` (browse/apply/pay UI)
+## Task 8: `StandardCommunitiesClient` (browse/apply/join UI)
 
 **Files:**
 - Create: `app/(dashboard)/communities/StandardCommunitiesClient.tsx`
 
 **Interfaces:**
-- Consumes: `CommunityChatRoom` (Task 3), `POST /api/communities/[id]/apply` (Task 5), `POST /api/communities/[id]/pay` (Task 7)
+- Consumes: `CommunityChatRoom` (Task 3), `POST /api/communities/[id]/apply` (Task 5)
 - Produces: `<StandardCommunitiesClient myUserId communities />` where `communities: CommunitySummary[]` — consumed by Task 9 (`communities/page.tsx`).
 
 - [ ] **Step 1: Write the component**
@@ -1103,7 +1006,6 @@ import CommunityChatRoom from "@/components/communities/CommunityChatRoom";
 
 interface Membership {
   status: "PENDING" | "ACCEPTED" | "REJECTED" | "WITHDRAWN";
-  paymentStatus: "NONE" | "PENDING_PAYMENT" | "PAID";
   conversationId: string | null;
 }
 
@@ -1111,7 +1013,6 @@ interface CommunitySummary {
   id: string;
   name: string;
   description: string | null;
-  priceCents: number | null;
   orgName: string;
   membership: Membership | null;
 }
@@ -1121,10 +1022,6 @@ interface Props {
   communities: CommunitySummary[];
 }
 
-function priceLabel(priceCents: number | null) {
-  return priceCents ? `$${(priceCents / 100).toFixed(2)}` : "Free";
-}
-
 export default function StandardCommunitiesClient({ myUserId, communities }: Props) {
   const [items, setItems] = useState(communities);
   const [openId, setOpenId] = useState<string | null>(null);
@@ -1132,33 +1029,18 @@ export default function StandardCommunitiesClient({ myUserId, communities }: Pro
 
   const open = items.find((c) => c.id === openId) ?? null;
 
-  const setMembership = (communityId: string, membership: Membership) => {
-    setItems((prev) => prev.map((c) => (c.id === communityId ? { ...c, membership } : c)));
-  };
-
   const apply = async (communityId: string) => {
     setBusyId(communityId);
     try {
       const res = await fetch(`/api/communities/${communityId}/apply`, { method: "POST" });
       if (res.ok) {
-        setMembership(communityId, { status: "PENDING", paymentStatus: "NONE", conversationId: null });
-      }
-    } finally { setBusyId(null); }
-  };
-
-  const pay = async (communityId: string) => {
-    setBusyId(communityId);
-    try {
-      const res = await fetch(`/api/communities/${communityId}/pay`, { method: "POST" });
-      if (res.ok) {
-        const data = await res.json();
-        setMembership(communityId, { status: "ACCEPTED", paymentStatus: "PAID", conversationId: data.conversationId });
+        setItems((prev) => prev.map((c) => (c.id === communityId ? { ...c, membership: { status: "PENDING", conversationId: null } } : c)));
       }
     } finally { setBusyId(null); }
   };
 
   if (open) {
-    if (open.membership?.paymentStatus === "PAID" && open.membership.conversationId) {
+    if (open.membership?.status === "ACCEPTED" && open.membership.conversationId) {
       return (
         <div>
           <button
@@ -1193,9 +1075,8 @@ export default function StandardCommunitiesClient({ myUserId, communities }: Pro
             {open.name}
           </h2>
           {open.description && (
-            <p style={{ fontSize: 14, color: "var(--muted)", margin: "0 0 20px", lineHeight: 1.6 }}>{open.description}</p>
+            <p style={{ fontSize: 14, color: "var(--muted)", margin: "0 0 24px", lineHeight: 1.6 }}>{open.description}</p>
           )}
-          <p style={{ fontSize: 13, color: "var(--text)", margin: "0 0 24px", fontWeight: 600 }}>{priceLabel(open.priceCents)}</p>
 
           {!open.membership && (
             <button
@@ -1218,21 +1099,6 @@ export default function StandardCommunitiesClient({ myUserId, communities }: Pro
 
           {open.membership?.status === "REJECTED" && (
             <p style={{ fontSize: 13, color: "#ef4444" }}>Your request was not approved.</p>
-          )}
-
-          {open.membership?.status === "ACCEPTED" && open.membership.paymentStatus === "PENDING_PAYMENT" && (
-            <button
-              onClick={() => pay(open.id)}
-              disabled={busyId === open.id}
-              style={{
-                padding: "10px 24px", borderRadius: 10, fontSize: 13, fontWeight: 700,
-                background: "var(--amber)", color: "#04070F", border: "none", cursor: "pointer",
-                letterSpacing: "0.05em", textTransform: "uppercase", fontFamily: "var(--font-display)",
-                opacity: busyId === open.id ? 0.5 : 1,
-              }}
-            >
-              {busyId === open.id ? "…" : `Pay ${priceLabel(open.priceCents)} to Join`}
-            </button>
           )}
         </div>
       </div>
@@ -1268,13 +1134,9 @@ export default function StandardCommunitiesClient({ myUserId, communities }: Pro
             {c.description && <p style={{ fontSize: 13, color: "var(--muted)", margin: 0 }}>{c.description}</p>}
           </div>
           <div style={{ textAlign: "right", flexShrink: 0 }}>
-            <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text)", margin: "0 0 4px" }}>{priceLabel(c.priceCents)}</p>
             {c.membership?.status === "PENDING" && <p style={{ fontSize: 11, color: "var(--muted)" }}>Pending</p>}
             {c.membership?.status === "REJECTED" && <p style={{ fontSize: 11, color: "#ef4444" }}>Rejected</p>}
-            {c.membership?.status === "ACCEPTED" && c.membership.paymentStatus === "PENDING_PAYMENT" && (
-              <p style={{ fontSize: 11, color: "var(--amber)" }}>Pay to join</p>
-            )}
-            {c.membership?.paymentStatus === "PAID" && <p style={{ fontSize: 11, color: "#22c55e" }}>Joined</p>}
+            {c.membership?.status === "ACCEPTED" && <p style={{ fontSize: 11, color: "#22c55e" }}>Joined</p>}
           </div>
         </button>
       ))}
@@ -1292,7 +1154,7 @@ Expected: no errors referencing `app/(dashboard)/communities/StandardCommunities
 
 ```bash
 git add "app/(dashboard)/communities/StandardCommunitiesClient.tsx"
-git commit -m "feat: add StandardCommunitiesClient browse/apply/pay UI"
+git commit -m "feat: add StandardCommunitiesClient browse/apply/join UI"
 ```
 
 ---
@@ -1346,12 +1208,11 @@ export default async function CommunitiesPage() {
         id: true,
         name: true,
         description: true,
-        priceCents: true,
         org: { select: { name: true } },
         conversation: { select: { id: true } },
         memberships: {
           where: { userId: session.user.id },
-          select: { status: true, paymentStatus: true },
+          select: { status: true },
         },
       },
     });
@@ -1362,13 +1223,11 @@ export default async function CommunitiesPage() {
         id: c.id,
         name: c.name,
         description: c.description,
-        priceCents: c.priceCents,
         orgName: c.org.name,
         membership: membership
           ? {
               status: membership.status,
-              paymentStatus: membership.paymentStatus,
-              conversationId: membership.paymentStatus === "PAID" ? c.conversation?.id ?? null : null,
+              conversationId: membership.status === "ACCEPTED" ? c.conversation?.id ?? null : null,
             }
           : null,
       };
@@ -1443,7 +1302,7 @@ Expected: no errors referencing `app/(dashboard)/communities/page.tsx`.
 - [ ] **Step 3: Manual smoke test**
 
 Run: `npm run dev`, log in as `student@nivarro.demo` / `demo2026` (Standard account — blank student, no `schoolId`), visit `/communities`.
-Expected: the browse list renders (showing any communities created in earlier tasks' manual verification, e.g. "Test Community" at $5.00). Click a card with no membership yet → detail view with "Request to Join" → click it → status changes to "pending approval". This exercises the full apply path end-to-end through the UI.
+Expected: the browse list renders (showing any communities created in earlier tasks' manual verification, e.g. "Test Community"). Click a card with no membership yet → detail view with "Request to Join" → click it → status changes to "pending approval". This exercises the full apply path end-to-end through the UI.
 
 Then log back in as `ridgepoint@nivarro.demo` / `ridgepoint2026` (school admin) and re-visit `/communities` — expected: unchanged, invite-code chat as before.
 
@@ -1487,7 +1346,6 @@ interface OrgCommunity {
   id: string;
   name: string;
   description: string | null;
-  priceCents: number | null;
   memberships: CommunityMembershipRow[];
 }
 
@@ -1496,7 +1354,6 @@ export default function OrgCommunitiesPanel({ orgId, communities }: { orgId: str
   const [creating, setCreating] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [price, setPrice] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -1512,13 +1369,12 @@ export default function OrgCommunitiesPanel({ orgId, communities }: { orgId: str
           orgId,
           name: name.trim(),
           description: description.trim() || null,
-          priceCents: price.trim() ? Math.round(parseFloat(price) * 100) : null,
         }),
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error ?? "Failed to create community"); return; }
       setItems((prev) => [{ ...data, memberships: [] }, ...prev]);
-      setName(""); setDescription(""); setPrice(""); setCreating(false);
+      setName(""); setDescription(""); setCreating(false);
     } finally { setSaving(false); }
   };
 
@@ -1572,13 +1428,6 @@ export default function OrgCommunitiesPanel({ orgId, communities }: { orgId: str
             className="w-full rounded-lg px-3 py-2 text-sm resize-none"
             style={{ background: "var(--surface2)", border: "1px solid var(--border-md)", color: "var(--text)", outline: "none" }}
           />
-          <input
-            value={price}
-            onChange={(e) => setPrice(e.target.value.replace(/[^0-9.]/g, ""))}
-            placeholder="Price in USD (leave blank for free)"
-            className="w-full rounded-lg px-3 py-2 text-sm"
-            style={{ background: "var(--surface2)", border: "1px solid var(--border-md)", color: "var(--text)", outline: "none" }}
-          />
           {error && <p className="text-xs" style={{ color: "#f87171" }}>{error}</p>}
           <button
             onClick={createCommunity}
@@ -1603,9 +1452,6 @@ export default function OrgCommunitiesPanel({ orgId, communities }: { orgId: str
           <div key={c.id} className="rounded-xl p-4" style={{ background: "var(--surface)", border: "1px solid var(--border-md)" }}>
             <div className="flex items-center justify-between mb-1">
               <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>{c.name}</p>
-              <span className="text-xs" style={{ color: "var(--muted)" }}>
-                {c.priceCents ? `$${(c.priceCents / 100).toFixed(2)}` : "Free"}
-              </span>
             </div>
             {c.description && <p className="text-xs mb-3" style={{ color: "var(--text2)" }}>{c.description}</p>}
             {pending.length === 0 ? (
@@ -1678,7 +1524,6 @@ Replace with:
     id: string;
     name: string;
     description: string | null;
-    priceCents: number | null;
     memberships: { id: string; userId: string; status: string; submittedAt: string; user: { profile: { displayName: string } | null } }[];
   }[];
 }) {
@@ -1837,7 +1682,6 @@ Replace with:
         id: c.id,
         name: c.name,
         description: c.description,
-        priceCents: c.priceCents,
         memberships: c.memberships.map((m) => ({
           id: m.id,
           userId: m.userId,
@@ -1861,7 +1705,7 @@ Expected: build completes successfully with no type errors anywhere in the touch
 
 - [ ] **Step 6: Manual end-to-end smoke test**
 
-Run: `npm run dev`. Log in as `ridgepoint@nivarro.demo` / `ridgepoint2026`, go to `/orgs/<their org id>`, click the "Communities" tab, create a new community (e.g. "Fellows Circle", $10), confirm it appears in the list. Log in as `student@nivarro.demo` in another browser/incognito window, go to `/communities`, find "Fellows Circle", click "Request to Join". Back as the org admin, refresh the Communities tab, confirm the pending request appears, click "Accept". Back as the student, refresh `/communities`, confirm the card now shows "Pay to join", open it, click "Pay $10.00 to Join", confirm it transitions into the chat room and a message can be sent and received.
+Run: `npm run dev`. Log in as `ridgepoint@nivarro.demo` / `ridgepoint2026`, go to `/orgs/<their org id>`, click the "Communities" tab, create a new community (e.g. "Fellows Circle"), confirm it appears in the list. Log in as `student@nivarro.demo` in another browser/incognito window, go to `/communities`, find "Fellows Circle", click "Request to Join". Back as the org admin, refresh the Communities tab, confirm the pending request appears, click "Accept". Back as the student, refresh `/communities`, confirm the card now shows "Joined", open it, confirm it lands directly in the chat room (no payment step) and a message can be sent and received.
 
 - [ ] **Step 7: Commit**
 
@@ -1874,4 +1718,4 @@ git commit -m "feat: add org-side Communities tab (create + accept/reject)"
 
 ## Verification Summary
 
-After all 10 tasks: a Standard account can browse org communities at `/communities`, request to join, pay (stub) once accepted, and land in a real chat room reusing existing chat infrastructure. An org account manages this from a new "Communities" tab on their org dashboard. Student/Alum/School accounts see zero change to their existing code-gated flow. No automated test suite exists in this repo — `npx tsc --noEmit` after every task plus the manual `curl`/browser checks in Tasks 4–10 are the verification gates, consistent with how every other feature in this codebase has been built and verified.
+After all tasks (Task 7 skipped, no renumbering): a Standard account can browse org communities at `/communities`, request to join, and land in a real chat room immediately once an org accepts — reusing existing chat infrastructure, no payment step. An org account manages this from a new "Communities" tab on their org dashboard. Student/Alum/School accounts see zero change to their existing code-gated flow. No automated test suite exists in this repo — `npx tsc --noEmit` after every task plus the manual `curl`/browser checks in Tasks 4–10 are the verification gates, consistent with how every other feature in this codebase has been built and verified.
