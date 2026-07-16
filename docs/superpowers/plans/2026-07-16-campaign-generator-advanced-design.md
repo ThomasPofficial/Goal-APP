@@ -16,7 +16,7 @@ The current AI Fundraising Page Generator (`/campaigns/new`, `/campaigns/[id]/ed
 - Keep the existing full "Regenerate" (start over from the cause description) as an escape hatch.
 - Preserve and extend the existing version history (`CampaignVersion` + restore) so every kind of change — generate, tweak, manual edit, restore — is snapshotted and labeled.
 - Redesign the hero so the generative art and headline/subheadline form one cohesive image, applied consistently in the new-campaign preview, the edit page, and the live public page.
-- Expand visual variety via an independent `pattern` × `style` system (16 combinations) so different causes produce visually distinct pages, while staying fully procedural/canvas-based (no image-generation API, no added cost).
+- Expand visual variety via a composable, continuous-parameter layer system (not a small fixed enum) so the space of distinct-looking heroes is effectively unlimited, while staying fully procedural/canvas-based (no image-generation API, no added cost).
 - Rewrite the copywriting prompt (used by both generate and tweak) to produce persuasive, specific fundraising copy rather than generic filler.
 
 ## Non-goals
@@ -24,7 +24,7 @@ The current AI Fundraising Page Generator (`/campaigns/new`, `/campaigns/[id]/ed
 - No real photography / external image API (Unsplash, DALL·E, etc.) — stays canvas-only per the existing no-image-API-cost direction.
 - No multi-turn conversational memory of feedback (each tweak is a single-shot revision using current state + new feedback text, not a chat thread).
 - No per-field feedback UI (separate feedback box per field) — one feedback box, Claude infers which field(s) to touch from the text.
-- No new hero *layout* picker (split-screen vs. overlay vs. stacked) — one redesigned overlay-style hero, with variety coming from the pattern/style dimensions instead of layout choice.
+- No new hero *layout* picker (split-screen vs. overlay vs. stacked) — one redesigned overlay-style hero, with variety coming from the composable layer system instead of layout choice.
 
 ## Design
 
@@ -39,29 +39,42 @@ Both `POST /api/campaigns/generate` and the new tweak endpoint use a shared prom
 
 This changes prompt wording only — response JSON shape for copy fields is unchanged.
 
-### 2. Hero visual system: `pattern` × `style`
+### 2. Hero visual system: composable layers, continuous parameters
 
-`ImageParams` (currently `{ seed, bg, palette, accent, pattern, shapes, density }`) gains a `style` field:
+Rather than picking from a small fixed enum (which caps variety at a countable number of looks), `ImageParams` becomes a stack of 1-4 independent **layers**, each with continuous-valued parameters. The shape algorithms (geometric/wave/burst/organic — existing, unchanged math) become *building blocks* that get composed, blended, and finished differently every time, rather than a single mutually-exclusive choice:
 
 ```ts
-style: "aurora" | "grain" | "duotone" | "mono"
+interface ImageParams {
+  seed: number;
+  bg: string;
+  palette: string[];
+  accent: string;
+  layers: PatternLayer[];       // 1-4 layers, stacked in order
+  grain: number;                 // 0-1 continuous noise-texture intensity
+  glow: number;                  // 0-1 continuous blur/bloom amount
+}
+
+interface PatternLayer {
+  type: "geometric" | "wave" | "burst" | "organic";
+  blend: "normal" | "screen" | "multiply" | "overlay"; // canvas globalCompositeOperation
+  density: number;    // 0-1
+  scale: number;      // 0.5-2, size multiplier for this layer's shapes
+  opacity: number;    // 0-1
+  rotation: number;   // 0-360 degrees, layer-level rotation
+  paletteOffset: number; // rotates which palette color this layer starts from
+}
 ```
 
-- **pattern** (existing, unchanged logic) chooses the shape algorithm: geometric / wave / burst / organic.
-- **style** (new) chooses the finish applied on top:
-  - `aurora` — soft blurred glowing color blobs via canvas `ctx.filter = "blur(Npx)"`, dark background, vibrant palette.
-  - `grain` — muted palette + procedural noise texture overlay (per-pixel or tiled noise pattern), editorial/documentary feel.
-  - `duotone` — two-color high-contrast treatment: background flattened to two palette colors via a duotone-style pass over the shape layer.
-  - `mono` — minimal: one accent color on a light/neutral field, shapes rendered sparse and small (low density), leaving room for bold overlaid type.
+Because `layers.length`, each layer's five continuous parameters, and the two global continuous knobs (`grain`, `glow`) are all free-valued (not enum picks), the combinatorial space is effectively unlimited rather than a countable 16 (or any fixed N). A single-layer, high-grain, low-glow organic shape reads as intimate/documentary; three layers (geometric + burst + wave) blended with `screen` and high `glow` reads as an energetic aurora-style glow; a single sparse geometric layer with near-zero density and high `grain` reads as minimal/editorial — and everything in between is reachable, not just those named examples.
 
-Claude's generation prompt picks both `pattern` and `style` based on the cause's mood (guidance table extended, e.g. environment/water → `wave` + `aurora`; sports/energy → `burst` + `duotone`; community/people → `organic` + `grain`; education/tech → `geometric` + `mono`). This is prompt guidance, not a hard rule — Claude may pick any valid combination.
+Claude's generation prompt is given qualitative *guidance* (more layers + `screen`/`overlay` blend + high `glow` → energetic/vibrant moods; fewer layers + high `grain` + low `glow` → intimate/documentary moods; low `density` + few layers → minimal/confident moods) but chooses the actual numeric values itself per cause — it is not constrained to a fixed menu of combinations.
 
 `CampaignCanvas` is updated to:
-1. Render the existing pattern shape logic (geometric/wave/burst/organic — unchanged functions).
-2. Apply the `style` finish as a compositing pass (blur+glow for aurora, noise overlay for grain, duotone remap, or sparse/minimal treatment for mono).
-3. Replace the fixed linear-gradient scrim with a contrast-aware scrim: compute background luminance from `bg` hex and scale the dark-overlay gradient stops so overlaid text stays readable regardless of chosen palette.
+1. Render each layer in `layers[]` using the existing shape algorithms (geometric/wave/burst/organic — unchanged per-layer math, just parameterized by that layer's density/scale/rotation/paletteOffset), composited in order using each layer's `blend` mode and `opacity`.
+2. Apply `grain` as a procedural noise-texture overlay scaled by its 0-1 value, and `glow` as a canvas `ctx.filter = "blur(Npx)"` bloom pass scaled by its 0-1 value.
+3. Replace the fixed linear-gradient scrim with a contrast-aware scrim: compute background luminance from `bg` hex and scale the dark-overlay gradient stops so overlaid text stays readable regardless of chosen palette or layer composition.
 
-Old `imageParams` rows without a `style` field default to `"aurora"` at render time (no backfill migration needed — `CampaignCanvas` treats missing `style` as `"aurora"`).
+Old `imageParams` rows using the previous flat shape (`pattern`/`shapes`/`density` at the top level, no `layers`) are rendered via a small compatibility shim: wrapped into a single-layer equivalent (`layers: [{ type: pattern, blend: "normal", density, scale: 1, opacity: 1, rotation: 0, paletteOffset: 0 }]`, `grain: 0`, `glow: 0`) so existing published campaigns keep rendering unchanged — no backfill migration needed since it's a `Json` column.
 
 ### 3. Unified hero component
 
@@ -114,12 +127,12 @@ model CampaignVersion {
 ```
 Requires a manual migration (per existing project convention — `prisma migrate deploy` runs at startup via `scripts/start.js`).
 
-`ImageParams` TypeScript type gains `style: "aurora" | "grain" | "duotone" | "mono"`, defaulted to `"aurora"` at render time for pre-existing rows with no migration needed (it's stored in the `Json` column, not a typed DB column).
+`ImageParams` TypeScript type is restructured to the `layers[]` + `grain` + `glow` shape described above. No DB migration needed — it's stored in the `Json` column, not a typed DB column — but a compatibility shim in `CampaignCanvas` normalizes pre-existing flat-shape rows into the new layer format at render time (see §2).
 
 ## New/changed files (implementation-plan input, not exhaustive)
 
-- `lib/campaign-prompt.ts` (new) — shared persuasive-copy prompt builder + pattern/style mood guidance
-- `components/campaigns/CampaignCanvas.tsx` — add `style` compositing pass, contrast-aware scrim
+- `lib/campaign-prompt.ts` (new) — shared persuasive-copy prompt builder + layer/mood guidance
+- `components/campaigns/CampaignCanvas.tsx` — layer compositing engine, grain/glow passes, contrast-aware scrim, legacy-shape compatibility shim
 - `components/campaigns/CampaignHero.tsx` (new) — unified overlay hero, editable/non-editable modes
 - `components/campaigns/CampaignEditor.tsx` (new) — shared editing UI (inline fields, tweak box, regenerate, save)
 - `components/campaigns/VersionHistoryDrawer.tsx` — badges for source/note
