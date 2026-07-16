@@ -36,7 +36,7 @@ export default function ProfileCard({
       style={{
         background: "var(--surface)",
         border: "1px solid var(--border)",
-        borderRadius: "var(--radius-md)",
+        borderRadius: "var(--radius-lg)",
         boxShadow: "var(--shadow-sm)",
       }}
     >
@@ -62,11 +62,11 @@ export default function ProfileCard({
           )}
         </div>
         <div className="min-w-0 flex-1">
-          <h3 className="font-semibold text-[#eaeaea] text-sm truncate">
+          <h3 className="font-semibold text-sm truncate" style={{ color: "var(--text)" }}>
             {profile.displayName}
           </h3>
           {profile.headline && (
-            <p className="text-xs text-[#909098] truncate mt-0.5">
+            <p className="text-xs truncate mt-0.5" style={{ color: "var(--text2)" }}>
               {profile.headline}
             </p>
           )}
@@ -89,7 +89,7 @@ export default function ProfileCard({
 
       {/* Strength summary */}
       {profile.strengthSummary && (
-        <p className="text-xs text-[#909098] leading-relaxed line-clamp-3">
+        <p className="text-xs leading-relaxed line-clamp-3" style={{ color: "var(--text2)" }}>
           {profile.strengthSummary}
         </p>
       )}
@@ -98,14 +98,26 @@ export default function ProfileCard({
       <div className="flex items-center gap-2 mt-auto pt-1">
         <Link
           href={`/people/${profile.userId}`}
-          className="flex-1 text-center text-xs font-medium text-[#909098] hover:text-[#eaeaea] border border-[#1c1c20] hover:border-[#28282e] rounded-md py-1.5 transition-colors"
+          className="flex-1 text-center text-xs font-medium py-1.5 transition-colors border"
+          style={{ color: "var(--text2)", borderColor: "var(--border-md)", borderRadius: "var(--radius-sm)" }}
+          onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = "var(--text)"; }}
+          onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = "var(--text2)"; }}
         >
           View profile
         </Link>
         {showActions && onAddToTeam && (
           <button
             onClick={() => onAddToTeam(profile.userId)}
-            className="flex-1 text-xs font-medium text-[var(--accent)] hover:text-[var(--accent-hover)] border border-[rgba(74,128,240,0.19)] hover:border-[rgba(74,128,240,0.38)] rounded-md py-1.5 transition-colors"
+            className="flex-1 text-xs font-medium py-1.5 transition-colors border"
+            style={{ color: "var(--accent)", borderColor: "rgba(74,128,240,0.3)", borderRadius: "var(--radius-sm)" }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.color = "var(--accent-hover)";
+              (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(74,128,240,0.6)";
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.color = "var(--accent)";
+              (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(74,128,240,0.3)";
+            }}
           >
             Add to team
           </button>
