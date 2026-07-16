@@ -16,17 +16,18 @@ export default function TraitBadge({
 
   return (
     <span
-      className={`inline-flex items-center font-medium rounded-sm border-l-2 ${
+      className={`inline-flex items-center rounded-full font-medium border ${
         size === "sm"
-          ? "px-2 py-0.5 text-[11px]"
-          : "px-2.5 py-1 text-xs"
+          ? "gap-1.5 px-2.5 py-0.5 text-[11px]"
+          : "gap-[7px] px-3 py-1 text-xs"
       }`}
       style={{
-        borderLeftColor: color,
-        backgroundColor: `${color}14`,
-        color: color,
+        borderColor: "var(--border-md)",
+        backgroundColor: "var(--surface2)",
+        color: "var(--text2)",
       }}
     >
+      <span style={{ width: 6, height: 6, borderRadius: "50%", background: color, flexShrink: 0 }} />
       {name}
     </span>
   );
