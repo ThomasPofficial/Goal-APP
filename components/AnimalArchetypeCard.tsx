@@ -368,7 +368,7 @@ export default function AnimalArchetypeCard({ animalKey, compact = false }: Anim
           <p className="text-xs font-mono uppercase tracking-widest" style={{ color: animal.color }}>
             {animal.name}
           </p>
-          <p className="text-[11px]" style={{ color: "#8898a8" }}>{animal.tagline}</p>
+          <p className="text-[11px]" style={{ color: "var(--text2)" }}>{animal.tagline}</p>
         </div>
       </div>
     );
@@ -414,7 +414,7 @@ export default function AnimalArchetypeCard({ animalKey, compact = false }: Anim
             {animal.tagline}
           </span>
         </div>
-        <p className="text-xs leading-relaxed" style={{ color: "#7888a0" }}>
+        <p className="text-xs leading-relaxed" style={{ color: "var(--text2)" }}>
           {animal.description.slice(0, 120)}…
         </p>
       </div>
@@ -427,7 +427,7 @@ export default function AnimalArchetypeCard({ animalKey, compact = false }: Anim
         <p className="text-[10px] font-mono uppercase tracking-wider mb-0.5" style={{ color: `${animal.color}90` }}>
           Superpower
         </p>
-        <p className="text-xs" style={{ color: "#6878a0" }}>{animal.superpower}</p>
+        <p className="text-xs" style={{ color: "var(--muted)" }}>{animal.superpower}</p>
       </div>
     </div>
   );
