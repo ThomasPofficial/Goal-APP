@@ -23,10 +23,17 @@ export default function GeniusTypeBadge({ geniusType, type, size = "md", showEmo
 
   return (
     <span
-      className={`genius-badge inline-flex items-center gap-1 rounded-full font-semibold ${sizeClasses[size]} ${className}`}
-      style={{ backgroundColor: `${gt.color}22`, color: gt.color, border: `1px solid ${gt.color}55` }}
+      className={`genius-badge inline-flex items-center gap-1.5 rounded-full font-bold uppercase ${sizeClasses[size]} ${className}`}
+      style={{
+        backgroundColor: `${gt.color}18`,
+        color: gt.color,
+        border: `1px solid ${gt.color}40`,
+        fontFamily: "var(--font-mono)",
+        letterSpacing: "var(--tracking-hud, 0.18em)",
+      }}
     >
-      {showEmoji && <span>{gt.emoji}</span>}
+      <span style={{ width: 6, height: 6, borderRadius: "50%", background: gt.color, flexShrink: 0 }} />
+      {showEmoji && <span style={{ fontFamily: "var(--font-body)", letterSpacing: "normal", textTransform: "none" }}>{gt.emoji}</span>}
       {gt.label}
     </span>
   );
