@@ -20,7 +20,7 @@ export default function DestinationsMap({ destinations }: Props) {
   const [tooltip, setTooltip] = useState<{ college: string; students: string[]; x: number; y: number } | null>(null);
 
   return (
-    <div style={{ position: "relative", width: "100%", background: "var(--n-bg2)", borderRadius: 12, border: "1px solid var(--border)", overflow: "hidden" }}>
+    <div style={{ position: "relative", width: "100%", background: "var(--n-bg2)", borderRadius: "var(--radius-lg)", border: "1px solid var(--border)", overflow: "hidden" }}>
       <ComposableMap
         projection="geoAlbersUsa"
         style={{ width: "100%", height: 480 }}
@@ -33,9 +33,9 @@ export default function DestinationsMap({ destinations }: Props) {
                   key={geo.rsmKey}
                   geography={geo}
                   style={{
-                    default: { fill: "var(--n-bg3, #1e1e2e)", stroke: "var(--border, #2a2a3e)", strokeWidth: 0.5, outline: "none" },
-                    hover:   { fill: "var(--n-bg3, #1e1e2e)", stroke: "var(--blue, #4a80f0)", strokeWidth: 0.8, outline: "none" },
-                    pressed: { fill: "var(--n-bg3, #1e1e2e)", outline: "none" },
+                    default: { fill: "var(--n-surface3)", stroke: "var(--border)", strokeWidth: 0.5, outline: "none" },
+                    hover:   { fill: "var(--n-surface3)", stroke: "var(--accent)", strokeWidth: 0.8, outline: "none" },
+                    pressed: { fill: "var(--n-surface3)", outline: "none" },
                   }}
                 />
               ))
@@ -60,7 +60,7 @@ export default function DestinationsMap({ destinations }: Props) {
             >
               <circle
                 r={d.students.length > 1 ? 7 : 5}
-                fill="var(--blue, #4a80f0)"
+                fill="var(--accent)"
                 fillOpacity={0.85}
                 stroke="#fff"
                 strokeWidth={1.5}
@@ -88,11 +88,11 @@ export default function DestinationsMap({ destinations }: Props) {
             top: tooltip.y - 8,
             background: "var(--n-bg2)",
             border: "1px solid var(--border)",
-            borderRadius: 8,
+            borderRadius: "var(--radius-md)",
             padding: "8px 12px",
             pointerEvents: "none",
             zIndex: 10,
-            boxShadow: "0 4px 24px rgba(0,0,0,0.3)",
+            boxShadow: "var(--shadow-md)",
             minWidth: 160,
           }}
         >
