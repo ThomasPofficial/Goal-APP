@@ -10,6 +10,19 @@ This spec covers the request → accept → teacher-approved room flow. It reuse
 - **Admin-curated mentorship pairing** (`/mentorship`, `/school/mentorship`, `ConversationType.MENTORSHIP`) is untouched — this is a separate, teacher-initiated bulk-pairing flow and stays as-is.
 - **The school general room** (`ensureSchoolGeneralRoom` in `lib/communities.ts`) already exists and is fully implemented — auto-creates/find a `COMMUNITY` conversation with `isPrivateRoom: false` per school and upserts the calling user as a participant. It's already called from `/communities`, `alumni/verify`, `enter-school-code`, and `setup-profile`. It is **not** called from the two HQ admin roster-add routes — that's the only gap here (see "General room wiring" below).
 
+## Account types in scope
+
+Per `docs/account-types-design.md`'s 4-type taxonomy, this feature touches exactly two of them:
+- **Student** (`role=STUDENT`, `schoolId` set, `isAlumni=false`) and **Alum** (`role=STUDENT`, `schoolId` set, `isAlumni=true`) — both use `/my-school` today and get the Connect button/request UI. No change to which account types can reach `/my-school`.
+- **Admin/Teacher** (`role=SCHOOL`) — gets the new `/school/connections` approval queue.
+
+**Explicitly untouched:** Standard (`schoolId=null`) never reaches `/my-school` (existing gate unchanged) so never sees Connect UI. ORG role and the site-wide super-admin (`role=ADMIN`, `team.nivarro@gmail.com`) have no surface in this feature at all — no new endpoint should accept either role.
+
+**Auth checks, spelled out explicitly** (to avoid repeating known bug #4 from the account-types audit, where `isOrg = role==="ORG" || role==="ADMIN"` let ADMIN silently inherit ORG nav — every check below uses a direct, single-purpose comparison, not a shared/aliased flag):
+- `/api/connections/request`, `/api/connections/[id]/respond`, `/api/connections/my-requests` — any authenticated user with a resolvable `schoolId` (via the same `getSchoolId` helper pattern as `/api/communities/rooms/[id]/members`); SCHOOL-role users resolve to their own id as `schoolId` per that same helper, but a SCHOOL-role user calling `/request` should be rejected — this feature's requester is always a Student/Alum, not the teacher (teacher only approves, per confirmed non-goal). Add an explicit `if (user.role === 'SCHOOL') return 403` at the top of `/request`, not an inferred check.
+- `/api/school/connections`, `/api/school/connections/[id]/approve` — `role === 'SCHOOL'` only, checked directly (mirrors the existing check in `/api/communities/rooms` POST). No ADMIN carve-in.
+- `/school/connections` page — server-side redirect to `/dashboard` for any non-SCHOOL role, same pattern as `app/(hq)/hq/page.tsx`'s `role !== "ADMIN"` redirect.
+
 ## Data model
 
 New model, added via manual migration per this repo's Prisma pattern:
