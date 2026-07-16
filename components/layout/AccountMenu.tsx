@@ -41,7 +41,7 @@ export default function AccountMenu({ userName, userEmail, geniusType, isSchool 
   const avatarStyle = {
     width: 32, height: 32, borderRadius: "50%",
     background: "rgba(74,128,240,0.12)",
-    color: "var(--gold)",
+    color: "var(--accent)",
     fontSize: 12, fontWeight: 700,
     display: "flex", alignItems: "center", justifyContent: "center",
     border: "1px solid rgba(74,128,240,0.25)",
@@ -64,7 +64,7 @@ export default function AccountMenu({ userName, userEmail, geniusType, isSchool 
           <div className="flex items-center gap-3 mb-4 pb-4" style={{ borderBottom: "1px solid var(--border)" }}>
             <div style={{ ...avatarStyle, width: 40, height: 40, fontSize: 14 }}>{initials}</div>
             <div className="min-w-0">
-              <div className="text-sm font-semibold truncate" style={{ color: "var(--text)", fontFamily: "var(--font-display, sans-serif)" }}>
+              <div className="text-sm font-semibold truncate" style={{ color: "var(--text)", fontFamily: "var(--font-body)" }}>
                 {userName ?? "Your Account"}
               </div>
               {userEmail && <div className="text-xs truncate" style={{ color: "var(--muted)" }}>{userEmail}</div>}
@@ -81,7 +81,7 @@ export default function AccountMenu({ userName, userEmail, geniusType, isSchool 
                   <span>{genius.icon}</span>{genius.label}
                 </div>
               ) : (
-                <Link href="/quiz" onClick={() => setOpen(false)} className="text-xs" style={{ color: "var(--gold)" }}>
+                <Link href="/quiz" onClick={() => setOpen(false)} className="text-xs" style={{ color: "var(--accent)" }}>
                   Take the Genius Quiz →
                 </Link>
               )}
@@ -124,7 +124,7 @@ export default function AccountMenu({ userName, userEmail, geniusType, isSchool 
       >
         <div style={avatarStyle}>{initials}</div>
         <div className="flex-1 min-w-0 text-left">
-          <div className="text-xs font-medium truncate" style={{ color: "var(--text)", fontFamily: "var(--font-display, sans-serif)" }}>
+          <div className="text-xs font-medium truncate" style={{ color: "var(--text)", fontFamily: "var(--font-body)" }}>
             {userName ?? "Account"}
           </div>
           {genius && (
