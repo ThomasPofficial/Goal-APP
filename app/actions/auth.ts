@@ -1,6 +1,7 @@
 "use server";
 
 import { signIn } from "@/lib/auth";
+import { AuthError } from "next-auth";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getResendClient } from "@/lib/resend";
@@ -20,15 +21,20 @@ export async function loginAction(
   // origin from inside a Server Action fails client-side as a generic fetch
   // error. Resolving the URL ourselves and only ever redirecting to a
   // relative path sidesteps the cross-origin redirect entirely.
-  let result: string;
+  //
+  // With redirect: false, Auth.js's internal raw mode throws the actual
+  // AuthError (e.g. CredentialsSignin) instead of encoding it into a
+  // redirect Location, so we still need to classify it here.
   try {
-    result = await signIn("credentials", { email, password, redirectTo, redirect: false });
-  } catch {
+    const result = await signIn("credentials", { email, password, redirectTo, redirect: false });
+    if (typeof result === "string" && result.includes("error=")) {
+      return { error: "Invalid email or password." };
+    }
+  } catch (error) {
+    if (error instanceof AuthError) {
+      return { error: "Invalid email or password." };
+    }
     return { error: "Something went wrong. Please try again." };
-  }
-
-  if (result.includes("error=")) {
-    return { error: "Invalid email or password." };
   }
 
   redirect(redirectTo);
