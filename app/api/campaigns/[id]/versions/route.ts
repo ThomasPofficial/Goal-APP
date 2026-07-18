@@ -23,6 +23,8 @@ export async function GET(
       cause: true,
       headline: true,
       imageParams: true,
+      source: true,
+      note: true,
       restoredFrom: true,
       createdAt: true,
     },
