@@ -72,43 +72,89 @@ export default function AuthLayout({
         />
 
         <div className="max-w-md relative z-10">
-          <p
-            className="text-xs font-semibold uppercase tracking-[0.18em] mb-8"
-            style={{ color: "var(--blue)", fontFamily: "var(--font-mono)" }}
+          <div
+            className="inline-flex items-center gap-2 mb-4"
+            style={{
+              padding: "6px 12px",
+              borderRadius: "var(--radius-full)",
+              background: "var(--surface2)",
+              border: "1px solid var(--border-md)",
+            }}
           >
-            Nivarro
+            <span
+              style={{
+                width: 6,
+                height: 6,
+                borderRadius: "50%",
+                background: "var(--accent)",
+                flexShrink: 0,
+                boxShadow: "0 0 8px var(--accent)",
+              }}
+            />
+            <span
+              style={{
+                fontFamily: "var(--font-mono)",
+                fontSize: 11,
+                fontWeight: 700,
+                letterSpacing: "0.14em",
+                textTransform: "uppercase",
+                color: "var(--accent-hover)",
+              }}
+            >
+              Private school fundraising, automated
+            </span>
+          </div>
+
+          <h1 className="mb-4 flex flex-wrap items-baseline gap-x-3">
+            <span
+              style={{
+                fontFamily: "var(--font-body)",
+                fontWeight: 800,
+                fontSize: "clamp(34px, 4.6vw, 48px)",
+                lineHeight: 1.05,
+                letterSpacing: "-0.01em",
+                color: "var(--text)",
+              }}
+            >
+              Potential,
+            </span>
+            <span
+              style={{
+                fontFamily: "var(--font-serif)",
+                fontWeight: 500,
+                fontStyle: "italic",
+                fontSize: "clamp(30px, 4vw, 42px)",
+                color: "var(--text2)",
+              }}
+            >
+              made
+            </span>
+            <span
+              style={{
+                fontFamily: "var(--font-display)",
+                fontWeight: 400,
+                fontSize: "clamp(46px, 6.4vw, 68px)",
+                textTransform: "uppercase",
+                letterSpacing: "-0.01em",
+                color: "var(--accent)",
+                lineHeight: 0.9,
+              }}
+            >
+              proof.
+            </span>
+          </h1>
+
+          <p className="text-sm leading-relaxed mb-6" style={{ color: "var(--text2)", maxWidth: 420 }}>
+            We connect students with school alumni and give them the tools to complete
+            high-quality, real-world projects to level up their resumes. Furthermore, we help
+            schools secure funds from these alumni for school improvement and community
+            strengthening. We then document where these students go to college and where they
+            obtain jobs, so schools can advertise their programs&apos; effectiveness.
           </p>
 
-          <h2
-            className="text-3xl font-semibold mb-6 leading-snug"
-            style={{ color: "var(--text)", fontFamily: "var(--font-serif)" }}
-          >
-            Bridging the gap between potential and proof.
-          </h2>
-
-          <div className="space-y-4 text-sm leading-relaxed" style={{ color: "var(--text2)" }}>
-            <p>
-              We connect young people — high schoolers, college students, the ones who are ready but
-              can&apos;t get a foot in the door — to real opportunities in business and tech.
-            </p>
-            <p>
-              Here&apos;s the problem: every company wants experience, every job posting wants AI
-              skills, but nobody is telling you how to get there when you&apos;re just starting out.
-              That&apos;s the wall. You&apos;re qualified enough to want it, not yet experienced
-              enough to get it, and nobody is bridging that gap for you.
-            </p>
-            <p>
-              Nivarro bridges it. The internships that put a real company name on your resume. The
-              programs that teach you how to actually work with AI tools on the job. Quick, focused
-              side quests — a few weeks, real experience, real results. The experiences that turn
-              potential into proof.
-            </p>
-            <p>
-              When we do that, something bigger happens. Gen Z finds their people. They discover
-              what they are actually built for. They go home at the end of the day feeling like
-              their work meant something.
-            </p>
-          </div>
+          <a href="mailto:team.nivarro@gmail.com" className="btn-primary">
+            Request a briefing
+          </a>
         </div>
       </div>
 
