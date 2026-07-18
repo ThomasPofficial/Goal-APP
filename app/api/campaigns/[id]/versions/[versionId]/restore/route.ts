@@ -44,6 +44,7 @@ export async function POST(
         body: version.body,
         ctaText: version.ctaText,
         imageParams,
+        source: "restore",
         restoredFrom: version.id,
       },
     }),
