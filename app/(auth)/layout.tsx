@@ -17,10 +17,61 @@ export default function AuthLayout({
 
       {/* Mission panel — hidden on small screens */}
       <div
-        className="hidden lg:flex flex-col justify-center px-16 flex-1 relative"
+        className="hidden lg:flex flex-col justify-center px-16 flex-1 relative overflow-hidden"
         style={{ borderRight: "1px solid var(--border)" }}
       >
-        <div className="max-w-md">
+        {/* Ops-room photo — grayscale circular hero, faded into the background */}
+        <div
+          aria-hidden="true"
+          className="absolute"
+          style={{
+            right: -70,
+            top: "50%",
+            transform: "translateY(-50%)",
+            width: 380,
+            height: 380,
+            borderRadius: "50%",
+            overflow: "hidden",
+            border: "1px solid rgba(255,255,255,0.1)",
+            zIndex: 0,
+            opacity: 0.9,
+          }}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/ops-room.png"
+            alt=""
+            style={{
+              width: "140%",
+              height: "140%",
+              objectFit: "cover",
+              objectPosition: "60% 30%",
+              margin: "-20% -20%",
+              filter: "grayscale(1) contrast(2) brightness(1.1)",
+            }}
+          />
+          <div
+            aria-hidden="true"
+            className="absolute inset-0"
+            style={{ background: "radial-gradient(circle, transparent 45%, var(--bg) 100%)" }}
+          />
+        </div>
+        <div
+          aria-hidden="true"
+          className="absolute"
+          style={{
+            right: -22,
+            top: "50%",
+            transform: "translateY(-50%)",
+            width: 428,
+            height: 428,
+            borderRadius: "50%",
+            border: "1px dashed rgba(74,128,240,0.3)",
+            zIndex: 0,
+          }}
+        />
+
+        <div className="max-w-md relative z-10">
           <p
             className="text-xs font-semibold uppercase tracking-[0.18em] mb-8"
             style={{ color: "var(--blue)", fontFamily: "var(--font-mono)" }}
