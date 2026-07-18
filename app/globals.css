@@ -11,6 +11,9 @@
   --font-mono:    'JetBrains Mono', monospace;
   --font-serif:   'Playfair Display', Georgia, serif;
 
+  /* ── HUD chrome tracking — eyebrows, status pills, mono badges ── */
+  --tracking-hud: 0.18em;
+
   /* ── Single brand accent — navy (retires the separate gold + blue systems) ── */
   --accent:       #4A80F0;
   --accent-hover: #6A9FFF;

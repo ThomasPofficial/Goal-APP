@@ -29,7 +29,7 @@ export default function GeniusTypeBadge({ geniusType, type, size = "md", showEmo
         color: gt.color,
         border: `1px solid ${gt.color}40`,
         fontFamily: "var(--font-mono)",
-        letterSpacing: "var(--tracking-hud, 0.18em)",
+        letterSpacing: "var(--tracking-hud)",
       }}
     >
       <span style={{ width: 6, height: 6, borderRadius: "50%", background: gt.color, flexShrink: 0 }} />
