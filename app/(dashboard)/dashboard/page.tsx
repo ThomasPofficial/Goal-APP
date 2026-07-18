@@ -16,8 +16,12 @@ export default async function DashboardPage() {
 
   if (userRole === "SCHOOL") redirect("/school/destinations");
 
-  // Only redirect ORG/ADMIN accounts to their org dashboard — students stay here
-  if (userRole === "ORG" || userRole === "ADMIN") {
+  // Nivarro admin is a unique internal account, not an org — it manages all
+  // schools' data via /hq, not a single org's dashboard.
+  if (userRole === "ADMIN") redirect("/hq");
+
+  // Only redirect ORG accounts to their org dashboard — students stay here
+  if (userRole === "ORG") {
     const myOrg = await prisma.org.findFirst({
       where: { createdById: userId },
       select: { id: true },

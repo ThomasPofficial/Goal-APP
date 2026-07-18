@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { serverSignOut } from "@/lib/auth-actions";
 
 export default async function HQLayout({
   children,
@@ -90,6 +91,29 @@ export default async function HQLayout({
               Schools
             </Link>
           </nav>
+
+          {/* Footer — escape hatch back to the rest of the app + sign out */}
+          <div style={{ borderTop: "1px solid var(--border)", padding: "12px 0" }}>
+            <Link href="/orgs" className="hq-nav-link">
+              ← Back to app
+            </Link>
+            <form action={serverSignOut}>
+              <button
+                type="submit"
+                className="hq-nav-link"
+                style={{
+                  width: "100%",
+                  textAlign: "left",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  fontFamily: "inherit",
+                }}
+              >
+                Sign out
+              </button>
+            </form>
+          </div>
         </aside>
 
         {/* Main content */}

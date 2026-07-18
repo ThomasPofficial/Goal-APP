@@ -50,6 +50,7 @@ export default function Sidebar({ userName, userEmail, geniusType, mobileOpen = 
   const pathname = usePathname();
 
   const orgNav = myOrgId ? [
+    ...(isNivarroAdmin ? [{ href: "/hq", label: "Schools (HQ)", Icon: School }] : []),
     { href: `/orgs/${myOrgId}`, label: myOrgName ?? "My Org", Icon: Briefcase },
     { href: "/peers",           label: "Find Students",       Icon: Users },
     { href: "/messages",        label: "Messages",            Icon: MessageSquare },
