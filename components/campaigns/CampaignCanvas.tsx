@@ -263,7 +263,7 @@ export default function CampaignCanvas({ imageParams: rawParams, className, styl
     for (const layer of params.layers) {
       actx.save();
       actx.globalAlpha = layer.opacity;
-      actx.globalCompositeOperation = (layer.blend as any);
+      actx.globalCompositeOperation = layer.blend === "normal" ? "source-over" : layer.blend;
       actx.translate(W / 2, H / 2);
       actx.rotate((layer.rotation * Math.PI) / 180);
       actx.translate(-W / 2, -H / 2);
