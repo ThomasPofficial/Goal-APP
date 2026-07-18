@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
+import Toggle from "@/components/ui/Toggle";
 
 interface Props {
   initialProfile: {
@@ -126,18 +127,19 @@ export default function AlumniProfileEditor({ initialProfile }: Props) {
           </div>
         </div>
 
-        <div className="bg-[#0d0d0e] border border-[#1c1c20] rounded-xl p-5 space-y-3">
-          <h2 className="text-xs font-semibold text-[#909098] uppercase tracking-wider">
+        <div
+          className="p-5"
+          style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-lg)" }}
+        >
+          <h2 className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: "var(--text2)" }}>
             Mentorship
           </h2>
-          <label className="flex items-center gap-2 text-sm text-[#eaeaea]">
-            <input
-              type="checkbox"
-              checked={isAvailableToMentor}
-              onChange={(e) => setIsAvailableToMentor(e.target.checked)}
-            />
-            Open to being paired as a mentor to current students
-          </label>
+          <Toggle
+            checked={isAvailableToMentor}
+            onChange={setIsAvailableToMentor}
+            label="Available to mentor"
+            description="Open to being paired as a mentor to current students"
+          />
         </div>
 
         {error && (
