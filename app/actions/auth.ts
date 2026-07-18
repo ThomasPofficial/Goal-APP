@@ -1,7 +1,7 @@
 "use server";
 
 import { signIn } from "@/lib/auth";
-import { AuthError } from "next-auth";
+import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getResendClient } from "@/lib/resend";
 import bcrypt from "bcryptjs";
@@ -12,19 +12,26 @@ export async function loginAction(
   password: string,
   redirectTo = "/dashboard"
 ): Promise<{ error: string } | { success: true }> {
+  // redirect: false keeps Auth.js from calling next/navigation's redirect()
+  // itself. Auth.js builds that redirect URL from AUTH_URL/baseUrl, which
+  // drifts to the old goal-app-3.onrender.com host in production for the
+  // credentials-error path (unlike the success path, it doesn't run through
+  // our custom `redirect` callback in lib/auth.ts). A redirect to that other
+  // origin from inside a Server Action fails client-side as a generic fetch
+  // error. Resolving the URL ourselves and only ever redirecting to a
+  // relative path sidesteps the cross-origin redirect entirely.
+  let result: string;
   try {
-    await signIn("credentials", { email, password, redirectTo });
-    return { success: true };
-  } catch (error) {
-    // Re-throw redirect so Next.js sets the session cookie in the response
-    if ((error as { digest?: string })?.digest?.startsWith("NEXT_REDIRECT")) {
-      throw error;
-    }
-    if (error instanceof AuthError) {
-      return { error: "Invalid email or password." };
-    }
+    result = await signIn("credentials", { email, password, redirectTo, redirect: false });
+  } catch {
     return { error: "Something went wrong. Please try again." };
   }
+
+  if (result.includes("error=")) {
+    return { error: "Invalid email or password." };
+  }
+
+  redirect(redirectTo);
 }
 
 export async function requestPasswordReset(
