@@ -8,6 +8,7 @@ import TutorialWidget from "@/components/ui/TutorialWidget";
 import WelcomeCard from "@/components/ui/WelcomeCard";
 import PlatformUpdatesCard from "@/components/ui/PlatformUpdatesCard";
 import BriefingCard from "@/components/ui/BriefingCard";
+import StatusPill from "@/components/ui/StatusPill";
 import type { GeniusTypeKey } from "@/lib/geniusTypes";
 
 interface ProfileData {
@@ -210,9 +211,8 @@ export default function DashboardClient({ profile, spaces, traitsDone, tutorialD
       {/* ── Live ticker ───────────────────────────── */}
       {ticker.length > 0 && (
         <div style={{ overflow: "hidden", display: "flex", alignItems: "center", height: 40, background: "var(--surface)", borderTop: "1px solid var(--border)", borderBottom: "1px solid var(--border)" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0, padding: "0 16px", borderRight: "1px solid var(--border)", height: "100%" }}>
-            <span className="live-dot" />
-            <span style={{ fontSize: 11, fontWeight: "bold", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--amber)", fontFamily: "var(--font-mono)" }}>LIVE</span>
+          <div style={{ display: "flex", alignItems: "center", flexShrink: 0, padding: "0 16px", borderRight: "1px solid var(--border)", height: "100%" }}>
+            <StatusPill label="Live" active />
           </div>
           <div style={{ overflow: "hidden", flex: 1 }}>
             <div className="ticker-track">
