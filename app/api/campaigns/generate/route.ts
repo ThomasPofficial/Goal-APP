@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import Anthropic from "@anthropic-ai/sdk";
 import type { Prisma } from "@prisma/client";
+import { buildGeneratePrompt, parseCampaignResponse } from "@/lib/campaign-prompt";
 
 export async function POST(req: NextRequest) {
   const session = await auth();
@@ -40,35 +41,8 @@ export async function POST(req: NextRequest) {
   try {
     message = await anthropic.messages.create({
       model: "claude-haiku-4-5-20251001",
-      max_tokens: 1000,
-      messages: [
-        {
-          role: "user",
-          content: `You are a fundraising copywriter and visual designer for student organizations. Write compelling donation page copy AND choose visual design parameters for this cause:
-
-"${cause}"
-
-Respond ONLY with valid JSON (no markdown, no code fences):
-{
-  "headline": "6-12 word punchy headline",
-  "subheadline": "one motivating sentence",
-  "body": "3-4 compelling paragraphs separated by \\n\\n",
-  "ctaText": "3-6 word call-to-action e.g. Support Our Journey",
-  "imageParams": {
-    "seed": <random integer 1000-9999>,
-    "bg": "<dark hex color matching cause mood>",
-    "palette": ["<hex1>", "<hex2>", "<hex3>"],
-    "accent": "<most vibrant of the palette hexes>",
-    "pattern": "<one of: geometric|wave|burst|organic>",
-    "shapes": ["circle", "triangle", "rect"],
-    "density": <float 0.4-0.9>
-  }
-}
-
-Pattern guidance: water/environment → wave + blues; sports/energy → burst + bold warm colors; community/people → organic + warm tones; education/tech → geometric + cool tones.
-Write with warmth, specificity, and authentic student voice.`,
-        },
-      ],
+      max_tokens: 1200,
+      messages: [{ role: "user", content: buildGeneratePrompt(cause) }],
     });
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Unknown error";
@@ -76,25 +50,13 @@ Write with warmth, specificity, and authentic student voice.`,
   }
 
   const rawText = message.content[0].type === "text" ? message.content[0].text : "";
-  const cleaned = rawText.replace(/^```(?:json)?\n?/i, "").replace(/\n?```$/i, "").trim();
-
-  let parsed: Record<string, unknown>;
-  try {
-    parsed = JSON.parse(cleaned);
-  } catch {
+  const parsed = parseCampaignResponse(rawText);
+  if (!parsed) {
     return NextResponse.json({ error: "Failed to parse AI response. Please try again." }, { status: 500 });
   }
 
-  const required = ["headline", "subheadline", "body", "ctaText", "imageParams"];
-  if (required.some((k) => !parsed[k])) {
-    return NextResponse.json({ error: "Incomplete AI response. Please try again." }, { status: 500 });
-  }
-
-  const headline = parsed.headline as string;
-  const subheadline = parsed.subheadline as string;
-  const bodyText = parsed.body as string;
-  const ctaText = parsed.ctaText as string;
-  const imageParams = parsed.imageParams as Prisma.InputJsonValue;
+  const { headline, subheadline, body: bodyText, ctaText, imageParams } = parsed;
+  const imageParamsJson = imageParams as unknown as Prisma.InputJsonValue;
 
   // Upsert the draft Campaign
   let campaign;
@@ -113,7 +75,7 @@ Write with warmth, specificity, and authentic student voice.`,
         subheadline,
         body: bodyText,
         ctaText,
-        imageParams,
+        imageParams: imageParamsJson,
         ...(videoUrl !== null ? { videoUrl } : {}),
       },
     });
@@ -126,7 +88,7 @@ Write with warmth, specificity, and authentic student voice.`,
         subheadline,
         body: bodyText,
         ctaText,
-        imageParams,
+        imageParams: imageParamsJson,
         videoUrl,
         active: false,
       },
@@ -142,7 +104,8 @@ Write with warmth, specificity, and authentic student voice.`,
       subheadline,
       body: bodyText,
       ctaText,
-      imageParams,
+      imageParams: imageParamsJson,
+      source: "generate",
     },
   });
 
