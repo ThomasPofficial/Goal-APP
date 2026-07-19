@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { Heart } from "lucide-react";
-import CampaignCanvas, { type ImageParams } from "@/components/campaigns/CampaignCanvas";
+import CampaignHero from "@/components/campaigns/CampaignHero";
+import type { ImageParams } from "@/components/campaigns/CampaignCanvas";
 import PledgeModal from "@/components/campaigns/PledgeModal";
 import { extractVideoId } from "@/lib/video-embed";
 
@@ -25,7 +26,11 @@ export default function CampaignPublicClient({ campaign }: Props) {
 
   return (
     <div style={{ minHeight: "100vh", background: "#0a0a0f", color: "#fff" }}>
-      <CampaignCanvas imageParams={campaign.imageParams} />
+      <CampaignHero
+        imageParams={campaign.imageParams}
+        headline={campaign.headline}
+        subheadline={campaign.subheadline}
+      />
 
       {embed && (
         <div style={{ position: "relative", paddingBottom: "56.25%", background: "#000" }}>
@@ -45,29 +50,6 @@ export default function CampaignPublicClient({ campaign }: Props) {
       )}
 
       <div style={{ maxWidth: 760, margin: "0 auto", padding: "56px 24px" }}>
-        <h1
-          style={{
-            fontFamily: "var(--font-display)",
-            fontSize: "clamp(28px, 4vw, 52px)",
-            letterSpacing: "-0.03em",
-            color: "#fff",
-            margin: "0 0 16px",
-            lineHeight: 1.15,
-          }}
-        >
-          {campaign.headline}
-        </h1>
-        <p
-          style={{
-            fontSize: 20,
-            color: "#e8893a",
-            fontWeight: 600,
-            margin: "0 0 32px",
-            lineHeight: 1.4,
-          }}
-        >
-          {campaign.subheadline}
-        </p>
         <div
           style={{
             fontSize: 16,
