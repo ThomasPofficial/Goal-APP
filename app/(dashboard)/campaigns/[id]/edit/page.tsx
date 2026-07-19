@@ -17,7 +17,7 @@ export default async function CampaignEditPage({ params }: { params: Promise<{ i
   const versions = await prisma.campaignVersion.findMany({
     where: { campaignId: id },
     orderBy: { createdAt: "desc" },
-    select: { id: true, cause: true, headline: true, imageParams: true, restoredFrom: true, createdAt: true },
+    select: { id: true, cause: true, headline: true, imageParams: true, source: true, note: true, restoredFrom: true, createdAt: true },
   });
 
   return (
@@ -39,6 +39,8 @@ export default async function CampaignEditPage({ params }: { params: Promise<{ i
         cause: v.cause,
         headline: v.headline,
         imageParams: v.imageParams as unknown as ImageParams,
+        source: v.source,
+        note: v.note,
         restoredFrom: v.restoredFrom,
         createdAt: v.createdAt.toISOString(),
       }))}
