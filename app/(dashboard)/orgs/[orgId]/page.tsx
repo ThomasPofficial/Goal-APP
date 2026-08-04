@@ -165,7 +165,6 @@ export default async function OrgDetailPage({ params }: { params: Promise<{ orgI
       adminStats={isAdmin ? { activeProjects, totalApps, pendingCount, acceptedCount } : null}
       apiKey={isAdmin ? (org.apiKey ?? null) : null}
       reviewCount={reviewCount}
-      whatInternsBuild={org.whatInternsBuild ?? null}
       initialSaved={initialSaved}
     />
   );

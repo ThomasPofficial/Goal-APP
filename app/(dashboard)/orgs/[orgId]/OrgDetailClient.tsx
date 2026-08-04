@@ -8,6 +8,7 @@ import Avatar from "@/components/ui/Avatar";
 import GeniusTypeBadge from "@/components/ui/GeniusTypeBadge";
 import type { GeniusTypeKey } from "@/lib/geniusTypes";
 import { cn } from "@/lib/utils";
+import OrgSettingsForm from "./OrgSettingsForm";
 
 export interface OrgDetail {
   id: string;
@@ -194,8 +195,8 @@ function CloseProjectModal({
 }
 
 export default function OrgDetailClient({
-  org, projects, myProfileId, myTeamId, isAdmin, applications,
-  adminStats, apiKey, reviewCount, whatInternsBuild, initialSaved,
+  org: initialOrg, projects, myProfileId, myTeamId, isAdmin, applications,
+  adminStats, apiKey, reviewCount, initialSaved,
 }: {
   org: OrgDetail;
   projects: OrgProjectSummary[];
@@ -206,9 +207,9 @@ export default function OrgDetailClient({
   adminStats: { activeProjects: number; totalApps: number; pendingCount: number; acceptedCount: number } | null;
   apiKey: string | null;
   reviewCount: number;
-  whatInternsBuild: string | null;
   initialSaved: boolean;
 }) {
+  const [org, setOrg] = useState<OrgDetail>(initialOrg);
   const [saved, setSaved] = useState(initialSaved);
   const [adminTab, setAdminTab] = useState<"overview" | "projects" | "applications" | "settings">("overview");
   const [appStatuses, setAppStatuses] = useState<Record<string, string>>(
@@ -371,27 +372,12 @@ export default function OrgDetailClient({
 
       {/* Admin: settings tab */}
       {isAdmin && adminTab === "settings" && (
-        <div
-          className="rounded-xl p-5 space-y-4 mb-6"
-          style={{ background: "var(--surface)", border: "1px solid var(--border-md)" }}
-        >
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: "var(--muted)", fontFamily: "var(--font-mono)" }}>Org Name</p>
-            <p className="text-sm" style={{ color: "var(--text)" }}>{org.name}</p>
-          </div>
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: "var(--muted)", fontFamily: "var(--font-mono)" }}>Description</p>
-            <p className="text-sm" style={{ color: "var(--text2)" }}>{org.description || "—"}</p>
-          </div>
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: "var(--muted)", fontFamily: "var(--font-mono)" }}>Contact Email</p>
-            <p className="text-sm" style={{ color: "var(--text2)" }}>{org.contactEmail || "—"}</p>
-          </div>
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: "var(--muted)", fontFamily: "var(--font-mono)" }}>What Interns Build</p>
-            <p className="text-sm" style={{ color: "var(--text2)" }}>{org.whatInternsBuild || "—"}</p>
-          </div>
-        </div>
+        <OrgSettingsForm
+          org={org}
+          onSaved={(fields) =>
+            setOrg((prev) => ({ ...prev, ...fields, values: JSON.stringify(fields.values) }))
+          }
+        />
       )}
 
       <div
@@ -477,10 +463,10 @@ export default function OrgDetailClient({
           )}
 
           {/* What students work on (public) */}
-          {(whatInternsBuild ?? org.whatInternsBuild) && (
+          {org.whatInternsBuild && (
             <div>
               <h2 className="text-sm font-semibold mb-2" style={{ color: "var(--text)" }}>What students work on</h2>
-              <p className="text-sm leading-relaxed" style={{ color: "var(--text2)" }}>{whatInternsBuild ?? org.whatInternsBuild}</p>
+              <p className="text-sm leading-relaxed" style={{ color: "var(--text2)" }}>{org.whatInternsBuild}</p>
             </div>
           )}
 
