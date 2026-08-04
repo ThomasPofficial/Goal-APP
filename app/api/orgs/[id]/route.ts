@@ -56,7 +56,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         name: name.trim(), category, website, founded, headquartersLocation,
         tagline, logoLetter, logoBg, logoColor, accentColor,
         description, whatWeSeek, whatInternsBuild, contactEmail,
-        values: JSON.stringify(values ?? []),
+        values: values !== undefined ? JSON.stringify(values) : undefined,
       },
     });
     return NextResponse.json({ org: updated });
