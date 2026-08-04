@@ -3,11 +3,12 @@
 import { useState } from "react";
 import Link from "next/link";
 import { format, differenceInDays, formatDistanceToNow } from "date-fns";
-import { ExternalLink, Save, Users, MapPin, CheckCircle2, XCircle, Clock, Sparkles, Star } from "lucide-react";
+import { ExternalLink, Save, Users, MapPin, CheckCircle2, XCircle, Clock, Sparkles, Star, Loader2, Plus, X } from "lucide-react";
 import Avatar from "@/components/ui/Avatar";
 import GeniusTypeBadge from "@/components/ui/GeniusTypeBadge";
 import type { GeniusTypeKey } from "@/lib/geniusTypes";
 import { cn } from "@/lib/utils";
+import { Field, inputStyle, colorPickerStyle, CATEGORIES, type OrgCategory } from "@/components/org/OrgFormFields";
 
 interface OrgDetail {
   id: string;
@@ -223,9 +224,68 @@ export default function OrgDetailClient({
     () => Object.fromEntries(projects.map((p) => [p.id, p.outcomeNote ?? ""]))
   );
 
-  const accentColor = org.accentColor ?? CATEGORY_COLORS[org.category] ?? "#1060d8";
+  // Org profile self-edit (Settings tab)
+  const [orgState, setOrgState] = useState(org);
+  const [settingsForm, setSettingsForm] = useState({
+    name: org.name,
+    category: org.category as OrgCategory,
+    website: org.website ?? "",
+    founded: org.founded ?? "",
+    headquartersLocation: org.headquartersLocation ?? "",
+    tagline: org.tagline ?? "",
+    logoLetter: org.logoLetter ?? "",
+    logoBg: org.logoBg ?? "#0a1535",
+    logoColor: org.logoColor ?? "#ffffff",
+    accentColor: org.accentColor ?? "#E8893A",
+    description: org.description ?? "",
+    whatWeSeek: org.whatWeSeek ?? "",
+    whatInternsBuild: org.whatInternsBuild ?? "",
+    contactEmail: org.contactEmail ?? "",
+    values: JSON.parse(org.values || "[]") as string[],
+  });
+  const [newSettingsValue, setNewSettingsValue] = useState("");
+  const [settingsSaving, setSettingsSaving] = useState(false);
+  const [settingsError, setSettingsError] = useState<string | null>(null);
+
+  async function handleSaveSettings() {
+    if (!settingsForm.name.trim() || !settingsForm.category) return;
+    setSettingsSaving(true);
+    setSettingsError(null);
+    try {
+      const res = await fetch(`/api/orgs/${org.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: settingsForm.name.trim(),
+          category: settingsForm.category,
+          website: settingsForm.website.trim() || undefined,
+          founded: settingsForm.founded.trim() || undefined,
+          headquartersLocation: settingsForm.headquartersLocation.trim() || undefined,
+          tagline: settingsForm.tagline.trim() || undefined,
+          logoLetter: settingsForm.logoLetter || undefined,
+          logoBg: settingsForm.logoBg,
+          logoColor: settingsForm.logoColor,
+          accentColor: settingsForm.accentColor,
+          description: settingsForm.description.trim() || undefined,
+          whatWeSeek: settingsForm.whatWeSeek.trim() || undefined,
+          whatInternsBuild: settingsForm.whatInternsBuild.trim() || undefined,
+          contactEmail: settingsForm.contactEmail.trim() || undefined,
+          values: settingsForm.values,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setSettingsError(data.error ?? "Something went wrong."); return; }
+      setOrgState((prev) => ({ ...prev, ...data.org }));
+    } catch {
+      setSettingsError("Network error. Please try again.");
+    } finally {
+      setSettingsSaving(false);
+    }
+  }
+
+  const accentColor = orgState.accentColor ?? CATEGORY_COLORS[orgState.category] ?? "#1060d8";
   const daysLeft = org.deadline ? differenceInDays(new Date(org.deadline), new Date()) : null;
-  const values: string[] = JSON.parse(org.values || "[]");
+  const values: string[] = JSON.parse(orgState.values || "[]");
   const focusTags: string[] = JSON.parse(org.focusTags || "[]");
 
   const bannerBg = org.heroUrl
@@ -259,22 +319,22 @@ export default function OrgDetailClient({
         <div
           className="w-16 h-16 rounded-xl border-4 flex items-center justify-center text-2xl font-bold flex-shrink-0"
           style={{
-            background: org.logoBg ?? accentColor,
-            color: org.logoColor ?? "#fff",
+            background: orgState.logoBg ?? accentColor,
+            color: orgState.logoColor ?? "#fff",
             borderColor: "#030609",
             fontFamily: "var(--font-serif)",
           }}
         >
-          {org.logoLetter ?? org.name[0]}
+          {orgState.logoLetter ?? orgState.name[0]}
         </div>
         <div className="pb-1">
           <p
             className="font-semibold text-xl"
             style={{ color: "var(--text)", fontFamily: "var(--font-serif)" }}
           >
-            {org.name}
+            {orgState.name}
           </p>
-          {org.tagline && <p className="text-sm" style={{ color: "var(--text2)" }}>{org.tagline}</p>}
+          {orgState.tagline && <p className="text-sm" style={{ color: "var(--text2)" }}>{orgState.tagline}</p>}
           <div className="flex flex-wrap gap-1.5 mt-1">
             {focusTags.map((tag) => (
               <span
@@ -372,24 +432,139 @@ export default function OrgDetailClient({
       {/* Admin: settings tab */}
       {isAdmin && adminTab === "settings" && (
         <div
-          className="rounded-xl p-5 space-y-4 mb-6"
+          className="rounded-xl p-5 mb-6"
           style={{ background: "var(--surface)", border: "1px solid var(--border-md)" }}
         >
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: "var(--muted)", fontFamily: "var(--font-mono)" }}>Org Name</p>
-            <p className="text-sm" style={{ color: "var(--text)" }}>{org.name}</p>
-          </div>
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: "var(--muted)", fontFamily: "var(--font-mono)" }}>Description</p>
-            <p className="text-sm" style={{ color: "var(--text2)" }}>{org.description || "—"}</p>
-          </div>
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: "var(--muted)", fontFamily: "var(--font-mono)" }}>Contact Email</p>
-            <p className="text-sm" style={{ color: "var(--text2)" }}>{org.contactEmail || "—"}</p>
-          </div>
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: "var(--muted)", fontFamily: "var(--font-mono)" }}>What Interns Build</p>
-            <p className="text-sm" style={{ color: "var(--text2)" }}>{org.whatInternsBuild || "—"}</p>
+          <div style={{ display: "flex", flexDirection: "column", gap: "1.75rem" }}>
+            <div>
+              <h3 className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: "var(--muted)", fontFamily: "var(--font-mono)" }}>Basics</h3>
+              <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+                <Field label="Organization name" required>
+                  <input value={settingsForm.name} onChange={(e) => setSettingsForm((f) => ({ ...f, name: e.target.value }))} style={inputStyle} />
+                </Field>
+                <Field label="Category" required>
+                  <select value={settingsForm.category} onChange={(e) => setSettingsForm((f) => ({ ...f, category: e.target.value as OrgCategory }))} style={inputStyle}>
+                    {CATEGORIES.map((c) => <option key={c} value={c}>{c.charAt(0) + c.slice(1).toLowerCase()}</option>)}
+                  </select>
+                </Field>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+                  <Field label="Website">
+                    <input value={settingsForm.website} onChange={(e) => setSettingsForm((f) => ({ ...f, website: e.target.value }))} placeholder="https://example.com" type="url" style={inputStyle} />
+                  </Field>
+                  <Field label="Founded year">
+                    <input value={settingsForm.founded} onChange={(e) => setSettingsForm((f) => ({ ...f, founded: e.target.value }))} placeholder="e.g. 2022" maxLength={4} style={inputStyle} />
+                  </Field>
+                </div>
+                <Field label="Headquarters / Location">
+                  <input value={settingsForm.headquartersLocation} onChange={(e) => setSettingsForm((f) => ({ ...f, headquartersLocation: e.target.value }))} placeholder="e.g. San Francisco, CA or Remote" style={inputStyle} />
+                </Field>
+              </div>
+            </div>
+
+            <div>
+              <h3 className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: "var(--muted)", fontFamily: "var(--font-mono)" }}>Brand</h3>
+              <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+                <div className="flex items-center gap-4">
+                  <div style={{ background: settingsForm.logoBg, color: settingsForm.logoColor, width: 52, height: 52, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, fontWeight: 700, flexShrink: 0 }}>
+                    {settingsForm.logoLetter || settingsForm.name[0] || "?"}
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>{settingsForm.name || "Your Org"}</p>
+                    <p className="text-[11px]" style={{ color: "var(--muted)", marginTop: 2 }}>Logo preview</p>
+                  </div>
+                </div>
+                <Field label="Logo letter">
+                  <input value={settingsForm.logoLetter} onChange={(e) => setSettingsForm((f) => ({ ...f, logoLetter: e.target.value.slice(0, 1).toUpperCase() }))} placeholder={settingsForm.name[0]?.toUpperCase() || "A"} maxLength={1} style={{ ...inputStyle, maxWidth: 80 }} />
+                </Field>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "1rem" }}>
+                  {[
+                    { label: "Logo background", value: settingsForm.logoBg, set: (v: string) => setSettingsForm((f) => ({ ...f, logoBg: v })) },
+                    { label: "Letter color", value: settingsForm.logoColor, set: (v: string) => setSettingsForm((f) => ({ ...f, logoColor: v })) },
+                    { label: "Accent color", value: settingsForm.accentColor, set: (v: string) => setSettingsForm((f) => ({ ...f, accentColor: v })) },
+                  ].map(({ label, value, set }) => (
+                    <Field key={label} label={label}>
+                      <div className="flex items-center gap-2 mt-1">
+                        <input type="color" value={value} onChange={(e) => set(e.target.value)} style={colorPickerStyle} />
+                        <span style={{ fontSize: 10, color: "var(--muted)", fontFamily: "var(--font-mono)" }}>{value}</span>
+                      </div>
+                    </Field>
+                  ))}
+                </div>
+                <Field label="Tagline">
+                  <input value={settingsForm.tagline} onChange={(e) => setSettingsForm((f) => ({ ...f, tagline: e.target.value }))} placeholder="One sentence that says what makes you different." style={inputStyle} maxLength={120} />
+                </Field>
+              </div>
+            </div>
+
+            <div>
+              <h3 className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: "var(--muted)", fontFamily: "var(--font-mono)" }}>Mission</h3>
+              <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+                <Field label="Description">
+                  <textarea value={settingsForm.description} onChange={(e) => setSettingsForm((f) => ({ ...f, description: e.target.value }))} rows={4} style={{ ...inputStyle, resize: "vertical", minHeight: 96 }} />
+                </Field>
+                <Field label="What we look for in students">
+                  <textarea value={settingsForm.whatWeSeek} onChange={(e) => setSettingsForm((f) => ({ ...f, whatWeSeek: e.target.value }))} rows={3} style={{ ...inputStyle, resize: "vertical", minHeight: 72 }} />
+                </Field>
+                <Field label="What students actually build here">
+                  <textarea value={settingsForm.whatInternsBuild} onChange={(e) => setSettingsForm((f) => ({ ...f, whatInternsBuild: e.target.value }))} rows={3} style={{ ...inputStyle, resize: "vertical", minHeight: 72 }} />
+                </Field>
+                <Field label="Core values">
+                  <div className="flex flex-wrap gap-1.5 mb-2">
+                    {settingsForm.values.map((v) => (
+                      <span key={v} className="inline-flex items-center gap-1 text-xs px-2 py-1" style={{ background: "rgba(232,137,58,0.1)", border: "1px solid rgba(232,137,58,0.25)", color: "var(--amber)" }}>
+                        {v}
+                        <button onClick={() => setSettingsForm((f) => ({ ...f, values: f.values.filter((x) => x !== v) }))} style={{ background: "none", border: "none", cursor: "pointer", color: "inherit", padding: 0, lineHeight: 1 }}>
+                          <X size={10} />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                  <div className="flex gap-2">
+                    <input
+                      value={newSettingsValue}
+                      onChange={(e) => setNewSettingsValue(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && newSettingsValue.trim()) {
+                          setSettingsForm((f) => ({ ...f, values: [...f.values, newSettingsValue.trim()] }));
+                          setNewSettingsValue("");
+                        }
+                      }}
+                      placeholder="Add a value (press Enter)"
+                      style={{ ...inputStyle, flex: 1 }}
+                    />
+                    <button
+                      onClick={() => {
+                        if (newSettingsValue.trim()) {
+                          setSettingsForm((f) => ({ ...f, values: [...f.values, newSettingsValue.trim()] }));
+                          setNewSettingsValue("");
+                        }
+                      }}
+                      className="btn-ghost"
+                      style={{ flexShrink: 0 }}
+                    >
+                      <Plus size={13} />
+                    </button>
+                  </div>
+                </Field>
+                <Field label="Contact email">
+                  <input value={settingsForm.contactEmail} onChange={(e) => setSettingsForm((f) => ({ ...f, contactEmail: e.target.value }))} placeholder="hello@example.com" type="email" style={inputStyle} />
+                </Field>
+              </div>
+            </div>
+
+            {settingsError && <p style={{ fontSize: 13, color: "#f87171" }}>{settingsError}</p>}
+
+            <div className="flex justify-end pt-4" style={{ borderTop: "1px solid var(--border)" }}>
+              <button
+                onClick={handleSaveSettings}
+                disabled={settingsSaving || !settingsForm.name.trim() || !settingsForm.category}
+                className="btn-primary flex items-center gap-1.5"
+                style={{ opacity: settingsSaving || !settingsForm.name.trim() || !settingsForm.category ? 0.5 : 1, cursor: settingsSaving ? "default" : "pointer" }}
+              >
+                {settingsSaving && <Loader2 size={13} className="animate-spin" />}
+                {settingsSaving ? "Saving…" : "Save changes"}
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -469,18 +644,18 @@ export default function OrgDetailClient({
             </div>
           )}
 
-          {org.description && (
+          {orgState.description && (
             <div>
               <h2 className="text-sm font-semibold mb-2" style={{ color: "var(--text)" }}>About</h2>
-              <p className="text-sm leading-relaxed" style={{ color: "var(--text2)" }}>{org.description}</p>
+              <p className="text-sm leading-relaxed" style={{ color: "var(--text2)" }}>{orgState.description}</p>
             </div>
           )}
 
           {/* What students work on (public) */}
-          {(whatInternsBuild ?? org.whatInternsBuild) && (
+          {(orgState.whatInternsBuild ?? whatInternsBuild) && (
             <div>
               <h2 className="text-sm font-semibold mb-2" style={{ color: "var(--text)" }}>What students work on</h2>
-              <p className="text-sm leading-relaxed" style={{ color: "var(--text2)" }}>{whatInternsBuild ?? org.whatInternsBuild}</p>
+              <p className="text-sm leading-relaxed" style={{ color: "var(--text2)" }}>{orgState.whatInternsBuild ?? whatInternsBuild}</p>
             </div>
           )}
 
@@ -497,21 +672,21 @@ export default function OrgDetailClient({
             </div>
           )}
 
-          {org.whatWeSeek && (
+          {orgState.whatWeSeek && (
             <div className="border-l-4 pl-4 py-2" style={{ borderColor: accentColor }}>
               <h3 className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: "var(--muted)" }}>What we&apos;re looking for</h3>
-              <p className="text-sm leading-relaxed" style={{ color: "var(--text2)" }}>{org.whatWeSeek}</p>
+              <p className="text-sm leading-relaxed" style={{ color: "var(--text2)" }}>{orgState.whatWeSeek}</p>
             </div>
           )}
 
           <div className="grid grid-cols-2 gap-3 text-sm" style={{ color: "var(--text2)" }}>
             {org.orgType && <div><span style={{ color: "var(--muted)" }}>Type: </span>{org.orgType}</div>}
-            {org.founded && <div><span style={{ color: "var(--muted)" }}>Founded: </span>{org.founded}</div>}
+            {orgState.founded && <div><span style={{ color: "var(--muted)" }}>Founded: </span>{orgState.founded}</div>}
             {org.memberCount && <div><span style={{ color: "var(--muted)" }}>Members: </span>{org.memberCount.toLocaleString()}</div>}
-            {org.headquartersLocation && (
+            {orgState.headquartersLocation && (
               <div className="flex items-center gap-1.5">
                 <MapPin className="w-3.5 h-3.5 flex-shrink-0" style={{ color: "var(--muted)" }} />
-                {org.headquartersLocation}
+                {orgState.headquartersLocation}
               </div>
             )}
             {org.format && <div className="flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5 flex-shrink-0" style={{ color: "var(--muted)" }} />{org.format}</div>}
@@ -521,11 +696,11 @@ export default function OrgDetailClient({
               <Users className="w-3.5 h-3.5 flex-shrink-0" style={{ color: "var(--muted)" }} />
               Team size: <span className="font-medium">{org.minTeamSize}–{org.maxTeamSize}</span>
             </div>
-            {org.website && (
+            {orgState.website && (
               <div>
-                <a href={`https://${org.website.replace(/^https?:\/\//, "")}`} target="_blank" rel="noopener noreferrer"
+                <a href={`https://${orgState.website.replace(/^https?:\/\//, "")}`} target="_blank" rel="noopener noreferrer"
                   className="flex items-center gap-1 hover:underline" style={{ color: "var(--blue)" }}>
-                  <ExternalLink className="w-3.5 h-3.5" /> {org.website}
+                  <ExternalLink className="w-3.5 h-3.5" /> {orgState.website}
                 </a>
               </div>
             )}
