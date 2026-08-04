@@ -55,7 +55,6 @@ export default function Sidebar({ userName, userEmail, geniusType, mobileOpen = 
     { href: "/peers",           label: "Find Students",       Icon: Users },
     { href: "/messages",        label: "Messages",            Icon: MessageSquare },
     ...(isNivarroAdmin ? [
-      { href: "/admin/org-categories",   label: "Org Categories",    Icon: Building2 },
       { href: "/admin/platform-updates", label: "Platform Updates",  Icon: Megaphone },
     ] : []),
   ] : [];
