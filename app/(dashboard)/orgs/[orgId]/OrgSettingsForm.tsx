@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Plus, X, Loader2 } from "lucide-react";
 import { Field, inputStyle, colorPickerStyle, CATEGORIES, type OrgCategory } from "@/components/org/OrgFormFields";
-import type { OrgDetail } from "./OrgDetailClient";
+import { CATEGORY_COLORS, type OrgDetail } from "./OrgDetailClient";
 
 export interface OrgProfileUpdate {
   name: string; category: OrgCategory; website: string; founded: string; headquartersLocation: string;
@@ -24,10 +24,11 @@ export default function OrgSettingsForm({
   const [founded, setFounded] = useState(org.founded ?? "");
   const [headquartersLocation, setHeadquartersLocation] = useState(org.headquartersLocation ?? "");
 
+  const viewAccent = org.accentColor ?? CATEGORY_COLORS[org.category] ?? "#1060d8";
   const [logoLetter, setLogoLetter] = useState(org.logoLetter ?? "");
-  const [logoBg, setLogoBg] = useState(org.logoBg ?? "#0a1535");
+  const [logoBg, setLogoBg] = useState(org.logoBg ?? viewAccent);
   const [logoColor, setLogoColor] = useState(org.logoColor ?? "#ffffff");
-  const [accentColor, setAccentColor] = useState(org.accentColor ?? "#E8893A");
+  const [accentColor, setAccentColor] = useState(viewAccent);
   const [tagline, setTagline] = useState(org.tagline ?? "");
 
   const [description, setDescription] = useState(org.description ?? "");

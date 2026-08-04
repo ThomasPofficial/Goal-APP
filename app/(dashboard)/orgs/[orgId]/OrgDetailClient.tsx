@@ -99,7 +99,7 @@ interface AdminApplication {
   };
 }
 
-const CATEGORY_COLORS: Record<string, string> = {
+export const CATEGORY_COLORS: Record<string, string> = {
   ACCELERATOR: "#F59E0B", FELLOWSHIP: "#6366F1", INTERNSHIP: "#14B8A6",
   COMPETITION: "#F97316", BOOTCAMP: "#8B5CF6", RESEARCH: "#06B6D4", CLUB: "#10B981",
 };
@@ -371,13 +371,15 @@ export default function OrgDetailClient({
       )}
 
       {/* Admin: settings tab */}
-      {isAdmin && adminTab === "settings" && (
-        <OrgSettingsForm
-          org={org}
-          onSaved={(fields) =>
-            setOrg((prev) => ({ ...prev, ...fields, values: JSON.stringify(fields.values) }))
-          }
-        />
+      {isAdmin && (
+        <div className={cn(adminTab !== "settings" && "hidden")}>
+          <OrgSettingsForm
+            org={org}
+            onSaved={(fields) =>
+              setOrg((prev) => ({ ...prev, ...fields, values: JSON.stringify(fields.values) }))
+            }
+          />
+        </div>
       )}
 
       <div
