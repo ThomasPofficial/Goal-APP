@@ -53,7 +53,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         website, founded, headquartersLocation,
         tagline, logoLetter, logoBg, logoColor, accentColor,
         description, whatWeSeek, whatInternsBuild, contactEmail,
-        values: JSON.stringify(values ?? []),
+        ...(values !== undefined ? { values: JSON.stringify(values) } : {}),
       },
     });
     return NextResponse.json({ org: updated });
