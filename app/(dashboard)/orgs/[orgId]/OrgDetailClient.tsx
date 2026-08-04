@@ -9,7 +9,7 @@ import GeniusTypeBadge from "@/components/ui/GeniusTypeBadge";
 import type { GeniusTypeKey } from "@/lib/geniusTypes";
 import { cn } from "@/lib/utils";
 
-interface OrgDetail {
+export interface OrgDetail {
   id: string;
   name: string;
   tagline: string | null;
