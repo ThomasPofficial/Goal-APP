@@ -258,18 +258,18 @@ export default function OrgDetailClient({
         body: JSON.stringify({
           name: settingsForm.name.trim(),
           category: settingsForm.category,
-          website: settingsForm.website.trim() || undefined,
-          founded: settingsForm.founded.trim() || undefined,
-          headquartersLocation: settingsForm.headquartersLocation.trim() || undefined,
-          tagline: settingsForm.tagline.trim() || undefined,
-          logoLetter: settingsForm.logoLetter || undefined,
+          website: settingsForm.website.trim(),
+          founded: settingsForm.founded.trim(),
+          headquartersLocation: settingsForm.headquartersLocation.trim(),
+          tagline: settingsForm.tagline.trim(),
+          logoLetter: settingsForm.logoLetter,
           logoBg: settingsForm.logoBg,
           logoColor: settingsForm.logoColor,
           accentColor: settingsForm.accentColor,
-          description: settingsForm.description.trim() || undefined,
-          whatWeSeek: settingsForm.whatWeSeek.trim() || undefined,
-          whatInternsBuild: settingsForm.whatInternsBuild.trim() || undefined,
-          contactEmail: settingsForm.contactEmail.trim() || undefined,
+          description: settingsForm.description.trim(),
+          whatWeSeek: settingsForm.whatWeSeek.trim(),
+          whatInternsBuild: settingsForm.whatInternsBuild.trim(),
+          contactEmail: settingsForm.contactEmail.trim(),
           values: settingsForm.values,
         }),
       });
@@ -325,7 +325,7 @@ export default function OrgDetailClient({
             fontFamily: "var(--font-serif)",
           }}
         >
-          {orgState.logoLetter ?? orgState.name[0]}
+          {orgState.logoLetter || orgState.name[0]}
         </div>
         <div className="pb-1">
           <p
