@@ -165,7 +165,7 @@ function OrgCard({ org }: { org: Org }) {
               fontSize: 16,
             }}
           >
-            {org.logoLetter ?? org.name[0]}
+            {org.logoLetter || org.name[0]}
           </div>
         </div>
 
