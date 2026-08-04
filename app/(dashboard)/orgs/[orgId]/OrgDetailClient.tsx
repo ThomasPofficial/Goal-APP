@@ -194,6 +194,31 @@ function CloseProjectModal({
   );
 }
 
+function deriveSettingsForm(org: Pick<
+  OrgDetail,
+  | "name" | "category" | "website" | "founded" | "headquartersLocation" | "tagline"
+  | "logoLetter" | "logoBg" | "logoColor" | "accentColor"
+  | "description" | "whatWeSeek" | "whatInternsBuild" | "contactEmail" | "values"
+>) {
+  return {
+    name: org.name,
+    category: org.category as OrgCategory,
+    website: org.website ?? "",
+    founded: org.founded ?? "",
+    headquartersLocation: org.headquartersLocation ?? "",
+    tagline: org.tagline ?? "",
+    logoLetter: org.logoLetter ?? "",
+    logoBg: org.logoBg ?? "#0a1535",
+    logoColor: org.logoColor ?? "#ffffff",
+    accentColor: org.accentColor ?? "#E8893A",
+    description: org.description ?? "",
+    whatWeSeek: org.whatWeSeek ?? "",
+    whatInternsBuild: org.whatInternsBuild ?? "",
+    contactEmail: org.contactEmail ?? "",
+    values: JSON.parse(org.values || "[]") as string[],
+  };
+}
+
 export default function OrgDetailClient({
   org, projects, myProfileId, myTeamId, isAdmin, applications,
   adminStats, apiKey, reviewCount, whatInternsBuild, initialSaved,
@@ -226,23 +251,7 @@ export default function OrgDetailClient({
 
   // Org profile self-edit (Settings tab)
   const [orgState, setOrgState] = useState(org);
-  const [settingsForm, setSettingsForm] = useState({
-    name: org.name,
-    category: org.category as OrgCategory,
-    website: org.website ?? "",
-    founded: org.founded ?? "",
-    headquartersLocation: org.headquartersLocation ?? "",
-    tagline: org.tagline ?? "",
-    logoLetter: org.logoLetter ?? "",
-    logoBg: org.logoBg ?? "#0a1535",
-    logoColor: org.logoColor ?? "#ffffff",
-    accentColor: org.accentColor ?? "#E8893A",
-    description: org.description ?? "",
-    whatWeSeek: org.whatWeSeek ?? "",
-    whatInternsBuild: org.whatInternsBuild ?? "",
-    contactEmail: org.contactEmail ?? "",
-    values: JSON.parse(org.values || "[]") as string[],
-  });
+  const [settingsForm, setSettingsForm] = useState(() => deriveSettingsForm(org));
   const [newSettingsValue, setNewSettingsValue] = useState("");
   const [settingsSaving, setSettingsSaving] = useState(false);
   const [settingsError, setSettingsError] = useState<string | null>(null);
@@ -276,6 +285,7 @@ export default function OrgDetailClient({
       const data = await res.json();
       if (!res.ok) { setSettingsError(data.error ?? "Something went wrong."); return; }
       setOrgState((prev) => ({ ...prev, ...data.org }));
+      setSettingsForm(deriveSettingsForm(data.org));
     } catch {
       setSettingsError("Network error. Please try again.");
     } finally {
@@ -559,7 +569,10 @@ export default function OrgDetailClient({
                 onClick={handleSaveSettings}
                 disabled={settingsSaving || !settingsForm.name.trim() || !settingsForm.category}
                 className="btn-primary flex items-center gap-1.5"
-                style={{ opacity: settingsSaving || !settingsForm.name.trim() || !settingsForm.category ? 0.5 : 1, cursor: settingsSaving ? "default" : "pointer" }}
+                style={{
+                  opacity: settingsSaving || !settingsForm.name.trim() || !settingsForm.category ? 0.5 : 1,
+                  cursor: settingsSaving || !settingsForm.name.trim() || !settingsForm.category ? "default" : "pointer",
+                }}
               >
                 {settingsSaving && <Loader2 size={13} className="animate-spin" />}
                 {settingsSaving ? "Saving…" : "Save changes"}

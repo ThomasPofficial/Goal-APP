@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import type { OrgCategory } from "@prisma/client";
+import { CATEGORIES } from "@/components/org/OrgFormFields";
 
 // Platform admin (team.nivarro@gmail.com): transfer org ownership by email or userId.
 // Org owner (org.createdById === session.user.id): edit their own org's profile fields.
@@ -41,8 +42,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       description, whatWeSeek, whatInternsBuild, contactEmail, values,
     } = body;
 
-    if (!name?.trim() || !category) {
-      return NextResponse.json({ error: "name and category are required" }, { status: 400 });
+    if (!name?.trim() || !CATEGORIES.includes(category)) {
+      return NextResponse.json({ error: "name and a valid category are required" }, { status: 400 });
     }
 
     const updated = await prisma.org.update({
