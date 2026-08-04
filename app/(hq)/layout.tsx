@@ -94,7 +94,7 @@ export default async function HQLayout({
 
           {/* Footer — escape hatch back to the rest of the app + sign out */}
           <div style={{ borderTop: "1px solid var(--border)", padding: "12px 0" }}>
-            <Link href="/orgs" className="hq-nav-link">
+            <Link href="/dashboard" className="hq-nav-link">
               ← Back to app
             </Link>
             <form action={serverSignOut}>

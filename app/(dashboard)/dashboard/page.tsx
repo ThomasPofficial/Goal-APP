@@ -16,16 +16,20 @@ export default async function DashboardPage() {
 
   if (userRole === "SCHOOL") redirect("/school/destinations");
 
-  // Nivarro admin is a unique internal account, not an org — it manages all
-  // schools' data via /hq, not a single org's dashboard.
-  if (userRole === "ADMIN") redirect("/hq");
-
-  // Only redirect ORG accounts to their org dashboard — students stay here
-  if (userRole === "ORG") {
-    const myOrg = await prisma.org.findFirst({
+  // ORG and ADMIN accounts land on their own org dashboard, same as any org —
+  // /hq is reached via the "Schools (HQ)" nav link, not forced on every login.
+  if (userRole === "ORG" || userRole === "ADMIN") {
+    let myOrg = await prisma.org.findFirst({
       where: { createdById: userId },
       select: { id: true },
     });
+    // ADMIN fallback: if no org is directly linked, find the platform org by structural identity.
+    if (!myOrg && userRole === "ADMIN") {
+      myOrg = await prisma.org.findFirst({
+        where: { isPaid: true, verified: true, category: "FELLOWSHIP" },
+        select: { id: true },
+      });
+    }
     if (myOrg) redirect(`/orgs/${myOrg.id}`);
   }
 
