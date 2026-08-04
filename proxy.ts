@@ -40,5 +40,9 @@ export function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|public/).*)" ],
+  // Files under /public are served from the site root (e.g. /ops-room.png), not
+  // under a "/public/" prefix, so excluding "public/" here never matched anything —
+  // static assets were getting bounced through the auth redirect above. Exclude by
+  // extension instead so images/fonts/etc. actually skip the proxy.
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:png|jpg|jpeg|gif|svg|webp|avif|ico|css|js|woff2?|ttf|map)$).*)"],
 };

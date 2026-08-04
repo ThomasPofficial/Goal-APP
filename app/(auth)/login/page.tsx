@@ -143,12 +143,6 @@ export default function LoginPage() {
           Create one
         </Link>
       </p>
-      <p className="mt-2 text-center text-sm" style={{ color: "var(--muted)" }}>
-        Just exploring?{" "}
-        <Link href="/demo" style={{ color: "var(--gold)" }}>
-          Try the live demo
-        </Link>
-      </p>
     </div>
   );
 }
