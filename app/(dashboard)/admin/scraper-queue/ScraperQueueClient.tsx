@@ -24,7 +24,7 @@ export default function ScraperQueueClient({ listings }: { listings: Listing[] }
   };
 
   const runScraper = async () => {
-    const res = await fetch("/api/admin/scraper/run?secret=niv-reset-2026");
+    const res = await fetch("/api/admin/scraper/run");
     const data = await res.json();
     alert(`Done. Found: ${data.found ?? 0} new listings.`);
     window.location.reload();

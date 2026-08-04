@@ -2,8 +2,6 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
-const ADMIN_EMAIL = "team@nivarro.co";
-
 export async function GET() {
   const updates = await prisma.platformUpdate.findMany({
     orderBy: { createdAt: "desc" },
@@ -15,7 +13,8 @@ export async function GET() {
 
 export async function POST(req: Request) {
   const session = await auth();
-  if (session?.user?.email !== ADMIN_EMAIL) {
+  const userRole = (session?.user as { role?: string } | undefined)?.role;
+  if (userRole !== "ADMIN") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 

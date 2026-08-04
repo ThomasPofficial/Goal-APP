@@ -37,7 +37,7 @@ export default function OrgCategoriesClient({ orgs: initial }: { orgs: OrgRow[] 
   return (
     <div className="max-w-5xl mx-auto py-8 px-4">
       <h1 className="text-xl font-semibold mb-1" style={{ color: "var(--text)" }}>Org Classification</h1>
-      <p className="text-sm mb-6" style={{ color: "var(--muted)" }}>Private Â· only visible to team@nivarro.co</p>
+      <p className="text-sm mb-6" style={{ color: "var(--muted)" }}>Private · admin only</p>
 
       <div className="space-y-2">
         {orgs.map((org) => (

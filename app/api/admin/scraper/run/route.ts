@@ -1,3 +1,4 @@
+import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
@@ -24,9 +25,14 @@ async function scrapeUrl(url: string): Promise<string> {
   return $("main, article, .content, body").first().text().replace(/\s+/g, " ").trim().slice(0, 3000);
 }
 
-export async function GET(req: Request) {
-  const { searchParams } = new URL(req.url);
-  if (searchParams.get("secret") !== "niv-reset-2026") {
+export async function GET() {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+  // Read role from DB — never from JWT, which can be stale after seed/role changes.
+  const dbUser = await prisma.user.findUnique({ where: { id: session.user.id }, select: { role: true } });
+  if (dbUser?.role !== "ADMIN") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
