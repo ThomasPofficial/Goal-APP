@@ -44,10 +44,22 @@ export async function proxy(req: NextRequest) {
   // role (ORG/SCHOOL/ADMIN) is untouched by this check. /api/* is exempted even though
   // it's not in isPublic — an API route redirected to an HTML page instead of JSON
   // would silently break the onboarding page's own PATCH /api/profile call.
+  // /orgs/new is exempted too: self-signup always creates role STUDENT with no
+  // Profile row, and the only way to become ORG is to successfully POST /api/orgs
+  // from that page. Gating /orgs/new behind onboarding first, combined with
+  // /api/orgs rejecting org creation once onboarding is complete, would permanently
+  // lock these accounts out of ever creating an org.
+  // next-router-prefetch requests are also skipped: Next.js auto-prefetches every
+  // <Link> in the viewport through this same middleware, and each prefetch would
+  // otherwise trigger a fresh auth() + Prisma lookup — multiplying DB load on any
+  // link-dense page. Only the specific prefetch header is skipped; other RSC
+  // requests (client-side soft navigations) still go through the check.
   const skipOnboardingCheck =
     pathname.startsWith("/api") ||
     pathname.startsWith("/onboarding") ||
     pathname.startsWith("/quiz") ||
+    pathname.startsWith("/orgs/new") ||
+    req.headers.get("next-router-prefetch") === "1" ||
     isPublic;
 
   if (hasSession && !skipOnboardingCheck) {
@@ -68,7 +80,7 @@ export async function proxy(req: NextRequest) {
       // Fail open: a transient DB hiccup (pool exhaustion, network blip) here must
       // never 500 an otherwise-authenticated request. Treat it the same as "no
       // session found" and let the request through.
-      console.error("proxy: onboarding check failed, failing open", err);
+      console.error("proxy: onboarding check failed, failing open", pathname, err);
     }
   }
 
