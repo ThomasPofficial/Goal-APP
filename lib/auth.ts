@@ -27,6 +27,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   // ~90s of login.
   session: {
     strategy: "jwt",
+    // Explicit maxAge/updateAge: diagnostic logging below showed the JWT's
+    // `exp` claim being re-issued on every single hit to /api/auth/session
+    // (confirmed via repeated polling — see [JWT_CALLBACK] trigger field),
+    // not just once per updateAge window as the (implicit) 24h default
+    // should produce. Repeated rotation within a short window is what
+    // reliably kills the session ~90s after login — a pure-idle session
+    // with zero requests survives past that mark with no trouble at all.
+    // Pinning both values explicitly removes any ambiguity in how this
+    // beta version resolves its defaults.
+    maxAge: 30 * 24 * 60 * 60,
+    updateAge: 24 * 60 * 60,
   },
   pages: {
     signIn: "/login",
