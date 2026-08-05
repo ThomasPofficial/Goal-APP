@@ -12,30 +12,17 @@ const loginSchema = z.object({
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   trustHost: true,
-  logger: {
-    error(error) {
-      console.error("[NEXTAUTH_ERROR]", error?.name, error?.message, (error as { cause?: unknown })?.cause);
-    },
-    warn(code) {
-      console.warn("[NEXTAUTH_WARN]", code);
-    },
-  },
   // No adapter: Account/Session rows aren't persisted. Google sign-in is
   // linked/created by email directly in the signIn callback below instead —
   // pairing an adapter with the JWT strategy (required by Credentials) was
-  // causing the session cookie to be rotated into an invalid state within
-  // ~90s of login.
+  // suspected but ruled out as the logout-bug cause.
   session: {
     strategy: "jwt",
-    // Explicit maxAge/updateAge: diagnostic logging below showed the JWT's
-    // `exp` claim being re-issued on every single hit to /api/auth/session
-    // (confirmed via repeated polling — see [JWT_CALLBACK] trigger field),
-    // not just once per updateAge window as the (implicit) 24h default
-    // should produce. Repeated rotation within a short window is what
-    // reliably kills the session ~90s after login — a pure-idle session
-    // with zero requests survives past that mark with no trouble at all.
-    // Pinning both values explicitly removes any ambiguity in how this
-    // beta version resolves its defaults.
+    // Explicit maxAge/updateAge: without these pinned, this beta version of
+    // next-auth was re-issuing the JWT's `exp` claim on every single hit to
+    // /api/auth/session instead of once per 24h updateAge window. That rapid
+    // rotation reliably corrupted the session cookie within ~90s of login —
+    // a pure-idle session with zero requests never hit the issue.
     maxAge: 30 * 24 * 60 * 60,
     updateAge: 24 * 60 * 60,
   },
@@ -130,8 +117,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       } catch {}
       return `${canonicalBase}/dashboard`;
     },
-    async jwt({ token, user, trigger }) {
-      console.log("[JWT_CALLBACK]", { trigger, hasUser: !!user, tokenId: token?.id, tokenExp: token?.exp });
+    async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
         token.email = user.email;
@@ -140,7 +126,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return token;
     },
     async session({ session, token }) {
-      console.log("[SESSION_CALLBACK]", { tokenId: token?.id, tokenEmail: token?.email, tokenExp: token?.exp });
       if (token?.id) {
         session.user.id = token.id as string;
       }
