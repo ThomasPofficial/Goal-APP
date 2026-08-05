@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { randomUUID } from "crypto";
+import { ensureSchoolGeneralRoom } from "@/lib/communities";
 
 async function getAdminSession() {
   const session = await auth();
@@ -146,6 +147,8 @@ export async function POST(
     });
     userId = newUser.id;
   }
+
+  await ensureSchoolGeneralRoom(schoolId, userId);
 
   return NextResponse.json({ id: userId });
 }

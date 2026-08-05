@@ -35,7 +35,7 @@ export default async function MySchoolPage() {
 
   const schoolId = profile.schoolId;
 
-  const [school, staffProfiles, allAlumni] = await Promise.all([
+  const [school, staffProfiles, allAlumni, myOutgoingRequests] = await Promise.all([
     prisma.user.findUnique({
       where: { id: schoolId },
       select: {
@@ -46,6 +46,7 @@ export default async function MySchoolPage() {
     prisma.profile.findMany({
       where: { schoolId, staffTitle: { not: null } },
       select: {
+        userId: true,
         displayName: true,
         staffTitle: true,
         bio: true,
@@ -86,6 +87,10 @@ export default async function MySchoolPage() {
       },
       orderBy: { createdAt: "asc" },
     }),
+    prisma.connectionRequest.findMany({
+      where: { fromUserId: session.user.id, status: { in: ["PENDING", "ACCEPTED"] } },
+      select: { toUserId: true, status: true },
+    }),
   ]);
 
   const schoolName = school?.profile?.displayName ?? school?.name ?? "Your School";
@@ -119,6 +124,7 @@ export default async function MySchoolPage() {
       alumni={formattedAlumni}
       mentors={mentors}
       currentUserId={session.user.id}
+      initialRequestedIds={myOutgoingRequests.map((r) => r.toUserId)}
     />
   );
 }

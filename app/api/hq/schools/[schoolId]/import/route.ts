@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { randomUUID } from "crypto";
+import { ensureSchoolGeneralRoom } from "@/lib/communities";
 
 async function getAdminSession() {
   const session = await auth();
@@ -109,7 +110,10 @@ export async function POST(
         include: { profile: true },
       });
 
+      let userId: string;
+
       if (existingUser) {
+        userId = existingUser.id;
         if (existingUser.profile) {
           await prisma.profile.update({
             where: { userId: existingUser.id },
@@ -129,7 +133,7 @@ export async function POST(
           });
         }
       } else {
-        await prisma.user.create({
+        const newUser = await prisma.user.create({
           data: {
             name: displayName,
             email,
@@ -142,7 +146,10 @@ export async function POST(
             },
           },
         });
+        userId = newUser.id;
       }
+
+      await ensureSchoolGeneralRoom(schoolId, userId);
 
       imported++;
     } catch (err) {

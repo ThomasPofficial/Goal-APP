@@ -1,0 +1,78 @@
+import { NextResponse } from "next/server";
+import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { getSchoolId } from "@/lib/communities";
+import { z } from "zod";
+
+const requestSchema = z.object({ toUserId: z.string().min(1) });
+
+// POST — student/alumni requests a private connection with a teacher or alumnus
+export async function POST(req: Request) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const fromUserId = session.user.id;
+
+  const body = await req.json();
+  const parsed = requestSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json({ error: "Invalid input" }, { status: 400 });
+  }
+  const { toUserId } = parsed.data;
+
+  if (toUserId === fromUserId) {
+    return NextResponse.json({ error: "Cannot connect with yourself" }, { status: 400 });
+  }
+
+  const [fromUser, toUser] = await Promise.all([
+    prisma.user.findUnique({ where: { id: fromUserId }, select: { role: true, isAlumni: true } }),
+    prisma.user.findUnique({ where: { id: toUserId }, select: { role: true, isAlumni: true } }),
+  ]);
+
+  if (!fromUser || !toUser) {
+    return NextResponse.json({ error: "User not found" }, { status: 404 });
+  }
+
+  // Requester is always a Student/Alum — teacher accounts only approve, never request.
+  if (fromUser.role === "SCHOOL") {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const [fromSchoolId, toSchoolId] = await Promise.all([
+    getSchoolId(fromUserId),
+    getSchoolId(toUserId),
+  ]);
+
+  if (!fromSchoolId || !toSchoolId || fromSchoolId !== toSchoolId) {
+    return NextResponse.json({ error: "Not in the same school" }, { status: 400 });
+  }
+
+  // No pure student <-> student requests — at least one side must be alumni or SCHOOL.
+  // fromUser can never be SCHOOL here (rejected above), so only isAlumni applies to it.
+  const fromEligible = fromUser.isAlumni;
+  const toEligible = toUser.role === "SCHOOL" || toUser.isAlumni;
+  if (!fromEligible && !toEligible) {
+    return NextResponse.json({ error: "Not an eligible mentor/staff connection" }, { status: 400 });
+  }
+
+  const existing = await prisma.connectionRequest.findFirst({
+    where: {
+      status: { in: ["PENDING", "ACCEPTED"] },
+      OR: [
+        { fromUserId, toUserId },
+        { fromUserId: toUserId, toUserId: fromUserId },
+      ],
+    },
+  });
+  if (existing) {
+    return NextResponse.json({ error: "A request already exists" }, { status: 409 });
+  }
+
+  const request = await prisma.connectionRequest.create({
+    data: { schoolId: fromSchoolId, fromUserId, toUserId, status: "PENDING" },
+  });
+
+  return NextResponse.json({ request });
+}

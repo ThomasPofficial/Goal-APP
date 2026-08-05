@@ -5,6 +5,7 @@ import { GraduationCap, Briefcase, BookOpen, MessageCircle, CheckCircle, User } 
 import Link from "next/link";
 
 interface StaffMember {
+  userId: string;
   displayName: string;
   staffTitle: string | null;
   bio: string | null;
@@ -33,6 +34,7 @@ interface Props {
   alumni: Alumnus[];
   mentors: Alumnus[];
   currentUserId: string;
+  initialRequestedIds: string[];
 }
 
 function Avatar({ name, avatarUrl, handle, size = 44 }: { name: string; avatarUrl: string | null; handle?: string | null; size?: number }) {
@@ -50,11 +52,31 @@ function Avatar({ name, avatarUrl, handle, size = 44 }: { name: string; avatarUr
   ) : content;
 }
 
-export default function SchoolHubClient({ schoolName, schoolTagline, staff, alumni, mentors, currentUserId: _ }: Props) {
+export default function SchoolHubClient({ schoolName, schoolTagline, staff, alumni, mentors, currentUserId: _, initialRequestedIds }: Props) {
   const [alumniFilter, setAlumniFilter] = useState<"all" | "mentors">("all");
-  const [requestedIds, setRequestedIds] = useState<Set<string>>(new Set());
+  const [requestedIds, setRequestedIds] = useState<Set<string>>(new Set(initialRequestedIds));
+  const [errorIds, setErrorIds] = useState<Set<string>>(new Set());
 
   const visibleAlumni = alumniFilter === "mentors" ? alumni.filter((a) => a.isAvailableToMentor) : alumni;
+
+  async function requestConnection(toUserId: string) {
+    setErrorIds((prev) => {
+      const next = new Set(prev);
+      next.delete(toUserId);
+      return next;
+    });
+    const res = await fetch("/api/connections/request", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ toUserId }),
+    });
+    if (res.ok || res.status === 409) {
+      // 409 = a request already exists between this pair — treat as sent.
+      setRequestedIds((prev) => new Set(prev).add(toUserId));
+    } else {
+      setErrorIds((prev) => new Set(prev).add(toUserId));
+    }
+  }
 
   return (
     <div style={{ maxWidth: 900 }}>
@@ -92,7 +114,7 @@ export default function SchoolHubClient({ schoolName, schoolTagline, staff, alum
           </p>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 10 }}>
             {staff.map((s) => (
-              <div key={s.displayName} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 0, padding: "16px 18px", display: "flex", gap: 12, alignItems: "flex-start" }}>
+              <div key={s.userId} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 0, padding: "16px 18px", display: "flex", gap: 12, alignItems: "flex-start" }}>
                 <Avatar name={s.displayName} avatarUrl={s.avatarUrl} handle={s.handle} size={44} />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <p style={{ margin: 0, fontSize: 16, fontWeight: 600, lineHeight: 1.35, color: "var(--text)" }}>
@@ -111,6 +133,21 @@ export default function SchoolHubClient({ schoolName, schoolTagline, staff, alum
                     </p>
                   )}
                 </div>
+                <button
+                  onClick={() => requestConnection(s.userId)}
+                  disabled={requestedIds.has(s.userId)}
+                  title={requestedIds.has(s.userId) ? "Request sent" : "Message privately"}
+                  style={{
+                    width: 28, height: 28, borderRadius: 0, border: "1px solid var(--amber)",
+                    background: requestedIds.has(s.userId) ? "rgba(232,137,58,0.1)" : "var(--amber)",
+                    color: requestedIds.has(s.userId) ? "var(--amber)" : "#000",
+                    cursor: requestedIds.has(s.userId) ? "default" : "pointer",
+                    display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                    transition: "all 0.15s",
+                  }}
+                >
+                  {requestedIds.has(s.userId) ? <CheckCircle size={12} /> : <MessageCircle size={12} />}
+                </button>
               </div>
             ))}
           </div>
@@ -125,7 +162,7 @@ export default function SchoolHubClient({ schoolName, schoolTagline, staff, alum
           </p>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 10 }}>
             {mentors.map((m) => (
-              <MentorCard key={m.id} alumnus={m} requestedIds={requestedIds} onRequest={(id) => setRequestedIds((prev) => new Set(prev).add(id))} />
+              <MentorCard key={m.id} alumnus={m} requestedIds={requestedIds} errorIds={errorIds} onRequest={requestConnection} />
             ))}
           </div>
         </section>
@@ -172,7 +209,7 @@ export default function SchoolHubClient({ schoolName, schoolTagline, staff, alum
         ) : (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 10 }}>
             {visibleAlumni.map((a) => (
-              <AlumnusCard key={a.id} alumnus={a} requestedIds={requestedIds} onRequest={(id) => setRequestedIds((prev) => new Set(prev).add(id))} />
+              <AlumnusCard key={a.id} alumnus={a} requestedIds={requestedIds} onRequest={requestConnection} />
             ))}
           </div>
         )}
@@ -181,7 +218,7 @@ export default function SchoolHubClient({ schoolName, schoolTagline, staff, alum
   );
 }
 
-function MentorCard({ alumnus: a, requestedIds, onRequest }: { alumnus: Alumnus; requestedIds: Set<string>; onRequest: (id: string) => void }) {
+function MentorCard({ alumnus: a, requestedIds, errorIds, onRequest }: { alumnus: Alumnus; requestedIds: Set<string>; errorIds: Set<string>; onRequest: (id: string) => void }) {
   return (
     <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 0, padding: "18px 20px", display: "flex", flexDirection: "column", gap: 11 }}>
       <div style={{ display: "flex", gap: 11, alignItems: "flex-start" }}>
@@ -237,6 +274,9 @@ function MentorCard({ alumnus: a, requestedIds, onRequest }: { alumnus: Alumnus;
       >
         {requestedIds.has(a.id) ? <><CheckCircle size={13} /> Sent</> : <><MessageCircle size={13} /> Request Mentorship</>}
       </button>
+      {errorIds.has(a.id) && (
+        <p style={{ margin: 0, fontSize: 11, color: "#f87171" }}>Couldn&apos;t send that request. Try again.</p>
+      )}
     </div>
   );
 }
@@ -274,7 +314,7 @@ function AlumnusCard({ alumnus: a, requestedIds, onRequest }: { alumnus: Alumnus
         <button
           onClick={() => onRequest(a.id)}
           disabled={requestedIds.has(a.id)}
-          title={requestedIds.has(a.id) ? "Request sent" : "Request mentorship"}
+          title={requestedIds.has(a.id) ? "Request sent" : "Message privately"}
           style={{
             width: 28, height: 28, borderRadius: 0, border: "1px solid var(--amber)",
             background: requestedIds.has(a.id) ? "rgba(232,137,58,0.1)" : "var(--amber)",

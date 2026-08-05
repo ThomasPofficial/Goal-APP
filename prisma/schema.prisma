@@ -335,6 +335,26 @@ model ConversationParticipant {
   @@unique([conversationId, userId])
 }
 
+model ConnectionRequest {
+  id          String                  @id @default(cuid())
+  schoolId    String
+  fromUserId  String
+  toUserId    String
+  status      ConnectionRequestStatus @default(PENDING)
+  roomId      String?
+  createdAt   DateTime                @default(now())
+  respondedAt DateTime?
+
+  @@index([schoolId, status])
+  @@index([toUserId])
+}
+
+enum ConnectionRequestStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+}
+
 model Message {
   id             String    @id @default(cuid())
   conversationId String
