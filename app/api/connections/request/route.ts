@@ -27,8 +27,14 @@ export async function POST(req: Request) {
   }
 
   const [fromUser, toUser] = await Promise.all([
-    prisma.user.findUnique({ where: { id: fromUserId }, select: { role: true, isAlumni: true } }),
-    prisma.user.findUnique({ where: { id: toUserId }, select: { role: true, isAlumni: true } }),
+    prisma.user.findUnique({
+      where: { id: fromUserId },
+      select: { role: true, isAlumni: true, profile: { select: { staffTitle: true } } },
+    }),
+    prisma.user.findUnique({
+      where: { id: toUserId },
+      select: { role: true, isAlumni: true, profile: { select: { staffTitle: true } } },
+    }),
   ]);
 
   if (!fromUser || !toUser) {
@@ -49,10 +55,12 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Not in the same school" }, { status: 400 });
   }
 
-  // No pure student <-> student requests — at least one side must be alumni or SCHOOL.
-  // fromUser can never be SCHOOL here (rejected above), so only isAlumni applies to it.
-  const fromEligible = fromUser.isAlumni;
-  const toEligible = toUser.role === "SCHOOL" || toUser.isAlumni;
+  // No pure student <-> student requests — at least one side must be alumni or staff/teacher.
+  // Staff/teacher accounts are role=STUDENT with a Profile.staffTitle (only the single
+  // school admin login is role=SCHOOL), matching how /school/mentorship defines "mentor".
+  // fromUser can never be SCHOOL here (rejected above).
+  const fromEligible = fromUser.isAlumni || !!fromUser.profile?.staffTitle;
+  const toEligible = toUser.role === "SCHOOL" || toUser.isAlumni || !!toUser.profile?.staffTitle;
   if (!fromEligible && !toEligible) {
     return NextResponse.json({ error: "Not an eligible mentor/staff connection" }, { status: 400 });
   }
