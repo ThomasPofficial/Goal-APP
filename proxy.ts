@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 
-export function proxy(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // NextAuth v5 sets this cookie in prod (HTTPS) or without __Secure- in dev
@@ -34,6 +36,52 @@ export function proxy(req: NextRequest) {
 
   if (hasSession && (pathname === "/login" || pathname === "/register")) {
     return NextResponse.redirect(new URL("/dashboard", req.url));
+  }
+
+  // Force standard (self-signup, non-walled) students to finish /onboarding before
+  // using the rest of the app. Walled students (added via school roster CSV import)
+  // already get onboardingComplete:true stamped at import time, and every non-STUDENT
+  // role (ORG/SCHOOL/ADMIN) is untouched by this check. /api/* is exempted even though
+  // it's not in isPublic — an API route redirected to an HTML page instead of JSON
+  // would silently break the onboarding page's own PATCH /api/profile call.
+  // /orgs/new is exempted too: self-signup always creates role STUDENT with no
+  // Profile row, and the only way to become ORG is to successfully POST /api/orgs
+  // from that page. Gating /orgs/new behind onboarding first, combined with
+  // /api/orgs rejecting org creation once onboarding is complete, would permanently
+  // lock these accounts out of ever creating an org.
+  // next-router-prefetch requests are also skipped: Next.js auto-prefetches every
+  // <Link> in the viewport through this same middleware, and each prefetch would
+  // otherwise trigger a fresh auth() + Prisma lookup — multiplying DB load on any
+  // link-dense page. Only the specific prefetch header is skipped; other RSC
+  // requests (client-side soft navigations) still go through the check.
+  const skipOnboardingCheck =
+    pathname.startsWith("/api") ||
+    pathname.startsWith("/onboarding") ||
+    pathname.startsWith("/quiz") ||
+    pathname.startsWith("/orgs/new") ||
+    req.headers.get("next-router-prefetch") === "1" ||
+    isPublic;
+
+  if (hasSession && !skipOnboardingCheck) {
+    try {
+      const session = await auth();
+      if (session?.user?.id) {
+        const user = await prisma.user.findUnique({
+          where: { id: session.user.id },
+          select: { role: true, profile: { select: { schoolId: true, onboardingComplete: true } } },
+        });
+        const needsOnboarding =
+          user?.role === "STUDENT" && !user.profile?.schoolId && !user.profile?.onboardingComplete;
+        if (needsOnboarding) {
+          return NextResponse.redirect(new URL("/onboarding", req.url));
+        }
+      }
+    } catch (err) {
+      // Fail open: a transient DB hiccup (pool exhaustion, network blip) here must
+      // never 500 an otherwise-authenticated request. Treat it the same as "no
+      // session found" and let the request through.
+      console.error("proxy: onboarding check failed, failing open", pathname, err);
+    }
   }
 
   return NextResponse.next();
