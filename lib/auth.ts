@@ -1,7 +1,6 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
-import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
@@ -13,9 +12,11 @@ const loginSchema = z.object({
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   trustHost: true,
-  // Adapter only backs OAuth account linking here — sessions still use JWTs
-  // (required for the Credentials provider, which can't use database sessions).
-  adapter: PrismaAdapter(prisma),
+  // No adapter: Account/Session rows aren't persisted. Google sign-in is
+  // linked/created by email directly in the signIn callback below instead —
+  // pairing an adapter with the JWT strategy (required by Credentials) was
+  // causing the session cookie to be rotated into an invalid state within
+  // ~90s of login.
   session: {
     strategy: "jwt",
   },
@@ -75,6 +76,26 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
+    async signIn({ user, account }) {
+      if (account?.provider === "google" && user.email) {
+        const existing = await prisma.user.findUnique({
+          where: { email: user.email },
+          select: { id: true, role: true },
+        });
+        if (existing) {
+          user.id = existing.id;
+          (user as { role?: string }).role = existing.role;
+        } else {
+          const created = await prisma.user.create({
+            data: { email: user.email, name: user.name, image: user.image, role: "STUDENT" },
+            select: { id: true, role: true },
+          });
+          user.id = created.id;
+          (user as { role?: string }).role = created.role;
+        }
+      }
+      return true;
+    },
     async redirect({ url, baseUrl }) {
       // AUTH_URL/NEXT_PUBLIC_AUTH_URL can drift out of sync with the domain
       // actually serving the request (e.g. still pointing at the raw
