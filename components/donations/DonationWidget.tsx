@@ -21,17 +21,22 @@ export default function DonationWidget({ recipientHandle, recipientName }: { rec
     if (!validAmount) return;
     setSubmitting(true);
     setResult(null);
-    const res = await fetch("/api/donations", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ recipientHandle, amountCents }),
-    });
-    setSubmitting(false);
-    if (res.ok) {
-      const data = await res.json();
-      setResult({ totalCents: data.donation.totalCents });
-    } else {
+    try {
+      const res = await fetch("/api/donations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ recipientHandle, amountCents }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setResult({ totalCents: data.donation.totalCents });
+      } else {
+        setResult("error");
+      }
+    } catch {
       setResult("error");
+    } finally {
+      setSubmitting(false);
     }
   }
 
