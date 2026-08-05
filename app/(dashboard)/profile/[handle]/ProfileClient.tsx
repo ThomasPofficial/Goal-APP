@@ -138,7 +138,7 @@ export default function ProfileClient({ profile, isOwn, ownReviews = [] }: Props
         <div className="flex items-start gap-5">
           <Avatar src={profile.avatarUrl} displayName={profile.displayName} geniusType={profile.geniusType} size={80} />
           <div className="flex-1 min-w-0">
-            <h1 className="text-3xl font-bold tracking-tight text-[#e8e8ec]" style={{ fontFamily: "var(--font-display)" }}>
+            <h1 className="text-2xl font-bold leading-snug text-[#e8e8ec]">
               {profile.displayName ?? "Anonymous"}
             </h1>
             {profile.handle && (
