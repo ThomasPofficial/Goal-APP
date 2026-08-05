@@ -190,11 +190,24 @@ export default function CommunitiesClient({ schoolId, myUserId, isAdmin, initial
   const loadMessages = useCallback(async (id: string) => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/conversations/${id}/messages`);
-      if (res.ok) {
+      // Walk backward page-by-page (50 at a time) so the full history loads,
+      // not just the most recent 50 — capped so a huge room can't hang the UI.
+      let all: Message[] = [];
+      let cursor: string | null = null;
+      const MAX_PAGES = 20;
+      for (let page = 0; page < MAX_PAGES; page++) {
+        const url = cursor
+          ? `/api/conversations/${id}/messages?cursor=${cursor}`
+          : `/api/conversations/${id}/messages`;
+        const res = await fetch(url);
+        if (!res.ok) break;
         const data = await res.json();
-        setMessages(data.messages ?? []);
+        const batch: Message[] = data.messages ?? [];
+        all = [...batch, ...all];
+        if (batch.length < 50) break;
+        cursor = batch[0].id;
       }
+      setMessages(all);
     } finally { setLoading(false); }
   }, []);
 
