@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { useSocket } from "@/lib/socket";
-import { Send, Copy, Check, Pencil } from "lucide-react";
+import { Send, Copy, Check, Pencil, Trash2 } from "lucide-react";
 
 interface RoomSummary {
   id: string;
@@ -225,6 +225,18 @@ export default function CommunitiesClient({ schoolId, myUserId, isAdmin, initial
     return () => { socket.off("conversation_message", handler); socket.emit("leave_conversation", roomId); };
   }, [socket, roomId, myUserId]);
 
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const deleteMessage = async (messageId: string) => {
+    if (!roomId || !window.confirm("Delete this message for everyone?")) return;
+    setDeletingId(messageId);
+    try {
+      const res = await fetch(`/api/conversations/${roomId}/messages/${messageId}`, { method: "DELETE" });
+      if (res.ok) setMessages((prev) => prev.filter((m) => m.id !== messageId));
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   const sendMessage = async () => {
     if (!input.trim() || !roomId || sending) return;
     const body = input.trim();
@@ -326,6 +338,25 @@ export default function CommunitiesClient({ schoolId, myUserId, isAdmin, initial
                       {msg.content}
                     </div>
                   </div>
+                  {isAdmin && (
+                    <button
+                      onClick={() => deleteMessage(msg.id)}
+                      disabled={deletingId === msg.id}
+                      title="Delete message"
+                      style={{
+                        alignSelf: "center",
+                        background: "none",
+                        border: "none",
+                        cursor: deletingId === msg.id ? "not-allowed" : "pointer",
+                        color: "var(--muted)",
+                        opacity: deletingId === msg.id ? 0.4 : 0.6,
+                        padding: 4,
+                        flexShrink: 0,
+                      }}
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  )}
                 </div>
               );
             })}
