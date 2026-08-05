@@ -8,15 +8,31 @@ CREATE TABLE IF NOT EXISTS "IdeaNote" (
     CONSTRAINT "IdeaNote_pkey" PRIMARY KEY ("id")
 );
 
-ALTER TABLE "IdeaNote"
-  ADD CONSTRAINT "IdeaNote_conversationId_fkey" FOREIGN KEY ("conversationId") REFERENCES "Conversation"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.table_constraints
+    WHERE constraint_name = 'IdeaNote_conversationId_fkey'
+  ) THEN
+    ALTER TABLE "IdeaNote" ADD CONSTRAINT "IdeaNote_conversationId_fkey"
+      FOREIGN KEY ("conversationId") REFERENCES "Conversation"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+  END IF;
+END $$;
 
-ALTER TABLE "IdeaNote"
-  ADD CONSTRAINT "IdeaNote_authorId_fkey" FOREIGN KEY ("authorId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.table_constraints
+    WHERE constraint_name = 'IdeaNote_authorId_fkey'
+  ) THEN
+    ALTER TABLE "IdeaNote" ADD CONSTRAINT "IdeaNote_authorId_fkey"
+      FOREIGN KEY ("authorId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+  END IF;
+END $$;
 
 CREATE TABLE IF NOT EXISTS "Donation" (
     "id" TEXT NOT NULL,
-    "recipientUserId" TEXT NOT NULL,
+    "recipientUserId" TEXT,
     "donorName" TEXT,
     "donorEmail" TEXT,
     "amountCents" INTEGER NOT NULL,
@@ -28,5 +44,13 @@ CREATE TABLE IF NOT EXISTS "Donation" (
     CONSTRAINT "Donation_pkey" PRIMARY KEY ("id")
 );
 
-ALTER TABLE "Donation"
-  ADD CONSTRAINT "Donation_recipientUserId_fkey" FOREIGN KEY ("recipientUserId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.table_constraints
+    WHERE constraint_name = 'Donation_recipientUserId_fkey'
+  ) THEN
+    ALTER TABLE "Donation" ADD CONSTRAINT "Donation_recipientUserId_fkey"
+      FOREIGN KEY ("recipientUserId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+  END IF;
+END $$;

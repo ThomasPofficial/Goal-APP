@@ -807,7 +807,7 @@ model CampaignPledge {
 
 model Donation {
   id              String   @id @default(cuid())
-  recipientUserId String
+  recipientUserId String?
   donorName       String?
   donorEmail      String?
   amountCents     Int
@@ -817,7 +817,7 @@ model Donation {
   stripeSessionId String?
   createdAt       DateTime @default(now())
 
-  recipient User @relation("DonationsReceived", fields: [recipientUserId], references: [id], onDelete: Cascade)
+  recipient User? @relation("DonationsReceived", fields: [recipientUserId], references: [id], onDelete: SetNull)
 }
 
 model Campaign {
