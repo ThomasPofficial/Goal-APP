@@ -34,6 +34,12 @@ interface ProfileData {
   animalArchetypes: string;
   archetypeAnalysis: string | null;
   archetypeUpdatedAt: string | null;
+  bio: string | null;
+  staffTitle: string | null;
+  industry: string | null;
+  isAvailableToMentor: boolean;
+  graduationYear: number | null;
+  intendedCollege: string | null;
 }
 
 interface Props {
@@ -132,16 +138,38 @@ export default function ProfileClient({ profile, isOwn, ownReviews = [] }: Props
         <div className="flex items-start gap-5">
           <Avatar src={profile.avatarUrl} displayName={profile.displayName} geniusType={profile.geniusType} size={80} />
           <div className="flex-1 min-w-0">
-            <h1 className="text-2xl font-bold text-[#e8e8ec]">{profile.displayName ?? "Anonymous"}</h1>
+            <h1 className="text-3xl font-bold tracking-tight text-[#e8e8ec]" style={{ fontFamily: "var(--font-display)" }}>
+              {profile.displayName ?? "Anonymous"}
+            </h1>
             {profile.handle && (
               <p className="text-sm text-[#9898a8] mt-0.5">@{profile.handle}</p>
+            )}
+            {profile.staffTitle && (
+              <p className="text-xs font-semibold uppercase tracking-wider mt-1.5" style={{ color: "var(--amber)", letterSpacing: "0.08em" }}>
+                {profile.staffTitle}
+              </p>
             )}
             <div className="flex items-center gap-2 mt-2 flex-wrap">
               {profile.geniusType && <GeniusTypeBadge geniusType={profile.geniusType} size="md" />}
               {profile.secondaryGeniusType && (
                 <GeniusTypeBadge geniusType={profile.secondaryGeniusType} size="sm" showEmoji={false} />
               )}
+              {profile.isAvailableToMentor && (
+                <span
+                  className="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded-full"
+                  style={{ color: "var(--amber)", background: "rgba(232,137,58,0.15)", letterSpacing: "0.1em" }}
+                >
+                  Mentor
+                </span>
+              )}
             </div>
+            {(profile.industry || profile.graduationYear || profile.intendedCollege) && (
+              <div className="flex items-center gap-3 mt-2 flex-wrap text-xs" style={{ color: "#9898a8" }}>
+                {profile.graduationYear && <span>Class of &apos;{String(profile.graduationYear).slice(-2)}</span>}
+                {profile.industry && <span>{profile.industry}</span>}
+                {profile.intendedCollege && <span>{profile.intendedCollege}</span>}
+              </div>
+            )}
           </div>
           {isOwn && (
             <button
@@ -152,6 +180,10 @@ export default function ProfileClient({ profile, isOwn, ownReviews = [] }: Props
             </button>
           )}
         </div>
+
+        {profile.bio && (
+          <p className="mt-5 text-sm leading-relaxed" style={{ color: "#c8c8d0" }}>{profile.bio}</p>
+        )}
 
         {profile.currentFocus && (
           <div className="mt-5 bg-black/20 rounded-xl px-4 py-3 border border-white/5">

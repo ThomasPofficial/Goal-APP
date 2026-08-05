@@ -60,7 +60,7 @@ export default function SchoolHubClient({ schoolName, schoolTagline, staff, alum
     <div style={{ maxWidth: 900 }}>
 
       {/* School banner */}
-      <div style={{ padding: "32px 36px", background: "linear-gradient(135deg, rgba(232,137,58,0.14) 0%, rgba(232,137,58,0.03) 100%)", border: "1px solid var(--border)", borderRadius: 0, marginBottom: 24 }}>
+      <div style={{ padding: "32px 36px", background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 0, marginBottom: 24 }}>
         <p style={{ fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: "0.25em", textTransform: "uppercase", color: "var(--amber)", margin: "0 0 8px" }}>
           Private Community
         </p>
@@ -95,7 +95,7 @@ export default function SchoolHubClient({ schoolName, schoolTagline, staff, alum
               <div key={s.displayName} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 0, padding: "16px 18px", display: "flex", gap: 12, alignItems: "flex-start" }}>
                 <Avatar name={s.displayName} avatarUrl={s.avatarUrl} handle={s.handle} size={44} />
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ margin: 0, fontSize: 16, fontWeight: 700, color: "var(--text)" }}>
+                  <p style={{ margin: 0, fontSize: 17, fontWeight: 700, letterSpacing: "-0.01em", fontFamily: "var(--font-display)", color: "var(--text)" }}>
                     {s.handle ? (
                       <Link href={`/profile/${s.handle}`} style={{ color: "inherit", textDecoration: "none" }}>{s.displayName}</Link>
                     ) : s.displayName}
@@ -187,7 +187,7 @@ function MentorCard({ alumnus: a, requestedIds, onRequest }: { alumnus: Alumnus;
       <div style={{ display: "flex", gap: 11, alignItems: "flex-start" }}>
         <Avatar name={a.displayName} avatarUrl={a.avatarUrl} handle={a.handle} size={44} />
         <div style={{ flex: 1, minWidth: 0 }}>
-          <p style={{ margin: 0, fontSize: 15, fontWeight: 700, color: "var(--text)" }}>
+          <p style={{ margin: 0, fontSize: 16, fontWeight: 700, letterSpacing: "-0.01em", fontFamily: "var(--font-display)", color: "var(--text)" }}>
             {a.handle ? <Link href={`/profile/${a.handle}`} style={{ color: "inherit", textDecoration: "none" }}>{a.displayName}</Link> : a.displayName}
           </p>
           <div style={{ display: "flex", gap: 7, marginTop: 3, flexWrap: "wrap" }}>
@@ -246,7 +246,7 @@ function AlumnusCard({ alumnus: a, requestedIds, onRequest }: { alumnus: Alumnus
     <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 0, padding: "15px 17px", display: "flex", gap: 11, alignItems: "flex-start" }}>
       <Avatar name={a.displayName} avatarUrl={a.avatarUrl} handle={a.handle} size={40} />
       <div style={{ flex: 1, minWidth: 0 }}>
-        <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: "var(--text)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+        <p style={{ margin: 0, fontSize: 15, fontWeight: 700, letterSpacing: "-0.01em", fontFamily: "var(--font-display)", color: "var(--text)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
           {a.handle ? <Link href={`/profile/${a.handle}`} style={{ color: "inherit", textDecoration: "none" }}>{a.displayName}</Link> : a.displayName}
         </p>
         <div style={{ display: "flex", gap: 9, marginTop: 3, flexWrap: "wrap", alignItems: "center" }}>

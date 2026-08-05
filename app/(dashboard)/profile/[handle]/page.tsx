@@ -29,12 +29,18 @@ export default async function ProfilePage({ params }: { params: Promise<{ handle
         animalArchetypes: true,
         archetypeAnalysis: true,
         archetypeUpdatedAt: true,
+        bio: true,
+        staffTitle: true,
+        industry: true,
+        isAvailableToMentor: true,
+        graduationYear: true,
+        intendedCollege: true,
       },
     }),
     session?.user?.id
       ? prisma.profile.findUnique({
           where: { userId: session.user.id },
-          select: { id: true, handle: true, displayName: true, avatarUrl: true, geniusType: true, currentFocus: true, interests: true, grade: true, schoolName: true, isFirstGen: true, isHomeschooled: true, isInternational: true, animalArchetypes: true, archetypeAnalysis: true, archetypeUpdatedAt: true },
+          select: { id: true, handle: true, displayName: true, avatarUrl: true, geniusType: true, currentFocus: true, interests: true, grade: true, schoolName: true, isFirstGen: true, isHomeschooled: true, isInternational: true, animalArchetypes: true, archetypeAnalysis: true, archetypeUpdatedAt: true, bio: true, staffTitle: true, industry: true, isAvailableToMentor: true, graduationYear: true, intendedCollege: true },
         })
       : null,
   ]);
