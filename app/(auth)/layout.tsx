@@ -188,11 +188,9 @@ export default function AuthLayout({
           </h1>
 
           <p className="text-sm leading-relaxed mb-6" style={{ color: "var(--text2)", maxWidth: 420 }}>
-            We connect students with school alumni and give them the tools to complete
-            high-quality, real-world projects to level up their resumes. Furthermore, we help
-            schools secure funds from these alumni for school improvement and community
-            strengthening. We then document where these students go to college and where they
-            obtain jobs, so schools can advertise their programs&apos; effectiveness.
+            We help private schools reconnect with their alumni network and turn that
+            relationship into real fundraising — automated outreach, campaign tools, and a
+            direct line to the donors who already believe in your school&apos;s mission.
           </p>
         </div>
       </div>
