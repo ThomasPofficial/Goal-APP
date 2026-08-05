@@ -18,7 +18,6 @@ export async function GET(req: Request) {
     take: 500,
     where: {
       NOT: { userId: session.user.id },
-      isDemo: false,
       ...(geniusTypes.length > 0 ? { geniusType: { in: geniusTypes as never[] } } : {}),
       ...(grades.length > 0 ? { grade: { in: grades } } : {}),
     },
