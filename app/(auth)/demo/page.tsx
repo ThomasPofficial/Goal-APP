@@ -1,5 +1,6 @@
 import { signIn } from "@/lib/auth";
 import { GraduationCap, School } from "lucide-react";
+import { DemoSubmitButton } from "./DemoSubmitButton";
 
 async function loginStudent() {
   "use server";
@@ -43,31 +44,20 @@ export default function DemoPage() {
 
       <div className="space-y-4">
         <form action={loginStudent} className="w-full">
-          <button
-            type="submit"
-            className="w-full flex items-center gap-4 py-5 px-6 text-left"
-            style={{ background: "var(--surface2)", color: "var(--text)", border: "1px solid var(--border-md)", borderRadius: 8, cursor: "pointer" }}
-          >
-            <GraduationCap className="w-8 h-8 flex-shrink-0" style={{ color: "var(--amber, #E8893A)" }} />
-            <span>
-              <span className="block font-semibold text-lg">Explore as a Student</span>
-              <span className="block text-sm mt-0.5" style={{ color: "var(--muted)" }}>Profile, community, mentorship</span>
-            </span>
-          </button>
+          <DemoSubmitButton
+            icon={<GraduationCap className="w-8 h-8 flex-shrink-0" style={{ color: "var(--amber, #E8893A)" }} />}
+            title="Explore as a Student"
+            subtitle="Profile, community, mentorship"
+          />
         </form>
 
         <form action={loginSchool} className="w-full">
-          <button
-            type="submit"
-            className="w-full flex items-center gap-4 py-5 px-6 text-left"
-            style={{ background: "var(--amber, #E8893A)", color: "#000", borderRadius: 8, fontWeight: 600, boxShadow: "0 4px 20px rgba(232,137,58,0.35)", border: "none", cursor: "pointer" }}
-          >
-            <School className="w-8 h-8 flex-shrink-0" />
-            <span>
-              <span className="block font-semibold text-lg">Explore as a School Admin</span>
-              <span className="block text-sm mt-0.5" style={{ opacity: 0.75 }}>Roster, brochure, communities, campaigns</span>
-            </span>
-          </button>
+          <DemoSubmitButton
+            icon={<School className="w-8 h-8 flex-shrink-0" />}
+            title="Explore as a School Admin"
+            subtitle="Roster, brochure, communities, campaigns"
+            variant="primary"
+          />
         </form>
       </div>
     </div>
