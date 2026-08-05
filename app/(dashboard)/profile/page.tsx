@@ -1,6 +1,5 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { redirect } from "next/navigation";
 import ProfileEditor from "./ProfileEditor";
 import AlumniProfileEditor from "./AlumniProfileEditor";
 
@@ -13,10 +12,6 @@ export default async function ProfilePage() {
     select: { role: true, isAlumni: true, profile: { select: { schoolId: true } } },
   });
   const walled = dbUser?.role === "STUDENT" && !!dbUser.profile?.schoolId;
-
-  if (walled && !dbUser?.isAlumni) {
-    redirect("/dashboard");
-  }
 
   if (walled && dbUser?.isAlumni) {
     const alumniProfile = await prisma.profile.findUnique({
@@ -61,6 +56,7 @@ export default async function ProfilePage() {
   return (
     <ProfileEditor
       userId={userId}
+      locked={walled}
       initialProfile={
         profile
           ? {

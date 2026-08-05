@@ -23,7 +23,7 @@ export default function WalledNotificationsClient({ items }: { items: ActivityIt
       {items.map((item) => (
         <Link
           key={item.id}
-          href={item.kind === "community" ? "/communities" : "/mentorship"}
+          href={item.kind === "community" ? `/communities?conversation=${item.id}` : `/mentorship?conversation=${item.id}`}
           style={{
             display: "flex", alignItems: "flex-start", gap: 12, padding: "14px 16px",
             border: "1px solid var(--border)",

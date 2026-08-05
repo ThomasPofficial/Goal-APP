@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { HeartHandshake, Send } from "lucide-react";
 
 interface Person {
@@ -30,6 +31,8 @@ function threadLabel(thread: Thread): string {
 }
 
 export default function MentorshipClient({ myUserId }: { myUserId: string }) {
+  const searchParams = useSearchParams();
+  const requestedThreadId = searchParams.get("conversation");
   const [threads, setThreads] = useState<Thread[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -40,11 +43,15 @@ export default function MentorshipClient({ myUserId }: { myUserId: string }) {
     fetch("/api/mentorship/my-threads")
       .then((r) => r.json())
       .then((data) => {
-        setThreads(data.threads ?? []);
-        setActiveId(data.threads?.[0]?.id ?? null);
+        const loadedThreads: Thread[] = data.threads ?? [];
+        setThreads(loadedThreads);
+        const wanted = requestedThreadId && loadedThreads.some((t) => t.id === requestedThreadId)
+          ? requestedThreadId
+          : loadedThreads[0]?.id ?? null;
+        setActiveId(wanted);
         setLoading(false);
       });
-  }, []);
+  }, [requestedThreadId]);
 
   useEffect(() => {
     if (!activeId) return;

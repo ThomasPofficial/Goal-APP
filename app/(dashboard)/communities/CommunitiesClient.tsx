@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
 import { useSocket } from "@/lib/socket";
 import { Send, Copy, Check, Pencil } from "lucide-react";
 
@@ -172,8 +173,12 @@ function AdminCodePanel({ initialCode }: { initialCode: string | null }) {
 
 export default function CommunitiesClient({ schoolId, myUserId, isAdmin, initialRooms, schoolCode }: Props) {
   const socket = useSocket();
+  const searchParams = useSearchParams();
+  const requestedRoomId = searchParams.get("conversation");
   const generalRoom = initialRooms.find((r) => !r.isPrivateRoom) ?? null;
-  const roomId = generalRoom?.id ?? null;
+  const activeRoom =
+    (requestedRoomId && initialRooms.find((r) => r.id === requestedRoomId)) || generalRoom;
+  const roomId = activeRoom?.id ?? null;
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
@@ -244,11 +249,11 @@ export default function CommunitiesClient({ schoolId, myUserId, isAdmin, initial
       <div className="flex items-center gap-3 px-5 shrink-0" style={{ height: 56, background: "var(--surface)", borderBottom: "1px solid var(--border)" }}>
         <div style={{ width: 10, height: 10, borderRadius: "50%", background: "var(--amber)", flexShrink: 0 }} />
         <p style={{ fontFamily: "var(--font-serif)", fontSize: 20, fontWeight: 600, color: "var(--text)", letterSpacing: "-0.3px" }}>
-          {generalRoom?.communityName ?? "General"}
+          {activeRoom?.communityName ?? "General"}
         </p>
-        {generalRoom?.memberCount != null && (
+        {activeRoom?.memberCount != null && (
           <p style={{ fontSize: 12, color: "var(--muted)", marginLeft: 4 }}>
-            {generalRoom.memberCount} {generalRoom.memberCount === 1 ? "member" : "members"}
+            {activeRoom.memberCount} {activeRoom.memberCount === 1 ? "member" : "members"}
           </p>
         )}
       </div>

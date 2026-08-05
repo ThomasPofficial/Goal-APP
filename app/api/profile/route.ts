@@ -129,23 +129,38 @@ export async function PUT(req: NextRequest) {
 
   const dob = dateOfBirth ? new Date(dateOfBirth) : undefined;
 
+  // Walled (school-affiliated) non-alumni students can't change their name or
+  // date of birth from the profile editor — those are set by the school roster.
+  // Enforced here too since the client-side disabled inputs are only a UI hint.
+  const dbUser = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      role: true,
+      isAlumni: true,
+      profile: { select: { displayName: true, dateOfBirth: true, schoolId: true } },
+    },
+  });
+  const locked = dbUser?.role === "STUDENT" && !dbUser.isAlumni && !!dbUser.profile?.schoolId;
+  const finalDisplayName = locked && dbUser?.profile ? dbUser.profile.displayName : displayName;
+  const finalDob = locked && dbUser?.profile ? dbUser.profile.dateOfBirth ?? undefined : dob;
+
   // Upsert profile
   const profile = await prisma.profile.upsert({
     where: { userId },
     create: {
       userId,
-      displayName,
+      displayName: finalDisplayName,
       headline,
       bio,
       strengthSummary,
-      dateOfBirth: dob,
+      dateOfBirth: finalDob,
     },
     update: {
-      displayName,
+      displayName: finalDisplayName,
       headline,
       bio,
       strengthSummary,
-      dateOfBirth: dob,
+      dateOfBirth: finalDob,
     },
   });
 

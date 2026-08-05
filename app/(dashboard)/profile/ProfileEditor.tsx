@@ -30,11 +30,12 @@ interface Props {
     dateOfBirth: string;
   } | null;
   allTraits: Trait[];
+  locked?: boolean;
 }
 
 const MAX_TRAITS = 5;
 
-export default function ProfileEditor({ initialProfile, allTraits }: Props) {
+export default function ProfileEditor({ initialProfile, allTraits, locked = false }: Props) {
   const router = useRouter();
   const [displayName, setDisplayName] = useState(
     initialProfile?.displayName ?? ""
@@ -119,9 +120,13 @@ export default function ProfileEditor({ initialProfile, allTraits }: Props) {
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
               required
+              disabled={locked}
               placeholder="Your name"
-              className="w-full"
+              className="w-full disabled:opacity-60 disabled:cursor-not-allowed"
             />
+            {locked && (
+              <p className="text-xs text-[#58586a] mt-1">Set by your school — ask your teacher if this needs to change.</p>
+            )}
           </div>
 
           <div>
@@ -144,9 +149,12 @@ export default function ProfileEditor({ initialProfile, allTraits }: Props) {
               type="date"
               value={dateOfBirth}
               onChange={(e) => setDateOfBirth(e.target.value)}
-              className="w-full"
+              disabled={locked}
+              className="w-full disabled:opacity-60 disabled:cursor-not-allowed"
             />
-            <p className="text-xs text-[#58586a] mt-1">Used for age-range filtering in search. Not shown publicly.</p>
+            <p className="text-xs text-[#58586a] mt-1">
+              {locked ? "Set by your school — ask your teacher if this needs to change." : "Used for age-range filtering in search. Not shown publicly."}
+            </p>
           </div>
 
           <div>
