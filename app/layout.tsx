@@ -50,11 +50,6 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${anton.variable} ${inter.variable} ${jetbrainsMono.variable} ${playfairDisplay.variable}`}>
       <body className="antialiased" style={{ background: "var(--bg)", color: "var(--text)" }}>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `try{if(localStorage.getItem('nivarro-theme')==='light')document.body.classList.add('day')}catch(e){}`,
-          }}
-        />
         <PostHogProvider>
           <SessionProvider>
             <PostHogIdentify />
