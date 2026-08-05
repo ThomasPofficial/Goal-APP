@@ -12,6 +12,14 @@ const loginSchema = z.object({
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   trustHost: true,
+  logger: {
+    error(error) {
+      console.error("[NEXTAUTH_ERROR]", error?.name, error?.message, (error as { cause?: unknown })?.cause);
+    },
+    warn(code) {
+      console.warn("[NEXTAUTH_WARN]", code);
+    },
+  },
   // No adapter: Account/Session rows aren't persisted. Google sign-in is
   // linked/created by email directly in the signIn callback below instead —
   // pairing an adapter with the JWT strategy (required by Credentials) was
@@ -111,7 +119,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       } catch {}
       return `${canonicalBase}/dashboard`;
     },
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger }) {
+      console.log("[JWT_CALLBACK]", { trigger, hasUser: !!user, tokenId: token?.id, tokenExp: token?.exp });
       if (user) {
         token.id = user.id;
         token.email = user.email;
@@ -120,6 +129,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return token;
     },
     async session({ session, token }) {
+      console.log("[SESSION_CALLBACK]", { tokenId: token?.id, tokenEmail: token?.email, tokenExp: token?.exp });
       if (token?.id) {
         session.user.id = token.id as string;
       }
