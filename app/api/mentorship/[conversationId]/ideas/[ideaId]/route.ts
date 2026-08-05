@@ -6,9 +6,9 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ conve
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { ideaId } = await params;
+  const { conversationId, ideaId } = await params;
   const idea = await prisma.ideaNote.findUnique({ where: { id: ideaId } });
-  if (!idea || idea.authorId !== session.user.id) {
+  if (!idea || idea.conversationId !== conversationId || idea.authorId !== session.user.id) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
