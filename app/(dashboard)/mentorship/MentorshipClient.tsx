@@ -237,7 +237,8 @@ export default function MentorshipClient({ myUserId }: { myUserId: string }) {
                     width: 180, minHeight: 140, padding: 14, background: NOTE_COLORS[n.colorIndex % NOTE_COLORS.length],
                     color: "#1a1500", boxShadow: "2px 3px 8px rgba(0,0,0,0.25)", position: "relative",
                     transform: `rotate(${noteRotation(n.id)}deg)`, fontSize: 13, display: "flex", flexDirection: "column", gap: 8,
-                  }}
+                    ["--note-rot" as string]: `${noteRotation(n.id)}deg`,
+                  } as React.CSSProperties}
                 >
                   <p style={{ margin: 0, flex: 1, wordBreak: "break-word" }}>{n.content}</p>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 10, opacity: 0.75 }}>
