@@ -51,17 +51,24 @@ export async function proxy(req: NextRequest) {
     isPublic;
 
   if (hasSession && !skipOnboardingCheck) {
-    const session = await auth();
-    if (session?.user?.id) {
-      const user = await prisma.user.findUnique({
-        where: { id: session.user.id },
-        select: { role: true, profile: { select: { schoolId: true, onboardingComplete: true } } },
-      });
-      const needsOnboarding =
-        user?.role === "STUDENT" && !user.profile?.schoolId && !user.profile?.onboardingComplete;
-      if (needsOnboarding) {
-        return NextResponse.redirect(new URL("/onboarding", req.url));
+    try {
+      const session = await auth();
+      if (session?.user?.id) {
+        const user = await prisma.user.findUnique({
+          where: { id: session.user.id },
+          select: { role: true, profile: { select: { schoolId: true, onboardingComplete: true } } },
+        });
+        const needsOnboarding =
+          user?.role === "STUDENT" && !user.profile?.schoolId && !user.profile?.onboardingComplete;
+        if (needsOnboarding) {
+          return NextResponse.redirect(new URL("/onboarding", req.url));
+        }
       }
+    } catch (err) {
+      // Fail open: a transient DB hiccup (pool exhaustion, network blip) here must
+      // never 500 an otherwise-authenticated request. Treat it the same as "no
+      // session found" and let the request through.
+      console.error("proxy: onboarding check failed, failing open", err);
     }
   }
 
