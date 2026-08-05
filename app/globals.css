@@ -527,6 +527,17 @@ a, button {
 }
 
 /* ─────────────────────────────────────────
+   MENTORSHIP IDEA BOARD
+───────────────────────────────────────── */
+
+@keyframes idea-note-pop {
+  0%   { transform: scale(0.6) rotate(0deg); opacity: 0; }
+  70%  { transform: scale(1.05) rotate(var(--note-rot, 0deg)); opacity: 1; }
+  100% { transform: scale(1) rotate(var(--note-rot, 0deg)); opacity: 1; }
+}
+.idea-note-pop { animation: idea-note-pop 250ms ease-out; }
+
+/* ─────────────────────────────────────────
    LEGACY TAILWIND OVERRIDES
 ───────────────────────────────────────── */
 
