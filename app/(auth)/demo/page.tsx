@@ -55,7 +55,7 @@ export default function DemoPage() {
           <DemoSubmitButton
             icon={<School className="w-8 h-8 flex-shrink-0" />}
             title="Explore as a School Admin"
-            subtitle="Roster, brochure, communities, campaigns"
+            subtitle="Roster, mentorship, community, fundraising"
             variant="primary"
           />
         </form>

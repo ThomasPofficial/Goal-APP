@@ -23,13 +23,14 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 
   const messages = await prisma.message.findMany({
     where: { conversationId },
-    orderBy: { createdAt: 'asc' },
+    orderBy: { createdAt: 'desc' },
     take: 50,
     ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
     include: {
       sender: { select: { id: true, name: true, image: true } },
     },
   });
+  messages.reverse();
 
   // Mark read on view — participant.lastReadAt drives unread indicators elsewhere (e.g. Notifications).
   await prisma.conversationParticipant.update({
