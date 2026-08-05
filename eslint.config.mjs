@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Sibling git worktrees live on disk here — not app source.
+    ".claude/worktrees/**",
+    ".worktrees/**",
   ]),
 ]);
 

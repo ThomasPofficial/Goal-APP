@@ -145,7 +145,6 @@ export default function ProfileEditor({ initialProfile, allTraits }: Props) {
               value={dateOfBirth}
               onChange={(e) => setDateOfBirth(e.target.value)}
               className="w-full"
-              style={{ colorScheme: "dark" }}
             />
             <p className="text-xs text-[#58586a] mt-1">Used for age-range filtering in search. Not shown publicly.</p>
           </div>

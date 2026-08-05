@@ -1,10 +1,13 @@
 @import "tailwindcss";
+@variant dark (&:is(.dark *));
 
 /* ─────────────────────────────────────────
    FONT TOKENS
 ───────────────────────────────────────── */
 
 :root {
+  color-scheme: dark;
+
   --font-body:    'Inter', sans-serif;
   --font-display: 'Anton', sans-serif;
   --font-mono:    'JetBrains Mono', monospace;

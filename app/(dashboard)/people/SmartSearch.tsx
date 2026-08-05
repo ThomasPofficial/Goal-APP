@@ -384,7 +384,6 @@ export default function SmartSearch({ allTraits }: Props) {
                     scheduleSearch({ dobFrom: e.target.value });
                   }}
                   className="w-full text-xs"
-                  style={{ colorScheme: "dark" }}
                 />
               </div>
               <div>
@@ -399,7 +398,6 @@ export default function SmartSearch({ allTraits }: Props) {
                     scheduleSearch({ dobTo: e.target.value });
                   }}
                   className="w-full text-xs"
-                  style={{ colorScheme: "dark" }}
                 />
               </div>
               {(dobFrom || dobTo) && (
