@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 
-export function proxy(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // NextAuth v5 sets this cookie in prod (HTTPS) or without __Secure- in dev
@@ -34,6 +36,33 @@ export function proxy(req: NextRequest) {
 
   if (hasSession && (pathname === "/login" || pathname === "/register")) {
     return NextResponse.redirect(new URL("/dashboard", req.url));
+  }
+
+  // Force standard (self-signup, non-walled) students to finish /onboarding before
+  // using the rest of the app. Walled students (added via school roster CSV import)
+  // already get onboardingComplete:true stamped at import time, and every non-STUDENT
+  // role (ORG/SCHOOL/ADMIN) is untouched by this check. /api/* is exempted even though
+  // it's not in isPublic — an API route redirected to an HTML page instead of JSON
+  // would silently break the onboarding page's own PATCH /api/profile call.
+  const skipOnboardingCheck =
+    pathname.startsWith("/api") ||
+    pathname.startsWith("/onboarding") ||
+    pathname.startsWith("/quiz") ||
+    isPublic;
+
+  if (hasSession && !skipOnboardingCheck) {
+    const session = await auth();
+    if (session?.user?.id) {
+      const user = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { role: true, profile: { select: { schoolId: true, onboardingComplete: true } } },
+      });
+      const needsOnboarding =
+        user?.role === "STUDENT" && !user.profile?.schoolId && !user.profile?.onboardingComplete;
+      if (needsOnboarding) {
+        return NextResponse.redirect(new URL("/onboarding", req.url));
+      }
+    }
   }
 
   return NextResponse.next();
