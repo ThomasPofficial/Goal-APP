@@ -683,7 +683,7 @@ function NoteCard({ card, teamId, members, myProfileId, onUpdate }: {
           ))}
         </div>
         {checked === total && total > 0 && (
-          <div className="mt-2 text-[11px] text-green-600 dark:text-green-400 font-semibold">✓ Complete</div>
+          <div className="mt-2 text-[11px] text-green-400 font-semibold">✓ Complete</div>
         )}
         <button onClick={deleteCard} className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
           <Trash2 className="w-3.5 h-3.5 text-[#5a5a6a] hover:text-red-400" />
