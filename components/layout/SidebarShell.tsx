@@ -5,7 +5,6 @@ import { Menu, LayoutDashboard, Users, Building2, UsersRound, MessageSquare, Bri
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Sidebar from "./Sidebar";
-import ThemeToggle from "./ThemeToggle";
 import type { GeniusType } from "@/data/traits";
 
 interface Props {
@@ -94,7 +93,6 @@ export default function SidebarShell({ userName, userEmail, geniusType, myOrgId,
         </Link>
 
         <div className="flex items-center gap-2">
-          <ThemeToggle compact />
           <button
             onClick={() => setMobileOpen(true)}
             className="w-9 h-9 flex items-center justify-center"

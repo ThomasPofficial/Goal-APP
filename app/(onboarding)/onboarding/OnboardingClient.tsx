@@ -38,7 +38,7 @@ export default function OnboardingClient({ geniusType }: { geniusType: GeniusTyp
         style={{ background: `radial-gradient(ellipse at center, ${info.color}18 0%, transparent 70%)` }}
       >
         <div className="max-w-xl w-full space-y-6">
-          <p className="text-xs font-semibold text-gray-400 dark:text-[#9898a8] uppercase tracking-[0.2em]">
+          <p className="text-xs font-semibold text-[#9898a8] uppercase tracking-[0.2em]">
             Your Genius Type
           </p>
           <h1 className="text-7xl font-bold tracking-tight" style={{ color: info.color }}>
@@ -47,12 +47,12 @@ export default function OnboardingClient({ geniusType }: { geniusType: GeniusTyp
           <p className={cn("text-sm font-medium tracking-wide", info.tailwindText)}>
             {info.tagline}
           </p>
-          <p className="text-gray-600 dark:text-[#9898a8] leading-relaxed text-base max-w-md mx-auto">
+          <p className="text-[#9898a8] leading-relaxed text-base max-w-md mx-auto">
             {info.description}
           </p>
           <div className={cn("border-l-4 p-4 rounded-r-lg text-center text-sm", info.tailwindBg, info.tailwindBorder)}>
             <span className={cn("font-semibold", info.tailwindText)}>Growth edge: </span>
-            <span className="text-gray-600 dark:text-[#9898a8]">{info.tension}</span>
+            <span className="text-[#9898a8]">{info.tension}</span>
           </div>
           <button
             onClick={() => setStep(2)}
@@ -73,7 +73,7 @@ export default function OnboardingClient({ geniusType }: { geniusType: GeniusTyp
       <div className="min-h-screen flex flex-col items-center justify-center px-6 py-16">
         <div className="max-w-lg w-full space-y-5">
           <StepHeader step={2} label="What are you working on?" />
-          <p className="text-sm text-gray-500 dark:text-[#9898a8]">
+          <p className="text-sm text-[#9898a8]">
             This shows at the top of your profile — first thing visitors read after your name.
           </p>
           <div>
@@ -82,16 +82,16 @@ export default function OnboardingClient({ geniusType }: { geniusType: GeniusTyp
               onChange={(e) => setFocus(e.target.value.slice(0, 120))}
               placeholder={placeholder}
               rows={3}
-              className="w-full resize-none rounded-lg border border-gray-200 dark:border-[#2a2a33] bg-white dark:bg-[#16161a] text-gray-900 dark:text-[#e8e8ec] placeholder-gray-400 dark:placeholder-[#5a5a6a] px-4 py-3 text-sm focus:outline-none focus:border-[#4a80f0] transition-colors"
+              className="w-full resize-none rounded-lg border border-[#2a2a33] bg-[#16161a] text-[#e8e8ec] placeholder-[#5a5a6a] px-4 py-3 text-sm focus:outline-none focus:border-[#4a80f0] transition-colors"
             />
-            <p className="text-right text-xs text-gray-400 dark:text-[#5a5a6a] mt-1">
+            <p className="text-right text-xs text-[#5a5a6a] mt-1">
               {focus.length}/120
             </p>
           </div>
           <div className="flex items-center justify-between pt-1">
             <button
               onClick={() => setStep(3)}
-              className="text-sm text-gray-400 dark:text-[#9898a8] hover:text-gray-600 dark:hover:text-[#e8e8ec] transition-colors"
+              className="text-sm text-[#9898a8] hover:text-[#e8e8ec] transition-colors"
             >
               Skip for now
             </button>
@@ -134,17 +134,17 @@ export default function OnboardingClient({ geniusType }: { geniusType: GeniusTyp
         <div className="max-w-2xl w-full space-y-6">
           <StepHeader step={3} label="What are you interested in?" />
           <div className="flex items-center justify-between">
-            <p className="text-sm text-gray-500 dark:text-[#9898a8]">
+            <p className="text-sm text-[#9898a8]">
               Select up to 10 — at least 1 required.
             </p>
-            <span className="text-xs text-gray-400 dark:text-[#5a5a6a]">
+            <span className="text-xs text-[#5a5a6a]">
               {selectedInterests.length}/10
             </span>
           </div>
 
           {(Object.entries(INTEREST_TAG_GROUPS) as [string, readonly string[]][]).map(([group, tags]) => (
             <div key={group}>
-              <p className="text-xs font-semibold text-gray-500 dark:text-[#5a5a6a] uppercase tracking-wider mb-2">
+              <p className="text-xs font-semibold text-[#5a5a6a] uppercase tracking-wider mb-2">
                 {group}
               </p>
               <div className="flex flex-wrap gap-2">
@@ -158,7 +158,7 @@ export default function OnboardingClient({ geniusType }: { geniusType: GeniusTyp
                         "px-3 py-1 rounded-full text-sm border transition-all",
                         selected
                           ? cn(info.tailwindBg, info.tailwindText, info.tailwindBorder)
-                          : "bg-gray-100 dark:bg-[#1e1e24] text-gray-600 dark:text-[#9898a8] border-transparent hover:border-gray-300 dark:hover:border-[#2a2a33]"
+                          : "bg-[#1e1e24] text-[#9898a8] border-transparent hover:border-[#2a2a33]"
                       )}
                     >
                       {tag}
@@ -170,7 +170,7 @@ export default function OnboardingClient({ geniusType }: { geniusType: GeniusTyp
           ))}
 
           <div>
-            <p className="text-xs font-semibold text-gray-500 dark:text-[#5a5a6a] uppercase tracking-wider mb-2">
+            <p className="text-xs font-semibold text-[#5a5a6a] uppercase tracking-wider mb-2">
               Other
             </p>
             <div className="flex gap-2">
@@ -179,7 +179,7 @@ export default function OnboardingClient({ geniusType }: { geniusType: GeniusTyp
                 onChange={(e) => setFreeform(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && addFreeform()}
                 placeholder="Add your own…"
-                className="flex-1 rounded-lg border border-dashed border-gray-300 dark:border-[#2a2a33] bg-transparent px-3 py-1.5 text-sm text-gray-900 dark:text-[#e8e8ec] placeholder-gray-400 dark:placeholder-[#5a5a6a] focus:outline-none focus:border-[#4a80f0]"
+                className="flex-1 rounded-lg border border-dashed border-[#2a2a33] bg-transparent px-3 py-1.5 text-sm text-[#e8e8ec] placeholder-[#5a5a6a] focus:outline-none focus:border-[#4a80f0]"
               />
               <button
                 onClick={addFreeform}
@@ -254,17 +254,17 @@ export default function OnboardingClient({ geniusType }: { geniusType: GeniusTyp
     <div className="min-h-screen flex flex-col items-center justify-center px-6 py-16">
       <div className="max-w-lg w-full space-y-6">
         <StepHeader step={4} label="A bit about you" />
-        <p className="text-sm text-gray-500 dark:text-[#9898a8]">
+        <p className="text-sm text-[#9898a8]">
           Helps match you to relevant opportunities. Marked private — only you can see this.
         </p>
 
         <div>
-          <p className="text-xs font-semibold text-gray-500 dark:text-[#9898a8] uppercase tracking-wider mb-2">
+          <p className="text-xs font-semibold text-[#9898a8] uppercase tracking-wider mb-2">
             Grade <span className="text-red-500">*</span>
           </p>
           <div className="space-y-2">
             <div className="flex gap-2 items-center">
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-[#5a5a6a] w-16 flex-shrink-0">HS</span>
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-[#5a5a6a] w-16 flex-shrink-0">HS</span>
               <div className="flex gap-2">
                 {[9, 10, 11, 12].map((g) => (
                   <button
@@ -274,7 +274,7 @@ export default function OnboardingClient({ geniusType }: { geniusType: GeniusTyp
                       "w-12 h-10 rounded-lg border text-sm font-semibold transition-all",
                       grade === g
                         ? cn(info.tailwindBg, info.tailwindText, info.tailwindBorder)
-                        : "border-gray-200 dark:border-[#2a2a33] text-gray-600 dark:text-[#9898a8] hover:border-gray-300 dark:hover:border-[#3a3a44]"
+                        : "border-[#2a2a33] text-[#9898a8] hover:border-[#3a3a44]"
                     )}
                   >
                     {g}
@@ -283,7 +283,7 @@ export default function OnboardingClient({ geniusType }: { geniusType: GeniusTyp
               </div>
             </div>
             <div className="flex gap-2 items-center">
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-[#5a5a6a] w-16 flex-shrink-0">College</span>
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-[#5a5a6a] w-16 flex-shrink-0">College</span>
               <div className="flex gap-2 flex-wrap">
                 {([
                   [13, "Fr."],
@@ -298,7 +298,7 @@ export default function OnboardingClient({ geniusType }: { geniusType: GeniusTyp
                       "px-3 h-10 rounded-lg border text-sm font-semibold transition-all",
                       grade === g
                         ? cn(info.tailwindBg, info.tailwindText, info.tailwindBorder)
-                        : "border-gray-200 dark:border-[#2a2a33] text-gray-600 dark:text-[#9898a8] hover:border-gray-300 dark:hover:border-[#3a3a44]"
+                        : "border-[#2a2a33] text-[#9898a8] hover:border-[#3a3a44]"
                     )}
                   >
                     {label}
@@ -310,18 +310,18 @@ export default function OnboardingClient({ geniusType }: { geniusType: GeniusTyp
         </div>
 
         <div>
-          <label className="text-xs font-semibold text-gray-500 dark:text-[#9898a8] uppercase tracking-wider">
+          <label className="text-xs font-semibold text-[#9898a8] uppercase tracking-wider">
             School name
           </label>
           <input
             value={schoolName}
             onChange={(e) => setSchoolName(e.target.value)}
             placeholder="Westlake High School"
-            className="mt-1.5 w-full rounded-lg border border-gray-200 dark:border-[#2a2a33] bg-white dark:bg-[#16161a] text-gray-900 dark:text-[#e8e8ec] placeholder-gray-400 dark:placeholder-[#5a5a6a] px-3 py-2 text-sm focus:outline-none focus:border-[#4a80f0] transition-colors"
+            className="mt-1.5 w-full rounded-lg border border-[#2a2a33] bg-[#16161a] text-[#e8e8ec] placeholder-[#5a5a6a] px-3 py-2 text-sm focus:outline-none focus:border-[#4a80f0] transition-colors"
           />
         </div>
 
-        <p className="text-xs text-gray-400 dark:text-[#5a5a6a]">
+        <p className="text-xs text-[#5a5a6a]">
           🔒 This information is private and only used for opportunity matching.
         </p>
 
@@ -340,8 +340,8 @@ export default function OnboardingClient({ geniusType }: { geniusType: GeniusTyp
 function StepHeader({ step, label }: { step: number; label: string }) {
   return (
     <div className="space-y-1">
-      <p className="text-xs font-medium text-gray-400 dark:text-[#5a5a6a]">Step {step} of 4</p>
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-[#e8e8ec]">{label}</h1>
+      <p className="text-xs font-medium text-[#5a5a6a]">Step {step} of 4</p>
+      <h1 className="text-2xl font-bold text-[#e8e8ec]">{label}</h1>
     </div>
   );
 }

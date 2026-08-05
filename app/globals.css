@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@variant dark (&:is(.dark *));
 
 /* ─────────────────────────────────────────
    FONT TOKENS
@@ -91,50 +90,6 @@
   --shadow-sm:  0 1px 4px rgba(0,0,0,0.9);
   --shadow-md:  0 4px 20px rgba(0,0,0,0.9);
   --shadow-lg:  0 16px 48px rgba(0,0,0,0.95);
-}
-
-/* ─────────────────────────────────────────
-   LIGHT MODE
-───────────────────────────────────────── */
-
-body.day {
-  --accent:       #14507F;
-  --accent-hover: #0B3155;
-  --accent-dim:   #0B3155;
-  --accent-glow:  rgba(74,128,240,0.24);
-  --on-accent:    #FFFFFF;
-
-  --amber: var(--accent);
-  --gold:  var(--accent);
-  --gold-light: var(--accent-hover);
-  --gold-dim:   #DBEAFE;
-  --gold-glow:  var(--accent-glow);
-
-  --blue:        var(--accent);
-  --blue-bright: var(--accent-hover);
-  --blue-dim:    #DBEAFE;
-  --blue-glow:   var(--accent-glow);
-
-  --bg:        #FDFCFA;
-  --bg2:       #F6F3EC;
-  --surface:   #FFFFFF;
-  --surface2:  #F2EEE4;
-  --surface3:  #E8E1D0;
-  --border:    rgba(20,16,8,0.10);
-  --border-md: rgba(20,16,8,0.16);
-  --text:      #1A1712;
-  --text2:     #4A4536;
-  --muted:     #8A8270;
-
-  --glow-blue:        0 2px 12px rgba(74,128,240,0.2);
-  --glow-blue-strong: 0 4px 24px rgba(74,128,240,0.3);
-  --glow-blue-sm:     0 1px 6px rgba(74,128,240,0.14);
-  --glow-card:        0 8px 28px rgba(20,16,8,0.1);
-  --glow-text:        none;
-
-  --shadow-sm:  0 1px 3px rgba(0,0,0,0.07);
-  --shadow-md:  0 4px 16px rgba(0,0,0,0.09);
-  --shadow-lg:  0 16px 48px rgba(0,0,0,0.12);
 }
 
 /* ─────────────────────────────────────────
@@ -252,12 +207,6 @@ a, button {
 
 .card:hover {
   border-color: rgba(74,128,240,0.22);
-  box-shadow: var(--glow-card);
-  transform: translateY(-1px);
-}
-
-body.day .card:hover {
-  border-color: rgba(15,23,42,0.14);
   box-shadow: var(--glow-card);
   transform: translateY(-1px);
 }
@@ -529,10 +478,6 @@ body.day .card:hover {
 
 [style*="color: rgb(200, 221, 240)"] { color: var(--text) !important; }
 [style*="color: rgb(58, 88, 120)"] { color: var(--muted) !important; }
-
-body.day input[type="date"],
-body.day input[type="time"],
-body.day input[type="datetime-local"] { color-scheme: light; }
 
 /* ─────────────────────────────────────────
    SPY / HUD UTILITIES

@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { X, ChevronLeft, ChevronRight, LayoutDashboard, Users, Building2, UsersRound, MessageSquare, Bell, Briefcase, Megaphone, Globe, MapPin, GraduationCap, HeartHandshake, School, ClipboardList, User } from "lucide-react";
 import AccountMenu from "./AccountMenu";
-import ThemeToggle from "./ThemeToggle";
 import NivarroMark from "@/components/ui/NivarroMark";
 import { cn } from "@/lib/utils";
 import type { GeniusType } from "@/data/traits";
@@ -203,20 +202,12 @@ export default function Sidebar({ userName, userEmail, geniusType, mobileOpen = 
       {/* Footer */}
       {!collapsed && (
         <div style={{ borderTop: "1px solid rgba(255,255,255,0.04)" }} className="md:pb-0 pb-[60px]">
-          <div className="px-2 pt-2 pb-0">
-            <ThemeToggle />
-          </div>
           <AccountMenu
             userName={userName}
             userEmail={userEmail}
             geniusType={geniusType}
             isSchool={isSchool}
           />
-        </div>
-      )}
-      {collapsed && (
-        <div className="flex flex-col items-center gap-1 py-2" style={{ borderTop: "1px solid rgba(255,255,255,0.04)" }}>
-          <ThemeToggle compact />
         </div>
       )}
     </aside>
