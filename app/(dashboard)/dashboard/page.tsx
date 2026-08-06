@@ -14,7 +14,7 @@ export default async function DashboardPage() {
   const userId = session.user.id;
   const userRole = (session.user as { role?: string }).role ?? "STUDENT";
 
-  if (userRole === "SCHOOL") redirect("/school/destinations");
+  if (userRole === "SCHOOL") redirect("/campaigns");
 
   // ORG and ADMIN accounts land on their own org dashboard, same as any org —
   // /hq is reached via the "Schools (HQ)" nav link, not forced on every login.
