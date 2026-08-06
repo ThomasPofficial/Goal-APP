@@ -21,7 +21,9 @@ export async function proxy(req: NextRequest) {
     pathname.startsWith("/api/admin") ||
     pathname.startsWith("/api/webhooks") ||
     pathname.startsWith("/quiz") ||
-    pathname.startsWith("/onboarding");
+    pathname.startsWith("/onboarding") ||
+    pathname.startsWith("/give") ||
+    pathname.startsWith("/api/donations");
 
   // Redirect relative to the incoming request's own origin (req.url), never an
   // env-configured external URL. NEXT_PUBLIC_AUTH_URL can drift out of sync with

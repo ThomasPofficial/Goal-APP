@@ -50,6 +50,7 @@ export default async function MentorshipPage() {
 
   const formattedPairings = pairings.map((c) => ({
     id: c.id,
+    name: c.communityName,
     createdAt: c.createdAt.toISOString(),
     participants: c.participants
       .filter((p) => p.userId !== schoolId)
