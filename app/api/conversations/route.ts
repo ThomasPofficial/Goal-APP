@@ -2,10 +2,13 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { isMentorUser } from "@/lib/mentorship";
 
 export async function GET() {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const isMentor = await isMentorUser(session.user.id);
 
   const conversations = await prisma.conversation.findMany({
     where: { participants: { some: { userId: session.user.id } } },
@@ -28,7 +31,8 @@ export async function GET() {
   const serialized = conversations.map((c) => ({
     id: c.id,
     type: c.type,
-    name: null as string | null,
+    name: c.communityName ?? null,
+    canRename: c.type === "MENTORSHIP" && isMentor,
     teamId: c.teamId,
     teamName: c.team?.name ?? null,
     updatedAt: c.updatedAt.toISOString(),

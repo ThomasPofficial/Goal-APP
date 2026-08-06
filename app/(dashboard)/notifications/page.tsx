@@ -28,7 +28,7 @@ export default async function NotificationsPage() {
       return {
         id: c.id,
         kind: (c.type === "COMMUNITY" ? "community" : "mentorship") as "community" | "mentorship",
-        label: c.type === "COMMUNITY" ? (c.communityName ?? "Community Chat") : "Mentorship",
+        label: c.type === "COMMUNITY" ? (c.communityName ?? "Community Chat") : (c.communityName ?? "Mentorship"),
         lastMessage: c.messages[0]?.content ?? null,
         updatedAt: c.updatedAt.toISOString(),
         unread: !lastReadAt || lastReadAt < lastMessageAt,

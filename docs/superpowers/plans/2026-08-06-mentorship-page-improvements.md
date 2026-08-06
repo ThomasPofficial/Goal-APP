@@ -596,6 +596,316 @@ git commit -m "feat(messages): let mentors rename mentorship group chats"
 
 ---
 
+### Task 5: Port the rename affordance to the surface mentors actually use (`/mentorship`)
+
+**Added post-hoc, after the final whole-branch review.** Tasks 2-4 built the rename UI on `/messages` + `MessagesClient.tsx`, reasoning from the fact that `Conversation.communityName` and `ConvSummary.name` display support already existed there. The final review caught that this is the wrong surface: `/messages` starts with `if (await isWalledStudent(session.user.id)) redirect('/dashboard')` (`app/(dashboard)/messages/page.tsx:15`), and `isWalledStudent()` (`lib/accountGate.ts`) is `role === "STUDENT" && schoolId set`. Every mentorship-eligible mentor (alumni or staff) is created via the roster with `role: "STUDENT"` (`app/api/school/roster/members/route.ts`, `app/api/school/roster/import/route.ts` — ALUMNI/STAFF are distinguished only by `isAlumni`/`staffTitle`, never by `role`), so every mentor is a walled user and gets redirected out of `/messages` before ever reaching the pencil icon. The surface mentors actually use for mentorship chat is `/mentorship` (`app/(dashboard)/mentorship/MentorshipClient.tsx`, backed by `GET /api/mentorship/my-threads`), which currently builds its thread label purely from participant names and never reads `communityName`.
+
+Task 2's `PATCH /api/conversations/[id]` endpoint is surface-agnostic (it checks conversation type + participant + mentor role, not which page called it) and needs **no changes**. This task only touches the read/display side on `/mentorship`.
+
+**Files:**
+- Modify: `app/api/mentorship/my-threads/route.ts`
+- Modify: `app/(dashboard)/mentorship/MentorshipClient.tsx`
+
+**Interfaces:**
+- Consumes: `PATCH /api/conversations/:id` (Task 2, unchanged) — request `{ name: string }`, response `{ name: string }` on success, `{ error: string }` on failure.
+- Produces: nothing consumed elsewhere — final task in this plan.
+
+- [ ] **Step 1: Add `name`/`canRename` to the my-threads GET response**
+
+In `app/api/mentorship/my-threads/route.ts`, the current handler is:
+
+```ts
+export async function GET() {
+  const session = await auth();
+  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const conversations = await prisma.conversation.findMany({
+    where: { type: "MENTORSHIP", participants: { some: { userId: session.user.id } } },
+    include: {
+      participants: {
+        include: {
+          user: { select: { id: true, profile: { select: { displayName: true, handle: true, avatarUrl: true } } } },
+        },
+      },
+      messages: { orderBy: { createdAt: "desc" }, take: 1 },
+    },
+    orderBy: { updatedAt: "desc" },
+  });
+
+  return NextResponse.json({
+    threads: conversations.map((c) => ({
+      id: c.id,
+      otherParticipants: c.participants
+        .filter((p) => p.userId !== session.user.id)
+        .map((p) => ({
+          id: p.userId,
+          displayName: p.user.profile?.displayName ?? "Unnamed",
+          handle: p.user.profile?.handle ?? null,
+          avatarUrl: p.user.profile?.avatarUrl ?? null,
+        })),
+      lastMessage: c.messages[0]
+        ? { body: c.messages[0].content, createdAt: c.messages[0].createdAt.toISOString() }
+        : null,
+      updatedAt: c.updatedAt.toISOString(),
+    })),
+  });
+}
+```
+
+Replace it with (adds the same `isMentor` computation used in `app/(dashboard)/messages/page.tsx` and `app/api/conversations/route.ts`, and adds `name`/`canRename` per thread — every thread here is already `type: "MENTORSHIP"` per the query's `where`, so `canRename` is just `isMentor`, no type check needed):
+
+```ts
+export async function GET() {
+  const session = await auth();
+  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const [conversations, myProfile, myUser] = await Promise.all([
+    prisma.conversation.findMany({
+      where: { type: "MENTORSHIP", participants: { some: { userId: session.user.id } } },
+      include: {
+        participants: {
+          include: {
+            user: { select: { id: true, profile: { select: { displayName: true, handle: true, avatarUrl: true } } } },
+          },
+        },
+        messages: { orderBy: { createdAt: "desc" }, take: 1 },
+      },
+      orderBy: { updatedAt: "desc" },
+    }),
+    prisma.profile.findUnique({ where: { userId: session.user.id }, select: { staffTitle: true } }),
+    prisma.user.findUnique({ where: { id: session.user.id }, select: { isAlumni: true } }),
+  ]);
+  const isMentor = Boolean(myProfile?.staffTitle) || Boolean(myUser?.isAlumni);
+
+  return NextResponse.json({
+    threads: conversations.map((c) => ({
+      id: c.id,
+      name: c.communityName ?? null,
+      canRename: isMentor,
+      otherParticipants: c.participants
+        .filter((p) => p.userId !== session.user.id)
+        .map((p) => ({
+          id: p.userId,
+          displayName: p.user.profile?.displayName ?? "Unnamed",
+          handle: p.user.profile?.handle ?? null,
+          avatarUrl: p.user.profile?.avatarUrl ?? null,
+        })),
+      lastMessage: c.messages[0]
+        ? { body: c.messages[0].content, createdAt: c.messages[0].createdAt.toISOString() }
+        : null,
+      updatedAt: c.updatedAt.toISOString(),
+    })),
+  });
+}
+```
+
+- [ ] **Step 2: Update the `Thread` interface and `threadLabel` in `MentorshipClient.tsx`**
+
+In `app/(dashboard)/mentorship/MentorshipClient.tsx`, update the `Thread` interface:
+
+```ts
+interface Thread {
+  id: string;
+  otherParticipants: Person[];
+  lastMessage: { body: string; createdAt: string } | null;
+  updatedAt: string;
+}
+```
+
+to:
+
+```ts
+interface Thread {
+  id: string;
+  name: string | null;
+  canRename: boolean;
+  otherParticipants: Person[];
+  lastMessage: { body: string; createdAt: string } | null;
+  updatedAt: string;
+}
+```
+
+Update `threadLabel`:
+
+```ts
+function threadLabel(thread: Thread): string {
+  if (thread.otherParticipants.length === 0) return "Mentorship";
+  return thread.otherParticipants.map((p) => p.displayName).join(", ");
+}
+```
+
+to prefer the custom name when set:
+
+```ts
+function threadLabel(thread: Thread): string {
+  if (thread.name) return thread.name;
+  if (thread.otherParticipants.length === 0) return "Mentorship";
+  return thread.otherParticipants.map((p) => p.displayName).join(", ");
+}
+```
+
+- [ ] **Step 3: Add rename state**
+
+After the existing state declarations in `MentorshipClient` (after `const [respondingId, setRespondingId] = useState<string | null>(null);`), add:
+
+```tsx
+  const [renaming, setRenaming] = useState(false);
+  const [renameValue, setRenameValue] = useState("");
+  const [savingRename, setSavingRename] = useState(false);
+  const [renameError, setRenameError] = useState<string | null>(null);
+```
+
+- [ ] **Step 4: Reset rename state on thread switch**
+
+Update the existing effect that loads messages for the active thread:
+
+```tsx
+  useEffect(() => {
+    if (!activeId) return;
+    fetch(`/api/conversations/${activeId}/messages`)
+      .then((r) => r.json())
+      .then((data) => setMessages(data.messages ?? []));
+  }, [activeId]);
+```
+
+to also close any open rename editor when switching threads:
+
+```tsx
+  useEffect(() => {
+    if (!activeId) return;
+    fetch(`/api/conversations/${activeId}/messages`)
+      .then((r) => r.json())
+      .then((data) => setMessages(data.messages ?? []));
+    setRenaming(false);
+  }, [activeId]);
+```
+
+- [ ] **Step 5: Add the save handler**
+
+After the existing `send` function, add:
+
+```tsx
+  async function saveRename() {
+    if (!activeId || !renameValue.trim() || savingRename) return;
+    setSavingRename(true);
+    setRenameError(null);
+    try {
+      const res = await fetch(`/api/conversations/${activeId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: renameValue.trim() }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setThreads((prev) => prev.map((t) => (t.id === activeId ? { ...t, name: data.name } : t)));
+        setRenaming(false);
+      } else {
+        const err = await res.json().catch(() => null);
+        setRenameError(err?.error ?? "Couldn't rename this chat.");
+      }
+    } finally {
+      setSavingRename(false);
+    }
+  }
+```
+
+- [ ] **Step 6: Render the rename affordance in the thread header**
+
+Replace the thread header block:
+
+```tsx
+        <div style={{ padding: "12px 16px", borderBottom: "1px solid var(--border)", fontSize: 14, fontWeight: 700, color: "var(--text)" }}>
+          {active ? threadLabel(active) : "Mentorship"}
+        </div>
+```
+
+with:
+
+```tsx
+        <div style={{ padding: "12px 16px", borderBottom: "1px solid var(--border)" }}>
+          {renaming && active ? (
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <input
+                  autoFocus
+                  value={renameValue}
+                  onChange={(e) => setRenameValue(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") saveRename();
+                    if (e.key === "Escape") { setRenaming(false); setRenameError(null); }
+                  }}
+                  maxLength={80}
+                  style={{ flex: 1, fontSize: 14, fontWeight: 700, color: "var(--text)", background: "var(--bg)", border: "1px solid var(--border)", padding: "4px 8px" }}
+                />
+                <button
+                  type="button"
+                  onClick={saveRename}
+                  disabled={savingRename || !renameValue.trim()}
+                  title="Save"
+                  aria-label="Save"
+                  style={{ background: "none", border: "none", cursor: savingRename ? "not-allowed" : "pointer", color: "var(--amber)" }}
+                >
+                  <Check size={16} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setRenaming(false); setRenameError(null); }}
+                  title="Cancel"
+                  aria-label="Cancel"
+                  style={{ background: "none", border: "none", cursor: "pointer", color: "var(--n-text2)" }}
+                >
+                  <X size={16} />
+                </button>
+              </div>
+              {renameError && (
+                <p style={{ margin: "6px 0 0", fontSize: 12, color: "#ef4444" }}>{renameError}</p>
+              )}
+            </div>
+          ) : (
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "var(--text)" }}>
+                {active ? threadLabel(active) : "Mentorship"}
+              </p>
+              {active?.canRename && (
+                <button
+                  type="button"
+                  onClick={() => { setRenameValue(active.name ?? threadLabel(active)); setRenaming(true); setRenameError(null); }}
+                  title="Rename this chat"
+                  aria-label="Rename this chat"
+                  style={{ background: "none", border: "none", cursor: "pointer", color: "var(--n-text2)" }}
+                >
+                  <Pencil size={13} />
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+```
+
+Note this file already imports `Check` and `X` from `lucide-react` (used by the incoming-requests accept/decline buttons) — add `Pencil` to that same import line.
+
+- [ ] **Step 7: Type-check**
+
+Run: `cd "C:\Users\thoma\Goal-APP\.claude\worktrees\mentorship-page-search-rename" && npx tsc --noEmit`
+Expected: no new errors referencing `app/api/mentorship/my-threads/route.ts` or `app/(dashboard)/mentorship/MentorshipClient.tsx`. (This repo's pre-existing baseline error count has been observed to drift as concurrent sessions add files — confirm against a fresh baseline run if unsure, not a fixed number.)
+
+- [ ] **Step 8: Manual check**
+
+`npm run dev`. Log in as a mentor (alumni or staff) participant in an existing mentorship pairing. Go to `/mentorship` (the actual nav item, not `/messages`). Confirm:
+- The pencil icon appears next to the thread title in the header.
+- Renaming works, persists after reload, and the left-hand thread list picks up the custom name too (since `threadLabel` is shared between the list and the header).
+- A student in the same thread sees the custom name but no pencil.
+- A failed rename (e.g. simulate by testing after the school admin ends the pairing) shows the error message instead of failing silently.
+
+- [ ] **Step 9: Commit**
+
+```bash
+git add "app/api/mentorship/my-threads/route.ts" "app/(dashboard)/mentorship/MentorshipClient.tsx"
+git commit -m "feat(mentorship): move rename affordance to the surface mentors actually use"
+```
+
+---
+
 ## Plan Self-Review Notes
 
 - **Spec coverage:** Design doc section 1 (search+counts) → Task 1. Section 2 (missing students — enlarged list + counts, no backend fix) → covered by Task 1's `maxHeight: 260` change and count captions. Section 3 (rename ability) → Tasks 2–4.

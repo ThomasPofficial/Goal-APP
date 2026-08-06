@@ -372,6 +372,7 @@ export default function MentorshipClient({ pairings, students, mentors }: Props)
                 {studentFilter.trim()
                   ? `${filteredStudents.length} of ${students.length} students`
                   : `${students.length} student${students.length === 1 ? "" : "s"}`}
+                {selectedStudents.size > 0 && ` · ${selectedStudents.size} selected`}
               </span>
               <div style={{ border: "1px solid var(--border)", maxHeight: 260, overflowY: "auto" }}>
                 {filteredStudents.length === 0 && (
@@ -423,6 +424,7 @@ export default function MentorshipClient({ pairings, students, mentors }: Props)
                 {mentorFilter.trim()
                   ? `${filteredMentors.length} of ${mentors.length} mentors`
                   : `${mentors.length} mentor${mentors.length === 1 ? "" : "s"}`}
+                {selectedMentors.size > 0 && ` · ${selectedMentors.size} selected`}
               </span>
               <div style={{ border: "1px solid var(--border)", maxHeight: 260, overflowY: "auto" }}>
                 {filteredMentors.length === 0 && (

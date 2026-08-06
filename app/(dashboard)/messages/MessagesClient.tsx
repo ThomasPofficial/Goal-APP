@@ -205,6 +205,7 @@ export default function MessagesClient({ conversations: initialConvs, myUserId, 
   const [renaming, setRenaming] = useState(false);
   const [renameValue, setRenameValue] = useState("");
   const [savingRename, setSavingRename] = useState(false);
+  const [renameError, setRenameError] = useState<string | null>(null);
 
   const activeConv = conversations.find((c) => c.id === activeId) ?? null;
 
@@ -261,6 +262,7 @@ export default function MessagesClient({ conversations: initialConvs, myUserId, 
   const saveRename = async () => {
     if (!activeId || !renameValue.trim() || savingRename) return;
     setSavingRename(true);
+    setRenameError(null);
     try {
       const res = await fetch(`/api/conversations/${activeId}`, {
         method: "PATCH",
@@ -273,6 +275,9 @@ export default function MessagesClient({ conversations: initialConvs, myUserId, 
           c.id === activeId ? { ...c, name: data.name } : c
         ));
         setRenaming(false);
+      } else {
+        const err = await res.json().catch(() => null);
+        setRenameError(err?.error ?? "Couldn't rename this chat.");
       }
     } finally {
       setSavingRename(false);
@@ -397,22 +402,27 @@ export default function MessagesClient({ conversations: initialConvs, myUserId, 
               {(() => { const av = convAvatar(activeConv, myUserId); return <Avatar src={av.src} displayName={av.displayName} geniusType={av.geniusType} size={30} />; })()}
               <div className="flex-1 min-w-0">
                 {renaming ? (
-                  <div className="flex items-center gap-2">
-                    <input
-                      autoFocus
-                      value={renameValue}
-                      onChange={(e) => setRenameValue(e.target.value)}
-                      onKeyDown={(e) => { if (e.key === "Enter") saveRename(); if (e.key === "Escape") setRenaming(false); }}
-                      maxLength={80}
-                      className="text-lg"
-                      style={{ fontFamily: "var(--font-serif)", fontWeight: 500, color: "var(--text)", background: "var(--bg)", border: "1px solid var(--border)", padding: "2px 8px", minWidth: 180 }}
-                    />
-                    <button onClick={saveRename} disabled={savingRename || !renameValue.trim()} title="Save">
-                      <Check className="w-4 h-4" style={{ color: "var(--gold)" }} />
-                    </button>
-                    <button onClick={() => setRenaming(false)} title="Cancel">
-                      <X className="w-4 h-4" style={{ color: "var(--text2)" }} />
-                    </button>
+                  <div className="flex flex-col gap-1">
+                    <div className="flex items-center gap-2">
+                      <input
+                        autoFocus
+                        value={renameValue}
+                        onChange={(e) => setRenameValue(e.target.value)}
+                        onKeyDown={(e) => { if (e.key === "Enter") saveRename(); if (e.key === "Escape") { setRenaming(false); setRenameError(null); } }}
+                        maxLength={80}
+                        className="text-lg"
+                        style={{ fontFamily: "var(--font-serif)", fontWeight: 500, color: "var(--text)", background: "var(--bg)", border: "1px solid var(--border)", padding: "2px 8px", minWidth: 180 }}
+                      />
+                      <button type="button" onClick={saveRename} disabled={savingRename || !renameValue.trim()} title="Save" aria-label="Save">
+                        <Check className="w-4 h-4" style={{ color: "var(--gold)" }} />
+                      </button>
+                      <button type="button" onClick={() => { setRenaming(false); setRenameError(null); }} title="Cancel" aria-label="Cancel">
+                        <X className="w-4 h-4" style={{ color: "var(--text2)" }} />
+                      </button>
+                    </div>
+                    {renameError && (
+                      <p style={{ color: "#ef4444", fontSize: 11 }}>{renameError}</p>
+                    )}
                   </div>
                 ) : (
                   <div className="flex items-center gap-2">
@@ -421,8 +431,10 @@ export default function MessagesClient({ conversations: initialConvs, myUserId, 
                     </p>
                     {activeConv.canRename && (
                       <button
-                        onClick={() => { setRenameValue(activeConv.name ?? convDisplayName(activeConv, myUserId)); setRenaming(true); }}
+                        type="button"
+                        onClick={() => { setRenameValue(activeConv.name ?? convDisplayName(activeConv, myUserId)); setRenameError(null); setRenaming(true); }}
                         title="Rename this chat"
+                        aria-label="Rename this chat"
                       >
                         <Pencil className="w-3.5 h-3.5" style={{ color: "var(--text2)" }} />
                       </button>

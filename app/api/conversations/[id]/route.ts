@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { isMentorUser } from "@/lib/mentorship";
 
 const renameSchema = z.object({ name: z.string().trim().min(1).max(80) });
 
@@ -37,11 +38,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const [profile, user] = await Promise.all([
-    prisma.profile.findUnique({ where: { userId: session.user.id }, select: { staffTitle: true } }),
-    prisma.user.findUnique({ where: { id: session.user.id }, select: { isAlumni: true } }),
-  ]);
-  const isMentor = Boolean(profile?.staffTitle) || Boolean(user?.isAlumni);
+  const isMentor = await isMentorUser(session.user.id);
   if (!isMentor) {
     return NextResponse.json({ error: "Only mentors can rename this chat" }, { status: 403 });
   }

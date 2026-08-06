@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { HeartHandshake, Send, Check, X } from "lucide-react";
+import { HeartHandshake, Send, Check, X, Pencil } from "lucide-react";
 
 interface Person {
   id: string;
@@ -20,6 +20,8 @@ interface IncomingRequest {
 
 interface Thread {
   id: string;
+  name: string | null;
+  canRename: boolean;
   otherParticipants: Person[];
   lastMessage: { body: string; createdAt: string } | null;
   updatedAt: string;
@@ -33,6 +35,7 @@ interface Message {
 }
 
 function threadLabel(thread: Thread): string {
+  if (thread.name) return thread.name;
   if (thread.otherParticipants.length === 0) return "Mentorship";
   return thread.otherParticipants.map((p) => p.displayName).join(", ");
 }
@@ -47,6 +50,10 @@ export default function MentorshipClient({ myUserId, incomingRequests = [] }: { 
   const [loading, setLoading] = useState(true);
   const [requests, setRequests] = useState<IncomingRequest[]>(incomingRequests);
   const [respondingId, setRespondingId] = useState<string | null>(null);
+  const [renaming, setRenaming] = useState(false);
+  const [renameValue, setRenameValue] = useState("");
+  const [savingRename, setSavingRename] = useState(false);
+  const [renameError, setRenameError] = useState<string | null>(null);
 
   async function respond(id: string, action: "accept" | "decline") {
     setRespondingId(id);
@@ -80,6 +87,7 @@ export default function MentorshipClient({ myUserId, incomingRequests = [] }: { 
     fetch(`/api/conversations/${activeId}/messages`)
       .then((r) => r.json())
       .then((data) => setMessages(data.messages ?? []));
+    setRenaming(false);
   }, [activeId]);
 
   async function send() {
@@ -93,6 +101,29 @@ export default function MentorshipClient({ myUserId, incomingRequests = [] }: { 
     });
     const data = await res.json();
     if (res.ok) setMessages((prev) => [...prev, data.message]);
+  }
+
+  async function saveRename() {
+    if (!activeId || !renameValue.trim() || savingRename) return;
+    setSavingRename(true);
+    setRenameError(null);
+    try {
+      const res = await fetch(`/api/conversations/${activeId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: renameValue.trim() }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setThreads((prev) => prev.map((t) => (t.id === activeId ? { ...t, name: data.name } : t)));
+        setRenaming(false);
+      } else {
+        const err = await res.json().catch(() => null);
+        setRenameError(err?.error ?? "Couldn't rename this chat.");
+      }
+    } finally {
+      setSavingRename(false);
+    }
   }
 
   const requestsPanel = requests.length > 0 && (
@@ -182,8 +213,63 @@ export default function MentorshipClient({ myUserId, incomingRequests = [] }: { 
         ))}
       </div>
       <div style={{ flex: 1, display: "flex", flexDirection: "column", border: "1px solid var(--border)", background: "var(--surface)" }}>
-        <div style={{ padding: "12px 16px", borderBottom: "1px solid var(--border)", fontSize: 14, fontWeight: 700, color: "var(--text)" }}>
-          {active ? threadLabel(active) : "Mentorship"}
+        <div style={{ padding: "12px 16px", borderBottom: "1px solid var(--border)" }}>
+          {renaming && active ? (
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <input
+                  autoFocus
+                  value={renameValue}
+                  onChange={(e) => setRenameValue(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") saveRename();
+                    if (e.key === "Escape") { setRenaming(false); setRenameError(null); }
+                  }}
+                  maxLength={80}
+                  style={{ flex: 1, fontSize: 14, fontWeight: 700, color: "var(--text)", background: "var(--bg)", border: "1px solid var(--border)", padding: "4px 8px" }}
+                />
+                <button
+                  type="button"
+                  onClick={saveRename}
+                  disabled={savingRename || !renameValue.trim()}
+                  title="Save"
+                  aria-label="Save"
+                  style={{ background: "none", border: "none", cursor: savingRename ? "not-allowed" : "pointer", color: "var(--amber)" }}
+                >
+                  <Check size={16} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setRenaming(false); setRenameError(null); }}
+                  title="Cancel"
+                  aria-label="Cancel"
+                  style={{ background: "none", border: "none", cursor: "pointer", color: "var(--n-text2)" }}
+                >
+                  <X size={16} />
+                </button>
+              </div>
+              {renameError && (
+                <p style={{ margin: "6px 0 0", fontSize: 12, color: "#ef4444" }}>{renameError}</p>
+              )}
+            </div>
+          ) : (
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "var(--text)" }}>
+                {active ? threadLabel(active) : "Mentorship"}
+              </p>
+              {active?.canRename && (
+                <button
+                  type="button"
+                  onClick={() => { setRenameValue(active.name ?? threadLabel(active)); setRenaming(true); setRenameError(null); }}
+                  title="Rename this chat"
+                  aria-label="Rename this chat"
+                  style={{ background: "none", border: "none", cursor: "pointer", color: "var(--n-text2)" }}
+                >
+                  <Pencil size={13} />
+                </button>
+              )}
+            </div>
+          )}
         </div>
         <div style={{ flex: 1, overflowY: "auto", padding: 16, display: "flex", flexDirection: "column", gap: 8 }}>
           {messages.map((m) => (
