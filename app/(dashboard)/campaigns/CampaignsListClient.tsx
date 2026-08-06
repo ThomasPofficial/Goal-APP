@@ -88,28 +88,6 @@ export default function CampaignsListClient({ campaigns: initial }: { campaigns:
         </Link>
       </div>
 
-      <div style={{ display: "flex", gap: 12, marginBottom: 24, flexWrap: "wrap" }}>
-        {[
-          { label: "Total Raised", value: `$${stats.totalRaised.toLocaleString()}` },
-          { label: "Active Campaigns", value: stats.activeCount },
-          { label: "Total Pledges", value: stats.totalPledges },
-        ].map(({ label, value }) => (
-          <div
-            key={label}
-            style={{
-              flex: "1 1 120px",
-              background: "var(--surface)",
-              border: "1px solid var(--border)",
-              borderRadius: 0,
-              padding: "14px 18px",
-            }}
-          >
-            <p style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: 32, color: "var(--amber)", letterSpacing: "-0.04em", lineHeight: 1 }}>{value}</p>
-            <p style={{ margin: "4px 0 0", fontFamily: "var(--font-mono)", fontSize: 10, letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--n-muted)" }}>{label}</p>
-          </div>
-        ))}
-      </div>
-
       {campaigns.length === 0 ? (
         <div style={{ padding: "64px 0", textAlign: "center", border: "1px solid var(--border)", background: "var(--surface)" }}>
           <p style={{ color: "var(--n-text2)", fontSize: 15, margin: "0 0 20px" }}>No campaigns yet.</p>
@@ -119,12 +97,35 @@ export default function CampaignsListClient({ campaigns: initial }: { campaigns:
         </div>
       ) : (
         <>
+          <div style={{ display: "flex", gap: 12, marginBottom: 24, flexWrap: "wrap" }}>
+            {[
+              { label: "Total Raised", value: `$${Math.round(stats.totalRaised).toLocaleString()}` },
+              { label: "Active Campaigns", value: stats.activeCount },
+              { label: "Total Pledges", value: stats.totalPledges },
+            ].map(({ label, value }) => (
+              <div
+                key={label}
+                style={{
+                  flex: "1 1 120px",
+                  background: "var(--surface)",
+                  border: "1px solid var(--border)",
+                  borderRadius: 0,
+                  padding: "14px 18px",
+                }}
+              >
+                <p style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: 32, color: "var(--amber)", letterSpacing: "-0.04em", lineHeight: 1 }}>{value}</p>
+                <p style={{ margin: "4px 0 0", fontFamily: "var(--font-mono)", fontSize: 10, letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--n-muted)" }}>{label}</p>
+              </div>
+            ))}
+          </div>
+
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, gap: 12, flexWrap: "wrap" }}>
             <div style={{ display: "flex", gap: 6 }}>
               {FILTERS.map(({ key, label }) => (
                 <button
                   key={key}
                   onClick={() => setFilter(key)}
+                  aria-pressed={filter === key}
                   style={{
                     padding: "6px 14px",
                     border: "1px solid var(--border)",
@@ -145,6 +146,7 @@ export default function CampaignsListClient({ campaigns: initial }: { campaigns:
             <select
               value={sort}
               onChange={(e) => setSort(e.target.value as SortKey)}
+              aria-label="Sort campaigns"
               style={{
                 padding: "7px 10px",
                 border: "1px solid var(--border)",

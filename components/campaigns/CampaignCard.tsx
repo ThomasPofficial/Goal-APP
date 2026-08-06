@@ -64,10 +64,10 @@ export default function CampaignCard({ campaign, onToggleActive, onDelete }: Pro
           <div style={{ marginBottom: 12 }}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
               <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--text)", fontWeight: 700 }}>
-                ${campaign.raised.toLocaleString()} raised
+                ${Math.round(campaign.raised).toLocaleString()} raised
               </span>
               <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--n-text2)" }}>
-                of ${campaign.goalAmount.toLocaleString()}
+                of ${Math.round(campaign.goalAmount).toLocaleString()}
               </span>
             </div>
             <div style={{ height: 6, background: "var(--n-bg3)" }}>
@@ -82,7 +82,7 @@ export default function CampaignCard({ campaign, onToggleActive, onDelete }: Pro
           </div>
         ) : (
           <p style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--text)", fontWeight: 700, margin: "0 0 12px" }}>
-            ${campaign.raised.toLocaleString()} raised
+            ${Math.round(campaign.raised).toLocaleString()} raised
           </p>
         )}
         <div style={{ display: "flex", gap: 8 }}>

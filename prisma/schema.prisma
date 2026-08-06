@@ -701,7 +701,6 @@ model StudentBrochureData {
   profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
 }
 
-
 // ─────────────────────────────────────────────
 // WORKFLOW SESSION (one active workflow per scholar)
 // ─────────────────────────────────────────────

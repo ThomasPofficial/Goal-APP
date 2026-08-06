@@ -86,7 +86,7 @@ export default function SidebarShell({ userName, userEmail, geniusType, myOrgId,
           borderBottom: "1px solid var(--border)",
         }}
       >
-        <Link href={isOrg ? orgHomeHref : "/dashboard"} style={{ textDecoration: "none" }}>
+        <Link href={isOrg ? orgHomeHref : isSchool ? "/campaigns" : "/dashboard"} style={{ textDecoration: "none" }}>
           <span
             style={{
               fontFamily: "var(--font-body)",
