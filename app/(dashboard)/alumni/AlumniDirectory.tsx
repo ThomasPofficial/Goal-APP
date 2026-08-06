@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { GraduationCap, MapPin, Users, ToggleLeft, ToggleRight, Loader2 } from "lucide-react";
+import RequestMentorshipModal from "@/components/mentorship/RequestMentorshipModal";
 
 type AlumnusData = {
   id: string;
@@ -44,6 +45,7 @@ export default function AlumniDirectory({ alumni, currentUserId, currentUserIsMe
   const [isMentor, setIsMentor] = useState(currentUserIsMentor);
   const [toggling, setToggling] = useState(false);
   const [requestedIds, setRequestedIds] = useState<Set<string>>(new Set());
+  const [modalTarget, setModalTarget] = useState<{ id: string; name: string } | null>(null);
 
   // Derive unique filter options from data
   const industries = useMemo(() => {
@@ -79,8 +81,16 @@ export default function AlumniDirectory({ alumni, currentUserId, currentUserIsMe
     setToggling(false);
   }
 
-  function requestMentorship(id: string) {
-    setRequestedIds((prev) => new Set([...prev, id]));
+  async function sendMentorshipRequest(toUserId: string, message: string) {
+    const res = await fetch("/api/connections/request", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ toUserId, message: message || undefined }),
+    });
+    if (res.ok || res.status === 409) {
+      setRequestedIds((prev) => new Set([...prev, toUserId]));
+    }
+    setModalTarget(null);
   }
 
   const selectStyle = {
@@ -244,7 +254,7 @@ export default function AlumniDirectory({ alumni, currentUserId, currentUserIsMe
                 {/* Request mentorship */}
                 {!isMe && canMentor && (
                   <button
-                    onClick={() => requestMentorship(alum.id)}
+                    onClick={() => setModalTarget({ id: alum.id, name: displayName })}
                     disabled={requested}
                     style={{
                       marginTop: "auto", padding: "8px 12px", border: `1px solid ${requested ? "var(--border)" : "var(--amber)"}`,
@@ -261,6 +271,14 @@ export default function AlumniDirectory({ alumni, currentUserId, currentUserIsMe
             );
           })}
         </div>
+      )}
+
+      {modalTarget && (
+        <RequestMentorshipModal
+          targetName={modalTarget.name}
+          onClose={() => setModalTarget(null)}
+          onSend={(message) => sendMentorshipRequest(modalTarget.id, message)}
+        />
       )}
     </div>
   );

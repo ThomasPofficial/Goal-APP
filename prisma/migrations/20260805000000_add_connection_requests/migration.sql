@@ -1,6 +1,10 @@
 -- School Connections: student/alumni -> alumni/teacher 1:1 request, teacher-approved private room
 
-CREATE TYPE "ConnectionRequestStatus" AS ENUM ('PENDING', 'ACCEPTED', 'DECLINED');
+DO $$ BEGIN
+  CREATE TYPE "ConnectionRequestStatus" AS ENUM ('PENDING', 'ACCEPTED', 'DECLINED');
+EXCEPTION
+  WHEN duplicate_object THEN null;
+END $$;
 
 CREATE TABLE IF NOT EXISTS "ConnectionRequest" (
   "id"          TEXT NOT NULL,

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { GraduationCap, Briefcase, BookOpen, MessageCircle, CheckCircle } from "lucide-react";
 import Link from "next/link";
+import RequestMentorshipModal from "@/components/mentorship/RequestMentorshipModal";
 
 interface Alumnus {
   id: string;
@@ -26,6 +27,7 @@ export default function AlumniClient({ alumni }: Props) {
   const [filter, setFilter] = useState<"all" | "mentors">("all");
   const [industryFilter, setIndustryFilter] = useState<string>("all");
   const [requestedIds, setRequestedIds] = useState<Set<string>>(new Set());
+  const [modalTarget, setModalTarget] = useState<{ id: string; name: string } | null>(null);
 
   const industries = [...new Set(alumni.map((a) => a.industry).filter(Boolean))] as string[];
 
@@ -35,8 +37,16 @@ export default function AlumniClient({ alumni }: Props) {
     return true;
   });
 
-  const handleMentorRequest = async (alumniId: string) => {
-    setRequestedIds((prev) => new Set(prev).add(alumniId));
+  const handleMentorRequest = async (alumniId: string, message: string) => {
+    const res = await fetch("/api/connections/request", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ toUserId: alumniId, message: message || undefined }),
+    });
+    if (res.ok || res.status === 409) {
+      setRequestedIds((prev) => new Set(prev).add(alumniId));
+    }
+    setModalTarget(null);
   };
 
   return (
@@ -189,7 +199,7 @@ export default function AlumniClient({ alumni }: Props) {
             {/* Actions */}
             {a.isAvailableToMentor && (
               <button
-                onClick={() => handleMentorRequest(a.id)}
+                onClick={() => setModalTarget({ id: a.id, name: a.displayName })}
                 disabled={requestedIds.has(a.id)}
                 style={{
                   marginTop: "auto",
@@ -221,6 +231,14 @@ export default function AlumniClient({ alumni }: Props) {
           </div>
         ))}
       </div>
+
+      {modalTarget && (
+        <RequestMentorshipModal
+          targetName={modalTarget.name}
+          onClose={() => setModalTarget(null)}
+          onSend={(message) => handleMentorRequest(modalTarget.id, message)}
+        />
+      )}
     </div>
   );
 }

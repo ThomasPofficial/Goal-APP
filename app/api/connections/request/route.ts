@@ -4,7 +4,10 @@ import { prisma } from "@/lib/prisma";
 import { getSchoolId } from "@/lib/communities";
 import { z } from "zod";
 
-const requestSchema = z.object({ toUserId: z.string().min(1) });
+const requestSchema = z.object({
+  toUserId: z.string().min(1),
+  message: z.string().trim().max(500).optional(),
+});
 
 // POST — student/alumni requests a private connection with a teacher or alumnus
 export async function POST(req: Request) {
@@ -20,7 +23,7 @@ export async function POST(req: Request) {
   if (!parsed.success) {
     return NextResponse.json({ error: "Invalid input" }, { status: 400 });
   }
-  const { toUserId } = parsed.data;
+  const { toUserId, message } = parsed.data;
 
   if (toUserId === fromUserId) {
     return NextResponse.json({ error: "Cannot connect with yourself" }, { status: 400 });
@@ -79,7 +82,7 @@ export async function POST(req: Request) {
   }
 
   const request = await prisma.connectionRequest.create({
-    data: { schoolId: fromSchoolId, fromUserId, toUserId, status: "PENDING" },
+    data: { schoolId: fromSchoolId, fromUserId, toUserId, status: "PENDING", message: message || null },
   });
 
   return NextResponse.json({ request });

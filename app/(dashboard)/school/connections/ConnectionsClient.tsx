@@ -15,6 +15,7 @@ interface Row {
   createdAt: string;
   respondedAt: string | null;
   roomId: string | null;
+  message: string | null;
   fromUser: UserSummary;
   toUser: UserSummary;
 }
@@ -107,10 +108,17 @@ export default function ConnectionsClient({ queue, history }: Props) {
                 flexWrap: "wrap",
               }}
             >
-              <p style={{ margin: 0, fontSize: 14, color: "var(--text)" }}>
-                <strong>{r.fromUser.displayName}</strong> wants to connect with{" "}
-                <strong>{r.toUser.displayName}</strong>
-              </p>
+              <div style={{ flex: 1, minWidth: 200 }}>
+                <p style={{ margin: 0, fontSize: 14, color: "var(--text)" }}>
+                  <strong>{r.fromUser.displayName}</strong> wants to connect with{" "}
+                  <strong>{r.toUser.displayName}</strong>
+                </p>
+                {r.message && (
+                  <p style={{ margin: "6px 0 0", fontSize: 13, color: "var(--muted)", fontStyle: "italic" }}>
+                    &ldquo;{r.message}&rdquo;
+                  </p>
+                )}
+              </div>
               <button
                 onClick={() => handleApprove(r.id)}
                 disabled={approvingId === r.id}

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { GraduationCap, Briefcase, BookOpen, MessageCircle, CheckCircle, User } from "lucide-react";
 import Link from "next/link";
+import RequestMentorshipModal from "@/components/mentorship/RequestMentorshipModal";
 
 interface StaffMember {
   userId: string;
@@ -56,10 +57,11 @@ export default function SchoolHubClient({ schoolName, schoolTagline, staff, alum
   const [alumniFilter, setAlumniFilter] = useState<"all" | "mentors">("all");
   const [requestedIds, setRequestedIds] = useState<Set<string>>(new Set(initialRequestedIds));
   const [errorIds, setErrorIds] = useState<Set<string>>(new Set());
+  const [modalTarget, setModalTarget] = useState<{ id: string; name: string } | null>(null);
 
   const visibleAlumni = alumniFilter === "mentors" ? alumni.filter((a) => a.isAvailableToMentor) : alumni;
 
-  async function requestConnection(toUserId: string) {
+  async function requestConnection(toUserId: string, message: string) {
     setErrorIds((prev) => {
       const next = new Set(prev);
       next.delete(toUserId);
@@ -68,13 +70,15 @@ export default function SchoolHubClient({ schoolName, schoolTagline, staff, alum
     const res = await fetch("/api/connections/request", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ toUserId }),
+      body: JSON.stringify({ toUserId, message: message || undefined }),
     });
     if (res.ok || res.status === 409) {
       // 409 = a request already exists between this pair — treat as sent.
       setRequestedIds((prev) => new Set(prev).add(toUserId));
+      setModalTarget(null);
     } else {
       setErrorIds((prev) => new Set(prev).add(toUserId));
+      setModalTarget(null);
     }
   }
 
@@ -134,7 +138,7 @@ export default function SchoolHubClient({ schoolName, schoolTagline, staff, alum
                   )}
                 </div>
                 <button
-                  onClick={() => requestConnection(s.userId)}
+                  onClick={() => setModalTarget({ id: s.userId, name: s.displayName })}
                   disabled={requestedIds.has(s.userId)}
                   title={requestedIds.has(s.userId) ? "Request sent" : "Message privately"}
                   style={{
@@ -162,7 +166,7 @@ export default function SchoolHubClient({ schoolName, schoolTagline, staff, alum
           </p>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 10 }}>
             {mentors.map((m) => (
-              <MentorCard key={m.id} alumnus={m} requestedIds={requestedIds} errorIds={errorIds} onRequest={requestConnection} />
+              <MentorCard key={m.id} alumnus={m} requestedIds={requestedIds} errorIds={errorIds} onRequest={(id, name) => setModalTarget({ id, name })} />
             ))}
           </div>
         </section>
@@ -209,16 +213,24 @@ export default function SchoolHubClient({ schoolName, schoolTagline, staff, alum
         ) : (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 10 }}>
             {visibleAlumni.map((a) => (
-              <AlumnusCard key={a.id} alumnus={a} requestedIds={requestedIds} onRequest={requestConnection} />
+              <AlumnusCard key={a.id} alumnus={a} requestedIds={requestedIds} onRequest={(id, name) => setModalTarget({ id, name })} />
             ))}
           </div>
         )}
       </section>
+
+      {modalTarget && (
+        <RequestMentorshipModal
+          targetName={modalTarget.name}
+          onClose={() => setModalTarget(null)}
+          onSend={(message) => requestConnection(modalTarget.id, message)}
+        />
+      )}
     </div>
   );
 }
 
-function MentorCard({ alumnus: a, requestedIds, errorIds, onRequest }: { alumnus: Alumnus; requestedIds: Set<string>; errorIds: Set<string>; onRequest: (id: string) => void }) {
+function MentorCard({ alumnus: a, requestedIds, errorIds, onRequest }: { alumnus: Alumnus; requestedIds: Set<string>; errorIds: Set<string>; onRequest: (id: string, name: string) => void }) {
   return (
     <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 0, padding: "18px 20px", display: "flex", flexDirection: "column", gap: 11 }}>
       <div style={{ display: "flex", gap: 11, alignItems: "flex-start" }}>
@@ -250,7 +262,7 @@ function MentorCard({ alumnus: a, requestedIds, errorIds, onRequest }: { alumnus
         </p>
       )}
       <button
-        onClick={() => onRequest(a.id)}
+        onClick={() => onRequest(a.id, a.displayName)}
         disabled={requestedIds.has(a.id)}
         style={{
           padding: "8px 0",
@@ -281,7 +293,7 @@ function MentorCard({ alumnus: a, requestedIds, errorIds, onRequest }: { alumnus
   );
 }
 
-function AlumnusCard({ alumnus: a, requestedIds, onRequest }: { alumnus: Alumnus; requestedIds: Set<string>; onRequest: (id: string) => void }) {
+function AlumnusCard({ alumnus: a, requestedIds, onRequest }: { alumnus: Alumnus; requestedIds: Set<string>; onRequest: (id: string, name: string) => void }) {
   return (
     <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 0, padding: "15px 17px", display: "flex", gap: 11, alignItems: "flex-start" }}>
       <Avatar name={a.displayName} avatarUrl={a.avatarUrl} handle={a.handle} size={40} />
@@ -312,7 +324,7 @@ function AlumnusCard({ alumnus: a, requestedIds, onRequest }: { alumnus: Alumnus
       </div>
       {a.isAvailableToMentor && (
         <button
-          onClick={() => onRequest(a.id)}
+          onClick={() => onRequest(a.id, a.displayName)}
           disabled={requestedIds.has(a.id)}
           title={requestedIds.has(a.id) ? "Request sent" : "Message privately"}
           style={{

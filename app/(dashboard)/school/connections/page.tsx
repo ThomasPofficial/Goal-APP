@@ -44,6 +44,7 @@ export default async function SchoolConnectionsPage() {
     createdAt: r.createdAt.toISOString(),
     respondedAt: r.respondedAt?.toISOString() ?? null,
     roomId: r.roomId,
+    message: r.message,
     fromUser: await userSummary(r.fromUserId),
     toUser: await userSummary(r.toUserId),
   });

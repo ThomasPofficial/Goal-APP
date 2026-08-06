@@ -342,6 +342,7 @@ model ConnectionRequest {
   toUserId    String
   status      ConnectionRequestStatus @default(PENDING)
   roomId      String?
+  message     String?
   createdAt   DateTime                @default(now())
   respondedAt DateTime?
 

@@ -51,6 +51,16 @@ export async function POST(_req: Request, { params }: { params: Params }) {
     `${fromName} & ${toName}`
   );
 
+  if (connectionRequest.message) {
+    await prisma.message.create({
+      data: {
+        conversationId: room.id,
+        senderId: connectionRequest.fromUserId,
+        content: connectionRequest.message,
+      },
+    });
+  }
+
   const updated = await prisma.connectionRequest.update({
     where: { id },
     data: { roomId: room.id },
