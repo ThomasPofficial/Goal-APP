@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Menu, LayoutDashboard, Users, Building2, UsersRound, MessageSquare, Briefcase, Bell, HeartHandshake, Globe } from "lucide-react";
+import { Menu, LayoutDashboard, Users, Building2, UsersRound, MessageSquare, Briefcase, Bell, HeartHandshake, Globe, MapPin, GraduationCap } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Sidebar from "./Sidebar";
@@ -35,6 +35,14 @@ const WALLED_BOTTOM_TABS = [
   { href: "/notifications", label: "Alerts", Icon: Bell },
 ];
 
+const SCHOOL_BOTTOM_TABS = [
+  { href: "/school/destinations", label: "Destinations", Icon: MapPin },
+  { href: "/school/alumni",       label: "Alumni",       Icon: GraduationCap },
+  { href: "/communities",         label: "Community",    Icon: Globe },
+  { href: "/school/mentorship",   label: "Mentor",       Icon: HeartHandshake },
+  { href: "/school/roster",       label: "Roster",       Icon: Users },
+];
+
 export default function SidebarShell({ userName, userEmail, geniusType, myOrgId, myOrgName, isOrg, isNivarroAdmin, isSchool, isWalledStudent, isAlumni }: Props) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
@@ -65,7 +73,7 @@ export default function SidebarShell({ userName, userEmail, geniusType, myOrgId,
     { href: "/messages", label: "Messages",  Icon: MessageSquare },
   ];
 
-  const bottomTabs = isOrg ? ORG_BOTTOM_TABS : isWalledStudent ? WALLED_BOTTOM_TABS : STUDENT_BOTTOM_TABS;
+  const bottomTabs = isOrg ? ORG_BOTTOM_TABS : isSchool ? SCHOOL_BOTTOM_TABS : isWalledStudent ? WALLED_BOTTOM_TABS : STUDENT_BOTTOM_TABS;
 
   return (
     <>
