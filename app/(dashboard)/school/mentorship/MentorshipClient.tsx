@@ -47,6 +47,26 @@ const labelStyle: React.CSSProperties = {
   textTransform: "uppercase",
 };
 
+const filterInputStyle: React.CSSProperties = {
+  width: "100%",
+  padding: "7px 10px",
+  marginBottom: 8,
+  background: "var(--bg)",
+  border: "1px solid var(--border)",
+  borderRadius: 0,
+  color: "var(--text)",
+  fontSize: 13,
+  fontFamily: "inherit",
+};
+
+const countCaptionStyle: React.CSSProperties = {
+  fontSize: 11,
+  color: "var(--muted)",
+  fontFamily: "var(--font-mono)",
+  marginBottom: 6,
+  display: "block",
+};
+
 export default function MentorshipClient({ pairings, students, mentors }: Props) {
   const router = useRouter();
   const [showNewModal, setShowNewModal] = useState(false);
@@ -55,13 +75,24 @@ export default function MentorshipClient({ pairings, students, mentors }: Props)
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
   const [endingId, setEndingId] = useState<string | null>(null);
+  const [studentFilter, setStudentFilter] = useState("");
+  const [mentorFilter, setMentorFilter] = useState("");
 
   const resetModal = () => {
     setSelectedStudents(new Set());
     setSelectedMentors(new Set());
+    setStudentFilter("");
+    setMentorFilter("");
     setCreateError(null);
     setCreating(false);
   };
+
+  const filteredStudents = students.filter((s) =>
+    s.displayName.toLowerCase().includes(studentFilter.trim().toLowerCase())
+  );
+  const filteredMentors = mentors.filter((m) =>
+    m.displayName.toLowerCase().includes(mentorFilter.trim().toLowerCase())
+  );
 
   const toggle = (set: Set<string>, setter: (s: Set<string>) => void, id: string) => {
     const next = new Set(set);
@@ -328,8 +359,25 @@ export default function MentorshipClient({ pairings, students, mentors }: Props)
 
             <div style={{ marginBottom: 18 }}>
               <label style={labelStyle}>Students</label>
-              <div style={{ border: "1px solid var(--border)", maxHeight: 160, overflowY: "auto" }}>
-                {students.map((s) => (
+              <input
+                type="text"
+                placeholder="Filter students…"
+                value={studentFilter}
+                onChange={(e) => setStudentFilter(e.target.value)}
+                style={filterInputStyle}
+              />
+              <span style={countCaptionStyle}>
+                {studentFilter.trim()
+                  ? `${filteredStudents.length} of ${students.length} students`
+                  : `${students.length} student${students.length === 1 ? "" : "s"}`}
+              </span>
+              <div style={{ border: "1px solid var(--border)", maxHeight: 260, overflowY: "auto" }}>
+                {filteredStudents.length === 0 && (
+                  <p style={{ margin: 0, padding: "10px 12px", fontSize: 12, color: "var(--muted)", fontStyle: "italic" }}>
+                    No students match &quot;{studentFilter}&quot;.
+                  </p>
+                )}
+                {filteredStudents.map((s) => (
                   <label
                     key={s.userId}
                     style={{
@@ -362,8 +410,25 @@ export default function MentorshipClient({ pairings, students, mentors }: Props)
 
             <div style={{ marginBottom: 20 }}>
               <label style={labelStyle}>Mentors</label>
-              <div style={{ border: "1px solid var(--border)", maxHeight: 160, overflowY: "auto" }}>
-                {mentors.map((m) => (
+              <input
+                type="text"
+                placeholder="Filter mentors…"
+                value={mentorFilter}
+                onChange={(e) => setMentorFilter(e.target.value)}
+                style={filterInputStyle}
+              />
+              <span style={countCaptionStyle}>
+                {mentorFilter.trim()
+                  ? `${filteredMentors.length} of ${mentors.length} mentors`
+                  : `${mentors.length} mentor${mentors.length === 1 ? "" : "s"}`}
+              </span>
+              <div style={{ border: "1px solid var(--border)", maxHeight: 260, overflowY: "auto" }}>
+                {filteredMentors.length === 0 && (
+                  <p style={{ margin: 0, padding: "10px 12px", fontSize: 12, color: "var(--muted)", fontStyle: "italic" }}>
+                    No mentors match &quot;{mentorFilter}&quot;.
+                  </p>
+                )}
+                {filteredMentors.map((m) => (
                   <label
                     key={m.userId}
                     style={{
