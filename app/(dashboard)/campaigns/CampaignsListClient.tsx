@@ -147,7 +147,7 @@ export default function CampaignsListClient({ campaigns: initial }: { campaigns:
             </div>
           ) : (
             <>
-              <div style={{ display: "flex", gap: 12, marginBottom: 24, flexWrap: "wrap" }}>
+              <div style={{ display: "flex", gap: 12, marginBottom: 8, flexWrap: "wrap" }}>
                 {[
                   { label: "Total Raised", value: `$${Math.round(stats.totalRaised).toLocaleString()}` },
                   { label: "Active Campaigns", value: stats.activeCount },
@@ -168,6 +168,9 @@ export default function CampaignsListClient({ campaigns: initial }: { campaigns:
                   </div>
                 ))}
               </div>
+              <p style={{ margin: "0 0 24px", fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--n-muted)" }}>
+                Total Raised reflects donations net of processing fees — donors can opt to cover the fee so a campaign gets 100%.
+              </p>
 
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, gap: 12, flexWrap: "wrap" }}>
                 <div style={{ display: "flex", gap: 6 }}>

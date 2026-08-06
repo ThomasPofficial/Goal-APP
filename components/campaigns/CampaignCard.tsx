@@ -87,11 +87,19 @@ export default function CampaignCard({ campaign, onToggleActive, onDelete }: Pro
                 }}
               />
             </div>
+            <p style={{ fontFamily: "var(--font-mono)", fontSize: 9, color: "var(--n-muted)", margin: "4px 0 0" }}>
+              Net of processing fees — donors can opt to cover them
+            </p>
           </div>
         ) : (
-          <p style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--text)", fontWeight: 700, margin: "0 0 12px" }}>
-            ${Math.round(campaign.raised).toLocaleString()} raised
-          </p>
+          <div style={{ marginBottom: 12 }}>
+            <p style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--text)", fontWeight: 700, margin: 0 }}>
+              ${Math.round(campaign.raised).toLocaleString()} raised
+            </p>
+            <p style={{ fontFamily: "var(--font-mono)", fontSize: 9, color: "var(--n-muted)", margin: "4px 0 0" }}>
+              Net of processing fees — donors can opt to cover them
+            </p>
+          </div>
         )}
         <div style={{ display: "flex", gap: 8 }}>
           <Link href={`/campaigns/${campaign.id}/edit`} style={{ flex: 1, padding: "6px 0", border: "1px solid var(--border)", color: "var(--text)", fontFamily: "var(--font-mono)", fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "center", gap: 4 }}>
