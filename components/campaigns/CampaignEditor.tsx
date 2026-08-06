@@ -163,6 +163,13 @@ export default function CampaignEditor({ campaign: initial, versions: initialVer
     }
   };
 
+  const handlePublish = async () => {
+    if (dirty) {
+      await saveChanges();
+    }
+    await onPublish?.();
+  };
+
   const embed = current.videoUrl ? extractVideoId(current.videoUrl) : null;
   const busy = regenerating || tweaking || saving;
 
@@ -178,7 +185,7 @@ export default function CampaignEditor({ campaign: initial, versions: initialVer
           <History size={13} /> History ({versions.length})
         </button>
         {onPublish && (
-          <button onClick={onPublish} disabled={publishing} style={{ marginLeft: "auto", padding: "8px 20px", border: "none", background: "var(--amber)", color: "#000", fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", cursor: publishing ? "not-allowed" : "pointer", display: "flex", alignItems: "center", gap: 8 }}>
+          <button onClick={handlePublish} disabled={publishing || saving} style={{ marginLeft: "auto", padding: "8px 20px", border: "none", background: "var(--amber)", color: "#000", fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", cursor: publishing || saving ? "not-allowed" : "pointer", display: "flex", alignItems: "center", gap: 8 }}>
             {publishing ? <><Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} /> Publishing…</> : "Save & Publish →"}
           </button>
         )}
