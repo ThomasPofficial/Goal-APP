@@ -8,6 +8,7 @@ import GeniusTypeBadge from "@/components/ui/GeniusTypeBadge";
 import { GENIUS_TYPES, type GeniusTypeKey } from "@/lib/geniusTypes";
 import AnimalArchetypeCard from "@/components/AnimalArchetypeCard";
 import type { AnimalKey } from "@/lib/animalArchetypes";
+import DonationWidget from "@/components/donations/DonationWidget";
 
 interface OwnReview {
   id: string;
@@ -69,6 +70,16 @@ export default function ProfileClient({ profile, isOwn, ownReviews = [] }: Props
     try { return JSON.parse(profile.animalArchetypes ?? "[]"); } catch { return []; }
   });
   const [archetypeAnalysis, setArchetypeAnalysis] = useState<string | null>(profile.archetypeAnalysis);
+  const [linkCopied, setLinkCopied] = useState(false);
+  const giveLink = profile.handle
+    ? `${typeof window !== "undefined" ? window.location.origin : ""}/give/${profile.handle}`
+    : null;
+  const copyGiveLink = () => {
+    if (!giveLink) return;
+    navigator.clipboard.writeText(giveLink);
+    setLinkCopied(true);
+    setTimeout(() => setLinkCopied(false), 1500);
+  };
 
   const interests: string[] = (() => {
     try { return JSON.parse(profile.interests ?? "[]"); } catch { return []; }
@@ -192,6 +203,38 @@ export default function ProfileClient({ profile, isOwn, ownReviews = [] }: Props
           </div>
         )}
       </div>
+
+      {/* Support */}
+      {profile.handle && (
+        <div className="mb-6">
+          {isOwn ? (
+            <div className="rounded-xl p-5" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
+              <p className="text-sm font-semibold mb-1" style={{ color: "var(--text)" }}>Your donation link</p>
+              <p className="text-xs mb-3" style={{ color: "var(--muted)" }}>
+                Share this so anyone can support you directly. This is exactly what visitors to your profile see below.
+              </p>
+              <div className="flex gap-2 mb-4">
+                <input
+                  readOnly
+                  value={giveLink ?? ""}
+                  className="flex-1 text-xs px-3 py-2 rounded-lg"
+                  style={{ background: "var(--bg)", border: "1px solid var(--border)", color: "var(--text)" }}
+                />
+                <button
+                  onClick={copyGiveLink}
+                  className="px-3 py-2 rounded-lg text-xs font-semibold"
+                  style={{ background: "var(--amber)", color: "#000", border: "none", cursor: "pointer" }}
+                >
+                  {linkCopied ? "Copied!" : "Copy link"}
+                </button>
+              </div>
+              <DonationWidget recipientHandle={profile.handle} recipientName={profile.displayName ?? "this person"} />
+            </div>
+          ) : (
+            <DonationWidget recipientHandle={profile.handle} recipientName={profile.displayName ?? "this person"} />
+          )}
+        </div>
+      )}
 
       {/* Interests */}
       {interests.length > 0 && (

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { X, ChevronLeft, ChevronRight, LayoutDashboard, Users, Building2, UsersRound, MessageSquare, Bell, Briefcase, Megaphone, Globe, GraduationCap, HeartHandshake, School, User, Link2 } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, LayoutDashboard, Users, Building2, UsersRound, MessageSquare, Bell, Briefcase, Megaphone, Globe, GraduationCap, HeartHandshake, School, User, Link2, Gift } from "lucide-react";
 import AccountMenu from "./AccountMenu";
 import NivarroMark from "@/components/ui/NivarroMark";
 import { cn } from "@/lib/utils";
@@ -68,6 +68,7 @@ export default function Sidebar({ userName, userEmail, geniusType, mobileOpen = 
     { href: "/my-school",     label: "My School",      Icon: School },
     { href: "/communities",   label: "Community Chat", Icon: Globe },
     { href: "/mentorship",    label: "Mentorship",     Icon: HeartHandshake },
+    { href: "/donate",        label: "Donate",         Icon: Gift },
     ...(isAlumni ? [{ href: "/profile", label: "Profile", Icon: User }] : []),
     { href: "/notifications", label: "Notifications",  Icon: Bell },
   ];
