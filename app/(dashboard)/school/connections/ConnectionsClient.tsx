@@ -62,10 +62,13 @@ export default function ConnectionsClient({ queue, history }: Props) {
             letterSpacing: "0.01em",
           }}
         >
-          Connections
+          Chat Requests
         </h1>
         <p style={{ color: "var(--muted)", fontSize: 14, margin: "6px 0 0" }}>
-          Students and alumni requested a private chat with a mentor or staff member — approve to create the room.
+          A student or alum asked to chat 1:1 with a specific mentor or staff member — approve to create the room.
+          This is different from{" "}
+          <Link href="/school/mentorship" style={{ color: "var(--amber)" }}>Mentorship</Link>, where you pair
+          students with mentors yourself into a group chat.
         </p>
       </div>
 

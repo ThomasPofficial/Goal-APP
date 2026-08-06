@@ -163,7 +163,9 @@ export default function MentorshipClient({ pairings, students, mentors }: Props)
             Mentorship
           </h1>
           <p style={{ color: "var(--muted)", fontSize: 14, margin: "6px 0 0" }}>
-            Pair students with teacher or alumni mentors in a dedicated chat.
+            Pair students with teacher or alumni mentors in a dedicated group chat, yourself.
+            Looking for 1:1 requests students sent on their own?{" "}
+            <Link href="/school/connections" style={{ color: "var(--amber)" }}>Chat Requests</Link>.
           </p>
         </div>
         <button

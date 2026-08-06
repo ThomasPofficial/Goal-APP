@@ -24,7 +24,8 @@ const SCHOOL_NAV = [
   { href: "/communities",         label: "Community",     Icon: Globe },
   { href: "/campaigns",           label: "Fundraise",     Icon: HeartHandshake },
   { href: "/school/mentorship",   label: "Mentorship",    Icon: UsersRound },
-  { href: "/school/connections",  label: "Connections",   Icon: Link2 },
+  { href: "/school/connections",  label: "Chat Requests",   Icon: Link2 },
+  { href: "/messages",            label: "Messages",      Icon: MessageSquare },
   { href: "/school/roster",       label: "Roster",        Icon: Users },
 ];
 
