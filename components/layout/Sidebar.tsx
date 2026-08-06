@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { X, ChevronLeft, ChevronRight, LayoutDashboard, Users, Building2, UsersRound, MessageSquare, Bell, Briefcase, Megaphone, Globe, MapPin, GraduationCap, HeartHandshake, School, ClipboardList, User, Link2 } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, LayoutDashboard, Users, Building2, UsersRound, MessageSquare, Bell, Briefcase, Megaphone, Globe, MapPin, GraduationCap, HeartHandshake, School, User, Link2 } from "lucide-react";
 import AccountMenu from "./AccountMenu";
 import NivarroMark from "@/components/ui/NivarroMark";
 import { cn } from "@/lib/utils";
@@ -22,7 +22,6 @@ const SCHOOL_NAV = [
   { href: "/school/destinations", label: "Destinations",  Icon: MapPin },
   { href: "/school/alumni",       label: "Alumni Net",    Icon: GraduationCap },
   { href: "/communities",         label: "Community",     Icon: Globe },
-  { href: "/school/survey",       label: "Survey",        Icon: ClipboardList },
   { href: "/campaigns",           label: "Fundraise",     Icon: HeartHandshake },
   { href: "/school/mentorship",   label: "Mentorship",    Icon: UsersRound },
   { href: "/school/connections",  label: "Connections",   Icon: Link2 },

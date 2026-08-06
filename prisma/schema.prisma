@@ -91,8 +91,6 @@ model User {
   endorsementsGiven     PeerEndorsement[]         @relation("EndorsementsGiven")
   endorsementsReceived  PeerEndorsement[]         @relation("EndorsementsReceived")
   campaigns             Campaign[]                @relation("SchoolCampaigns")
-  surveyTokens          SurveyToken[]
-  linkedinScanEvents    LinkedinScanEvent[]
 }
 
 model Profile {
@@ -135,9 +133,6 @@ model Profile {
   jobTitle           String?
   confirmedCollege   String?
   confirmedMajor     String?
-  lastLinkedinScan   DateTime?
-  linkedinScanOptOut Boolean   @default(false)
-  surveyOptOut       Boolean   @default(false)
   createdAt           DateTime    @default(now())
   updatedAt           DateTime    @updatedAt
 
@@ -873,37 +868,3 @@ model ScrapedListing {
   @@index([status])
 }
 
-// ─────────────────────────────────────────────
-// SENIOR DESTINATION SURVEY
-// ─────────────────────────────────────────────
-
-model SurveyToken {
-  id          String    @id @default(cuid())
-  userId      String
-  token       String    @unique @default(cuid())
-  year        Int
-  sentAt      DateTime  @default(now())
-  expiresAt   DateTime
-  respondedAt DateTime?
-  prefillData String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, year])
-  @@index([userId])
-}
-
-model LinkedinScanEvent {
-  id        String   @id @default(cuid())
-  userId    String
-  scannedAt DateTime @default(now())
-  field     String
-  prevValue String?
-  newValue  String?
-  notified  Boolean  @default(false)
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([scannedAt])
-}
