@@ -110,12 +110,16 @@ git commit -m "Remove school Destinations tab"
 - Delete: `app/api/school/brochure/students/route.ts`
 - Delete: `app/api/school/brochure/send-survey-emails/route.ts`
 - Delete: `lib/collegeLogos.ts`
+- Delete: `components/school/WhySchoolBanner.tsx` (discovered during Task 2 review — see amendment note below)
 - Modify: `prisma/schema.prisma`
+- Modify: `app/(dashboard)/dashboard/page.tsx` (discovered during Task 2 review — see amendment note below)
 - Create: `prisma/migrations/20260806010000_remove_brochure_curation/migration.sql`
 
 **Interfaces:**
 - Consumes: nothing from Task 1.
 - Produces: nothing — this is a pure deletion, no other task depends on these files. `StudentBrochureData` and `Profile.brochureData` are explicitly NOT touched (see Global Constraints).
+
+**Amendment (found during implementation, not in the original brief):** `app/(dashboard)/dashboard/page.tsx` reads `prisma.schoolBrochureSettings` (lines 121-149 as of Task 1's HEAD) to gate a "Why {School}" banner (`components/school/WhySchoolBanner.tsx`) — added by a separate concurrent agent's commit after this plan's brainstorming finished, so the original brief didn't know about it. Resolution: remove the banner's rendering path from `page.tsx` entirely (delete the `WhySchoolBanner` import, the `bannerData` computation block, and the `{bannerData && (...)}` JSX), and delete `WhySchoolBanner.tsx` itself (confirmed via repo-wide grep to have no other consumer). Rationale: `SchoolBrochureSettings.visibility` was the banner's only visibility gate, and the schema's own default for that field was `"ADMIN_ONLY"` — most schools never opted in, so retiring the banner along with the settings model that gated it preserves the status quo for the vast majority of schools, rather than inventing a new always-on default that would newly expose data to students at schools that never opted in. `StudentBrochureData` itself (which the banner also read) stays untouched, per the existing Global Constraint.
 
 - [ ] **Step 1: Delete the components and API routes**
 
@@ -666,7 +670,7 @@ Use `ridgepoint@nivarro.demo` / `ridgepoint2026` (or any current `SCHOOL`-role a
 - [ ] **Step 5: Spot-check untouched adjacent features**
 
 - `/school/roster` and `/school/alumni` still load without errors — confirms the Brochure deletion didn't collaterally break anything outside its own subsystem. (Note: `/profile/survey`, the alumni "Your Outcomes" form, was already removed by a separate concurrent change before this plan started — that page's absence is expected and not a regression from this plan; don't flag it.)
-- `components/school/WhySchoolBanner.tsx` (a "Why {school}" dashboard stat that reads `StudentBrochureData`, added by that same separate change) still renders wherever it's used — confirms `StudentBrochureData` itself, which this plan does not touch, is unaffected by the Brochure-subsystem deletion.
+- `/dashboard` (student view) loads without errors and with no "Why {School}" banner — per Task 2's amendment, that banner and its component (`WhySchoolBanner.tsx`) were removed along with `SchoolBrochureSettings`, the model that gated its visibility. Its absence is expected, not a regression.
 
 - [ ] **Step 6: Final verification**
 
