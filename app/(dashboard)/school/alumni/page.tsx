@@ -50,6 +50,44 @@ export default async function AlumniPage() {
     orderBy: { createdAt: "asc" },
   });
 
+  const mentorshipGroups = await prisma.conversation.findMany({
+    where: {
+      type: "MENTORSHIP",
+      participants: { some: { userId: { in: alumni.map((u) => u.id) } } },
+    },
+    select: {
+      id: true,
+      participants: {
+        select: {
+          userId: true,
+          user: {
+            select: {
+              isAlumni: true,
+              profile: { select: { displayName: true, staffTitle: true } },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  const groupsByAlumId = new Map<string, { id: string; students: string[] }[]>();
+  for (const group of mentorshipGroups) {
+    const mentorIds = group.participants
+      .filter((p) => p.user.isAlumni)
+      .map((p) => p.userId);
+    if (mentorIds.length === 0) continue;
+    const students = group.participants
+      .filter((p) => !p.user.isAlumni && !p.user.profile?.staffTitle)
+      .map((p) => p.user.profile?.displayName ?? "Student");
+    if (students.length === 0) continue;
+    for (const mentorId of mentorIds) {
+      const existing = groupsByAlumId.get(mentorId) ?? [];
+      existing.push({ id: group.id, students });
+      groupsByAlumId.set(mentorId, existing);
+    }
+  }
+
   const formatted = alumni.map((u) => ({
     id: u.id,
     displayName: u.profile?.displayName ?? u.name ?? "Alumni",
@@ -66,7 +104,8 @@ export default async function AlumniPage() {
         ...(u.profile?.orgReviews ?? []).map((r) => r.org.name),
       ]),
     ].slice(0, 3) as string[],
+    mentorshipGroups: groupsByAlumId.get(u.id) ?? [],
   }));
 
-  return <AlumniClient alumni={formatted} currentUserId={session.user.id} />;
+  return <AlumniClient alumni={formatted} />;
 }

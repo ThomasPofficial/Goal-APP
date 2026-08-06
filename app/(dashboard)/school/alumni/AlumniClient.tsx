@@ -1,9 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { GraduationCap, Briefcase, BookOpen, MessageCircle, CheckCircle } from "lucide-react";
+import { GraduationCap, Briefcase, BookOpen, Users } from "lucide-react";
 import Link from "next/link";
-import RequestMentorshipModal from "@/components/mentorship/RequestMentorshipModal";
 
 interface Alumnus {
   id: string;
@@ -16,18 +15,16 @@ interface Alumnus {
   isAvailableToMentor: boolean;
   intendedCollege: string | null;
   orgs: string[];
+  mentorshipGroups: { id: string; students: string[] }[];
 }
 
 interface Props {
   alumni: Alumnus[];
-  currentUserId: string;
 }
 
 export default function AlumniClient({ alumni }: Props) {
   const [filter, setFilter] = useState<"all" | "mentors">("all");
   const [industryFilter, setIndustryFilter] = useState<string>("all");
-  const [requestedIds, setRequestedIds] = useState<Set<string>>(new Set());
-  const [modalTarget, setModalTarget] = useState<{ id: string; name: string } | null>(null);
 
   const industries = [...new Set(alumni.map((a) => a.industry).filter(Boolean))] as string[];
 
@@ -36,18 +33,6 @@ export default function AlumniClient({ alumni }: Props) {
     if (industryFilter !== "all" && a.industry !== industryFilter) return false;
     return true;
   });
-
-  const handleMentorRequest = async (alumniId: string, message: string) => {
-    const res = await fetch("/api/connections/request", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ toUserId: alumniId, message: message || undefined }),
-    });
-    if (res.ok || res.status === 409) {
-      setRequestedIds((prev) => new Set(prev).add(alumniId));
-    }
-    setModalTarget(null);
-  };
 
   return (
     <div style={{ maxWidth: 900 }}>
@@ -196,49 +181,22 @@ export default function AlumniClient({ alumni }: Props) {
               </p>
             )}
 
-            {/* Actions */}
-            {a.isAvailableToMentor && (
-              <button
-                onClick={() => setModalTarget({ id: a.id, name: a.displayName })}
-                disabled={requestedIds.has(a.id)}
-                style={{
-                  marginTop: "auto",
-                  padding: "8px 0",
-                  borderRadius: 0,
-                  border: requestedIds.has(a.id) ? "1px solid rgba(232,137,58,0.4)" : "1px solid var(--amber)",
-                  background: requestedIds.has(a.id) ? "rgba(232,137,58,0.1)" : "var(--amber)",
-                  color: requestedIds.has(a.id) ? "var(--amber)" : "#000",
-                  fontFamily: "var(--font-mono)",
-                  fontSize: 11,
-                  fontWeight: 700,
-                  letterSpacing: "0.08em",
-                  textTransform: "uppercase",
-                  cursor: requestedIds.has(a.id) ? "default" : "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 6,
-                  transition: "all 0.15s",
-                }}
-              >
-                {requestedIds.has(a.id) ? (
-                  <><CheckCircle size={14} /> Request Sent</>
-                ) : (
-                  <><MessageCircle size={14} /> Request Mentorship</>
-                )}
-              </button>
+            {/* Mentorship groups */}
+            {a.mentorshipGroups.length > 0 && (
+              <div style={{ marginTop: "auto", paddingTop: 10, borderTop: "1px solid var(--border)", display: "flex", flexDirection: "column", gap: 6 }}>
+                {a.mentorshipGroups.map((group) => (
+                  <div key={group.id} style={{ display: "flex", alignItems: "flex-start", gap: 6 }}>
+                    <Users size={12} style={{ color: "var(--n-text2)", flexShrink: 0, marginTop: 2 }} />
+                    <span style={{ fontSize: 12, color: "var(--n-text2)", lineHeight: 1.4 }}>
+                      {group.students.join(", ")}
+                    </span>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
         ))}
       </div>
-
-      {modalTarget && (
-        <RequestMentorshipModal
-          targetName={modalTarget.name}
-          onClose={() => setModalTarget(null)}
-          onSend={(message) => handleMentorRequest(modalTarget.id, message)}
-        />
-      )}
     </div>
   );
 }
