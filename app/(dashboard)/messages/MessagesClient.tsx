@@ -63,6 +63,13 @@ interface Props {
   myProfileId: string;
   myProfile: MyProfile;
   initialOpenId?: string | null;
+  canSearchAnyone: boolean;
+}
+
+interface OpenRoom {
+  id: string;
+  communityName: string | null;
+  memberCount: number;
 }
 
 function convDisplayName(conv: ConvSummary, myUserId: string): string {
@@ -89,8 +96,9 @@ function convAvatar(conv: ConvSummary, myUserId: string) {
 
 // ── New Message Modal ─────────────────────────────────────────────────────────
 
-function NewMessageModal({ myUserId, onClose, onOpen }: {
+function NewMessageModal({ myUserId, canSearchAnyone, onClose, onOpen }: {
   myUserId: string;
+  canSearchAnyone: boolean;
   onClose: () => void;
   onOpen: (convId: string) => void;
 }) {
@@ -98,12 +106,25 @@ function NewMessageModal({ myUserId, onClose, onOpen }: {
   const [results, setResults] = useState<PeerResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [creating, setCreating] = useState(false);
+  const [rooms, setRooms] = useState<OpenRoom[]>([]);
+  const [roomsLoading, setRoomsLoading] = useState(canSearchAnyone === false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => { inputRef.current?.focus(); }, []);
+  useEffect(() => { if (canSearchAnyone) inputRef.current?.focus(); }, [canSearchAnyone]);
 
   useEffect(() => {
-    if (!q.trim()) { setResults([]); return; }
+    if (canSearchAnyone) return;
+    (async () => {
+      try {
+        const res = await fetch("/api/communities/rooms");
+        const data = await res.json();
+        setRooms(((data.rooms ?? []) as (OpenRoom & { isPrivateRoom: boolean })[]).filter((r) => !r.isPrivateRoom));
+      } finally { setRoomsLoading(false); }
+    })();
+  }, [canSearchAnyone]);
+
+  useEffect(() => {
+    if (!canSearchAnyone || !q.trim()) { setResults([]); return; }
     const t = setTimeout(async () => {
       setLoading(true);
       try {
@@ -113,7 +134,7 @@ function NewMessageModal({ myUserId, onClose, onOpen }: {
       } finally { setLoading(false); }
     }, 250);
     return () => clearTimeout(t);
-  }, [q]);
+  }, [q, canSearchAnyone]);
 
   const startDM = async (userId: string) => {
     if (creating) return;
@@ -139,49 +160,86 @@ function NewMessageModal({ myUserId, onClose, onOpen }: {
         style={{ background: "var(--surface)", border: "1px solid var(--border-md)", boxShadow: "0 32px 64px rgba(0,0,0,0.5)" }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center gap-3 px-4 py-3" style={{ borderBottom: "1px solid var(--border)" }}>
-          <Search className="w-4 h-4 flex-shrink-0" style={{ color: "var(--muted)" }} />
-          <input
-            ref={inputRef}
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="Search by name or handle…"
-            className="flex-1 text-sm bg-transparent focus:outline-none"
-            style={{ color: "var(--text)", border: "none", padding: 0 }}
-          />
-          <button onClick={onClose}><X className="w-4 h-4" style={{ color: "var(--muted)" }} /></button>
-        </div>
+        {canSearchAnyone ? (
+          <div className="flex items-center gap-3 px-4 py-3" style={{ borderBottom: "1px solid var(--border)" }}>
+            <Search className="w-4 h-4 flex-shrink-0" style={{ color: "var(--muted)" }} />
+            <input
+              ref={inputRef}
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Search by name or handle…"
+              className="flex-1 text-sm bg-transparent focus:outline-none"
+              style={{ color: "var(--text)", border: "none", padding: 0 }}
+            />
+            <button onClick={onClose}><X className="w-4 h-4" style={{ color: "var(--muted)" }} /></button>
+          </div>
+        ) : (
+          <div className="flex items-center justify-between gap-3 px-4 py-3" style={{ borderBottom: "1px solid var(--border)" }}>
+            <span className="text-sm font-medium" style={{ color: "var(--text)" }}>Open rooms</span>
+            <button onClick={onClose}><X className="w-4 h-4" style={{ color: "var(--muted)" }} /></button>
+          </div>
+        )}
 
         <div className="max-h-72 overflow-y-auto">
-          {loading && (
-            <div className="flex items-center justify-center py-8">
-              <div className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: "var(--gold)", borderTopColor: "transparent" }} />
-            </div>
+          {canSearchAnyone ? (
+            <>
+              {loading && (
+                <div className="flex items-center justify-center py-8">
+                  <div className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: "var(--gold)", borderTopColor: "transparent" }} />
+                </div>
+              )}
+              {!loading && q && results.length === 0 && (
+                <p className="text-center text-sm py-8" style={{ color: "var(--muted)" }}>No users found</p>
+              )}
+              {!loading && !q && (
+                <p className="text-center text-xs py-8" style={{ color: "var(--muted)" }}>Type a name to search</p>
+              )}
+              {results.map((peer) => (
+                <button
+                  key={peer.id}
+                  onClick={() => startDM(peer.userId)}
+                  disabled={creating}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-left transition-colors disabled:opacity-50"
+                  style={{ borderBottom: "1px solid var(--border)" }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "var(--surface2)"; }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}
+                >
+                  <Avatar src={peer.avatarUrl} displayName={peer.displayName} geniusType={peer.geniusType as GeniusTypeKey | null} size={36} />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate" style={{ color: "var(--text)", fontFamily: "var(--font-display, sans-serif)" }}>{peer.displayName}</p>
+                    {peer.handle && <p className="text-xs truncate" style={{ color: "var(--muted)" }}>@{peer.handle}</p>}
+                  </div>
+                  {peer.geniusType && <GeniusTypeBadge geniusType={peer.geniusType as GeniusTypeKey} size="sm" />}
+                </button>
+              ))}
+            </>
+          ) : (
+            <>
+              {roomsLoading && (
+                <div className="flex items-center justify-center py-8">
+                  <div className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: "var(--gold)", borderTopColor: "transparent" }} />
+                </div>
+              )}
+              {!roomsLoading && rooms.length === 0 && (
+                <p className="text-center text-sm py-8" style={{ color: "var(--muted)" }}>No open rooms yet</p>
+              )}
+              {rooms.map((room) => (
+                <button
+                  key={room.id}
+                  onClick={() => onOpen(room.id)}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-left transition-colors"
+                  style={{ borderBottom: "1px solid var(--border)" }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "var(--surface2)"; }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}
+                >
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate" style={{ color: "var(--text)", fontFamily: "var(--font-display, sans-serif)" }}>{room.communityName ?? "Room"}</p>
+                    <p className="text-xs truncate" style={{ color: "var(--muted)" }}>{room.memberCount} member{room.memberCount !== 1 ? "s" : ""}</p>
+                  </div>
+                </button>
+              ))}
+            </>
           )}
-          {!loading && q && results.length === 0 && (
-            <p className="text-center text-sm py-8" style={{ color: "var(--muted)" }}>No users found</p>
-          )}
-          {!loading && !q && (
-            <p className="text-center text-xs py-8" style={{ color: "var(--muted)" }}>Type a name to search</p>
-          )}
-          {results.map((peer) => (
-            <button
-              key={peer.id}
-              onClick={() => startDM(peer.userId)}
-              disabled={creating}
-              className="w-full flex items-center gap-3 px-4 py-3 text-left transition-colors disabled:opacity-50"
-              style={{ borderBottom: "1px solid var(--border)" }}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "var(--surface2)"; }}
-              onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}
-            >
-              <Avatar src={peer.avatarUrl} displayName={peer.displayName} geniusType={peer.geniusType as GeniusTypeKey | null} size={36} />
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate" style={{ color: "var(--text)", fontFamily: "var(--font-display, sans-serif)" }}>{peer.displayName}</p>
-                {peer.handle && <p className="text-xs truncate" style={{ color: "var(--muted)" }}>@{peer.handle}</p>}
-              </div>
-              {peer.geniusType && <GeniusTypeBadge geniusType={peer.geniusType as GeniusTypeKey} size="sm" />}
-            </button>
-          ))}
         </div>
       </div>
     </div>
@@ -190,7 +248,7 @@ function NewMessageModal({ myUserId, onClose, onOpen }: {
 
 // ── Main Component ────────────────────────────────────────────────────────────
 
-export default function MessagesClient({ conversations: initialConvs, myUserId, myProfileId, myProfile, initialOpenId }: Props) {
+export default function MessagesClient({ conversations: initialConvs, myUserId, myProfileId, myProfile, initialOpenId, canSearchAnyone }: Props) {
   const socket = useSocket();
   const router = useRouter();
   const [conversations, setConversations] = useState<ConvSummary[]>(initialConvs);
@@ -303,6 +361,7 @@ export default function MessagesClient({ conversations: initialConvs, myUserId, 
     { label: "Direct", items: conversations.filter((c) => c.type === "DIRECT") },
     { label: "Group", items: conversations.filter((c) => c.type === "GROUP") },
     { label: "Team", items: conversations.filter((c) => c.type === "TEAM") },
+    { label: "Rooms", items: conversations.filter((c) => c.type === "COMMUNITY") },
   ].filter((s) => s.items.length > 0);
 
   return (
@@ -310,6 +369,7 @@ export default function MessagesClient({ conversations: initialConvs, myUserId, 
       {showNewMsg && (
         <NewMessageModal
           myUserId={myUserId}
+          canSearchAnyone={canSearchAnyone}
           onClose={() => setShowNewMsg(false)}
           onOpen={(convId) => {
             setShowNewMsg(false);
@@ -323,8 +383,8 @@ export default function MessagesClient({ conversations: initialConvs, myUserId, 
 
         {/* ── Conversation list ─────────────────────── */}
         <div className={`${showThread ? "hidden md:flex" : "flex"} w-full md:w-64 flex-col shrink-0`} style={{ background: "var(--bg2)", borderRight: "1px solid var(--border)" }}>
-          <div className="flex items-center justify-between px-4 py-3.5" style={{ borderBottom: "1px solid var(--border)" }}>
-            <h2 className="text-sm font-bold uppercase tracking-widest" style={{ color: "var(--text)", fontFamily: "var(--font-display, sans-serif)" }}>
+          <div className="flex items-center justify-between gap-3 px-4 py-3.5" style={{ borderBottom: "1px solid var(--border)" }}>
+            <h2 className="text-sm font-bold uppercase tracking-widest truncate" style={{ color: "var(--text)", fontFamily: "var(--font-display, sans-serif)" }}>
               Messages
             </h2>
             <button

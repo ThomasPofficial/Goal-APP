@@ -15,7 +15,7 @@ export default async function MessagesPage({
   if (!session?.user?.id) redirect('/login');
   if (await isWalledStudent(session.user.id)) redirect('/dashboard');
 
-  const [myProfile, myOrg, isMentor] = await Promise.all([
+  const [myProfile, myOrg, isMentor, dbUser] = await Promise.all([
     prisma.profile.findUnique({
       where: { userId: session.user.id },
       select: { id: true, displayName: true, avatarUrl: true, geniusType: true },
@@ -25,6 +25,7 @@ export default async function MessagesPage({
       select: { id: true, name: true },
     }),
     isMentorUser(session.user.id),
+    prisma.user.findUnique({ where: { id: session.user.id }, select: { role: true } }),
   ]);
   if (!myProfile && !myOrg) redirect('/onboarding');
 
@@ -112,6 +113,7 @@ export default async function MessagesPage({
       myProfileId={resolvedProfile.id}
       myProfile={resolvedProfile}
       initialOpenId={initialOpenId}
+      canSearchAnyone={dbUser?.role !== "SCHOOL" && dbUser?.role !== "ADMIN"}
     />
   );
 }
