@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { ArrowRight, ClipboardList, ExternalLink } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 
 interface Props {
   schoolName: string;
@@ -39,20 +39,10 @@ export default function WhySchoolBanner({ schoolName, studentsCount, collegesCou
       </div>
 
       <p style={{ fontSize: 13, color: "var(--n-text2)", margin: "0 0 16px" }}>
-        Help build this picture for prospective students — update your outcomes and keep your LinkedIn current.
+        Help build this picture for prospective students — keep your LinkedIn current.
       </p>
 
       <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-        <Link href="/profile/survey" style={{
-          display: "inline-flex", alignItems: "center", gap: 6,
-          padding: "8px 16px", fontSize: 12, fontWeight: 600,
-          background: "var(--amber)", color: "#1a1a1f",
-          textDecoration: "none", borderRadius: 0,
-        }}>
-          <ClipboardList size={13} />
-          Add Your Outcomes
-          <ArrowRight size={13} />
-        </Link>
         <Link href="/profile" style={{
           display: "inline-flex", alignItems: "center", gap: 6,
           padding: "8px 14px", fontSize: 12, fontWeight: 600,

@@ -695,7 +695,6 @@ model StudentBrochureData {
   employer        String?
   internshipTitle String?
   internshipOrg   String?
-  lastEmailedAt   DateTime?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 

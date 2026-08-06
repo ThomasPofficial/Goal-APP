@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState, useCallback } from "react";
-import { Eye, EyeOff, Users, SortAsc, Quote, Plus, Trash2, CheckCircle2, Circle, Mail } from "lucide-react";
+import { Eye, EyeOff, Users, SortAsc, Quote, Plus, Trash2, CheckCircle2, Circle } from "lucide-react";
 
 interface StudentRow {
   profileId: string; name: string;
@@ -27,8 +27,6 @@ export default function BrochureCurationPanel({ schoolId }: { schoolId: string }
   const [testimonials, setTestimonials] = useState<TestimonialRow[]>([]);
   const [newQuote, setNewQuote] = useState({ body: "", sourceName: "", sourceContext: "", sourceType: "STUDENT" });
   const [addingQuote, setAddingQuote] = useState(false);
-  const [sendingEmails, setSendingEmails] = useState(false);
-  const [emailResult, setEmailResult] = useState<{ sent: number; skipped: number } | null>(null);
 
   const qs = schoolId ? `?schoolId=${schoolId}` : "";
 
@@ -121,19 +119,6 @@ export default function BrochureCurationPanel({ schoolId }: { schoolId: string }
     setAddingQuote(false);
   };
 
-  const sendSurveyEmails = async () => {
-    setSendingEmails(true);
-    setEmailResult(null);
-    const res = await fetch("/api/school/brochure/send-survey-emails", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ schoolId }),
-    });
-    const result = await res.json();
-    setEmailResult(result);
-    setSendingEmails(false);
-  };
-
   if (loading) return <div style={{ padding: 24, color: "var(--n-muted)", fontSize: 13 }}>Loading curation panel…</div>;
 
   const presets: { key: SortPreset; label: string }[] = [
@@ -198,27 +183,6 @@ export default function BrochureCurationPanel({ schoolId }: { schoolId: string }
         >
           {saving ? "Saving…" : "Save Settings"}
         </button>
-
-        {/* Annual survey emails */}
-        <button
-          onClick={sendSurveyEmails}
-          disabled={sendingEmails}
-          style={{
-            padding: "8px 14px", fontSize: 12, fontWeight: 600,
-            background: "transparent", color: "var(--n-text2)",
-            border: "1px solid var(--border)", borderRadius: 0,
-            cursor: sendingEmails ? "not-allowed" : "pointer",
-            display: "flex", alignItems: "center", gap: 6,
-          }}
-        >
-          <Mail size={13} />
-          {sendingEmails ? "Sending…" : "Send Annual Survey"}
-        </button>
-        {emailResult && (
-          <span style={{ fontSize: 11, color: "var(--n-muted)" }}>
-            {emailResult.sent} sent · {emailResult.skipped} already emailed this year
-          </span>
-        )}
       </div>
 
       {/* Auto-sort presets */}
