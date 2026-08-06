@@ -842,6 +842,11 @@ model CampaignVersion {
   body         String   @db.Text
   ctaText      String
   imageParams  Json
+  // "generate" (full AI generation/regeneration) | "tweak" (AI feedback revision,
+  // note holds the feedback text) | "manual" (direct field edit, no AI call) |
+  // "restore" (copied from an earlier version, restoredFrom holds that version's id)
+  source       String   @default("generate")
+  note         String?
   restoredFrom String?
   createdAt    DateTime @default(now())
 }

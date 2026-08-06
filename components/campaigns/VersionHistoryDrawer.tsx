@@ -8,6 +8,8 @@ export interface VersionSummary {
   cause: string;
   headline: string;
   imageParams: ImageParams;
+  source: string;
+  note: string | null;
   restoredFrom: string | null;
   createdAt: string;
 }
@@ -16,6 +18,17 @@ interface Props {
   versions: VersionSummary[];
   onRestore: (versionId: string) => void;
   onClose: () => void;
+}
+
+function versionLabel(v: VersionSummary): string {
+  if (v.source === "tweak") {
+    const note = v.note ?? "";
+    const trimmed = note.length > 60 ? note.slice(0, 60) + "…" : note;
+    return `Tweaked: "${trimmed}"`;
+  }
+  if (v.source === "manual") return "Manual edit";
+  if (v.source === "restore") return "Restored";
+  return "Generated";
 }
 
 export default function VersionHistoryDrawer({ versions, onRestore, onClose }: Props) {
@@ -43,10 +56,10 @@ export default function VersionHistoryDrawer({ versions, onRestore, onClose }: P
                   {i === 0 && (
                     <span style={{ flexShrink: 0, fontFamily: "var(--font-mono)", fontSize: 9, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--amber)", padding: "1px 6px", border: "1px solid var(--amber)" }}>Current</span>
                   )}
-                  {v.restoredFrom && i > 0 && (
-                    <span style={{ flexShrink: 0, fontFamily: "var(--font-mono)", fontSize: 9, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--n-text2)" }}>Restored</span>
-                  )}
                 </div>
+                <p style={{ margin: "0 0 4px", fontFamily: "var(--font-mono)", fontSize: 10, letterSpacing: "0.05em", color: "var(--n-text2)" }}>
+                  {versionLabel(v)}
+                </p>
                 <p style={{ margin: "0 0 8px", fontSize: 11, color: "var(--n-text2)", lineHeight: 1.4 }}>
                   {v.cause.length > 80 ? v.cause.slice(0, 80) + "…" : v.cause}
                 </p>
