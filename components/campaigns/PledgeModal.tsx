@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { X, Heart, CheckCircle, Loader2, Copy, Check } from "lucide-react";
-import { calculateDonationFee, MIN_DONATION_CENTS } from "@/lib/payments/donationFees";
+import { calculateCampaignDonationFee, MIN_DONATION_CENTS } from "@/lib/payments/campaignDonationFee";
 
 interface Props {
   campaignId: string;
@@ -65,12 +65,13 @@ export default function PledgeModal({ campaignId, ctaText, schoolId, slug, onClo
   const [customDollars, setCustomDollars] = useState("");
   const [donating, setDonating] = useState(false);
   const [donateResult, setDonateResult] = useState<{ totalCents: number } | "error" | null>(null);
+  const [coverFees, setCoverFees] = useState(false);
 
   const amountCents = customDollars.trim()
     ? Math.round(parseFloat(customDollars) * 100)
     : selected ?? 0;
   const validAmount = Number.isFinite(amountCents) && amountCents >= MIN_DONATION_CENTS;
-  const { feeCents, totalCents } = calculateDonationFee(validAmount ? amountCents : 0);
+  const { feeCents, totalCents, netCents } = calculateCampaignDonationFee(validAmount ? amountCents : 0, coverFees);
 
   const submitDonation = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -86,6 +87,7 @@ export default function PledgeModal({ campaignId, ctaText, schoolId, slug, onClo
           donorName: donorName.trim(),
           donorEmail: donorEmail.trim(),
           amountCents,
+          coverFees,
           schoolId: schoolId ?? undefined,
         }),
       });
@@ -190,9 +192,28 @@ export default function PledgeModal({ campaignId, ctaText, schoolId, slug, onClo
                     />
                   </div>
                   {validAmount ? (
-                    <p style={{ color: "var(--n-text2)", fontSize: 12, margin: 0 }}>
-                      ${(amountCents / 100).toFixed(2)} to this campaign + ${(feeCents / 100).toFixed(2)} Nivarro fee (5% + $0.30) = <strong style={{ color: "var(--text)" }}>${(totalCents / 100).toFixed(2)}</strong>
-                    </p>
+                    <>
+                      <p style={{ color: "var(--n-text2)", fontSize: 12, margin: "0 0 8px" }}>
+                        {coverFees ? (
+                          <>
+                            ${(amountCents / 100).toFixed(2)} to this campaign + ${(feeCents / 100).toFixed(2)} processing fee = <strong style={{ color: "var(--text)" }}>${(totalCents / 100).toFixed(2)} total</strong>
+                          </>
+                        ) : (
+                          <>
+                            <strong style={{ color: "var(--text)" }}>${(netCents / 100).toFixed(2)}</strong> of your ${(amountCents / 100).toFixed(2)} goes to this campaign after the ${(feeCents / 100).toFixed(2)} processing fee.
+                          </>
+                        )}
+                      </p>
+                      <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "var(--n-text2)", cursor: "pointer" }}>
+                        <input
+                          type="checkbox"
+                          checked={coverFees}
+                          onChange={(e) => setCoverFees(e.target.checked)}
+                          style={{ accentColor: "var(--amber)", cursor: "pointer" }}
+                        />
+                        Cover the processing fee so this campaign receives 100% of your donation
+                      </label>
+                    </>
                   ) : (
                     <p style={{ color: "var(--n-text2)", fontSize: 12, margin: 0 }}>Minimum donation is $1.00.</p>
                   )}
