@@ -29,6 +29,7 @@ export default async function CampaignPublicPage({
   return (
     <CampaignPublicClient
       campaign={{ ...campaign, imageParams: campaign.imageParams as unknown as ImageParams }}
+      slug={slug}
     />
   );
 }

@@ -1,20 +1,32 @@
 "use client";
 
 import { useState } from "react";
-import { X, Heart, CheckCircle, Loader2 } from "lucide-react";
+import { X, Heart, CheckCircle, Loader2, Copy, Check } from "lucide-react";
 import { calculateDonationFee, MIN_DONATION_CENTS } from "@/lib/payments/donationFees";
 
 interface Props {
   campaignId: string;
   ctaText: string;
   schoolId?: string;
+  slug?: string | null;
   onClose: () => void;
 }
 
 const PRESETS_CENTS = [1000, 2500, 5000, 10000];
 
-export default function PledgeModal({ campaignId, ctaText, schoolId, onClose }: Props) {
+export default function PledgeModal({ campaignId, ctaText, schoolId, slug, onClose }: Props) {
   const [tab, setTab] = useState<"donate" | "pledge">("donate");
+
+  const publicUrl = slug
+    ? `${typeof window !== "undefined" ? window.location.origin : "https://app.nivarro.co"}/c/${slug}`
+    : null;
+  const [linkCopied, setLinkCopied] = useState(false);
+  const copyLink = () => {
+    if (!publicUrl) return;
+    navigator.clipboard.writeText(publicUrl);
+    setLinkCopied(true);
+    setTimeout(() => setLinkCopied(false), 2000);
+  };
 
   const [form, setForm] = useState({ name: "", email: "", phone: "", amount: "" });
   const [loading, setLoading] = useState(false);
@@ -135,6 +147,21 @@ export default function PledgeModal({ campaignId, ctaText, schoolId, onClose }: 
                 </button>
               ))}
             </div>
+
+            {tab === "donate" && publicUrl && (
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16, padding: "8px 10px", border: "1px solid var(--border)", background: "var(--bg)" }}>
+                <span style={{ flex: 1, minWidth: 0, fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--n-text2)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                  {publicUrl}
+                </span>
+                <button
+                  type="button"
+                  onClick={copyLink}
+                  style={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 5, padding: "5px 10px", border: "1px solid var(--border)", background: "none", color: "var(--text)", fontFamily: "var(--font-mono)", fontSize: 10, letterSpacing: "0.08em", textTransform: "uppercase", cursor: "pointer" }}
+                >
+                  {linkCopied ? <><Check size={11} /> Copied</> : <><Copy size={11} /> Copy Link</>}
+                </button>
+              </div>
+            )}
 
             {tab === "donate" ? (
               <form onSubmit={submitDonation} style={{ display: "flex", flexDirection: "column", gap: 12 }}>

@@ -18,9 +18,10 @@ interface Props {
     videoUrl: string | null;
     active: boolean;
   };
+  slug: string;
 }
 
-export default function CampaignPublicClient({ campaign }: Props) {
+export default function CampaignPublicClient({ campaign, slug }: Props) {
   const [showPledge, setShowPledge] = useState(false);
   const embed = campaign.videoUrl ? extractVideoId(campaign.videoUrl) : null;
 
@@ -107,6 +108,7 @@ export default function CampaignPublicClient({ campaign }: Props) {
         <PledgeModal
           campaignId={campaign.id}
           ctaText={campaign.ctaText}
+          slug={slug}
           onClose={() => setShowPledge(false)}
         />
       )}

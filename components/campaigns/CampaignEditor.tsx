@@ -282,7 +282,7 @@ export default function CampaignEditor({ campaign: initial, versions: initialVer
         <VersionHistoryDrawer versions={versions} onRestore={restore} onClose={() => setShowHistory(false)} />
       )}
       {showPledge && (
-        <PledgeModal campaignId={current.id} ctaText={current.ctaText} schoolId={schoolId} onClose={() => setShowPledge(false)} />
+        <PledgeModal campaignId={current.id} ctaText={current.ctaText} schoolId={schoolId} slug={current.slug} onClose={() => setShowPledge(false)} />
       )}
       <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
     </div>
