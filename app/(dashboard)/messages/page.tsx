@@ -14,16 +14,21 @@ export default async function MessagesPage({
   if (!session?.user?.id) redirect('/login');
   if (await isWalledStudent(session.user.id)) redirect('/dashboard');
 
-  const [myProfile, myOrg] = await Promise.all([
+  const [myProfile, myOrg, myUser] = await Promise.all([
     prisma.profile.findUnique({
       where: { userId: session.user.id },
-      select: { id: true, displayName: true, avatarUrl: true, geniusType: true },
+      select: { id: true, displayName: true, avatarUrl: true, geniusType: true, staffTitle: true },
     }),
     prisma.org.findFirst({
       where: { createdById: session.user.id },
       select: { id: true, name: true },
     }),
+    prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { isAlumni: true },
+    }),
   ]);
+  const isMentor = Boolean(myProfile?.staffTitle) || Boolean(myUser?.isAlumni);
   if (!myProfile && !myOrg) redirect('/onboarding');
 
   const params = await searchParams;
@@ -80,7 +85,8 @@ export default async function MessagesPage({
   const serialized = conversations.map((c) => ({
     id: c.id,
     type: c.type,
-    name: null as string | null,
+    name: c.communityName ?? null,
+    canRename: c.type === "MENTORSHIP" && isMentor,
     teamId: c.teamId,
     teamName: c.team?.name ?? null,
     updatedAt: c.updatedAt.toISOString(),
