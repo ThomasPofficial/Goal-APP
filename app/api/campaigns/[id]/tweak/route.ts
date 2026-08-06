@@ -59,7 +59,7 @@ export async function POST(
   try {
     message = await anthropic.messages.create({
       model: "claude-sonnet-5",
-      max_tokens: 1200,
+      max_tokens: 2400,
       messages: [{ role: "user", content: prompt }],
     });
   } catch (err) {

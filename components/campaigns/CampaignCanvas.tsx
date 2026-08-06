@@ -83,8 +83,29 @@ function luminance(hex: string): number {
   return (0.299 * r + 0.587 * g + 0.114 * b) / 255;
 }
 
+function shade(hex: string, amount: number): string {
+  const [r, g, b] = hexToRgb(hex);
+  const clamp = (v: number) => Math.max(0, Math.min(255, Math.round(v + amount)));
+  return `rgb(${clamp(r)},${clamp(g)},${clamp(b)})`;
+}
+
 function paletteColor(palette: string[], index: number, offset: number): string {
   return palette[(index + offset + palette.length * 4) % palette.length];
+}
+
+function radialFill(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  r: number,
+  rgb: [number, number, number],
+  a1: number,
+  a2: number
+): CanvasGradient {
+  const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+  g.addColorStop(0, `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${a1})`);
+  g.addColorStop(1, `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${a2})`);
+  return g;
 }
 
 function drawGeometric(
@@ -95,32 +116,43 @@ function drawGeometric(
   palette: string[],
   rand: () => number
 ) {
-  const count = Math.floor(layer.density * 30) + 10;
+  const count = Math.floor(layer.density * 22) + 8;
   for (let i = 0; i < count; i++) {
     const x = rand() * w;
     const y = rand() * h;
-    const size = (rand() * Math.min(w, h) * 0.22 + 20) * layer.scale;
+    const size = (rand() * Math.min(w, h) * 0.26 + 30) * layer.scale;
     const idx = Math.floor(rand() * palette.length);
     const color = paletteColor(palette, idx, layer.paletteOffset);
-    const [r, g, b] = hexToRgb(color);
-    const alpha = rand() * 0.35 + 0.04;
-    ctx.fillStyle = `rgba(${r},${g},${b},${alpha})`;
+    const rgb = hexToRgb(color);
+    const alphaCore = rand() * 0.35 + 0.25;
     const shapeIdx = Math.floor(rand() * 3);
     ctx.save();
     ctx.translate(x, y);
     ctx.rotate(rand() * Math.PI * 2);
-    ctx.beginPath();
     if (shapeIdx === 0) {
+      ctx.fillStyle = radialFill(ctx, 0, 0, size, rgb, alphaCore, 0);
+      ctx.beginPath();
       ctx.arc(0, 0, size, 0, Math.PI * 2);
-    } else if (shapeIdx === 1) {
-      ctx.rect(-size / 2, -size / 2, size, size * (rand() * 0.5 + 0.5));
+      ctx.fill();
     } else {
-      ctx.moveTo(0, -size);
-      ctx.lineTo(size * 0.866, size * 0.5);
-      ctx.lineTo(-size * 0.866, size * 0.5);
-      ctx.closePath();
+      ctx.shadowColor = `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${Math.min(alphaCore * 1.4, 0.85)})`;
+      ctx.shadowBlur = size * 0.9;
+      const lg = ctx.createLinearGradient(-size / 2, -size / 2, size / 2, size / 2);
+      lg.addColorStop(0, `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${Math.min(alphaCore * 1.3, 0.95)})`);
+      lg.addColorStop(1, `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${alphaCore * 0.5})`);
+      ctx.fillStyle = lg;
+      ctx.beginPath();
+      if (shapeIdx === 1) {
+        ctx.rect(-size / 2, -size / 2, size, size * (rand() * 0.5 + 0.5));
+      } else {
+        ctx.moveTo(0, -size);
+        ctx.lineTo(size * 0.866, size * 0.5);
+        ctx.lineTo(-size * 0.866, size * 0.5);
+        ctx.closePath();
+      }
+      ctx.fill();
+      ctx.shadowBlur = 0;
     }
-    ctx.fill();
     ctx.restore();
   }
 }
@@ -137,8 +169,9 @@ function drawWave(
   for (let l = 0; l < count; l++) {
     const color = paletteColor(palette, l, layer.paletteOffset);
     const [r, g, b] = hexToRgb(color);
-    ctx.strokeStyle = `rgba(${r},${g},${b},${rand() * 0.25 + 0.05})`;
-    ctx.lineWidth = (rand() * 3 + 1) * layer.scale;
+    ctx.strokeStyle = `rgba(${r},${g},${b},${rand() * 0.35 + 0.15})`;
+    ctx.lineWidth = (rand() * 4 + 1.5) * layer.scale;
+    ctx.lineCap = "round";
     const amplitude = (rand() * h * 0.15 + 20) * layer.scale;
     const frequency = rand() * 0.01 + 0.003;
     const yOffset = rand() * h;
@@ -163,18 +196,24 @@ function drawBurst(
   const cx = w * (rand() * 0.4 + 0.3);
   const cy = h * (rand() * 0.4 + 0.3);
   const rays = Math.floor(layer.density * 40) + 20;
+  ctx.lineCap = "round";
   for (let i = 0; i < rays; i++) {
     const angle = (i / rays) * Math.PI * 2;
     const len = (rand() * Math.max(w, h) * 0.8 + 100) * layer.scale;
     const color = paletteColor(palette, i, layer.paletteOffset);
     const [r, g, b] = hexToRgb(color);
-    ctx.strokeStyle = `rgba(${r},${g},${b},${rand() * 0.2 + 0.02})`;
+    ctx.strokeStyle = `rgba(${r},${g},${b},${rand() * 0.3 + 0.08})`;
     ctx.lineWidth = rand() * 4 + 0.5;
     ctx.beginPath();
     ctx.moveTo(cx, cy);
     ctx.lineTo(cx + Math.cos(angle) * len, cy + Math.sin(angle) * len);
     ctx.stroke();
   }
+  const glowRgb = hexToRgb(paletteColor(palette, 0, layer.paletteOffset));
+  ctx.fillStyle = radialFill(ctx, cx, cy, Math.max(w, h) * 0.25, glowRgb, 0.35, 0);
+  ctx.beginPath();
+  ctx.arc(cx, cy, Math.max(w, h) * 0.25, 0, Math.PI * 2);
+  ctx.fill();
 }
 
 function drawOrganic(
@@ -185,25 +224,25 @@ function drawOrganic(
   palette: string[],
   rand: () => number
 ) {
-  const blobs = Math.floor(layer.density * 8) + 4;
+  const blobs = Math.floor(layer.density * 7) + 4;
   for (let b = 0; b < blobs; b++) {
     const cx = rand() * w;
     const cy = rand() * h;
-    const radius = (rand() * Math.min(w, h) * 0.2 + 40) * layer.scale;
+    const radius = (rand() * Math.min(w, h) * 0.24 + 50) * layer.scale;
     const color = paletteColor(palette, b, layer.paletteOffset);
-    const [r, g, bv] = hexToRgb(color);
-    ctx.fillStyle = `rgba(${r},${g},${bv},${rand() * 0.3 + 0.05})`;
-    const points = 6;
-    ctx.beginPath();
+    const rgb = hexToRgb(color);
+    const points = 8;
+    const path = new Path2D();
     for (let i = 0; i <= points; i++) {
       const angle = (i / points) * Math.PI * 2;
-      const jitter = rand() * radius * 0.4 + radius * 0.8;
+      const jitter = rand() * radius * 0.35 + radius * 0.85;
       const x = cx + Math.cos(angle) * jitter;
       const y = cy + Math.sin(angle) * jitter;
-      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      i === 0 ? path.moveTo(x, y) : path.lineTo(x, y);
     }
-    ctx.closePath();
-    ctx.fill();
+    path.closePath();
+    ctx.fillStyle = radialFill(ctx, cx, cy, radius * 1.1, rgb, rand() * 0.25 + 0.3, 0.02);
+    ctx.fill(path);
   }
 }
 
@@ -242,7 +281,7 @@ export default function CampaignCanvas({ imageParams: rawParams, className, styl
     if (!ctx) return;
 
     const W = 1200;
-    const H = 630;
+    const H = 700;
     canvas.width = W;
     canvas.height = H;
 
@@ -257,7 +296,10 @@ export default function CampaignCanvas({ imageParams: rawParams, className, styl
     const actx = art.getContext("2d");
     if (!actx) return;
 
-    actx.fillStyle = params.bg;
+    const bgGrad = actx.createLinearGradient(0, 0, W, H);
+    bgGrad.addColorStop(0, shade(params.bg, 14));
+    bgGrad.addColorStop(1, shade(params.bg, -10));
+    actx.fillStyle = bgGrad;
     actx.fillRect(0, 0, W, H);
 
     for (const layer of params.layers) {
@@ -280,7 +322,7 @@ export default function CampaignCanvas({ imageParams: rawParams, className, styl
       const pattern = createGrainPattern(rand);
       if (pattern) {
         actx.save();
-        actx.globalAlpha = params.grain * 0.3;
+        actx.globalAlpha = params.grain * 0.35;
         actx.globalCompositeOperation = "overlay";
         actx.fillStyle = pattern;
         actx.fillRect(0, 0, W, H);
@@ -293,8 +335,8 @@ export default function CampaignCanvas({ imageParams: rawParams, className, styl
 
     if (params.glow > 0) {
       ctx.save();
-      ctx.filter = `blur(${Math.round(params.glow * 40)}px)`;
-      ctx.globalAlpha = params.glow * 0.6;
+      ctx.filter = `blur(${Math.round(params.glow * 44)}px)`;
+      ctx.globalAlpha = params.glow * 0.65;
       ctx.globalCompositeOperation = "screen";
       ctx.drawImage(art, 0, 0);
       ctx.restore();
@@ -302,12 +344,14 @@ export default function CampaignCanvas({ imageParams: rawParams, className, styl
 
     // Contrast-aware readability scrim: darker overlay when bg is light,
     // lighter overlay when bg is already dark, so overlaid white text
-    // stays readable regardless of the chosen palette.
+    // stays readable regardless of the chosen palette. Heaviest at the
+    // bottom where headline/subheadline sit.
     const lum = luminance(params.bg);
-    const baseAlpha = 0.15 + lum * 0.55;
+    const baseAlpha = 0.12 + lum * 0.5;
     const grad = ctx.createLinearGradient(0, 0, 0, H);
-    grad.addColorStop(0, `rgba(0,0,0,${(baseAlpha * 0.3).toFixed(2)})`);
-    grad.addColorStop(1, `rgba(0,0,0,${baseAlpha.toFixed(2)})`);
+    grad.addColorStop(0, `rgba(0,0,0,${(baseAlpha * 0.15).toFixed(2)})`);
+    grad.addColorStop(0.55, `rgba(0,0,0,${(baseAlpha * 0.5).toFixed(2)})`);
+    grad.addColorStop(1, `rgba(0,0,0,${(baseAlpha * 1.3).toFixed(2)})`);
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, W, H);
   }, [rawParams]);
@@ -316,7 +360,7 @@ export default function CampaignCanvas({ imageParams: rawParams, className, styl
     <canvas
       ref={canvasRef}
       className={className}
-      style={{ width: "100%", aspectRatio: "1200/630", display: "block", ...style }}
+      style={{ width: "100%", aspectRatio: "1200/700", display: "block", ...style }}
     />
   );
 }

@@ -9,9 +9,9 @@ export interface CampaignContent {
 }
 
 const RESPONSE_SHAPE = `{
-  "headline": "6-12 word headline naming the concrete ask or stakes",
-  "subheadline": "one sentence citing a specific, credible detail from the cause (a number, place, or deadline)",
-  "body": "3-4 paragraphs separated by \\n\\n: the concrete situation, why it matters now, exactly what the funds buy, then a direct ask",
+  "headline": "8-16 word headline naming the concrete ask or stakes — a full statement, not a clipped fragment",
+  "subheadline": "1-2 sentences citing specific, credible details from the cause (numbers, places, deadlines, names)",
+  "body": "5-7 paragraphs separated by \\n\\n: the concrete situation in detail, who is affected and how, why it matters right now, exactly what the funds buy (broken down if there are multiple costs), the impact of hitting vs missing the goal, then a direct ask",
   "ctaText": "3-6 word call-to-action implying urgency or specificity, e.g. Fund Our Trip to Dallas",
   "imageParams": {
     "seed": <random integer 1000-9999>,
@@ -45,7 +45,7 @@ export function buildGeneratePrompt(cause: string): string {
 
 "${cause}"
 
-Write like an experienced fundraising copywriter, not a generic template: use concrete specifics from the cause description (names, numbers, places, deadlines) rather than vague enthusiasm, build a real emotional stake, and make the ask feel urgent and exact.
+Write like an experienced fundraising copywriter, not a generic template: use concrete specifics from the cause description (names, numbers, places, deadlines) rather than vague enthusiasm, build a real emotional stake, and make the ask feel urgent and exact. Write substantially — this page is the whole pitch, not a teaser, so give the body room to actually tell the story instead of compressing it into a couple of thin sentences. If the cause description is short on specifics, invent plausible, concrete-sounding specifics consistent with it rather than staying vague.
 
 Respond ONLY with valid JSON (no markdown, no code fences):
 ${RESPONSE_SHAPE}

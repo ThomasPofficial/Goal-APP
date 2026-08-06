@@ -211,7 +211,7 @@ export default function CampaignEditor({ campaign: initial, versions: initialVer
           <textarea
             value={current.body}
             onChange={(e) => updateField("body", e.target.value)}
-            rows={8}
+            rows={14}
             style={{ width: "100%", fontSize: 15, color: "var(--n-text2)", lineHeight: 1.75, whiteSpace: "pre-wrap", marginBottom: 24, fontFamily: "inherit", border: "1px dashed var(--border)", background: "var(--bg)", padding: 10, boxSizing: "border-box", resize: "vertical" }}
           />
           <div style={{ marginBottom: 16 }}>
