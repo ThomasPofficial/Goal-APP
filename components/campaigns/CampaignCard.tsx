@@ -13,6 +13,8 @@ interface CampaignSummary {
   imageParams: ImageParams;
   active: boolean;
   pledgeCount: number;
+  raised: number;
+  goalAmount: number | null;
   createdAt: string;
 }
 
@@ -58,6 +60,31 @@ export default function CampaignCard({ campaign, onToggleActive, onDelete }: Pro
           </button>
           {!campaign.slug && <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--n-text2)" }}>— not published</span>}
         </div>
+        {campaign.goalAmount && campaign.goalAmount > 0 ? (
+          <div style={{ marginBottom: 12 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+              <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--text)", fontWeight: 700 }}>
+                ${campaign.raised.toLocaleString()} raised
+              </span>
+              <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--n-text2)" }}>
+                of ${campaign.goalAmount.toLocaleString()}
+              </span>
+            </div>
+            <div style={{ height: 6, background: "var(--n-bg3)" }}>
+              <div
+                style={{
+                  height: "100%",
+                  width: `${Math.min(100, (campaign.raised / campaign.goalAmount) * 100)}%`,
+                  background: "var(--amber)",
+                }}
+              />
+            </div>
+          </div>
+        ) : (
+          <p style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--text)", fontWeight: 700, margin: "0 0 12px" }}>
+            ${campaign.raised.toLocaleString()} raised
+          </p>
+        )}
         <div style={{ display: "flex", gap: 8 }}>
           <Link href={`/campaigns/${campaign.id}/edit`} style={{ flex: 1, padding: "6px 0", border: "1px solid var(--border)", color: "var(--text)", fontFamily: "var(--font-mono)", fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "center", gap: 4 }}>
             <Pencil size={11} /> Edit
