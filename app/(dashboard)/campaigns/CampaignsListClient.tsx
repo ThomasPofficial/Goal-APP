@@ -14,6 +14,8 @@ interface CampaignSummary {
   imageParams: ImageParams;
   active: boolean;
   pledgeCount: number;
+  raised: number;
+  goalAmount: number | null;
   createdAt: string;
 }
 
