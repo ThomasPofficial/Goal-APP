@@ -216,6 +216,8 @@ export default function CampaignsListClient({ campaigns: initial }: { campaigns:
             </div>
           )}
         </>
+      )}
+      </>
       ) : (
         <div>
           {(() => {
