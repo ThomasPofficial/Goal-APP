@@ -7,6 +7,18 @@ export async function GET() {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const [myProfile, myUser] = await Promise.all([
+    prisma.profile.findUnique({
+      where: { userId: session.user.id },
+      select: { staffTitle: true },
+    }),
+    prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { isAlumni: true },
+    }),
+  ]);
+  const isMentor = Boolean(myProfile?.staffTitle) || Boolean(myUser?.isAlumni);
+
   const conversations = await prisma.conversation.findMany({
     where: { participants: { some: { userId: session.user.id } } },
     include: {
@@ -28,7 +40,8 @@ export async function GET() {
   const serialized = conversations.map((c) => ({
     id: c.id,
     type: c.type,
-    name: null as string | null,
+    name: c.communityName ?? null,
+    canRename: c.type === "MENTORSHIP" && isMentor,
     teamId: c.teamId,
     teamName: c.team?.name ?? null,
     updatedAt: c.updatedAt.toISOString(),
