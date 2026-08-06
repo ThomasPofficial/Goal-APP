@@ -2,22 +2,13 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { isMentorUser } from "@/lib/mentorship";
 
 export async function GET() {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const [myProfile, myUser] = await Promise.all([
-    prisma.profile.findUnique({
-      where: { userId: session.user.id },
-      select: { staffTitle: true },
-    }),
-    prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { isAlumni: true },
-    }),
-  ]);
-  const isMentor = Boolean(myProfile?.staffTitle) || Boolean(myUser?.isAlumni);
+  const isMentor = await isMentorUser(session.user.id);
 
   const conversations = await prisma.conversation.findMany({
     where: { participants: { some: { userId: session.user.id } } },

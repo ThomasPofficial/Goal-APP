@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import MessagesClient from './MessagesClient';
 import type { GeniusTypeKey } from '@/lib/geniusTypes';
 import { isWalledStudent } from '@/lib/accountGate';
+import { isMentorUser } from '@/lib/mentorship';
 
 export default async function MessagesPage({
   searchParams,
@@ -14,21 +15,17 @@ export default async function MessagesPage({
   if (!session?.user?.id) redirect('/login');
   if (await isWalledStudent(session.user.id)) redirect('/dashboard');
 
-  const [myProfile, myOrg, myUser] = await Promise.all([
+  const [myProfile, myOrg, isMentor] = await Promise.all([
     prisma.profile.findUnique({
       where: { userId: session.user.id },
-      select: { id: true, displayName: true, avatarUrl: true, geniusType: true, staffTitle: true },
+      select: { id: true, displayName: true, avatarUrl: true, geniusType: true },
     }),
     prisma.org.findFirst({
       where: { createdById: session.user.id },
       select: { id: true, name: true },
     }),
-    prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { isAlumni: true },
-    }),
+    isMentorUser(session.user.id),
   ]);
-  const isMentor = Boolean(myProfile?.staffTitle) || Boolean(myUser?.isAlumni);
   if (!myProfile && !myOrg) redirect('/onboarding');
 
   const params = await searchParams;
