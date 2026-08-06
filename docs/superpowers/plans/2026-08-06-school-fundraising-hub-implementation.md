@@ -10,7 +10,7 @@
 
 ## Global Constraints
 
-- **Verification command override:** in this sandboxed dev environment, `npm run build` (`next build`) reliably fails at the "Creating an optimized production build" step with `next/font: error: Failed to fetch 'X' from Google Fonts` (TLS/network blocked, unrelated to any code change — confirmed as a pre-existing environment limitation on a totally clean checkout before any task ran). **Do not treat this as a task failure.** Wherever a step says "Run: `npm run build`", instead run `npx tsc --noEmit -p tsconfig.json` — this type-checks the whole app without needing network access, and is the real gate for this plan. That command has **7 pre-existing baseline errors, all unrelated to this plan's files**: `app/(dashboard)/admin/org-categories/page.tsx:33`, `app/(dashboard)/orgs/OrgsClient.tsx:179`, and `prisma/seed-mock.ts:142,158,264,280,373`. A task passes verification if `npx tsc --noEmit -p tsconfig.json` produces exactly those 7 errors and nothing new — report any additional or different error as a real failure. If you also have working internet/DNS in your execution environment and `npm run build` completes past the font-fetch step, that is a strictly stronger signal and fine to report instead — the `tsc` baseline is the floor, not a ceiling.
+- **Verification command override:** in this sandboxed dev environment, `npm run build` (`next build`) reliably fails at the "Creating an optimized production build" step with `next/font: error: Failed to fetch 'X' from Google Fonts` (TLS/network blocked, unrelated to any code change — confirmed as a pre-existing environment limitation on a totally clean checkout before any task ran). **Do not treat this as a task failure.** Wherever a step says "Run: `npm run build`", instead run `npx tsc --noEmit -p tsconfig.json` — this type-checks the whole app without needing network access, and is the real gate for this plan. That command has **8 pre-existing baseline errors, all unrelated to this plan's files**: `app/(dashboard)/admin/org-categories/page.tsx:33`, `app/(dashboard)/orgs/OrgsClient.tsx:179`, and `prisma/seed-mock.ts:142,158,264,280,373,389`. A task passes verification if `npx tsc --noEmit -p tsconfig.json` produces exactly those 8 errors and nothing new — report any additional or different error as a real failure. If you also have working internet/DNS in your execution environment and `npm run build` completes past the font-fetch step, that is a strictly stronger signal and fine to report instead — the `tsc` baseline is the floor, not a ceiling.
 - Do not touch any file under `app/(dashboard)/campaigns/new/`, `app/(dashboard)/campaigns/[id]/edit/`, `app/c/[slug]/`, `components/campaigns/CampaignEditor.tsx`, `CampaignCanvas.tsx`, `CampaignHero.tsx`, `VersionHistoryDrawer.tsx`, `app/api/campaigns/generate/`, `app/api/campaigns/[id]/tweak/`, `app/api/campaigns/[id]/versions*`, or the `CampaignVersion` model — all owned by a concurrent agent's already-merged campaign-editor overhaul.
 - Do not touch `StudentBrochureData` (Prisma model) or `app/api/student/brochure-data/route.ts` — a separate concurrent agent's chain of commits (`4431473`, then `fc9fad7` "Remove the alumni outcomes self-report form and annual survey email") has already deleted `app/(dashboard)/profile/survey/` entirely and stripped the "Send Annual Survey" trigger out of `BrochureCurationPanel.tsx`, but explicitly kept `StudentBrochureData` itself — it now also backs `components/school/WhySchoolBanner.tsx`, a "Why {school}" dashboard stat. Since `app/(dashboard)/profile/survey/` no longer exists at all, there is nothing left there to accidentally touch — this line is just documenting why, so no task second-guesses the missing directory.
 - `Campaign.manualAdjustment` and `CampaignPledge.pledgeAmount` are `Decimal(10,2)` **dollar** amounts (not cents) — match the existing convention in `app/api/campaigns/[id]/adjust/route.ts` (`parseFloat(x.toString())`).
@@ -86,7 +86,7 @@ const homeHref = isSchool ? "/campaigns" : isOrg && myOrgId ? `/orgs/${myOrgId}`
 - [ ] **Step 3: Verify**
 
 Run: `npx tsc --noEmit -p tsconfig.json` (see Global Constraints — this replaces `npm run build` in this environment)
-Expected: only the 7 pre-existing baseline errors listed in Global Constraints; nothing new, and nothing mentioning `app/(dashboard)/school/destinations`, `DestinationsMap`, or `lib/colleges.json`.
+Expected: only the 8 pre-existing baseline errors listed in Global Constraints; nothing new, and nothing mentioning `app/(dashboard)/school/destinations`, `DestinationsMap`, or `lib/colleges.json`.
 
 - [ ] **Step 4: Commit**
 
@@ -179,7 +179,7 @@ Run: `npx prisma generate`
 Expected: succeeds, no references to `prisma.schoolBrochureSettings` or `prisma.brochureTestimonial` remain anywhere (they only existed in the files deleted in Step 1).
 
 Run: `npx tsc --noEmit -p tsconfig.json` (see Global Constraints)
-Expected: only the 7 pre-existing baseline errors; nothing new.
+Expected: only the 8 pre-existing baseline errors; nothing new.
 
 - [ ] **Step 5: Commit**
 
@@ -289,7 +289,7 @@ interface CampaignSummary {
 - [ ] **Step 3: Verify**
 
 Run: `npx tsc --noEmit -p tsconfig.json` (see Global Constraints)
-Expected: only the 7 pre-existing baseline errors; nothing new. (`CampaignCard.tsx` still declares its own local `CampaignSummary` without `raised`/`goalAmount` at this point — that's fine, TypeScript structural typing allows passing an object with extra fields; Task 5 adds them there too.)
+Expected: only the 8 pre-existing baseline errors; nothing new. (`CampaignCard.tsx` still declares its own local `CampaignSummary` without `raised`/`goalAmount` at this point — that's fine, TypeScript structural typing allows passing an object with extra fields; Task 5 adds them there too.)
 
 - [ ] **Step 4: Commit**
 
@@ -502,7 +502,7 @@ export default function CampaignsListClient({ campaigns: initial }: { campaigns:
 - [ ] **Step 2: Verify**
 
 Run: `npx tsc --noEmit -p tsconfig.json` (see Global Constraints)
-Expected: only the 7 pre-existing baseline errors; nothing new. (`CampaignCard.tsx` doesn't yet render `raised`/`goalAmount` — that's Task 5 — but it type-checks fine since it currently ignores those extra fields.)
+Expected: only the 8 pre-existing baseline errors; nothing new. (`CampaignCard.tsx` doesn't yet render `raised`/`goalAmount` — that's Task 5 — but it type-checks fine since it currently ignores those extra fields.)
 
 - [ ] **Step 3: Commit**
 
@@ -626,7 +626,7 @@ The full method body around the insertion point should read:
 - [ ] **Step 2: Verify**
 
 Run: `npx tsc --noEmit -p tsconfig.json` (see Global Constraints)
-Expected: only the 7 pre-existing baseline errors; nothing new.
+Expected: only the 8 pre-existing baseline errors; nothing new.
 
 - [ ] **Step 3: Commit**
 
@@ -671,4 +671,4 @@ Use `ridgepoint@nivarro.demo` / `ridgepoint2026` (or any current `SCHOOL`-role a
 - [ ] **Step 6: Final verification**
 
 Run: `npx tsc --noEmit -p tsconfig.json`
-Expected: only the 7 pre-existing baseline errors, confirming all six tasks compose correctly together with no new type errors introduced across the whole branch.
+Expected: only the 8 pre-existing baseline errors, confirming all six tasks compose correctly together with no new type errors introduced across the whole branch.
