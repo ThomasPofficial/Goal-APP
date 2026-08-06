@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Anton, Inter, JetBrains_Mono, Playfair_Display } from "next/font/google";
+import { Inter, JetBrains_Mono, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import SessionProvider from "@/components/providers/SessionProvider";
 import PostHogProvider from "@/components/providers/PostHogProvider";
@@ -7,9 +7,11 @@ import PostHogIdentify from "@/components/providers/PostHogIdentify";
 import { Suspense } from "react";
 import PostHogPageView from "@/components/providers/PostHogPageView";
 
-const anton = Anton({
+// Single weight, like Anton before it, so every existing --font-display
+// call site renders bold without needing an explicit font-weight.
+const interDisplay = Inter({
   subsets: ["latin"],
-  weight: "400",
+  weight: "800",
   variable: "--font-display",
   display: "swap",
 });
@@ -48,7 +50,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${anton.variable} ${inter.variable} ${jetbrainsMono.variable} ${playfairDisplay.variable}`}>
+    <html lang="en" className={`${interDisplay.variable} ${inter.variable} ${jetbrainsMono.variable} ${playfairDisplay.variable}`}>
       <body className="antialiased" style={{ background: "var(--bg)", color: "var(--text)" }}>
         <PostHogProvider>
           <SessionProvider>
