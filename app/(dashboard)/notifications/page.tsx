@@ -14,6 +14,22 @@ export default async function NotificationsPage() {
     select: { role: true },
   });
 
+  const donations = await prisma.donation.findMany({
+    where: { recipientUserId: session.user.id },
+    orderBy: { createdAt: "desc" },
+    take: 20,
+  });
+
+  const donationItems = donations.map((d) => ({
+    id: `donation-${d.id}`,
+    kind: "donation" as const,
+    label: `${d.donorName?.trim() || "Someone"} donated $${(d.amountCents / 100).toFixed(2)} to you`,
+    lastMessage: null,
+    updatedAt: d.createdAt.toISOString(),
+    unread: false,
+    href: "/donate",
+  }));
+
   if (dbUser?.role === "SCHOOL" || (await isWalledStudent(session.user.id))) {
     const conversations = await prisma.conversation.findMany({
       where: {
@@ -29,7 +45,7 @@ export default async function NotificationsPage() {
 
     const isSchool = dbUser?.role === "SCHOOL";
 
-    const items = conversations.map((c) => {
+    const chatItems = conversations.map((c) => {
       const lastReadAt = c.participants[0]?.lastReadAt ?? null;
       const lastMessageAt = c.messages[0]?.createdAt ?? c.updatedAt;
       const kind = (c.type === "COMMUNITY" ? "community" : "mentorship") as "community" | "mentorship";
@@ -50,6 +66,10 @@ export default async function NotificationsPage() {
             : `/mentorship?conversation=${c.id}`,
       };
     });
+
+    const items = [...donationItems, ...chatItems].sort(
+      (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+    );
 
     return <WalledNotificationsClient items={items} />;
   }
@@ -129,6 +149,13 @@ export default async function NotificationsPage() {
         decidedAt: a.decidedAt?.toISOString() ?? null,
         team: a.team,
         orgProject: a.orgProject,
+      }))}
+      donations={donations.map((d) => ({
+        id: d.id,
+        type: "donation" as const,
+        sortDate: d.createdAt.toISOString(),
+        amountCents: d.amountCents,
+        donorName: d.donorName,
       }))}
     />
   );

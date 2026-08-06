@@ -1,13 +1,20 @@
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { isWalledStudent } from "@/lib/accountGate";
 import { prisma } from "@/lib/prisma";
 import DonateClient from "./DonateClient";
 
 export default async function DonatePage() {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
-  if (!(await isWalledStudent(session.user.id))) redirect("/dashboard");
+
+  // Every individual account (student, alumni, teacher/staff — all role
+  // STUDENT under the hood) can have a donation link. Org/school logins
+  // don't have personal profiles and use /campaigns for fundraising instead.
+  const dbUser = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { role: true },
+  });
+  if (dbUser?.role !== "STUDENT") redirect("/dashboard");
 
   const profile = await prisma.profile.findUnique({
     where: { userId: session.user.id },

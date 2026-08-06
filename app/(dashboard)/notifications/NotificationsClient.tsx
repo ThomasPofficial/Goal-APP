@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
+import { Gift } from "lucide-react";
 import Avatar from "@/components/ui/Avatar";
 import GeniusTypeBadge from "@/components/ui/GeniusTypeBadge";
 import type { GeniusTypeKey } from "@/lib/geniusTypes";
@@ -30,14 +31,24 @@ interface DecisionItem {
   orgProject: { id: string; title: string; orgId: string; org: { id: string; name: string } };
 }
 
-type NotifItem = RecruitmentItem | DecisionItem;
+interface DonationItem {
+  id: string;
+  type: "donation";
+  sortDate: string;
+  amountCents: number;
+  donorName: string | null;
+}
+
+type NotifItem = RecruitmentItem | DecisionItem | DonationItem;
 
 export default function NotificationsClient({
   requests,
   applications,
+  donations = [],
 }: {
   requests: RecruitmentItem[];
   applications: DecisionItem[];
+  donations?: DonationItem[];
 }) {
   const [recruitStatuses, setRecruitStatuses] = useState<Record<string, string>>(() =>
     Object.fromEntries(requests.map((r) => [r.id, r.status]))
@@ -55,6 +66,7 @@ export default function NotificationsClient({
   const allItems: NotifItem[] = [
     ...requests.map((r) => ({ ...r, status: recruitStatuses[r.id] ?? r.status })),
     ...applications,
+    ...donations,
   ].sort((a, b) => new Date(b.sortDate).getTime() - new Date(a.sortDate).getTime());
 
   const pending = allItems.filter((i) => i.type === "recruitment" && i.status === "PENDING");
@@ -66,7 +78,7 @@ export default function NotificationsClient({
         <h1 className="text-2xl font-medium" style={{ fontFamily: "var(--font-serif)" }}>Notifications</h1>
         <div className="text-center py-16 space-y-2">
           <p className="text-sm" style={{ color: "var(--muted)" }}>No notifications yet.</p>
-          <p className="text-xs" style={{ color: "var(--muted)" }}>Acceptances, invitations, and decisions show up here.</p>
+          <p className="text-xs" style={{ color: "var(--muted)" }}>Acceptances, invitations, decisions, and donations show up here.</p>
         </div>
       </div>
     );
@@ -100,6 +112,8 @@ export default function NotificationsClient({
             {earlier.map((item) =>
               item.type === "recruitment" ? (
                 <RecruitCard key={item.id} req={item} status={recruitStatuses[item.id]} onRespond={respond} />
+              ) : item.type === "donation" ? (
+                <DonationCard key={item.id} item={item} />
               ) : (
                 <DecisionCard key={item.id} item={item} />
               )
@@ -107,6 +121,24 @@ export default function NotificationsClient({
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function DonationCard({ item }: { item: DonationItem }) {
+  return (
+    <div className="border p-4" style={{ borderColor: "rgba(34,197,94,0.35)", background: "rgba(34,197,94,0.06)" }}>
+      <div className="flex items-start gap-3">
+        <Gift size={16} style={{ color: "#22c55e", flexShrink: 0, marginTop: 2 }} />
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium" style={{ color: "var(--text)" }}>
+            {item.donorName?.trim() || "Someone"} donated ${(item.amountCents / 100).toFixed(2)} to you
+          </p>
+          <p className="text-xs mt-1 font-mono" style={{ color: "var(--muted)" }}>
+            {formatDistanceToNow(new Date(item.sortDate), { addSuffix: true })}
+          </p>
+        </div>
+      </div>
     </div>
   );
 }

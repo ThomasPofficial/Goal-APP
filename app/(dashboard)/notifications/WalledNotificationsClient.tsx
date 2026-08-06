@@ -2,11 +2,11 @@
 
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
-import { Globe, HeartHandshake } from "lucide-react";
+import { Globe, HeartHandshake, Gift } from "lucide-react";
 
 interface ActivityItem {
   id: string;
-  kind: "community" | "mentorship";
+  kind: "community" | "mentorship" | "donation";
   label: string;
   lastMessage: string | null;
   updatedAt: string;
@@ -27,15 +27,17 @@ export default function WalledNotificationsClient({ items }: { items: ActivityIt
           href={item.href}
           style={{
             display: "flex", alignItems: "flex-start", gap: 12, padding: "14px 16px",
-            border: "1px solid var(--border)",
-            background: item.unread ? "rgba(232,137,58,0.08)" : "var(--surface)",
+            border: item.kind === "donation" ? "1px solid rgba(34,197,94,0.35)" : "1px solid var(--border)",
+            background: item.kind === "donation" ? "rgba(34,197,94,0.08)" : item.unread ? "rgba(232,137,58,0.08)" : "var(--surface)",
             textDecoration: "none",
           }}
         >
           {item.kind === "community" ? (
             <Globe size={16} style={{ color: "var(--amber)", flexShrink: 0, marginTop: 2 }} />
-          ) : (
+          ) : item.kind === "mentorship" ? (
             <HeartHandshake size={16} style={{ color: "var(--amber)", flexShrink: 0, marginTop: 2 }} />
+          ) : (
+            <Gift size={16} style={{ color: "#22c55e", flexShrink: 0, marginTop: 2 }} />
           )}
           <div style={{ flex: 1, minWidth: 0 }}>
             <p style={{ margin: 0, fontSize: 13, fontWeight: item.unread ? 700 : 400, color: "var(--text)" }}>

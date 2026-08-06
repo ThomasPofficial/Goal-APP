@@ -14,6 +14,7 @@ const STANDARD_NAV = [
   { href: "/peers",          label: "Peers",         Icon: Users },
   { href: "/orgs",           label: "Organizations", Icon: Building2 },
   { href: "/teams",          label: "Teams",         Icon: UsersRound },
+  { href: "/donate",         label: "Donate",        Icon: Gift },
   { href: "/messages",       label: "Messages",      Icon: MessageSquare },
   { href: "/notifications",  label: "Notifications", Icon: Bell },
 ];
