@@ -7,7 +7,7 @@ import Avatar from "@/components/ui/Avatar";
 import GeniusTypeBadge from "@/components/ui/GeniusTypeBadge";
 import type { GeniusTypeKey } from "@/lib/geniusTypes";
 import { GENIUS_TYPES } from "@/lib/geniusTypes";
-import { Send, Plus, X, Search } from "lucide-react";
+import { Send, Plus, X, Search, Pencil, Check } from "lucide-react";
 
 interface Participant {
   id: string;
@@ -25,6 +25,7 @@ interface ConvSummary {
   id: string;
   type: string;
   name: string | null;
+  canRename: boolean;
   teamId: string | null;
   teamName: string | null;
   updatedAt: string;
@@ -201,6 +202,9 @@ export default function MessagesClient({ conversations: initialConvs, myUserId, 
   const [showNewMsg, setShowNewMsg] = useState(false);
   const [showThread, setShowThread] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const [renaming, setRenaming] = useState(false);
+  const [renameValue, setRenameValue] = useState("");
+  const [savingRename, setSavingRename] = useState(false);
 
   const activeConv = conversations.find((c) => c.id === activeId) ?? null;
 
@@ -215,7 +219,7 @@ export default function MessagesClient({ conversations: initialConvs, myUserId, 
     } finally { setLoadingMsgs(false); }
   }, []);
 
-  useEffect(() => { if (!activeId) return; loadMessages(activeId); }, [activeId, loadMessages]);
+  useEffect(() => { if (!activeId) return; loadMessages(activeId); setRenaming(false); }, [activeId, loadMessages]);
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
 
   useEffect(() => {
@@ -252,6 +256,27 @@ export default function MessagesClient({ conversations: initialConvs, myUserId, 
         ));
       }
     } finally { setSending(false); }
+  };
+
+  const saveRename = async () => {
+    if (!activeId || !renameValue.trim() || savingRename) return;
+    setSavingRename(true);
+    try {
+      const res = await fetch(`/api/conversations/${activeId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: renameValue.trim() }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setConversations((prev) => prev.map((c) =>
+          c.id === activeId ? { ...c, name: data.name } : c
+        ));
+        setRenaming(false);
+      }
+    } finally {
+      setSavingRename(false);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -370,10 +395,40 @@ export default function MessagesClient({ conversations: initialConvs, myUserId, 
                 <span style={{ fontSize: 18 }}>←</span>
               </button>
               {(() => { const av = convAvatar(activeConv, myUserId); return <Avatar src={av.src} displayName={av.displayName} geniusType={av.geniusType} size={30} />; })()}
-              <div>
-                <p style={{ fontFamily: "var(--font-serif)", fontSize: 22, fontWeight: 500, letterSpacing: "-0.3px", color: "var(--text)", lineHeight: 1.1 }}>
-                  {convDisplayName(activeConv, myUserId)}
-                </p>
+              <div className="flex-1 min-w-0">
+                {renaming ? (
+                  <div className="flex items-center gap-2">
+                    <input
+                      autoFocus
+                      value={renameValue}
+                      onChange={(e) => setRenameValue(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === "Enter") saveRename(); if (e.key === "Escape") setRenaming(false); }}
+                      maxLength={80}
+                      className="text-lg"
+                      style={{ fontFamily: "var(--font-serif)", fontWeight: 500, color: "var(--text)", background: "var(--bg)", border: "1px solid var(--border)", padding: "2px 8px", minWidth: 180 }}
+                    />
+                    <button onClick={saveRename} disabled={savingRename || !renameValue.trim()} title="Save">
+                      <Check className="w-4 h-4" style={{ color: "var(--gold)" }} />
+                    </button>
+                    <button onClick={() => setRenaming(false)} title="Cancel">
+                      <X className="w-4 h-4" style={{ color: "var(--text2)" }} />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <p style={{ fontFamily: "var(--font-serif)", fontSize: 22, fontWeight: 500, letterSpacing: "-0.3px", color: "var(--text)", lineHeight: 1.1 }}>
+                      {convDisplayName(activeConv, myUserId)}
+                    </p>
+                    {activeConv.canRename && (
+                      <button
+                        onClick={() => { setRenameValue(activeConv.name ?? convDisplayName(activeConv, myUserId)); setRenaming(true); }}
+                        title="Rename this chat"
+                      >
+                        <Pencil className="w-3.5 h-3.5" style={{ color: "var(--text2)" }} />
+                      </button>
+                    )}
+                  </div>
+                )}
                 {activeConv.type === "DIRECT" && (() => {
                   const other = activeConv.participants.find((p) => p.userId !== myUserId);
                   return other?.profile?.geniusType ? <GeniusTypeBadge geniusType={other.profile.geniusType} size="sm" /> : null;
