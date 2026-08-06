@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getResendClient } from "@/lib/resend";
 import { processCampaignDonation } from "@/lib/payments/processCampaignDonation";
-import { MIN_DONATION_CENTS } from "@/lib/payments/donationFees";
+import { MIN_DONATION_CENTS } from "@/lib/payments/campaignDonationFee";
 
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => ({}));
@@ -30,6 +30,9 @@ export async function POST(req: NextRequest) {
   const amountText = `$${(amountCents / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   const totalText = pledge.totalCents != null
     ? `$${(pledge.totalCents / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+    : amountText;
+  const netText = pledge.pledgeAmount != null
+    ? `$${parseFloat(pledge.pledgeAmount.toString()).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
     : amountText;
 
   try {
@@ -68,7 +71,8 @@ export async function POST(req: NextRequest) {
             <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:24px;color:#1a1a1f">
               <h2 style="color:#4a80f0;margin-bottom:8px">New Online Donation (Demo)</h2>
               <p style="color:#58586a;line-height:1.6;margin:0 0 12px">
-                <strong>${escapeHtml(donorName)}</strong> donated <strong>${amountText}</strong> online.
+                <strong>${escapeHtml(donorName)}</strong> donated <strong>${amountText}</strong> online
+                (<strong>${netText}</strong> credited to your campaign after the processing fee).
                 This is a mock transaction — no money moved. Real Stripe payments launch soon.
               </p>
               <p style="color:#909098;font-size:13px;margin:0">— Nivarro Platform</p>
