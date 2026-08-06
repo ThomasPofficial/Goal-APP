@@ -148,7 +148,6 @@ model Profile {
   workflowSession      WorkflowSession?
   algorithmQuotas      AlgorithmQuota[]
   orgReviews           OrgReview[]
-  brochureData         StudentBrochureData?
 }
 
 enum GeniusType {
@@ -681,49 +680,6 @@ model OrgReview {
   profile    Profile    @relation(fields: [profileId], references: [id], onDelete: Cascade)
 
   @@unique([orgProjectId, profileId])
-}
-
-// ─────────────────────────────────────────────
-// BROCHURE
-// ─────────────────────────────────────────────
-
-model StudentBrochureData {
-  id              String   @id @default(cuid())
-  profileId       String   @unique
-  college         String?
-  jobTitle        String?
-  employer        String?
-  internshipTitle String?
-  internshipOrg   String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
-}
-
-model SchoolBrochureSettings {
-  id          String   @id @default(cuid())
-  schoolId    String   @unique
-  visibility  String   @default("ADMIN_ONLY")
-  maxStudents Int?
-  excludedIds String   @default("[]")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
-model BrochureTestimonial {
-  id            String   @id @default(cuid())
-  schoolId      String
-  body          String
-  sourceName    String
-  sourceContext String?
-  sourceType    String   @default("STUDENT")
-  approved      Boolean  @default(false)
-  displayOrder  Int      @default(0)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  @@index([schoolId])
 }
 
 // ─────────────────────────────────────────────
