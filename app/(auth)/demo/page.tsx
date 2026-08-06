@@ -16,7 +16,7 @@ async function loginSchool() {
   await signIn("credentials", {
     email: "school@nivarro.demo",
     password: "demo2026",
-    redirectTo: "https://app.nivarro.co/school/destinations",
+    redirectTo: "https://app.nivarro.co/campaigns",
   });
 }
 

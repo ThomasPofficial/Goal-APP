@@ -17,21 +17,32 @@ export default async function CampaignsPage() {
   const campaigns = await prisma.campaign.findMany({
     where: { schoolId: session.user.id },
     orderBy: { createdAt: "desc" },
-    include: { _count: { select: { pledges: true } } },
+    include: {
+      _count: { select: { pledges: true } },
+      pledges: { select: { pledgeAmount: true } },
+    },
   });
 
   return (
     <CampaignsListClient
-      campaigns={campaigns.map((c) => ({
-        id: c.id,
-        slug: c.slug,
-        headline: c.headline,
-        subheadline: c.subheadline,
-        imageParams: c.imageParams as unknown as ImageParams,
-        active: c.active,
-        pledgeCount: c._count.pledges,
-        createdAt: c.createdAt.toISOString(),
-      }))}
+      campaigns={campaigns.map((c) => {
+        const pledgeSum = c.pledges.reduce(
+          (sum, p) => sum + (p.pledgeAmount ? parseFloat(p.pledgeAmount.toString()) : 0),
+          0
+        );
+        return {
+          id: c.id,
+          slug: c.slug,
+          headline: c.headline,
+          subheadline: c.subheadline,
+          imageParams: c.imageParams as unknown as ImageParams,
+          active: c.active,
+          pledgeCount: c._count.pledges,
+          raised: parseFloat(c.manualAdjustment.toString()) + pledgeSum,
+          goalAmount: c.goalAmount ? parseFloat(c.goalAmount.toString()) : null,
+          createdAt: c.createdAt.toISOString(),
+        };
+      })}
     />
   );
 }

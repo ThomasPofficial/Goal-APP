@@ -73,7 +73,7 @@ export default function Sidebar({ userName, userEmail, geniusType, mobileOpen = 
   ];
 
   const navItems = isSchool ? SCHOOL_NAV : isOrg ? orgNav : isWalledStudent ? walledNav : studentNav;
-  const homeHref = isSchool ? "/school/destinations" : isOrg && myOrgId ? `/orgs/${myOrgId}` : "/dashboard";
+  const homeHref = isSchool ? "/campaigns" : isOrg && myOrgId ? `/orgs/${myOrgId}` : "/dashboard";
 
   const isActive = (href: string) => {
     if (isOrg && myOrgId && href === `/orgs/${myOrgId}`) return pathname.startsWith(`/orgs/${myOrgId}`);

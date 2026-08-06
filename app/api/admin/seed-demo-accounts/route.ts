@@ -653,7 +653,7 @@ I would not hesitate to bring Thomas back for a future project, and I would not 
     ok: true,
     accounts: {
       orgs: [
-        { email: "school@nivarro.demo", password: "demo2026", note: "Westside Academy — SCHOOL role, /school/destinations + /school/alumni sidebar" },
+        { email: "school@nivarro.demo", password: "demo2026", note: "Westside Academy — SCHOOL role, /campaigns + /school/alumni sidebar" },
         { email: "team@nivarro.dev", password: "nivarro2026", note: "Nivarro platform org — verified, paid, full visual identity" },
         { email: "ridgepoint@nivarro.demo", password: "ridgepoint2026", note: "Ridgepoint Policy Fellows — full admin dashboard + mock scholars" },
         { email: "org@nivarro.demo", password: "demo2026", note: "Blank org account — create your own org via /orgs/new" },

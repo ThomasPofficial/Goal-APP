@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Menu, LayoutDashboard, Users, Building2, UsersRound, MessageSquare, Briefcase, Bell, HeartHandshake, Globe, MapPin, GraduationCap } from "lucide-react";
+import { Menu, LayoutDashboard, Users, Building2, UsersRound, MessageSquare, Briefcase, Bell, HeartHandshake, Globe, GraduationCap } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Sidebar from "./Sidebar";
@@ -36,7 +36,7 @@ const WALLED_BOTTOM_TABS = [
 ];
 
 const SCHOOL_BOTTOM_TABS = [
-  { href: "/school/destinations", label: "Destinations", Icon: MapPin },
+  { href: "/campaigns",           label: "Fundraise",    Icon: HeartHandshake },
   { href: "/school/alumni",       label: "Alumni",       Icon: GraduationCap },
   { href: "/communities",         label: "Community",    Icon: Globe },
   { href: "/school/mentorship",   label: "Mentor",       Icon: HeartHandshake },
@@ -86,7 +86,7 @@ export default function SidebarShell({ userName, userEmail, geniusType, myOrgId,
           borderBottom: "1px solid var(--border)",
         }}
       >
-        <Link href={isOrg ? orgHomeHref : "/dashboard"} style={{ textDecoration: "none" }}>
+        <Link href={isOrg ? orgHomeHref : isSchool ? "/campaigns" : "/dashboard"} style={{ textDecoration: "none" }}>
           <span
             style={{
               fontFamily: "var(--font-body)",
