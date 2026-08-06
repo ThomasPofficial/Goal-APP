@@ -6,7 +6,7 @@ import { MIN_DONATION_CENTS } from "@/lib/payments/donationFees";
 
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => ({}));
-  const { campaignId, donorName, donorEmail, amountCents, schoolId } = body;
+  const { campaignId, donorName, donorEmail, amountCents, schoolId, coverFees } = body;
 
   if (!donorName?.trim() || !donorEmail?.trim()) {
     return NextResponse.json({ error: "Name and email are required." }, { status: 400 });
@@ -23,6 +23,7 @@ export async function POST(req: NextRequest) {
     donorName: donorName.trim(),
     donorEmail: donorEmail.trim(),
     amountCents,
+    coverFees: Boolean(coverFees),
   });
 
   const from = process.env.FROM_EMAIL ?? "noreply@nivarro.co";
