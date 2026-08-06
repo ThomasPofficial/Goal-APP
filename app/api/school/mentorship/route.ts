@@ -45,6 +45,7 @@ export async function GET() {
   return NextResponse.json({
     pairings: pairings.map((c) => ({
       id: c.id,
+      name: c.communityName,
       createdAt: c.createdAt.toISOString(),
       participants: c.participants.map((p) => ({
         userId: p.userId,

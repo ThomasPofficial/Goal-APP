@@ -361,6 +361,7 @@ export default function MessagesClient({ conversations: initialConvs, myUserId, 
     { label: "Direct", items: conversations.filter((c) => c.type === "DIRECT") },
     { label: "Group", items: conversations.filter((c) => c.type === "GROUP") },
     { label: "Team", items: conversations.filter((c) => c.type === "TEAM") },
+    { label: "Mentorship", items: conversations.filter((c) => c.type === "MENTORSHIP") },
     { label: "Rooms", items: conversations.filter((c) => c.type === "COMMUNITY") },
   ].filter((s) => s.items.length > 0);
 
@@ -384,9 +385,9 @@ export default function MessagesClient({ conversations: initialConvs, myUserId, 
         {/* ── Conversation list ─────────────────────── */}
         <div className={`${showThread ? "hidden md:flex" : "flex"} w-full md:w-64 flex-col shrink-0`} style={{ background: "var(--bg2)", borderRight: "1px solid var(--border)" }}>
           <div className="flex items-center justify-between gap-3 px-4 py-3.5" style={{ borderBottom: "1px solid var(--border)" }}>
-            <h2 className="text-sm font-bold uppercase tracking-widest truncate" style={{ color: "var(--text)", fontFamily: "var(--font-display, sans-serif)" }}>
+            <span className="font-bold uppercase tracking-widest" style={{ fontSize: 13, color: "var(--text)", fontFamily: "var(--font-display, sans-serif)" }}>
               Messages
-            </h2>
+            </span>
             <button
               onClick={() => setShowNewMsg(true)}
               className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors"

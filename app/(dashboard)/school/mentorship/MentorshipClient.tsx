@@ -13,6 +13,7 @@ interface Participant {
 
 interface Pairing {
   id: string;
+  name: string | null;
   createdAt: string;
   participants: Participant[];
   lastMessage: { body: string; createdAt: string } | null;
@@ -222,6 +223,9 @@ export default function MentorshipClient({ pairings, students, mentors }: Props)
                 borderRadius: 0,
               }}
             >
+              {p.name && (
+                <p style={{ margin: "0 0 8px", fontSize: 15, fontWeight: 700, color: "var(--text)" }}>{p.name}</p>
+              )}
               <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 10 }}>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                   {p.participants.map((participant) => (

@@ -86,11 +86,13 @@ model User {
   profile               Profile?
   projectMemberships    ProjectMember[]
   notes                 Note[]
+  ideaNotes             IdeaNote[]
   sentMessages          Message[]                 @relation("SentMessages")
   participations        ConversationParticipant[]
   endorsementsGiven     PeerEndorsement[]         @relation("EndorsementsGiven")
   endorsementsReceived  PeerEndorsement[]         @relation("EndorsementsReceived")
   campaigns             Campaign[]                @relation("SchoolCampaigns")
+  donationsReceived     Donation[]                @relation("DonationsReceived")
 }
 
 model Profile {
@@ -305,6 +307,7 @@ model Conversation {
 
   participants ConversationParticipant[]
   messages     Message[]
+  ideaNotes    IdeaNote[]
   team         Team?                    @relation(fields: [teamId], references: [id])
 }
 
@@ -360,6 +363,18 @@ model Message {
 
   conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   sender       User         @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+}
+
+model IdeaNote {
+  id             String       @id @default(cuid())
+  conversationId String
+  authorId       String
+  content        String       @db.Text
+  colorIndex     Int          @default(0)
+  createdAt      DateTime     @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  author       User         @relation(fields: [authorId], references: [id], onDelete: Cascade)
 }
 
 // ─────────────────────────────────────────────
@@ -765,6 +780,21 @@ model CampaignPledge {
   campaignId      String?
   campaign        Campaign? @relation(fields: [campaignId], references: [id], onDelete: SetNull)
   createdAt       DateTime  @default(now())
+}
+
+model Donation {
+  id              String   @id @default(cuid())
+  recipientUserId String?
+  donorName       String?
+  donorEmail      String?
+  amountCents     Int
+  feeCents        Int
+  totalCents      Int
+  status          String   @default("MOCK_COMPLETED")
+  stripeSessionId String?
+  createdAt       DateTime @default(now())
+
+  recipient User? @relation("DonationsReceived", fields: [recipientUserId], references: [id], onDelete: SetNull)
 }
 
 model Campaign {
