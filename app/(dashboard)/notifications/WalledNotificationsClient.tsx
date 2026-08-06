@@ -11,6 +11,7 @@ interface ActivityItem {
   lastMessage: string | null;
   updatedAt: string;
   unread: boolean;
+  href: string;
 }
 
 export default function WalledNotificationsClient({ items }: { items: ActivityItem[] }) {
@@ -23,7 +24,7 @@ export default function WalledNotificationsClient({ items }: { items: ActivityIt
       {items.map((item) => (
         <Link
           key={item.id}
-          href={item.kind === "community" ? `/communities?conversation=${item.id}` : `/mentorship?conversation=${item.id}`}
+          href={item.href}
           style={{
             display: "flex", alignItems: "flex-start", gap: 12, padding: "14px 16px",
             border: "1px solid var(--border)",

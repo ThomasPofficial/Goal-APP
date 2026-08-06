@@ -32,10 +32,28 @@ interface MentorOption {
   subtitle: string | null;
 }
 
+interface UserSummary {
+  userId: string;
+  displayName: string;
+  avatarUrl: string | null;
+}
+
+interface ConnectionRequestRow {
+  id: string;
+  createdAt: string;
+  respondedAt: string | null;
+  roomId: string | null;
+  message: string | null;
+  fromUser: UserSummary;
+  toUser: UserSummary;
+}
+
 interface Props {
   pairings: Pairing[];
   students: StudentOption[];
   mentors: MentorOption[];
+  requestQueue: ConnectionRequestRow[];
+  requestHistory: ConnectionRequestRow[];
 }
 
 const labelStyle: React.CSSProperties = {
@@ -68,7 +86,7 @@ const countCaptionStyle: React.CSSProperties = {
   display: "block",
 };
 
-export default function MentorshipClient({ pairings, students, mentors }: Props) {
+export default function MentorshipClient({ pairings, students, mentors, requestQueue, requestHistory }: Props) {
   const router = useRouter();
   const [showNewModal, setShowNewModal] = useState(false);
   const [selectedStudents, setSelectedStudents] = useState<Set<string>>(new Set());
@@ -78,6 +96,26 @@ export default function MentorshipClient({ pairings, students, mentors }: Props)
   const [endingId, setEndingId] = useState<string | null>(null);
   const [studentFilter, setStudentFilter] = useState("");
   const [mentorFilter, setMentorFilter] = useState("");
+  const [approvingId, setApprovingId] = useState<string | null>(null);
+  const [requestError, setRequestError] = useState<string | null>(null);
+
+  const handleApproveRequest = async (id: string) => {
+    setApprovingId(id);
+    setRequestError(null);
+    try {
+      const res = await fetch(`/api/school/connections/${id}/approve`, { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) {
+        setRequestError(data.error ?? "Failed to create room.");
+        return;
+      }
+      router.refresh();
+    } catch {
+      setRequestError("Network error. Please try again.");
+    } finally {
+      setApprovingId(null);
+    }
+  };
 
   const resetModal = () => {
     setSelectedStudents(new Set());
@@ -164,9 +202,8 @@ export default function MentorshipClient({ pairings, students, mentors }: Props)
             Mentorship
           </h1>
           <p style={{ color: "var(--muted)", fontSize: 14, margin: "6px 0 0" }}>
-            Pair students with teacher or alumni mentors in a dedicated group chat, yourself.
-            Looking for 1:1 requests students sent on their own?{" "}
-            <Link href="/school/connections" style={{ color: "var(--amber)" }}>Chat Requests</Link>.
+            Pair students with teacher or alumni mentors yourself into a dedicated group chat,
+            or approve 1:1 requests students sent on their own below.
           </p>
         </div>
         <button
@@ -294,6 +331,142 @@ export default function MentorshipClient({ pairings, students, mentors }: Props)
                 </p>
               ) : (
                 <p style={{ margin: 0, fontSize: 13, color: "var(--muted)", fontStyle: "italic" }}>No messages yet.</p>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* 1:1 Chat Requests */}
+      <p
+        style={{
+          fontFamily: "var(--font-mono)",
+          fontSize: 13,
+          letterSpacing: "0.2em",
+          textTransform: "uppercase",
+          color: "var(--amber)",
+          margin: "32px 0 14px",
+        }}
+      >
+        1:1 Chat Requests
+      </p>
+      <p style={{ color: "var(--muted)", fontSize: 13, margin: "0 0 14px" }}>
+        A student or alum asked to chat 1:1 with a specific mentor or staff member — approve to create the room.
+      </p>
+
+      {requestError && (
+        <p style={{ color: "#e05", fontSize: 13, margin: "0 0 12px", fontFamily: "var(--font-mono)" }}>
+          {requestError}
+        </p>
+      )}
+
+      {requestQueue.length === 0 ? (
+        <div
+          style={{
+            border: "1px solid var(--border)",
+            background: "var(--surface)",
+            padding: "24px 18px",
+            textAlign: "center",
+            borderRadius: 0,
+            marginBottom: 24,
+          }}
+        >
+          <p style={{ color: "var(--muted)", fontSize: 13, margin: 0 }}>
+            No connection requests waiting on approval right now.
+          </p>
+        </div>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 24 }}>
+          {requestQueue.map((r) => (
+            <div
+              key={r.id}
+              style={{
+                border: "1px solid var(--border)",
+                background: "var(--surface)",
+                padding: "16px 18px",
+                borderRadius: 0,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 12,
+                flexWrap: "wrap",
+              }}
+            >
+              <div style={{ flex: 1, minWidth: 200 }}>
+                <p style={{ margin: 0, fontSize: 14, color: "var(--text)" }}>
+                  <strong>{r.fromUser.displayName}</strong> wants to connect with{" "}
+                  <strong>{r.toUser.displayName}</strong>
+                </p>
+                {r.message && (
+                  <p style={{ margin: "6px 0 0", fontSize: 13, color: "var(--muted)", fontStyle: "italic" }}>
+                    &ldquo;{r.message}&rdquo;
+                  </p>
+                )}
+              </div>
+              <button
+                onClick={() => handleApproveRequest(r.id)}
+                disabled={approvingId === r.id}
+                style={{
+                  padding: "8px 16px",
+                  background: "var(--amber)",
+                  border: "1px solid var(--amber)",
+                  color: "#000",
+                  fontSize: 12,
+                  fontWeight: 700,
+                  fontFamily: "var(--font-mono)",
+                  letterSpacing: "0.06em",
+                  textTransform: "uppercase",
+                  cursor: approvingId === r.id ? "not-allowed" : "pointer",
+                  opacity: approvingId === r.id ? 0.6 : 1,
+                  borderRadius: 0,
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {approvingId === r.id ? "Creating…" : "Create Room"}
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {requestHistory.length > 0 && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {requestHistory.map((r) => (
+            <div
+              key={r.id}
+              style={{
+                border: "1px solid var(--border)",
+                background: "var(--surface)",
+                padding: "12px 16px",
+                borderRadius: 0,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 12,
+                flexWrap: "wrap",
+              }}
+            >
+              <p style={{ margin: 0, fontSize: 13, color: "var(--text)" }}>
+                {r.fromUser.displayName} &harr; {r.toUser.displayName}
+              </p>
+              {r.roomId && (
+                <Link
+                  href={`/messages?group=${r.roomId}`}
+                  style={{
+                    padding: "5px 12px",
+                    border: "1px solid var(--border)",
+                    color: "var(--text)",
+                    fontSize: 11,
+                    fontWeight: 600,
+                    fontFamily: "var(--font-mono)",
+                    letterSpacing: "0.06em",
+                    textTransform: "uppercase",
+                    textDecoration: "none",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  Open Chat
+                </Link>
               )}
             </div>
           ))}

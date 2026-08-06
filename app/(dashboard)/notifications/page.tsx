@@ -9,7 +9,12 @@ export default async function NotificationsPage() {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
 
-  if (await isWalledStudent(session.user.id)) {
+  const dbUser = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { role: true },
+  });
+
+  if (dbUser?.role === "SCHOOL" || (await isWalledStudent(session.user.id))) {
     const conversations = await prisma.conversation.findMany({
       where: {
         type: { in: ["COMMUNITY", "MENTORSHIP"] },
@@ -22,16 +27,27 @@ export default async function NotificationsPage() {
       orderBy: { updatedAt: "desc" },
     });
 
+    const isSchool = dbUser?.role === "SCHOOL";
+
     const items = conversations.map((c) => {
       const lastReadAt = c.participants[0]?.lastReadAt ?? null;
       const lastMessageAt = c.messages[0]?.createdAt ?? c.updatedAt;
+      const kind = (c.type === "COMMUNITY" ? "community" : "mentorship") as "community" | "mentorship";
       return {
         id: c.id,
-        kind: (c.type === "COMMUNITY" ? "community" : "mentorship") as "community" | "mentorship",
+        kind,
         label: c.type === "COMMUNITY" ? (c.communityName ?? "Community Chat") : (c.communityName ?? "Mentorship"),
         lastMessage: c.messages[0]?.content ?? null,
         updatedAt: c.updatedAt.toISOString(),
         unread: !lastReadAt || lastReadAt < lastMessageAt,
+        // Walled students don't have /messages access -- they use the
+        // dedicated /communities and /mentorship surfaces instead. School
+        // admins do have /messages, so route them straight to the thread.
+        href: isSchool
+          ? `/messages?group=${c.id}`
+          : kind === "community"
+            ? `/communities?conversation=${c.id}`
+            : `/mentorship?conversation=${c.id}`,
       };
     });
 

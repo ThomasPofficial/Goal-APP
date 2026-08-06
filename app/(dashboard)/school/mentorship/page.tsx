@@ -15,7 +15,19 @@ export default async function MentorshipPage() {
 
   const schoolId = session.user.id;
 
-  const [pairings, students, mentors] = await Promise.all([
+  const userSummary = async (userId: string) => {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { name: true, profile: { select: { displayName: true, avatarUrl: true } } },
+    });
+    return {
+      userId,
+      displayName: user?.profile?.displayName ?? user?.name ?? "Unknown",
+      avatarUrl: user?.profile?.avatarUrl ?? null,
+    };
+  };
+
+  const [pairings, students, mentors, requestQueue, requestHistory] = await Promise.all([
     prisma.conversation.findMany({
       where: { type: "MENTORSHIP", schoolId },
       include: {
@@ -46,6 +58,30 @@ export default async function MentorshipPage() {
       select: { userId: true, displayName: true, staffTitle: true, industry: true, user: { select: { isAlumni: true } } },
       orderBy: { displayName: "asc" },
     }),
+    prisma.connectionRequest.findMany({
+      where: { schoolId, status: "ACCEPTED", roomId: null },
+      orderBy: { respondedAt: "asc" },
+    }),
+    prisma.connectionRequest.findMany({
+      where: { schoolId, roomId: { not: null } },
+      orderBy: { respondedAt: "desc" },
+      take: 50,
+    }),
+  ]);
+
+  const formatRequestRow = async (r: (typeof requestQueue)[number]) => ({
+    id: r.id,
+    createdAt: r.createdAt.toISOString(),
+    respondedAt: r.respondedAt?.toISOString() ?? null,
+    roomId: r.roomId,
+    message: r.message,
+    fromUser: await userSummary(r.fromUserId),
+    toUser: await userSummary(r.toUserId),
+  });
+
+  const [formattedQueue, formattedHistory] = await Promise.all([
+    Promise.all(requestQueue.map(formatRequestRow)),
+    Promise.all(requestHistory.map(formatRequestRow)),
   ]);
 
   const formattedPairings = pairings.map((c) => ({
@@ -77,6 +113,8 @@ export default async function MentorshipPage() {
       pairings={formattedPairings}
       students={students}
       mentors={formattedMentors}
+      requestQueue={formattedQueue}
+      requestHistory={formattedHistory}
     />
   );
 }

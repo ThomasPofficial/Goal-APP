@@ -59,6 +59,24 @@ export default async function MessagesPage({
 
   // If ?group=convId, just set the open param
   if (params.group) {
+    // Self-heal: a school admin who approved the underlying 1:1 connection
+    // request should always be able to open the room it created, even if
+    // older data predates the fix that adds them as a participant.
+    if (dbUser?.role === "SCHOOL") {
+      const alreadyIn = await prisma.conversationParticipant.findFirst({
+        where: { conversationId: params.group, userId: session.user.id },
+      });
+      if (!alreadyIn) {
+        const approvedRequest = await prisma.connectionRequest.findFirst({
+          where: { roomId: params.group, schoolId: session.user.id },
+        });
+        if (approvedRequest) {
+          await prisma.conversationParticipant.create({
+            data: { conversationId: params.group, userId: session.user.id },
+          });
+        }
+      }
+    }
     redirect(`/messages?open=${params.group}`);
   }
 
