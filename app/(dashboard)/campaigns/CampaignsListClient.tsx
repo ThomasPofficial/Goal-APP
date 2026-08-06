@@ -40,6 +40,21 @@ export default function CampaignsListClient({ campaigns: initial }: { campaigns:
   const [sort, setSort] = useState<SortKey>("newest");
 
   const toggleActive = async (id: string, active: boolean) => {
+    const campaign = campaigns.find((c) => c.id === id);
+    // Turning on a campaign that's never been given a public link needs the
+    // real publish flow (assigns a slug) — a plain active:true PATCH would
+    // leave it "Active" with nowhere for donors to actually go.
+    if (active && campaign && !campaign.slug) {
+      const res = await fetch("/api/campaigns", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ campaignId: id }),
+      });
+      if (!res.ok) return;
+      const data = await res.json() as { slug: string };
+      setCampaigns((prev) => prev.map((c) => (c.id === id ? { ...c, active: true, slug: data.slug } : c)));
+      return;
+    }
     await fetch(`/api/campaigns/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },

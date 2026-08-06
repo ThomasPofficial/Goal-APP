@@ -34,6 +34,7 @@ export default async function CampaignEditPage({ params }: { params: Promise<{ i
         videoUrl: campaign.videoUrl,
         active: campaign.active,
       }}
+      schoolId={session.user.id}
       versions={versions.map((v) => ({
         id: v.id,
         cause: v.cause,

@@ -50,6 +50,17 @@ export async function POST(req: NextRequest) {
   });
   if (!campaign) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
+  // Already published — just (re-)activate without touching the existing
+  // slug, so re-publishing after an edit never breaks a link that's already
+  // been shared.
+  if (campaign.slug) {
+    const reactivated = await prisma.campaign.update({
+      where: { id: campaignId },
+      data: { active: true },
+    });
+    return NextResponse.json({ slug: reactivated.slug });
+  }
+
   const slug = generateSlug(campaign.headline);
 
   try {

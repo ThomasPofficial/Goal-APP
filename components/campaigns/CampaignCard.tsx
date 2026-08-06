@@ -51,14 +51,22 @@ export default function CampaignCard({ campaign, onToggleActive, onDelete }: Pro
           </span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-          <button
-            onClick={() => onToggleActive(!campaign.active)}
-            style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: "var(--font-mono)", fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: campaign.active ? "#22c55e" : "var(--n-text2)", background: "none", border: "none", cursor: "pointer", padding: 0 }}
-          >
-            <span style={{ width: 8, height: 8, borderRadius: "50%", background: campaign.active ? "#22c55e" : "var(--border)", display: "inline-block" }} />
-            {campaign.active ? "Active" : "Draft"}
-          </button>
-          {!campaign.slug && <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--n-text2)" }}>— not published</span>}
+          {campaign.active ? (
+            <button
+              onClick={() => onToggleActive(false)}
+              style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: "var(--font-mono)", fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#22c55e", background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.4)", padding: "4px 10px", cursor: "pointer" }}
+            >
+              <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#22c55e", display: "inline-block" }} />
+              Live — Unpublish
+            </button>
+          ) : (
+            <button
+              onClick={() => onToggleActive(true)}
+              style={{ fontFamily: "var(--font-mono)", fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#000", background: "var(--amber)", border: "none", padding: "4px 10px", cursor: "pointer" }}
+            >
+              Publish
+            </button>
+          )}
         </div>
         {campaign.goalAmount && campaign.goalAmount > 0 ? (
           <div style={{ marginBottom: 12 }}>
