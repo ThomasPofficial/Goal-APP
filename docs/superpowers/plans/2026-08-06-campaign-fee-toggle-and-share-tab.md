@@ -61,7 +61,7 @@ Confirm these four numbers (9470, 10000, 10530, 530) appear correctly if you tra
 
 - [ ] **Step 3: Type-check**
 
-Run: `cd "C:\Users\thoma\Goal-APP" && npx tsc --noEmit`
+Run (from the plan's own worktree, NOT the shared main checkout — running against the wrong directory checks a different, unrelated file and gives false confidence): `npx tsc --noEmit`
 Expected: no errors referencing `lib/payments/campaignDonationFee.ts`.
 
 - [ ] **Step 4: Commit**
@@ -159,7 +159,7 @@ Note `pledgeAmount` now stores `netCents / 100` (what the campaign actually rece
 
 - [ ] **Step 3: Type-check**
 
-Run: `cd "C:\Users\thoma\Goal-APP" && npx tsc --noEmit`
+Run (from the plan's own worktree, NOT the shared main checkout — running against the wrong directory checks a different, unrelated file and gives false confidence): `npx tsc --noEmit`
 Expected: a new error will appear at the call site in `app/api/campaigns/donate/route.ts` (missing `coverFees` property) — that's expected and fixed in Task 3. Confirm no OTHER new errors appear.
 
 - [ ] **Step 4: Commit**
@@ -223,7 +223,7 @@ Nothing else in this file changes — the confirmation email logic already reads
 
 - [ ] **Step 2: Type-check**
 
-Run: `cd "C:\Users\thoma\Goal-APP" && npx tsc --noEmit`
+Run (from the plan's own worktree, NOT the shared main checkout — running against the wrong directory checks a different, unrelated file and gives false confidence): `npx tsc --noEmit`
 Expected: the error flagged in Task 2 Step 3 is now resolved. No errors referencing this file or `processCampaignDonation.ts`.
 
 - [ ] **Step 3: Commit**
@@ -358,7 +358,7 @@ The button already reads `Donate $${(totalCents / 100).toFixed(2)}` — no chang
 
 - [ ] **Step 7: Type-check**
 
-Run: `cd "C:\Users\thoma\Goal-APP" && npx tsc --noEmit`
+Run (from the plan's own worktree, NOT the shared main checkout — running against the wrong directory checks a different, unrelated file and gives false confidence): `npx tsc --noEmit`
 Expected: no errors referencing `PledgeModal.tsx`.
 
 - [ ] **Step 8: Manual check**
@@ -504,7 +504,7 @@ The existing header, stats strip, filters/sort, and card grid (everything from t
 
 - [ ] **Step 4: Type-check**
 
-Run: `cd "C:\Users\thoma\Goal-APP" && npx tsc --noEmit`
+Run (from the plan's own worktree, NOT the shared main checkout — running against the wrong directory checks a different, unrelated file and gives false confidence): `npx tsc --noEmit`
 Expected: no errors referencing `CampaignsListClient.tsx`.
 
 - [ ] **Step 5: Manual check**
