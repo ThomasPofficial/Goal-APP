@@ -535,7 +535,7 @@ export default function MessagesClient({ conversations: initialConvs, myUserId, 
               <Send className="w-7 h-7" style={{ color: "var(--gold)" }} />
             </div>
             <div className="text-center">
-              <p className="text-sm font-semibold mb-1" style={{ color: "var(--text)", fontFamily: "var(--font-display, sans-serif)" }}>No conversation selected</p>
+              <p className="text-sm font-semibold mb-1" style={{ color: "var(--text)", fontFamily: "var(--font-body, sans-serif)" }}>No conversation selected</p>
               <p className="text-xs mb-4" style={{ color: "var(--muted)" }}>Pick one from the list or start a new one</p>
               <button
                 onClick={() => setShowNewMsg(true)}

@@ -750,15 +750,21 @@ model PlatformUpdate {
 // ─────────────────────────────────────────────
 
 model CampaignPledge {
-  id           String    @id @default(cuid())
-  causeText    String?
-  donorName    String
-  donorEmail   String
-  donorPhone   String?
-  pledgeAmount Decimal?  @db.Decimal(10, 2)
-  campaignId   String?
-  campaign     Campaign? @relation(fields: [campaignId], references: [id], onDelete: SetNull)
-  createdAt    DateTime  @default(now())
+  id              String    @id @default(cuid())
+  causeText       String?
+  donorName       String
+  donorEmail      String
+  donorPhone      String?
+  pledgeAmount    Decimal?  @db.Decimal(10, 2)
+  // Online mock-donation fields (unset for check-pledge rows) — kept as a single
+  // seam so real Stripe wiring only has to replace processCampaignDonation's body.
+  feeCents        Int?
+  totalCents      Int?
+  status          String    @default("PLEDGED") // PLEDGED (check) | MOCK_COMPLETED (online) | future: PENDING/COMPLETED/FAILED
+  stripeSessionId String?
+  campaignId      String?
+  campaign        Campaign? @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+  createdAt       DateTime  @default(now())
 }
 
 model Campaign {

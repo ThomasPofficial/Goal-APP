@@ -47,7 +47,7 @@ export async function POST(_req: Request, { params }: { params: Params }) {
 
   const room = await createPrivateRoom(
     schoolId,
-    [connectionRequest.fromUserId, connectionRequest.toUserId],
+    [connectionRequest.fromUserId, connectionRequest.toUserId, schoolId],
     `${fromName} & ${toName}`
   );
 

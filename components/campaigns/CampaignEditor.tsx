@@ -221,7 +221,7 @@ export default function CampaignEditor({ campaign: initial, versions: initialVer
             <input
               value={current.ctaText}
               onChange={(e) => updateField("ctaText", e.target.value)}
-              style={{ padding: "8px 12px", border: "1px dashed var(--border)", background: "var(--bg)", color: "var(--text)", fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 700, letterSpacing: "0.05em", boxSizing: "border-box" }}
+              style={{ width: "100%", maxWidth: 420, padding: "8px 12px", border: "1px dashed var(--border)", background: "var(--bg)", color: "var(--text)", fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 700, letterSpacing: "0.05em", boxSizing: "border-box" }}
             />
           </div>
           <button onClick={() => setShowPledge(true)} style={{ padding: "14px 28px", border: "none", background: "var(--amber)", color: "#000", fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 8 }}>
