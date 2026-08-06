@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { Plus } from "lucide-react";
+import { Plus, Copy, Check, Link2 } from "lucide-react";
 import CampaignCard from "@/components/campaigns/CampaignCard";
 import type { ImageParams } from "@/components/campaigns/CampaignCanvas";
 
@@ -38,6 +38,15 @@ export default function CampaignsListClient({ campaigns: initial }: { campaigns:
   const [campaigns, setCampaigns] = useState(initial);
   const [filter, setFilter] = useState<FilterKey>("all");
   const [sort, setSort] = useState<SortKey>("newest");
+  const [view, setView] = useState<"campaigns" | "share">("campaigns");
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const copyShareLink = (campaignId: string, slug: string) => {
+    const url = `${typeof window !== "undefined" ? window.location.origin : "https://app.nivarro.co"}/c/${slug}`;
+    navigator.clipboard.writeText(url);
+    setCopiedId(campaignId);
+    setTimeout(() => setCopiedId((prev) => (prev === campaignId ? null : prev)), 2000);
+  };
 
   const toggleActive = async (id: string, active: boolean) => {
     await fetch(`/api/campaigns/${id}`, {
@@ -76,6 +85,32 @@ export default function CampaignsListClient({ campaigns: initial }: { campaigns:
 
   return (
     <div style={{ maxWidth: 960 }}>
+      <div style={{ display: "flex", gap: 6, marginBottom: 20 }}>
+        {([["campaigns", "Campaigns"], ["share", "Share Links"]] as const).map(([key, label]) => (
+          <button
+            key={key}
+            onClick={() => setView(key)}
+            aria-pressed={view === key}
+            style={{
+              padding: "8px 16px",
+              border: "1px solid var(--border)",
+              background: view === key ? "var(--amber)" : "var(--surface)",
+              color: view === key ? "#000" : "var(--n-text2)",
+              fontFamily: "var(--font-mono)",
+              fontSize: 11,
+              fontWeight: 700,
+              letterSpacing: "0.06em",
+              textTransform: "uppercase",
+              cursor: "pointer",
+            }}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {view === "campaigns" ? (
+        <>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20, gap: 16, flexWrap: "wrap" }}>
         <div>
           <h1 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(22px, 3vw, 36px)", letterSpacing: "-0.02em", color: "var(--text)", margin: 0 }}>My Campaigns</h1>
@@ -181,6 +216,51 @@ export default function CampaignsListClient({ campaigns: initial }: { campaigns:
             </div>
           )}
         </>
+      ) : (
+        <div>
+          {(() => {
+            const published = campaigns.filter((c) => c.slug);
+            if (published.length === 0) {
+              return (
+                <div style={{ padding: "48px 0", textAlign: "center", border: "1px solid var(--border)", background: "var(--surface)" }}>
+                  <p style={{ color: "var(--n-text2)", fontSize: 14, margin: 0 }}>Publish a campaign to get a shareable link.</p>
+                </div>
+              );
+            }
+            return (
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                {published.map((c) => {
+                  const url = `${typeof window !== "undefined" ? window.location.origin : "https://app.nivarro.co"}/c/${c.slug}`;
+                  return (
+                    <div key={c.id} style={{ border: "1px solid var(--border)", background: "var(--surface)", padding: "14px 16px" }}>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 10, flexWrap: "wrap" }}>
+                        <p style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: 15, letterSpacing: "-0.01em", color: "var(--text)" }}>{c.headline}</p>
+                        <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", display: "flex", alignItems: "center", gap: 6, color: c.active ? "#22c55e" : "var(--n-text2)" }}>
+                          <span style={{ width: 8, height: 8, borderRadius: "50%", background: c.active ? "#22c55e" : "var(--border)", display: "inline-block" }} />
+                          {c.active ? "Active" : "Draft"}
+                        </span>
+                      </div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <div style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center", gap: 8, padding: "8px 10px", border: "1px solid var(--border)", background: "var(--bg)" }}>
+                          <Link2 size={13} style={{ flexShrink: 0, color: "var(--n-text2)" }} />
+                          <span style={{ flex: 1, minWidth: 0, fontFamily: "var(--font-mono)", fontSize: 12, color: "var(--n-text2)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                            {url}
+                          </span>
+                        </div>
+                        <button
+                          onClick={() => copyShareLink(c.id, c.slug!)}
+                          style={{ flexShrink: 0, padding: "8px 14px", border: "1px solid var(--border)", background: "none", color: "var(--text)", fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: "0.06em", textTransform: "uppercase", cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}
+                        >
+                          {copiedId === c.id ? <><Check size={12} /> Copied</> : <><Copy size={12} /> Copy</>}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })()}
+        </div>
       )}
     </div>
   );
