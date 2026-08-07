@@ -50,3 +50,6 @@ next-env.d.ts
 
 # local git worktrees
 /.worktrees/
+
+# subagent-driven-development scratch workspace
+/.superpowers/
