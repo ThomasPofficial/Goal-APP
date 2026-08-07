@@ -11,7 +11,7 @@ interface Props {
 const CARDS = [
   { href: "/my-school", label: "My School", Icon: School, description: "Staff, alumni, and mentors at your school" },
   { href: "/communities", label: "Community Chat", Icon: Globe, unreadKey: "hasUnreadCommunity" as const, description: "Your school's shared channel" },
-  { href: "/mentorship", label: "Mentorship", Icon: HeartHandshake, unreadKey: "hasUnreadMentorship" as const, description: "Your mentor thread" },
+  { href: "/partnerships", label: "Partnerships", Icon: HeartHandshake, unreadKey: "hasUnreadMentorship" as const, description: "Your partnership requests and chats" },
   { href: "/notifications", label: "Notifications", Icon: Bell, description: "Recent activity" },
 ];
 

@@ -31,7 +31,7 @@ const STUDENT_BOTTOM_TABS = [
 const WALLED_BOTTOM_TABS = [
   { href: "/dashboard",     label: "Home",   Icon: LayoutDashboard },
   { href: "/communities",   label: "Chat",   Icon: Globe },
-  { href: "/mentorship",    label: "Mentor", Icon: HeartHandshake },
+  { href: "/partnerships",  label: "Partner", Icon: HeartHandshake },
   { href: "/notifications", label: "Alerts", Icon: Bell },
 ];
 
@@ -39,7 +39,7 @@ const SCHOOL_BOTTOM_TABS = [
   { href: "/campaigns",           label: "Fundraise",    Icon: HeartHandshake },
   { href: "/school/alumni",       label: "Alumni",       Icon: GraduationCap },
   { href: "/communities",         label: "Community",    Icon: Globe },
-  { href: "/school/mentorship",   label: "Mentor",       Icon: HeartHandshake },
+  { href: "/school/partnerships", label: "Partner",      Icon: HeartHandshake },
   { href: "/school/roster",       label: "Roster",       Icon: Users },
 ];
 

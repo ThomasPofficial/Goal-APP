@@ -361,7 +361,7 @@ export default function MessagesClient({ conversations: initialConvs, myUserId, 
     { label: "Direct", items: conversations.filter((c) => c.type === "DIRECT") },
     { label: "Group", items: conversations.filter((c) => c.type === "GROUP") },
     { label: "Team", items: conversations.filter((c) => c.type === "TEAM") },
-    { label: "Mentorship", items: conversations.filter((c) => c.type === "MENTORSHIP") },
+    { label: "Partnerships", items: conversations.filter((c) => c.type === "MENTORSHIP") },
     { label: "Rooms", items: conversations.filter((c) => c.type === "COMMUNITY") },
   ].filter((s) => s.items.length > 0);
 

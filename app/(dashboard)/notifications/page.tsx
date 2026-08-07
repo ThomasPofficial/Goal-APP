@@ -52,7 +52,7 @@ export default async function NotificationsPage() {
       return {
         id: c.id,
         kind,
-        label: c.type === "COMMUNITY" ? (c.communityName ?? "Community Chat") : (c.communityName ?? "Mentorship"),
+        label: c.type === "COMMUNITY" ? (c.communityName ?? "Community Chat") : (c.communityName ?? "Partnership"),
         lastMessage: c.messages[0]?.content ?? null,
         updatedAt: c.updatedAt.toISOString(),
         unread: !lastReadAt || lastReadAt < lastMessageAt,
@@ -63,7 +63,7 @@ export default async function NotificationsPage() {
           ? `/messages?group=${c.id}`
           : kind === "community"
             ? `/communities?conversation=${c.id}`
-            : `/mentorship?conversation=${c.id}`,
+            : `/partnerships?conversation=${c.id}`,
       };
     });
 
