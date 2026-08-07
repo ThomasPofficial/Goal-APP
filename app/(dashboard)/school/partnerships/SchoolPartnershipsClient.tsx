@@ -33,27 +33,49 @@ interface MentorOption {
 }
 
 interface UserSummary {
-  userId: string;
+  id: string;
   displayName: string;
+  handle: string | null;
   avatarUrl: string | null;
 }
 
-interface ConnectionRequestRow {
+type PartnershipStatus = "AWAITING_APPROVAL" | "APPROVED" | "REJECTED" | "EXPIRED_EMPTY";
+
+interface InviteeStatus extends UserSummary {
+  status: "PENDING" | "ACCEPTED" | "DECLINED";
+}
+
+interface PartnershipRequestRow {
   id: string;
+  status: PartnershipStatus;
   createdAt: string;
-  respondedAt: string | null;
+  finalizedAt: string | null;
   roomId: string | null;
   message: string | null;
   fromUser: UserSummary;
-  toUser: UserSummary;
+  acceptedInvitees: UserSummary[];
+  otherInvitees: InviteeStatus[];
+}
+
+function historyStatusLabel(status: PartnershipStatus): string {
+  switch (status) {
+    case "APPROVED":
+      return "Approved";
+    case "REJECTED":
+      return "Declined";
+    case "EXPIRED_EMPTY":
+      return "Expired — nobody eligible accepted";
+    default:
+      return status;
+  }
 }
 
 interface Props {
   pairings: Pairing[];
   students: StudentOption[];
   mentors: MentorOption[];
-  requestQueue: ConnectionRequestRow[];
-  requestHistory: ConnectionRequestRow[];
+  requestQueue: PartnershipRequestRow[];
+  requestHistory: PartnershipRequestRow[];
 }
 
 const labelStyle: React.CSSProperties = {
@@ -86,7 +108,7 @@ const countCaptionStyle: React.CSSProperties = {
   display: "block",
 };
 
-export default function MentorshipClient({ pairings, students, mentors, requestQueue, requestHistory }: Props) {
+export default function SchoolPartnershipsClient({ pairings, students, mentors, requestQueue, requestHistory }: Props) {
   const router = useRouter();
   const [showNewModal, setShowNewModal] = useState(false);
   const [selectedStudents, setSelectedStudents] = useState<Set<string>>(new Set());
@@ -97,13 +119,14 @@ export default function MentorshipClient({ pairings, students, mentors, requestQ
   const [studentFilter, setStudentFilter] = useState("");
   const [mentorFilter, setMentorFilter] = useState("");
   const [approvingId, setApprovingId] = useState<string | null>(null);
+  const [rejectingId, setRejectingId] = useState<string | null>(null);
   const [requestError, setRequestError] = useState<string | null>(null);
 
   const handleApproveRequest = async (id: string) => {
     setApprovingId(id);
     setRequestError(null);
     try {
-      const res = await fetch(`/api/school/connections/${id}/approve`, { method: "POST" });
+      const res = await fetch(`/api/school/partnerships/${id}/approve`, { method: "POST" });
       const data = await res.json();
       if (!res.ok) {
         setRequestError(data.error ?? "Failed to create room.");
@@ -114,6 +137,24 @@ export default function MentorshipClient({ pairings, students, mentors, requestQ
       setRequestError("Network error. Please try again.");
     } finally {
       setApprovingId(null);
+    }
+  };
+
+  const handleRejectRequest = async (id: string) => {
+    setRejectingId(id);
+    setRequestError(null);
+    try {
+      const res = await fetch(`/api/school/partnerships/${id}/reject`, { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) {
+        setRequestError(data.error ?? "Failed to decline.");
+        return;
+      }
+      router.refresh();
+    } catch {
+      setRequestError("Network error. Please try again.");
+    } finally {
+      setRejectingId(null);
     }
   };
 
@@ -199,11 +240,11 @@ export default function MentorshipClient({ pairings, students, mentors, requestQ
               letterSpacing: "0.01em",
             }}
           >
-            Mentorship
+            Partnerships
           </h1>
           <p style={{ color: "var(--muted)", fontSize: 14, margin: "6px 0 0" }}>
-            Pair students with teacher or alumni mentors yourself into a dedicated group chat,
-            or approve 1:1 requests students sent on their own below.
+            Pair students with mentors yourself into a dedicated group chat,
+            or approve partnership requests students sent on their own below.
           </p>
         </div>
         <button
@@ -337,7 +378,7 @@ export default function MentorshipClient({ pairings, students, mentors, requestQ
         </div>
       )}
 
-      {/* 1:1 Chat Requests */}
+      {/* Partnership Requests */}
       <p
         style={{
           fontFamily: "var(--font-mono)",
@@ -348,10 +389,10 @@ export default function MentorshipClient({ pairings, students, mentors, requestQ
           margin: "32px 0 14px",
         }}
       >
-        1:1 Chat Requests
+        Partnership Requests
       </p>
       <p style={{ color: "var(--muted)", fontSize: 13, margin: "0 0 14px" }}>
-        A student or alum asked to chat 1:1 with a specific mentor or staff member — approve to create the room.
+        A student requested a group partnership and at least one eligible alumni/staff member accepted — approve to create the group chat.
       </p>
 
       {requestError && (
@@ -372,7 +413,7 @@ export default function MentorshipClient({ pairings, students, mentors, requestQ
           }}
         >
           <p style={{ color: "var(--muted)", fontSize: 13, margin: 0 }}>
-            No connection requests waiting on approval right now.
+            No partnership requests waiting on approval right now.
           </p>
         </div>
       ) : (
@@ -394,36 +435,64 @@ export default function MentorshipClient({ pairings, students, mentors, requestQ
             >
               <div style={{ flex: 1, minWidth: 200 }}>
                 <p style={{ margin: 0, fontSize: 14, color: "var(--text)" }}>
-                  <strong>{r.fromUser.displayName}</strong> wants to connect with{" "}
-                  <strong>{r.toUser.displayName}</strong>
+                  <strong>{r.fromUser.displayName}</strong> wants to partner with{" "}
+                  <strong>{r.acceptedInvitees.map((u) => u.displayName).join(", ")}</strong>
                 </p>
+                {r.otherInvitees.length > 0 && (
+                  <p style={{ margin: "4px 0 0", fontSize: 12, color: "var(--muted)" }}>
+                    Also invited (not joining): {r.otherInvitees.map((u) => `${u.displayName} (${u.status.toLowerCase()})`).join(", ")}
+                  </p>
+                )}
                 {r.message && (
                   <p style={{ margin: "6px 0 0", fontSize: 13, color: "var(--muted)", fontStyle: "italic" }}>
                     &ldquo;{r.message}&rdquo;
                   </p>
                 )}
               </div>
-              <button
-                onClick={() => handleApproveRequest(r.id)}
-                disabled={approvingId === r.id}
-                style={{
-                  padding: "8px 16px",
-                  background: "var(--amber)",
-                  border: "1px solid var(--amber)",
-                  color: "#000",
-                  fontSize: 12,
-                  fontWeight: 700,
-                  fontFamily: "var(--font-mono)",
-                  letterSpacing: "0.06em",
-                  textTransform: "uppercase",
-                  cursor: approvingId === r.id ? "not-allowed" : "pointer",
-                  opacity: approvingId === r.id ? 0.6 : 1,
-                  borderRadius: 0,
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {approvingId === r.id ? "Creating…" : "Create Room"}
-              </button>
+              <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+                <button
+                  onClick={() => handleRejectRequest(r.id)}
+                  disabled={approvingId === r.id || rejectingId === r.id}
+                  style={{
+                    padding: "8px 16px",
+                    background: "transparent",
+                    border: "1px solid rgba(239,68,68,0.4)",
+                    color: "#ef4444",
+                    fontSize: 12,
+                    fontWeight: 700,
+                    fontFamily: "var(--font-mono)",
+                    letterSpacing: "0.06em",
+                    textTransform: "uppercase",
+                    cursor: rejectingId === r.id ? "not-allowed" : "pointer",
+                    opacity: rejectingId === r.id ? 0.6 : 1,
+                    borderRadius: 0,
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {rejectingId === r.id ? "Declining…" : "Decline"}
+                </button>
+                <button
+                  onClick={() => handleApproveRequest(r.id)}
+                  disabled={approvingId === r.id || rejectingId === r.id}
+                  style={{
+                    padding: "8px 16px",
+                    background: "var(--amber)",
+                    border: "1px solid var(--amber)",
+                    color: "#000",
+                    fontSize: 12,
+                    fontWeight: 700,
+                    fontFamily: "var(--font-mono)",
+                    letterSpacing: "0.06em",
+                    textTransform: "uppercase",
+                    cursor: approvingId === r.id ? "not-allowed" : "pointer",
+                    opacity: approvingId === r.id ? 0.6 : 1,
+                    borderRadius: 0,
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {approvingId === r.id ? "Creating…" : "Create Room"}
+                </button>
+              </div>
             </div>
           ))}
         </div>
@@ -446,9 +515,12 @@ export default function MentorshipClient({ pairings, students, mentors, requestQ
                 flexWrap: "wrap",
               }}
             >
-              <p style={{ margin: 0, fontSize: 13, color: "var(--text)" }}>
-                {r.fromUser.displayName} &harr; {r.toUser.displayName}
-              </p>
+              <div>
+                <p style={{ margin: 0, fontSize: 13, color: "var(--text)" }}>
+                  {r.fromUser.displayName} &harr; {r.acceptedInvitees.map((u) => u.displayName).join(", ") || "(nobody)"}
+                </p>
+                <p style={{ margin: "2px 0 0", fontSize: 11, color: "var(--muted)" }}>{historyStatusLabel(r.status)}</p>
+              </div>
               {r.roomId && (
                 <Link
                   href={`/messages?group=${r.roomId}`}
@@ -533,7 +605,7 @@ export default function MentorshipClient({ pairings, students, mentors, requestQ
                 color: "var(--text)",
               }}
             >
-              New Mentorship Pairing
+              New Direct Pairing
             </h2>
 
             <div style={{ marginBottom: 18 }}>
