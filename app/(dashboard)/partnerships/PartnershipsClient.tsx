@@ -11,11 +11,28 @@ interface Person {
   avatarUrl: string | null;
 }
 
+interface InviteStatusPerson extends Person {
+  status: "PENDING" | "ACCEPTED" | "DECLINED";
+}
+
 interface IncomingRequest {
-  id: string;
+  inviteId: string;
   message: string | null;
   createdAt: string;
   fromUser: Person;
+  otherInvites: InviteStatusPerson[];
+}
+
+type SentStatus = "PENDING" | "AWAITING_APPROVAL" | "APPROVED" | "EXPIRED_EMPTY" | "REJECTED";
+
+interface SentRequest {
+  id: string;
+  status: SentStatus;
+  message: string | null;
+  createdAt: string;
+  expiresAt: string;
+  roomId: string | null;
+  invites: InviteStatusPerson[];
 }
 
 interface Thread {
@@ -52,11 +69,26 @@ function noteRotation(id: string): number {
 
 function threadLabel(thread: Thread): string {
   if (thread.name) return thread.name;
-  if (thread.otherParticipants.length === 0) return "Mentorship";
+  if (thread.otherParticipants.length === 0) return "Partnership";
   return thread.otherParticipants.map((p) => p.displayName).join(", ");
 }
 
-export default function MentorshipClient({ myUserId, incomingRequests = [] }: { myUserId: string; incomingRequests?: IncomingRequest[] }) {
+function sentStatusLabel(r: SentRequest): string {
+  switch (r.status) {
+    case "PENDING":
+      return `Collecting responses — closes ${new Date(r.expiresAt).toLocaleString()}`;
+    case "AWAITING_APPROVAL":
+      return "Waiting on your school admin to approve";
+    case "APPROVED":
+      return "Approved — chat is live";
+    case "EXPIRED_EMPTY":
+      return "Didn't come together — nobody eligible accepted in time";
+    case "REJECTED":
+      return "Your school admin declined this request";
+  }
+}
+
+export default function PartnershipsClient({ myUserId, incomingRequests = [], sentRequests = [] }: { myUserId: string; incomingRequests?: IncomingRequest[]; sentRequests?: SentRequest[] }) {
   const searchParams = useSearchParams();
   const requestedThreadId = searchParams.get("conversation");
   const [threads, setThreads] = useState<Thread[]>([]);
@@ -75,21 +107,21 @@ export default function MentorshipClient({ myUserId, incomingRequests = [] }: { 
   const [ideaDraft, setIdeaDraft] = useState("");
   const [postingIdea, setPostingIdea] = useState(false);
 
-  async function respond(id: string, action: "accept" | "decline") {
-    setRespondingId(id);
-    const res = await fetch(`/api/connections/${id}/respond`, {
+  async function respond(inviteId: string, action: "accept" | "decline") {
+    setRespondingId(inviteId);
+    const res = await fetch(`/api/partnerships/invites/${inviteId}/respond`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ action }),
     });
     if (res.ok) {
-      setRequests((prev) => prev.filter((r) => r.id !== id));
+      setRequests((prev) => prev.filter((r) => r.inviteId !== inviteId));
     }
     setRespondingId(null);
   }
 
   useEffect(() => {
-    fetch("/api/mentorship/my-threads")
+    fetch("/api/partnerships/my-threads")
       .then((r) => r.json())
       .then((data) => {
         const loadedThreads: Thread[] = data.threads ?? [];
@@ -183,29 +215,34 @@ export default function MentorshipClient({ myUserId, incomingRequests = [] }: { 
       <div style={{ display: "flex", flexDirection: "column" }}>
         {requests.map((r) => (
           <div
-            key={r.id}
+            key={r.inviteId}
             style={{ display: "flex", gap: 12, alignItems: "flex-start", padding: "14px 16px", borderBottom: "1px solid var(--border)" }}
           >
             <div style={{ flex: 1, minWidth: 0 }}>
               <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: "var(--text)" }}>{r.fromUser.displayName}</p>
+              {r.otherInvites.length > 0 && (
+                <p style={{ margin: "4px 0 0", fontSize: 12, color: "var(--n-text2)" }}>
+                  Also invited: {r.otherInvites.map((p) => `${p.displayName} (${p.status.toLowerCase()})`).join(", ")}
+                </p>
+              )}
               {r.message && (
                 <p style={{ margin: "6px 0 0", fontSize: 13, color: "var(--n-text2)", lineHeight: 1.5 }}>{r.message}</p>
               )}
             </div>
             <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
               <button
-                onClick={() => respond(r.id, "accept")}
-                disabled={respondingId === r.id}
+                onClick={() => respond(r.inviteId, "accept")}
+                disabled={respondingId === r.inviteId}
                 title="Accept"
-                style={{ width: 30, height: 30, border: "1px solid var(--amber)", background: "var(--amber)", color: "#000", cursor: respondingId === r.id ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+                style={{ width: 30, height: 30, border: "1px solid var(--amber)", background: "var(--amber)", color: "#000", cursor: respondingId === r.inviteId ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
               >
                 <Check size={14} />
               </button>
               <button
-                onClick={() => respond(r.id, "decline")}
-                disabled={respondingId === r.id}
+                onClick={() => respond(r.inviteId, "decline")}
+                disabled={respondingId === r.inviteId}
                 title="Decline"
-                style={{ width: 30, height: 30, border: "1px solid var(--border-md)", background: "transparent", color: "var(--n-text2)", cursor: respondingId === r.id ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+                style={{ width: 30, height: 30, border: "1px solid var(--border-md)", background: "transparent", color: "var(--n-text2)", cursor: respondingId === r.inviteId ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
               >
                 <X size={14} />
               </button>
@@ -216,10 +253,29 @@ export default function MentorshipClient({ myUserId, incomingRequests = [] }: { 
     </div>
   );
 
+  const sentPanel = sentRequests.length > 0 && (
+    <div style={{ maxWidth: 900, marginBottom: 20, border: "1px solid var(--border)", background: "var(--surface)" }}>
+      <p style={{ margin: 0, padding: "12px 16px", borderBottom: "1px solid var(--border)", fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--amber)" }}>
+        Requests You Sent
+      </p>
+      <div style={{ display: "flex", flexDirection: "column" }}>
+        {sentRequests.map((r) => (
+          <div key={r.id} style={{ padding: "14px 16px", borderBottom: "1px solid var(--border)" }}>
+            <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: "var(--text)" }}>
+              {r.invites.map((i) => i.displayName).join(", ")}
+            </p>
+            <p style={{ margin: "4px 0 0", fontSize: 12, color: "var(--n-text2)" }}>{sentStatusLabel(r)}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
   if (loading) {
     return (
       <div>
         {requestsPanel}
+        {sentPanel}
         <p style={{ color: "var(--n-text2)", fontSize: 14 }}>Loading…</p>
       </div>
     );
@@ -229,10 +285,11 @@ export default function MentorshipClient({ myUserId, incomingRequests = [] }: { 
     return (
       <div>
         {requestsPanel}
+        {sentPanel}
         <div style={{ maxWidth: 600, padding: "40px 32px", border: "1px solid var(--border)", background: "var(--surface)", textAlign: "center" }}>
           <HeartHandshake size={28} style={{ color: "var(--n-text2)", margin: "0 auto 12px" }} />
           <p style={{ color: "var(--n-text2)", fontSize: 14, margin: 0 }}>
-            You haven&apos;t been paired with a mentor yet. Your school admin sets up mentorship groups.
+            You don&apos;t have any partnership chats yet. Head to My School to request one.
           </p>
         </div>
       </div>
@@ -244,6 +301,7 @@ export default function MentorshipClient({ myUserId, incomingRequests = [] }: { 
   return (
     <div>
       {requestsPanel}
+      {sentPanel}
       <div style={{ display: "flex", gap: 16, maxWidth: 900, height: "70vh" }}>
       <div style={{ width: 220, flexShrink: 0, border: "1px solid var(--border)", background: "var(--surface)", overflowY: "auto" }}>
         {threads.map((t) => (
@@ -307,7 +365,7 @@ export default function MentorshipClient({ myUserId, incomingRequests = [] }: { 
           ) : (
             <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
               <span style={{ fontSize: 14, fontWeight: 700, color: "var(--text)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                {active ? threadLabel(active) : "Mentorship"}
+                {active ? threadLabel(active) : "Partnership"}
               </span>
               {active?.canRename && (
                 <button
