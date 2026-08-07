@@ -353,6 +353,49 @@ enum ConnectionRequestStatus {
   DECLINED
 }
 
+model PartnershipRequest {
+  id          String                   @id @default(cuid())
+  schoolId    String
+  fromUserId  String
+  message     String?
+  status      PartnershipRequestStatus @default(PENDING)
+  roomId      String?
+  expiresAt   DateTime
+  createdAt   DateTime                 @default(now())
+  finalizedAt DateTime?
+
+  invites PartnershipInvite[]
+
+  @@index([schoolId, status])
+}
+
+enum PartnershipRequestStatus {
+  PENDING
+  AWAITING_APPROVAL
+  APPROVED
+  EXPIRED_EMPTY
+  REJECTED
+}
+
+model PartnershipInvite {
+  id          String                  @id @default(cuid())
+  requestId   String
+  userId      String
+  status      PartnershipInviteStatus @default(PENDING)
+  respondedAt DateTime?
+
+  request PartnershipRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  @@index([requestId])
+  @@index([userId, status])
+}
+
+enum PartnershipInviteStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+}
+
 model Message {
   id             String    @id @default(cuid())
   conversationId String
