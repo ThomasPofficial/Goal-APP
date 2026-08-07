@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import SchoolHubClient from "./SchoolHubClient";
+import { finalizeExpiredPartnershipRequests } from "@/lib/partnerships";
 
 export default async function MySchoolPage() {
   const session = await auth();
@@ -35,7 +36,9 @@ export default async function MySchoolPage() {
 
   const schoolId = profile.schoolId;
 
-  const [school, staffProfiles, allAlumni, myOutgoingRequests] = await Promise.all([
+  await finalizeExpiredPartnershipRequests(schoolId);
+
+  const [school, staffProfiles, allAlumni, allStudents] = await Promise.all([
     prisma.user.findUnique({
       where: { id: schoolId },
       select: {
@@ -87,9 +90,10 @@ export default async function MySchoolPage() {
       },
       orderBy: { createdAt: "asc" },
     }),
-    prisma.connectionRequest.findMany({
-      where: { fromUserId: session.user.id, status: { in: ["PENDING", "ACCEPTED"] } },
-      select: { toUserId: true, status: true },
+    prisma.profile.findMany({
+      where: { schoolId, staffTitle: null, user: { isAlumni: false }, userId: { not: session.user.id } },
+      select: { userId: true, displayName: true, handle: true, avatarUrl: true, graduationYear: true },
+      orderBy: { displayName: "asc" },
     }),
   ]);
 
@@ -116,6 +120,14 @@ export default async function MySchoolPage() {
 
   const mentors = formattedAlumni.filter((a) => a.isAvailableToMentor);
 
+  const formattedStudents = allStudents.map((s) => ({
+    id: s.userId,
+    displayName: s.displayName,
+    handle: s.handle,
+    avatarUrl: s.avatarUrl,
+    graduationYear: s.graduationYear,
+  }));
+
   return (
     <SchoolHubClient
       schoolName={schoolName}
@@ -123,8 +135,8 @@ export default async function MySchoolPage() {
       staff={staffProfiles}
       alumni={formattedAlumni}
       mentors={mentors}
+      students={formattedStudents}
       currentUserId={session.user.id}
-      initialRequestedIds={myOutgoingRequests.map((r) => r.toUserId)}
     />
   );
 }
