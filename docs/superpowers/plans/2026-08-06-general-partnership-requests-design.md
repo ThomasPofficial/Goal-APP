@@ -66,7 +66,9 @@ enum PartnershipInviteStatus {
 }
 ```
 
-`expiresAt` is set to `createdAt + 48h` at creation. This replaces `ConnectionRequest`/`ConnectionRequestStatus` outright — all four current consumers (`/my-school`, `/mentorship`, `/school/mentorship`, `/api/school/connections`) are being rewritten as part of this change, so there's no parallel-model migration concern.
+`expiresAt` is set to `createdAt + 48h` at creation.
+
+**Important scope correction (found during implementation planning):** `ConnectionRequest` and `POST /api/connections/request` are also consumed by `/alumni` (`AlumniDirectory.tsx`) — a separate, site-wide alumni directory (no `schoolId` scoping, open to any verified alumni) that has nothing to do with the school-walled mentorship flow. It shares the same modal component (`RequestMentorshipModal`) and backend endpoint only incidentally. **`ConnectionRequest`, `ConnectionRequestStatus`, `/api/connections/*`, `/api/school/connections/*`, and `RequestMentorshipModal` as used by `/alumni` are left untouched** — the new `PartnershipRequest`/`PartnershipInvite` models and `/api/partnerships/*` routes are additive, used only by `/my-school` → `/partnerships`. `/my-school` gets its own new modal (multi-select) rather than reusing `RequestMentorshipModal`. This narrows the blast radius without changing any approved user-facing behavior.
 
 **Rejected alternative:** keeping `ConnectionRequest` as-is and wrapping multiple rows in a "PartnershipGroup" join model. Rejected because it duplicates the accept/decline state machine across two levels for no benefit — a single request-with-child-invites model is simpler to query and reason about.
 
@@ -116,3 +118,5 @@ enum PartnershipInviteStatus {
 
 - Changing the `isAvailableToMentor` field itself, or the existing admin-initiated pairing tool on `/school/partnerships` (kept as-is, just relocated under the renamed route).
 - Any change to `ConversationType` enum values or the Idea Board / rename-chat features already shipped on the mentorship thread UI.
+- `ConnectionRequest`, `ConnectionRequestStatus`, `/api/connections/*`, `/api/school/connections/*` — left fully intact for `/alumni`'s site-wide directory, which is unrelated to this feature.
+- The idea-board API routes under `/api/mentorship/[conversationId]/ideas/*`, and the admin-direct-pairing API routes under `/api/school/mentorship/*` (`route.ts`, `[conversationId]/route.ts`) — stay at their current paths; only the page routes (`/mentorship`, `/school/mentorship`) and the request/approval API routes are renamed/replaced.
