@@ -47,7 +47,7 @@ export default async function MySchoolPage() {
       },
     }),
     prisma.profile.findMany({
-      where: { schoolId, staffTitle: { not: null } },
+      where: { schoolId, staffTitle: { not: null }, userId: { not: session.user.id } },
       select: {
         userId: true,
         displayName: true,
@@ -63,6 +63,7 @@ export default async function MySchoolPage() {
       where: {
         isAlumni: true,
         profile: { schoolId },
+        id: { not: session.user.id },
       },
       select: {
         id: true,
