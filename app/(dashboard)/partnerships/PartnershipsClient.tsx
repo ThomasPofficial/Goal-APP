@@ -23,6 +23,17 @@ interface IncomingRequest {
   otherInvites: InviteStatusPerson[];
 }
 
+// Still-live 1:1 ConnectionRequest model (used by the separate /alumni
+// directory flow, which sends requests via POST /api/connections/request).
+// /partnerships is now the only student-facing page that can display/accept
+// these, so this panel coexists alongside the new group-request panel above.
+interface IncomingConnectionRequest {
+  id: string;
+  message: string | null;
+  createdAt: string;
+  fromUser: Person;
+}
+
 type SentStatus = "PENDING" | "AWAITING_APPROVAL" | "APPROVED" | "EXPIRED_EMPTY" | "REJECTED";
 
 interface SentRequest {
@@ -88,7 +99,17 @@ function sentStatusLabel(r: SentRequest): string {
   }
 }
 
-export default function PartnershipsClient({ myUserId, incomingRequests = [], sentRequests = [] }: { myUserId: string; incomingRequests?: IncomingRequest[]; sentRequests?: SentRequest[] }) {
+export default function PartnershipsClient({
+  myUserId,
+  incomingRequests = [],
+  sentRequests = [],
+  incomingConnectionRequests = [],
+}: {
+  myUserId: string;
+  incomingRequests?: IncomingRequest[];
+  sentRequests?: SentRequest[];
+  incomingConnectionRequests?: IncomingConnectionRequest[];
+}) {
   const searchParams = useSearchParams();
   const requestedThreadId = searchParams.get("conversation");
   const [threads, setThreads] = useState<Thread[]>([]);
@@ -98,6 +119,8 @@ export default function PartnershipsClient({ myUserId, incomingRequests = [], se
   const [loading, setLoading] = useState(true);
   const [requests, setRequests] = useState<IncomingRequest[]>(incomingRequests);
   const [respondingId, setRespondingId] = useState<string | null>(null);
+  const [connectionRequests, setConnectionRequests] = useState<IncomingConnectionRequest[]>(incomingConnectionRequests);
+  const [respondingConnectionId, setRespondingConnectionId] = useState<string | null>(null);
   const [renaming, setRenaming] = useState(false);
   const [renameValue, setRenameValue] = useState("");
   const [savingRename, setSavingRename] = useState(false);
@@ -118,6 +141,19 @@ export default function PartnershipsClient({ myUserId, incomingRequests = [], se
       setRequests((prev) => prev.filter((r) => r.inviteId !== inviteId));
     }
     setRespondingId(null);
+  }
+
+  async function respondConnection(id: string, action: "accept" | "decline") {
+    setRespondingConnectionId(id);
+    const res = await fetch(`/api/connections/${id}/respond`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action }),
+    });
+    if (res.ok) {
+      setConnectionRequests((prev) => prev.filter((r) => r.id !== id));
+    }
+    setRespondingConnectionId(null);
   }
 
   useEffect(() => {
@@ -207,6 +243,47 @@ export default function PartnershipsClient({ myUserId, incomingRequests = [], se
     if (res.ok) setIdeas((prev) => prev.filter((n) => n.id !== id));
   }
 
+  const connectionRequestsPanel = connectionRequests.length > 0 && (
+    <div style={{ maxWidth: 900, marginBottom: 20, border: "1px solid var(--border)", background: "var(--surface)" }}>
+      <p style={{ margin: 0, padding: "12px 16px", borderBottom: "1px solid var(--border)", fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--amber)" }}>
+        1:1 Mentorship Requests
+      </p>
+      <div style={{ display: "flex", flexDirection: "column" }}>
+        {connectionRequests.map((r) => (
+          <div
+            key={r.id}
+            style={{ display: "flex", gap: 12, alignItems: "flex-start", padding: "14px 16px", borderBottom: "1px solid var(--border)" }}
+          >
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: "var(--text)" }}>{r.fromUser.displayName}</p>
+              {r.message && (
+                <p style={{ margin: "6px 0 0", fontSize: 13, color: "var(--n-text2)", lineHeight: 1.5 }}>{r.message}</p>
+              )}
+            </div>
+            <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+              <button
+                onClick={() => respondConnection(r.id, "accept")}
+                disabled={respondingConnectionId === r.id}
+                title="Accept"
+                style={{ width: 30, height: 30, border: "1px solid var(--amber)", background: "var(--amber)", color: "#000", cursor: respondingConnectionId === r.id ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+              >
+                <Check size={14} />
+              </button>
+              <button
+                onClick={() => respondConnection(r.id, "decline")}
+                disabled={respondingConnectionId === r.id}
+                title="Decline"
+                style={{ width: 30, height: 30, border: "1px solid var(--border-md)", background: "transparent", color: "var(--n-text2)", cursor: respondingConnectionId === r.id ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+              >
+                <X size={14} />
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
   const requestsPanel = requests.length > 0 && (
     <div style={{ maxWidth: 900, marginBottom: 20, border: "1px solid var(--border)", background: "var(--surface)" }}>
       <p style={{ margin: 0, padding: "12px 16px", borderBottom: "1px solid var(--border)", fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--amber)" }}>
@@ -274,6 +351,7 @@ export default function PartnershipsClient({ myUserId, incomingRequests = [], se
   if (loading) {
     return (
       <div>
+        {connectionRequestsPanel}
         {requestsPanel}
         {sentPanel}
         <p style={{ color: "var(--n-text2)", fontSize: 14 }}>Loading…</p>
@@ -284,6 +362,7 @@ export default function PartnershipsClient({ myUserId, incomingRequests = [], se
   if (threads.length === 0) {
     return (
       <div>
+        {connectionRequestsPanel}
         {requestsPanel}
         {sentPanel}
         <div style={{ maxWidth: 600, padding: "40px 32px", border: "1px solid var(--border)", background: "var(--surface)", textAlign: "center" }}>
@@ -300,6 +379,7 @@ export default function PartnershipsClient({ myUserId, incomingRequests = [], se
 
   return (
     <div>
+      {connectionRequestsPanel}
       {requestsPanel}
       {sentPanel}
       <div style={{ display: "flex", gap: 16, maxWidth: 900, height: "70vh" }}>

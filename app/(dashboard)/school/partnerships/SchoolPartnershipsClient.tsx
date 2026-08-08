@@ -57,6 +57,20 @@ interface PartnershipRequestRow {
   otherInvitees: InviteeStatus[];
 }
 
+// Still-live 1:1 ConnectionRequest model (used by the separate /alumni
+// directory flow, which sends requests via POST /api/connections/request).
+// /school/partnerships is now the only admin page that can approve these,
+// so this queue coexists alongside the new group-partnership queue below.
+interface ConnectionRequestRow {
+  id: string;
+  createdAt: string;
+  respondedAt: string | null;
+  roomId: string | null;
+  message: string | null;
+  fromUser: UserSummary;
+  toUser: UserSummary;
+}
+
 function historyStatusLabel(status: PartnershipStatus): string {
   switch (status) {
     case "APPROVED":
@@ -76,6 +90,8 @@ interface Props {
   mentors: MentorOption[];
   requestQueue: PartnershipRequestRow[];
   requestHistory: PartnershipRequestRow[];
+  connectionRequestQueue: ConnectionRequestRow[];
+  connectionRequestHistory: ConnectionRequestRow[];
 }
 
 const labelStyle: React.CSSProperties = {
@@ -108,7 +124,15 @@ const countCaptionStyle: React.CSSProperties = {
   display: "block",
 };
 
-export default function SchoolPartnershipsClient({ pairings, students, mentors, requestQueue, requestHistory }: Props) {
+export default function SchoolPartnershipsClient({
+  pairings,
+  students,
+  mentors,
+  requestQueue,
+  requestHistory,
+  connectionRequestQueue,
+  connectionRequestHistory,
+}: Props) {
   const router = useRouter();
   const [showNewModal, setShowNewModal] = useState(false);
   const [selectedStudents, setSelectedStudents] = useState<Set<string>>(new Set());
@@ -121,6 +145,8 @@ export default function SchoolPartnershipsClient({ pairings, students, mentors, 
   const [approvingId, setApprovingId] = useState<string | null>(null);
   const [rejectingId, setRejectingId] = useState<string | null>(null);
   const [requestError, setRequestError] = useState<string | null>(null);
+  const [connectionApprovingId, setConnectionApprovingId] = useState<string | null>(null);
+  const [connectionError, setConnectionError] = useState<string | null>(null);
 
   const handleApproveRequest = async (id: string) => {
     setApprovingId(id);
@@ -155,6 +181,24 @@ export default function SchoolPartnershipsClient({ pairings, students, mentors, 
       setRequestError("Network error. Please try again.");
     } finally {
       setRejectingId(null);
+    }
+  };
+
+  const handleApproveConnectionRequest = async (id: string) => {
+    setConnectionApprovingId(id);
+    setConnectionError(null);
+    try {
+      const res = await fetch(`/api/school/connections/${id}/approve`, { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) {
+        setConnectionError(data.error ?? "Failed to create room.");
+        return;
+      }
+      router.refresh();
+    } catch {
+      setConnectionError("Network error. Please try again.");
+    } finally {
+      setConnectionApprovingId(null);
     }
   };
 
@@ -372,6 +416,142 @@ export default function SchoolPartnershipsClient({ pairings, students, mentors, 
                 </p>
               ) : (
                 <p style={{ margin: 0, fontSize: 13, color: "var(--muted)", fontStyle: "italic" }}>No messages yet.</p>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* 1:1 Mentorship Requests */}
+      <p
+        style={{
+          fontFamily: "var(--font-mono)",
+          fontSize: 13,
+          letterSpacing: "0.2em",
+          textTransform: "uppercase",
+          color: "var(--amber)",
+          margin: "32px 0 14px",
+        }}
+      >
+        1:1 Mentorship Requests
+      </p>
+      <p style={{ color: "var(--muted)", fontSize: 13, margin: "0 0 14px" }}>
+        A student or alum asked to chat 1:1 with a specific mentor or staff member — approve to create the room.
+      </p>
+
+      {connectionError && (
+        <p style={{ color: "#e05", fontSize: 13, margin: "0 0 12px", fontFamily: "var(--font-mono)" }}>
+          {connectionError}
+        </p>
+      )}
+
+      {connectionRequestQueue.length === 0 ? (
+        <div
+          style={{
+            border: "1px solid var(--border)",
+            background: "var(--surface)",
+            padding: "24px 18px",
+            textAlign: "center",
+            borderRadius: 0,
+            marginBottom: 24,
+          }}
+        >
+          <p style={{ color: "var(--muted)", fontSize: 13, margin: 0 }}>
+            No 1:1 connection requests waiting on approval right now.
+          </p>
+        </div>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 24 }}>
+          {connectionRequestQueue.map((r) => (
+            <div
+              key={r.id}
+              style={{
+                border: "1px solid var(--border)",
+                background: "var(--surface)",
+                padding: "16px 18px",
+                borderRadius: 0,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 12,
+                flexWrap: "wrap",
+              }}
+            >
+              <div style={{ flex: 1, minWidth: 200 }}>
+                <p style={{ margin: 0, fontSize: 14, color: "var(--text)" }}>
+                  <strong>{r.fromUser.displayName}</strong> wants to connect with{" "}
+                  <strong>{r.toUser.displayName}</strong>
+                </p>
+                {r.message && (
+                  <p style={{ margin: "6px 0 0", fontSize: 13, color: "var(--muted)", fontStyle: "italic" }}>
+                    &ldquo;{r.message}&rdquo;
+                  </p>
+                )}
+              </div>
+              <button
+                onClick={() => handleApproveConnectionRequest(r.id)}
+                disabled={connectionApprovingId === r.id}
+                style={{
+                  padding: "8px 16px",
+                  background: "var(--amber)",
+                  border: "1px solid var(--amber)",
+                  color: "#000",
+                  fontSize: 12,
+                  fontWeight: 700,
+                  fontFamily: "var(--font-mono)",
+                  letterSpacing: "0.06em",
+                  textTransform: "uppercase",
+                  cursor: connectionApprovingId === r.id ? "not-allowed" : "pointer",
+                  opacity: connectionApprovingId === r.id ? 0.6 : 1,
+                  borderRadius: 0,
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {connectionApprovingId === r.id ? "Creating…" : "Create Room"}
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {connectionRequestHistory.length > 0 && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 24 }}>
+          {connectionRequestHistory.map((r) => (
+            <div
+              key={r.id}
+              style={{
+                border: "1px solid var(--border)",
+                background: "var(--surface)",
+                padding: "12px 16px",
+                borderRadius: 0,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 12,
+                flexWrap: "wrap",
+              }}
+            >
+              <p style={{ margin: 0, fontSize: 13, color: "var(--text)" }}>
+                {r.fromUser.displayName} &harr; {r.toUser.displayName}
+              </p>
+              {r.roomId && (
+                <Link
+                  href={`/messages?group=${r.roomId}`}
+                  style={{
+                    padding: "5px 12px",
+                    border: "1px solid var(--border)",
+                    color: "var(--text)",
+                    fontSize: 11,
+                    fontWeight: 600,
+                    fontFamily: "var(--font-mono)",
+                    letterSpacing: "0.06em",
+                    textTransform: "uppercase",
+                    textDecoration: "none",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  Open Chat
+                </Link>
               )}
             </div>
           ))}

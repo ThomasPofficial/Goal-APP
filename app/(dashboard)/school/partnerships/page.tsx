@@ -18,7 +18,7 @@ export default async function SchoolPartnershipsPage() {
 
   await finalizeExpiredPartnershipRequests(schoolId);
 
-  const [pairings, students, mentors, requestQueue, requestHistory] = await Promise.all([
+  const [pairings, students, mentors, requestQueue, requestHistory, connectionQueue, connectionHistory] = await Promise.all([
     prisma.conversation.findMany({
       where: { type: "MENTORSHIP", schoolId },
       include: {
@@ -60,6 +60,18 @@ export default async function SchoolPartnershipsPage() {
       orderBy: { finalizedAt: "desc" },
       take: 50,
     }),
+    // Still-live 1:1 ConnectionRequest model (used by the separate /alumni
+    // directory flow) -- surfaced here since /school/partnerships is now the
+    // only admin page that can approve these.
+    prisma.connectionRequest.findMany({
+      where: { schoolId, status: "ACCEPTED", roomId: null },
+      orderBy: { respondedAt: "asc" },
+    }),
+    prisma.connectionRequest.findMany({
+      where: { schoolId, roomId: { not: null } },
+      orderBy: { respondedAt: "desc" },
+      take: 50,
+    }),
   ]);
 
   const formatRequestRow = async (r: (typeof requestQueue)[number]) => ({
@@ -83,6 +95,21 @@ export default async function SchoolPartnershipsPage() {
   const [formattedQueue, formattedHistory] = await Promise.all([
     Promise.all(requestQueue.map(formatRequestRow)),
     Promise.all(requestHistory.map(formatRequestRow)),
+  ]);
+
+  const formatConnectionRow = async (r: (typeof connectionQueue)[number]) => ({
+    id: r.id,
+    createdAt: r.createdAt.toISOString(),
+    respondedAt: r.respondedAt?.toISOString() ?? null,
+    roomId: r.roomId,
+    message: r.message,
+    fromUser: await partnerUserSummary(r.fromUserId),
+    toUser: await partnerUserSummary(r.toUserId),
+  });
+
+  const [formattedConnectionQueue, formattedConnectionHistory] = await Promise.all([
+    Promise.all(connectionQueue.map(formatConnectionRow)),
+    Promise.all(connectionHistory.map(formatConnectionRow)),
   ]);
 
   const formattedPairings = pairings.map((c) => ({
@@ -116,6 +143,8 @@ export default async function SchoolPartnershipsPage() {
       mentors={formattedMentors}
       requestQueue={formattedQueue}
       requestHistory={formattedHistory}
+      connectionRequestQueue={formattedConnectionQueue}
+      connectionRequestHistory={formattedConnectionHistory}
     />
   );
 }

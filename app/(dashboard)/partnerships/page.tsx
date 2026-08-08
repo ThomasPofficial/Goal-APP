@@ -19,7 +19,7 @@ export default async function PartnershipsPage() {
     await finalizeExpiredPartnershipRequests(schoolId);
   }
 
-  const [pendingInvites, myRequests] = await Promise.all([
+  const [pendingInvites, myRequests, pendingConnectionRequests] = await Promise.all([
     prisma.partnershipInvite.findMany({
       where: { userId: session.user.id, status: "PENDING", request: { status: "PENDING" } },
       include: { request: { include: { invites: true } } },
@@ -31,10 +31,19 @@ export default async function PartnershipsPage() {
       orderBy: { createdAt: "desc" },
       take: 20,
     }),
+    // Still-live 1:1 ConnectionRequest model (used by the separate /alumni
+    // directory flow) -- surfaced here since /partnerships is now the only
+    // student-facing page that can display/accept these.
+    prisma.connectionRequest.findMany({
+      where: { toUserId: session.user.id, status: "PENDING" },
+      orderBy: { createdAt: "desc" },
+    }),
   ]);
 
   // Anyone who isn't a walled student still gets in if a request touches them.
-  if (!walled && pendingInvites.length === 0 && myRequests.length === 0) redirect("/dashboard");
+  if (!walled && pendingInvites.length === 0 && myRequests.length === 0 && pendingConnectionRequests.length === 0) {
+    redirect("/dashboard");
+  }
 
   const incoming = await Promise.all(
     pendingInvites.map(async (invite) => {
@@ -67,5 +76,21 @@ export default async function PartnershipsPage() {
     }))
   );
 
-  return <PartnershipsClient myUserId={session.user.id} incomingRequests={incoming} sentRequests={sent} />;
+  const incomingConnectionRequests = await Promise.all(
+    pendingConnectionRequests.map(async (r) => ({
+      id: r.id,
+      message: r.message,
+      createdAt: r.createdAt.toISOString(),
+      fromUser: await partnerUserSummary(r.fromUserId),
+    }))
+  );
+
+  return (
+    <PartnershipsClient
+      myUserId={session.user.id}
+      incomingRequests={incoming}
+      sentRequests={sent}
+      incomingConnectionRequests={incomingConnectionRequests}
+    />
+  );
 }
