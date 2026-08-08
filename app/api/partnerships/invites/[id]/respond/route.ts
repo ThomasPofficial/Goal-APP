@@ -31,7 +31,7 @@ export async function PATCH(req: Request, { params }: { params: Params }) {
   if (invite.userId !== session.user.id) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
-  if (invite.status !== "PENDING" || invite.request.status !== "PENDING") {
+  if (invite.status !== "PENDING" || invite.request.status !== "PENDING" || invite.request.expiresAt <= new Date()) {
     return NextResponse.json({ error: "Already responded to" }, { status: 409 });
   }
 
