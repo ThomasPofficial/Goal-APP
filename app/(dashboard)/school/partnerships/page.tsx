@@ -2,7 +2,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import SchoolPartnershipsClient from "./SchoolPartnershipsClient";
-import { finalizeExpiredPartnershipRequests, partnerUserSummary } from "@/lib/partnerships";
+import { finalizeExpiredPartnershipRequests, partnerUserSummaries } from "@/lib/partnerships";
 
 export default async function SchoolPartnershipsPage() {
   const session = await auth();
@@ -74,43 +74,51 @@ export default async function SchoolPartnershipsPage() {
     }),
   ]);
 
-  const formatRequestRow = async (r: (typeof requestQueue)[number]) => ({
+  // Collect every user id we'll need a summary for across the whole result
+  // set up front, then fetch them in a single batched query instead of
+  // fanning out per-person prisma.user.findUnique calls (up to 3x per row --
+  // fromUser + accepted + other invitees -- across a queue plus a take: 50
+  // history list, with no cap on group size).
+  const summaryIds: string[] = [];
+  for (const r of [...requestQueue, ...requestHistory]) {
+    summaryIds.push(r.fromUserId);
+    for (const i of r.invites) summaryIds.push(i.userId);
+  }
+  for (const r of [...connectionQueue, ...connectionHistory]) {
+    summaryIds.push(r.fromUserId, r.toUserId);
+  }
+  const summaries = await partnerUserSummaries(summaryIds);
+  const getSummary = (id: string) => summaries.get(id)!;
+
+  const formatRequestRow = (r: (typeof requestQueue)[number]) => ({
     id: r.id,
     status: r.status as "AWAITING_APPROVAL" | "APPROVED" | "REJECTED" | "EXPIRED_EMPTY",
     createdAt: r.createdAt.toISOString(),
     finalizedAt: r.finalizedAt?.toISOString() ?? null,
     roomId: r.roomId,
     message: r.message,
-    fromUser: await partnerUserSummary(r.fromUserId),
-    acceptedInvitees: await Promise.all(
-      r.invites.filter((i) => i.status === "ACCEPTED").map((i) => partnerUserSummary(i.userId))
-    ),
-    otherInvitees: await Promise.all(
-      r.invites
-        .filter((i) => i.status !== "ACCEPTED")
-        .map(async (i) => ({ ...(await partnerUserSummary(i.userId)), status: i.status }))
-    ),
+    fromUser: getSummary(r.fromUserId),
+    acceptedInvitees: r.invites.filter((i) => i.status === "ACCEPTED").map((i) => getSummary(i.userId)),
+    otherInvitees: r.invites
+      .filter((i) => i.status !== "ACCEPTED")
+      .map((i) => ({ ...getSummary(i.userId), status: i.status })),
   });
 
-  const [formattedQueue, formattedHistory] = await Promise.all([
-    Promise.all(requestQueue.map(formatRequestRow)),
-    Promise.all(requestHistory.map(formatRequestRow)),
-  ]);
+  const formattedQueue = requestQueue.map(formatRequestRow);
+  const formattedHistory = requestHistory.map(formatRequestRow);
 
-  const formatConnectionRow = async (r: (typeof connectionQueue)[number]) => ({
+  const formatConnectionRow = (r: (typeof connectionQueue)[number]) => ({
     id: r.id,
     createdAt: r.createdAt.toISOString(),
     respondedAt: r.respondedAt?.toISOString() ?? null,
     roomId: r.roomId,
     message: r.message,
-    fromUser: await partnerUserSummary(r.fromUserId),
-    toUser: await partnerUserSummary(r.toUserId),
+    fromUser: getSummary(r.fromUserId),
+    toUser: getSummary(r.toUserId),
   });
 
-  const [formattedConnectionQueue, formattedConnectionHistory] = await Promise.all([
-    Promise.all(connectionQueue.map(formatConnectionRow)),
-    Promise.all(connectionHistory.map(formatConnectionRow)),
-  ]);
+  const formattedConnectionQueue = connectionQueue.map(formatConnectionRow);
+  const formattedConnectionHistory = connectionHistory.map(formatConnectionRow);
 
   const formattedPairings = pairings.map((c) => ({
     id: c.id,

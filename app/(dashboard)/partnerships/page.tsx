@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { isWalledStudent } from "@/lib/accountGate";
 import { getSchoolId } from "@/lib/communities";
-import { finalizeExpiredPartnershipRequests, partnerUserSummary } from "@/lib/partnerships";
+import { finalizeExpiredPartnershipRequests, partnerUserSummaries } from "@/lib/partnerships";
 import PartnershipsClient from "./PartnershipsClient";
 
 export default async function PartnershipsPage() {
@@ -45,45 +45,52 @@ export default async function PartnershipsPage() {
     redirect("/dashboard");
   }
 
-  const incoming = await Promise.all(
-    pendingInvites.map(async (invite) => {
-      const otherInvites = await Promise.all(
-        invite.request.invites
-          .filter((i) => i.userId !== session.user.id)
-          .map(async (i) => ({ ...(await partnerUserSummary(i.userId)), status: i.status }))
-      );
-      return {
-        inviteId: invite.id,
-        message: invite.request.message,
-        createdAt: invite.request.createdAt.toISOString(),
-        fromUser: await partnerUserSummary(invite.request.fromUserId),
-        otherInvites,
-      };
-    })
-  );
+  // Collect every user id we'll need a summary for across the whole result
+  // set up front, then fetch them in a single batched query instead of
+  // fanning out one prisma.user.findUnique per person (which, with no cap
+  // on group size, could mean hundreds of round-trips per page load).
+  const summaryIds: string[] = [];
+  for (const invite of pendingInvites) {
+    summaryIds.push(invite.request.fromUserId);
+    for (const i of invite.request.invites) {
+      if (i.userId !== session.user.id) summaryIds.push(i.userId);
+    }
+  }
+  for (const r of myRequests) {
+    for (const i of r.invites) summaryIds.push(i.userId);
+  }
+  for (const r of pendingConnectionRequests) {
+    summaryIds.push(r.fromUserId);
+  }
+  const summaries = await partnerUserSummaries(summaryIds);
+  const getSummary = (id: string) => summaries.get(id)!;
 
-  const sent = await Promise.all(
-    myRequests.map(async (r) => ({
-      id: r.id,
-      status: r.status,
-      message: r.message,
-      createdAt: r.createdAt.toISOString(),
-      expiresAt: r.expiresAt.toISOString(),
-      roomId: r.roomId,
-      invites: await Promise.all(
-        r.invites.map(async (i) => ({ ...(await partnerUserSummary(i.userId)), status: i.status }))
-      ),
-    }))
-  );
+  const incoming = pendingInvites.map((invite) => ({
+    inviteId: invite.id,
+    message: invite.request.message,
+    createdAt: invite.request.createdAt.toISOString(),
+    fromUser: getSummary(invite.request.fromUserId),
+    otherInvites: invite.request.invites
+      .filter((i) => i.userId !== session.user.id)
+      .map((i) => ({ ...getSummary(i.userId), status: i.status })),
+  }));
 
-  const incomingConnectionRequests = await Promise.all(
-    pendingConnectionRequests.map(async (r) => ({
-      id: r.id,
-      message: r.message,
-      createdAt: r.createdAt.toISOString(),
-      fromUser: await partnerUserSummary(r.fromUserId),
-    }))
-  );
+  const sent = myRequests.map((r) => ({
+    id: r.id,
+    status: r.status,
+    message: r.message,
+    createdAt: r.createdAt.toISOString(),
+    expiresAt: r.expiresAt.toISOString(),
+    roomId: r.roomId,
+    invites: r.invites.map((i) => ({ ...getSummary(i.userId), status: i.status })),
+  }));
+
+  const incomingConnectionRequests = pendingConnectionRequests.map((r) => ({
+    id: r.id,
+    message: r.message,
+    createdAt: r.createdAt.toISOString(),
+    fromUser: getSummary(r.fromUserId),
+  }));
 
   return (
     <PartnershipsClient

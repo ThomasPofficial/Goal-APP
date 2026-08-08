@@ -28,6 +28,35 @@ export async function partnerUserSummary(userId: string) {
   };
 }
 
+/**
+ * Batched version of partnerUserSummary. Fetches all users in a single
+ * query and returns a Map keyed by userId, so page-load hot paths that fan
+ * out over a whole result set (every invite/request on a page) don't issue
+ * one prisma.user.findUnique per person.
+ */
+export async function partnerUserSummaries(userIds: string[]) {
+  const uniqueIds = [...new Set(userIds)];
+  const users = await prisma.user.findMany({
+    where: { id: { in: uniqueIds } },
+    select: { id: true, name: true, profile: { select: { displayName: true, handle: true, avatarUrl: true } } },
+  });
+  const byId = new Map(users.map((u) => [u.id, u]));
+  return new Map(
+    uniqueIds.map((id) => {
+      const user = byId.get(id);
+      return [
+        id,
+        {
+          id,
+          displayName: user?.profile?.displayName ?? user?.name ?? "Someone",
+          handle: user?.profile?.handle ?? null,
+          avatarUrl: user?.profile?.avatarUrl ?? null,
+        },
+      ];
+    })
+  );
+}
+
 export function buildGroupName(names: string[]): string {
   if (names.length === 0) return "Partnership";
   if (names.length === 1) return names[0];
