@@ -57,7 +57,7 @@ export default async function NotificationsPage() {
         updatedAt: c.updatedAt.toISOString(),
         unread: !lastReadAt || lastReadAt < lastMessageAt,
         // Walled students don't have /messages access -- they use the
-        // dedicated /communities and /mentorship surfaces instead. School
+        // dedicated /communities and /partnerships surfaces instead. School
         // admins do have /messages, so route them straight to the thread.
         href: isSchool
           ? `/messages?group=${c.id}`
