@@ -2,28 +2,15 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
+import { getSchoolIds } from '@/lib/communities';
 
 type Params = Promise<{ id: string }>;
 
-async function getSchoolId(userId: string): Promise<string | null> {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { role: true },
-  });
-  // SCHOOL accounts: their own id IS the schoolId
-  if (user?.role === 'SCHOOL') return userId;
-  const profile = await prisma.profile.findUnique({
-    where: { userId },
-    select: { schoolId: true },
-  });
-  return profile?.schoolId ?? null;
-}
-
 async function verifyRoomAccess(userId: string, roomId: string) {
-  const schoolId = await getSchoolId(userId);
-  if (!schoolId) return null;
+  const schoolIds = await getSchoolIds(userId);
+  if (schoolIds.length === 0) return null;
   const room = await prisma.conversation.findFirst({
-    where: { id: roomId, type: 'COMMUNITY', schoolId },
+    where: { id: roomId, type: 'COMMUNITY', schoolId: { in: schoolIds } },
   });
   return room;
 }
