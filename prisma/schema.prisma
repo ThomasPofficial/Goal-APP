@@ -66,6 +66,7 @@ enum UserRole {
   ORG
   ADMIN
   SCHOOL
+  STAFF
 }
 
 model User {
@@ -127,6 +128,10 @@ model Profile {
   industry            String?
   schoolId            String?     // references User.id where role=SCHOOL
   staffTitle          String?     // "Dean", "Counselor", "AP History Teacher", etc.
+  staffTierId              String?
+  staffTier                FacultyTier? @relation(fields: [staffTierId], references: [id])
+  staffPermissionOverrides String       @default("[]") // JSON array; additive if staffTierId set, else the full set
+  staffInvited              Boolean      @default(false) // true once a staff invite has been sent for this profile
   phone String?
   advancementEmail  String?
   // Alumni destination tracking
@@ -150,6 +155,19 @@ model Profile {
   workflowSession      WorkflowSession?
   algorithmQuotas      AlgorithmQuota[]
   orgReviews           OrgReview[]
+}
+
+model FacultyTier {
+  id              String    @id @default(cuid())
+  schoolId        String    // references User.id where role=SCHOOL
+  name            String
+  permissions     String    @default("[]") // JSON array of capability strings
+  isSystemDefault Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  profiles        Profile[]
+
+  @@index([schoolId])
 }
 
 enum GeniusType {

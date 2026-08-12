@@ -7,6 +7,7 @@ import AccountMenu from "./AccountMenu";
 import NivarroMark from "@/components/ui/NivarroMark";
 import { cn } from "@/lib/utils";
 import type { GeniusType } from "@/data/traits";
+import type { Capability } from "@/lib/facultyPermissions";
 
 const STANDARD_NAV = [
   { href: "/dashboard",      label: "Dashboard",     Icon: LayoutDashboard },
@@ -29,6 +30,17 @@ const SCHOOL_NAV = [
   { href: "/school/roster",       label: "Roster",        Icon: Users },
 ];
 
+function buildStaffNav(caps: Capability[]) {
+  const items: { href: string; label: string; Icon: typeof Users }[] = [
+    { href: "/dashboard", label: "Dashboard", Icon: LayoutDashboard },
+  ];
+  if (caps.includes("roster:view")) items.push({ href: "/school/roster", label: "Roster", Icon: Users });
+  if (caps.includes("campaigns:view")) items.push({ href: "/campaigns", label: "Fundraise", Icon: HeartHandshake });
+  if (caps.includes("staff:manage")) items.push({ href: "/school/staff", label: "Staff", Icon: UsersRound });
+  items.push({ href: "/notifications", label: "Notifications", Icon: Bell });
+  return items;
+}
+
 interface SidebarProps {
   userName?: string | null;
   userEmail?: string | null;
@@ -40,13 +52,15 @@ interface SidebarProps {
   isOrg?: boolean;
   isNivarroAdmin?: boolean;
   isSchool?: boolean;
+  isStaff?: boolean;
+  staffCapabilities?: Capability[];
   isWalledStudent?: boolean;
   isAlumni?: boolean;
   collapsed?: boolean;
   onToggleCollapse?: () => void;
 }
 
-export default function Sidebar({ userName, userEmail, geniusType, mobileOpen = false, onMobileClose, myOrgId, myOrgName, isOrg, isNivarroAdmin = false, isSchool = false, isWalledStudent = false, isAlumni = false, collapsed = false, onToggleCollapse }: SidebarProps) {
+export default function Sidebar({ userName, userEmail, geniusType, mobileOpen = false, onMobileClose, myOrgId, myOrgName, isOrg, isNivarroAdmin = false, isSchool = false, isStaff = false, staffCapabilities = [], isWalledStudent = false, isAlumni = false, collapsed = false, onToggleCollapse }: SidebarProps) {
   const pathname = usePathname();
 
   const orgNav = myOrgId ? [
@@ -74,8 +88,9 @@ export default function Sidebar({ userName, userEmail, geniusType, mobileOpen = 
     { href: "/notifications", label: "Notifications",  Icon: Bell },
   ];
 
-  const navItems = isSchool ? SCHOOL_NAV : isOrg ? orgNav : isWalledStudent ? walledNav : studentNav;
-  const homeHref = isSchool ? "/campaigns" : isOrg && myOrgId ? `/orgs/${myOrgId}` : "/dashboard";
+  const staffNav = buildStaffNav(staffCapabilities);
+  const navItems = isSchool ? SCHOOL_NAV : isStaff ? staffNav : isOrg ? orgNav : isWalledStudent ? walledNav : studentNav;
+  const homeHref = isSchool ? "/campaigns" : isStaff ? staffNav[0]?.href ?? "/dashboard" : isOrg && myOrgId ? `/orgs/${myOrgId}` : "/dashboard";
 
   const isActive = (href: string) => {
     if (isOrg && myOrgId && href === `/orgs/${myOrgId}`) return pathname.startsWith(`/orgs/${myOrgId}`);

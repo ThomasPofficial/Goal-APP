@@ -1,20 +1,18 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
+import { requireSchoolCapability } from "@/lib/school-auth";
 import RosterClient from "./RosterClient";
 
 export default async function RosterPage() {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
 
-  const dbUser = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: { role: true },
-  });
-  if (dbUser?.role !== "SCHOOL") redirect("/dashboard");
+  const check = await requireSchoolCapability("roster:view");
+  if ("error" in check) redirect("/dashboard");
 
   const memberProfiles = await prisma.profile.findMany({
-    where: { schoolId: session.user.id },
+    where: { schoolId: check.schoolId },
     include: {
       user: {
         select: {

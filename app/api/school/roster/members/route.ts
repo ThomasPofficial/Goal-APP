@@ -2,10 +2,10 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { randomUUID } from "crypto";
-import { getSchoolSession } from "@/lib/school-auth";
+import { requireSchoolCapability } from "@/lib/school-auth";
 
 export async function POST(req: Request) {
-  const check = await getSchoolSession();
+  const check = await requireSchoolCapability("roster:edit");
   if ("error" in check) {
     return NextResponse.json({ error: check.error }, { status: check.status });
   }

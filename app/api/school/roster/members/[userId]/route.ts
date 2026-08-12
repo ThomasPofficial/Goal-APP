@@ -1,12 +1,12 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
-import { getSchoolSession } from "@/lib/school-auth";
+import { requireSchoolCapability } from "@/lib/school-auth";
 
 export async function PATCH(
   req: Request,
   { params }: { params: Promise<{ userId: string }> }
 ) {
-  const check = await getSchoolSession();
+  const check = await requireSchoolCapability("roster:edit");
   if ("error" in check) {
     return NextResponse.json({ error: check.error }, { status: check.status });
   }
@@ -74,7 +74,7 @@ export async function DELETE(
   _req: Request,
   { params }: { params: Promise<{ userId: string }> }
 ) {
-  const check = await getSchoolSession();
+  const check = await requireSchoolCapability("roster:edit");
   if ("error" in check) {
     return NextResponse.json({ error: check.error }, { status: check.status });
   }

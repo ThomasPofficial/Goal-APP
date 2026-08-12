@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect, notFound } from "next/navigation";
+import { requireSchoolCapability } from "@/lib/school-auth";
 import CampaignEditClient from "./CampaignEditClient";
 import type { ImageParams } from "@/components/campaigns/CampaignCanvas";
 
@@ -9,8 +10,12 @@ export default async function CampaignEditPage({ params }: { params: Promise<{ i
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
 
+  // The editor is a write surface (matches campaigns/new), so it needs campaigns:edit.
+  const check = await requireSchoolCapability("campaigns:edit");
+  if ("error" in check) redirect("/dashboard");
+
   const campaign = await prisma.campaign.findFirst({
-    where: { id, schoolId: session.user.id },
+    where: { id, schoolId: check.schoolId },
   });
   if (!campaign) notFound();
 
@@ -34,7 +39,7 @@ export default async function CampaignEditPage({ params }: { params: Promise<{ i
         videoUrl: campaign.videoUrl,
         active: campaign.active,
       }}
-      schoolId={session.user.id}
+      schoolId={check.schoolId}
       versions={versions.map((v) => ({
         id: v.id,
         cause: v.cause,

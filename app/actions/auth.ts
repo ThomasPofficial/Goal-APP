@@ -105,7 +105,7 @@ export async function requestPasswordReset(
 export async function resetPassword(
   token: string,
   password: string
-): Promise<{ error: string } | { success: true }> {
+): Promise<{ error: string } | { success: true; userId: string }> {
   const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
 
   const record = await prisma.passwordResetToken.findUnique({
@@ -132,5 +132,5 @@ export async function resetPassword(
     prisma.passwordResetToken.delete({ where: { token: hashedToken } }),
   ]);
 
-  return { success: true };
+  return { success: true, userId: user.id };
 }

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import SidebarShell from "@/components/layout/SidebarShell";
 import type { GeniusType } from "@/data/traits";
+import { computeEffectivePermissions } from "@/lib/facultyPermissions";
 
 export default async function DashboardLayout({
   children,
@@ -21,7 +22,15 @@ export default async function DashboardLayout({
     select: {
       role: true,
       isAlumni: true,
-      profile: { select: { displayName: true, geniusType: true, schoolId: true } },
+      profile: {
+        select: {
+          displayName: true,
+          geniusType: true,
+          schoolId: true,
+          staffPermissionOverrides: true,
+          staffTier: { select: { permissions: true } },
+        },
+      },
     },
   });
 
@@ -30,10 +39,20 @@ export default async function DashboardLayout({
   const isOrg = role === "ORG" || role === "ADMIN";
   const isNivarroAdmin = role === "ADMIN";
   const profile = dbUser?.profile ?? null;
+  // A STAFF account with no schoolId can't pass requireSchoolCapability (it keys
+  // every check off profile.schoolId), so the sidebar must not advertise
+  // Roster/Fundraise/Staff links it would be denied — never promise what the API denies.
+  const isStaff = role === "STAFF" && !!profile?.schoolId;
   // Student/Alum account = STUDENT role with a school affiliation — walled-off nav.
   // (Standard = STUDENT role with no school affiliation; that's just "none of the above" here.)
   const isWalledStudent = role === "STUDENT" && !!profile?.schoolId;
   const isAlumni = !!dbUser?.isAlumni;
+  const staffCapabilities = isStaff
+    ? computeEffectivePermissions({
+        tierPermissions: profile?.staffTier?.permissions ?? null,
+        overrides: profile?.staffPermissionOverrides ?? "[]",
+      })
+    : [];
 
   // Org lookup only runs for org/admin accounts.
   // ADMIN: structural query finds the platform org regardless of which email is logged in.
@@ -65,6 +84,8 @@ export default async function DashboardLayout({
         isOrg={isOrg}
         isNivarroAdmin={isNivarroAdmin}
         isSchool={isSchool}
+        isStaff={isStaff}
+        staffCapabilities={staffCapabilities}
         isWalledStudent={isWalledStudent}
         isAlumni={isAlumni}
       />

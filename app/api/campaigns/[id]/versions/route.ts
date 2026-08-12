@@ -1,17 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { requireSchoolCapability } from "@/lib/school-auth";
 
+// Read-only: listing a campaign's version history is a view operation.
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const session = await auth();
-  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const check = await requireSchoolCapability("campaigns:view");
+  if ("error" in check) {
+    return NextResponse.json({ error: check.error }, { status: check.status });
+  }
 
   const campaign = await prisma.campaign.findFirst({
-    where: { id, schoolId: session.user.id },
+    where: { id, schoolId: check.schoolId },
   });
   if (!campaign) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
