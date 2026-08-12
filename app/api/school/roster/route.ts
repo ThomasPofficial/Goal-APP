@@ -9,38 +9,49 @@ export async function GET() {
   }
   const { schoolId } = check;
 
-  const memberProfiles = await prisma.profile.findMany({
-    where: { schoolId },
-    include: {
-      user: {
-        select: {
-          id: true,
-          email: true,
-          role: true,
-          isAlumni: true,
-          createdAt: true,
+  const [directMembers, alumniLinks] = await Promise.all([
+    prisma.profile.findMany({
+      where: { schoolId },
+      include: {
+        user: {
+          select: { id: true, email: true, role: true, isAlumni: true, createdAt: true },
         },
       },
-    },
-    orderBy: { displayName: "asc" },
-  });
+    }),
+    prisma.alumniSchool.findMany({
+      where: { schoolId },
+      select: {
+        profile: {
+          include: {
+            user: {
+              select: { id: true, email: true, role: true, isAlumni: true, createdAt: true },
+            },
+          },
+        },
+      },
+    }),
+  ]);
 
-  const members = memberProfiles.map((p) => ({
-    profileId: p.id,
-    userId: p.userId,
-    displayName: p.displayName,
-    email: p.user.email ?? null,
-    phone: p.phone ?? null,
-    role: p.user.role,
-    isAlumni: p.user.isAlumni,
-    staffTitle: p.staffTitle ?? null,
-    graduationYear: p.graduationYear ?? null,
-    industry: p.industry ?? null,
-    intendedCollege: p.intendedCollege ?? null,
-    intendedMajor: p.intendedMajor ?? null,
-    isAvailableToMentor: p.isAvailableToMentor,
-    createdAt: p.user.createdAt.toISOString(),
-  }));
+  const memberProfiles = [...directMembers, ...alumniLinks.map((l) => l.profile)];
+
+  const members = memberProfiles
+    .sort((a, b) => a.displayName.localeCompare(b.displayName))
+    .map((p) => ({
+      profileId: p.id,
+      userId: p.userId,
+      displayName: p.displayName,
+      email: p.user.email ?? null,
+      phone: p.phone ?? null,
+      role: p.user.role,
+      isAlumni: p.user.isAlumni,
+      staffTitle: p.staffTitle ?? null,
+      graduationYear: p.graduationYear ?? null,
+      industry: p.industry ?? null,
+      intendedCollege: p.intendedCollege ?? null,
+      intendedMajor: p.intendedMajor ?? null,
+      isAvailableToMentor: p.isAvailableToMentor,
+      createdAt: p.user.createdAt.toISOString(),
+    }));
 
   return NextResponse.json({ members });
 }

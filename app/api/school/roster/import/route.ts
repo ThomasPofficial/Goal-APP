@@ -60,7 +60,7 @@ export async function POST(req: Request) {
       const sharedFields = {
         displayName,
         phone: row.phone?.trim() || null,
-        schoolId,
+        ...(isAlumni ? {} : { schoolId }),
         onboardingComplete: true,
       };
 
@@ -94,18 +94,22 @@ export async function POST(req: Request) {
         include: { profile: true },
       });
 
+      let profileId: string;
+
       if (existingUser) {
         if (existingUser.profile) {
+          profileId = existingUser.profile.id;
           await prisma.profile.update({
             where: { userId: existingUser.id },
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             data: profileData as any,
           });
         } else {
-          await prisma.profile.create({
+          const created = await prisma.profile.create({
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             data: { userId: existingUser.id, ...profileData } as any,
           });
+          profileId = created.id;
         }
         if (isAlumni && !existingUser.isAlumni) {
           await prisma.user.update({
@@ -114,7 +118,7 @@ export async function POST(req: Request) {
           });
         }
       } else {
-        await prisma.user.create({
+        const created = await prisma.user.create({
           data: {
             name: displayName,
             email,
@@ -126,6 +130,16 @@ export async function POST(req: Request) {
               create: profileData as any,
             },
           },
+          include: { profile: true },
+        });
+        profileId = created.profile!.id;
+      }
+
+      if (isAlumni) {
+        await prisma.alumniSchool.upsert({
+          where: { profileId_schoolId: { profileId, schoolId } },
+          create: { profileId, schoolId },
+          update: {},
         });
       }
 

@@ -56,10 +56,12 @@ export async function POST(req: Request) {
 
   const graduationYearNum = graduationYear ? Number(graduationYear) : undefined;
 
+  const isAlumniRole = role === "ALUMNI";
+
   const sharedFields = {
     displayName: displayName.trim(),
     phone: phone?.trim() || null,
-    schoolId,
+    ...(isAlumniRole ? {} : { schoolId }),
     onboardingComplete: true,
   };
 
@@ -71,7 +73,7 @@ export async function POST(req: Request) {
       ...(intendedCollege?.trim() && { intendedCollege: intendedCollege.trim() }),
       ...(intendedMajor?.trim() && { intendedMajor: intendedMajor.trim() }),
     };
-  } else if (role === "ALUMNI") {
+  } else if (isAlumniRole) {
     roleFields = {
       ...(graduationYearNum !== undefined && { graduationYear: graduationYearNum }),
       ...(industry?.trim() && { industry: industry.trim() }),
@@ -92,24 +94,27 @@ export async function POST(req: Request) {
   });
 
   let userId: string;
+  let profileId: string;
 
   if (existingUser) {
     userId = existingUser.id;
 
     if (existingUser.profile) {
+      profileId = existingUser.profile.id;
       await prisma.profile.update({
         where: { userId },
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         data: profileData as any,
       });
     } else {
-      await prisma.profile.create({
+      const created = await prisma.profile.create({
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         data: { userId, ...profileData } as any,
       });
+      profileId = created.id;
     }
 
-    if (role === "ALUMNI" && !existingUser.isAlumni) {
+    if (isAlumniRole && !existingUser.isAlumni) {
       await prisma.user.update({
         where: { id: userId },
         data: { isAlumni: true },
@@ -122,14 +127,24 @@ export async function POST(req: Request) {
         email: email.trim(),
         passwordHash: await bcrypt.hash(randomUUID(), 10),
         role: "STUDENT",
-        isAlumni: role === "ALUMNI",
+        isAlumni: isAlumniRole,
         profile: {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           create: profileData as any,
         },
       },
+      include: { profile: true },
     });
     userId = newUser.id;
+    profileId = newUser.profile!.id;
+  }
+
+  if (isAlumniRole) {
+    await prisma.alumniSchool.upsert({
+      where: { profileId_schoolId: { profileId, schoolId } },
+      create: { profileId, schoolId },
+      update: {},
+    });
   }
 
   return NextResponse.json({ id: userId });
