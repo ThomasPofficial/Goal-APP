@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getSchoolId } from "@/lib/communities";
+import { getSchoolIds } from "@/lib/communities";
 import { isEligiblePartner, PARTNERSHIP_WINDOW_MS } from "@/lib/partnerships";
 import { z } from "zod";
 
@@ -38,20 +38,24 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const fromSchoolId = await getSchoolId(fromUserId);
-  if (!fromSchoolId) {
+  const fromSchoolIds = await getSchoolIds(fromUserId);
+  if (fromSchoolIds.length === 0) {
     return NextResponse.json({ error: "Not in a school" }, { status: 400 });
   }
 
-  const invitees = await prisma.user.findMany({
-    where: { id: { in: toUserIds } },
-    select: { id: true, profile: { select: { schoolId: true } } },
-  });
-  if (invitees.length !== toUserIds.length) {
+  const inviteeIdsAndSchools = await Promise.all(
+    toUserIds.map(async (id) => ({ id, schoolIds: await getSchoolIds(id) }))
+  );
+  if (inviteeIdsAndSchools.length !== toUserIds.length) {
     return NextResponse.json({ error: "One or more invitees not found" }, { status: 404 });
   }
-  const allSameSchool = invitees.every((u) => u.profile?.schoolId === fromSchoolId);
-  if (!allSameSchool) {
+  // Every invitee must share at least one school with the requester, and all
+  // invitees must land on the SAME shared school (the partnership room is
+  // scoped to one school).
+  const commonSchoolId = fromSchoolIds.find((id) =>
+    inviteeIdsAndSchools.every((invitee) => invitee.schoolIds.includes(id))
+  );
+  if (!commonSchoolId) {
     return NextResponse.json({ error: "All invitees must be in your school" }, { status: 400 });
   }
 
@@ -62,7 +66,7 @@ export async function POST(req: Request) {
 
   const request = await prisma.partnershipRequest.create({
     data: {
-      schoolId: fromSchoolId,
+      schoolId: commonSchoolId,
       fromUserId,
       message,
       expiresAt: new Date(Date.now() + PARTNERSHIP_WINDOW_MS),

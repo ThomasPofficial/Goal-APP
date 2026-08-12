@@ -2,7 +2,7 @@ import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { isWalledStudent } from "@/lib/accountGate";
-import { getSchoolId } from "@/lib/communities";
+import { getSchoolIds } from "@/lib/communities";
 import { finalizeExpiredPartnershipRequests, partnerUserSummaries } from "@/lib/partnerships";
 import PartnershipsClient from "./PartnershipsClient";
 
@@ -10,14 +10,12 @@ export default async function PartnershipsPage() {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
 
-  const [walled, schoolId] = await Promise.all([
+  const [walled, schoolIds] = await Promise.all([
     isWalledStudent(session.user.id),
-    getSchoolId(session.user.id),
+    getSchoolIds(session.user.id),
   ]);
 
-  if (schoolId) {
-    await finalizeExpiredPartnershipRequests(schoolId);
-  }
+  await Promise.all(schoolIds.map((id) => finalizeExpiredPartnershipRequests(id)));
 
   const [pendingInvites, myRequests, pendingConnectionRequests] = await Promise.all([
     prisma.partnershipInvite.findMany({
