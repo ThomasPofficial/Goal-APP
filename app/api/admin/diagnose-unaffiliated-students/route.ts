@@ -3,8 +3,15 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 
 // READ-ONLY. Reports every STUDENT-role account with no school affiliation
-// (Profile.schoolId IS NULL) so a human can tell real signups apart from
-// seeded/mock accounts before anything gets deleted. Makes no changes.
+// so a human can tell real signups apart from seeded/mock accounts before
+// anything gets deleted. Makes no changes.
+//
+// Alumni are excluded from Profile.schoolId (it's always null for them
+// post multi-school migration) so "unaffiliated" for alumni instead means
+// zero AlumniSchool links. Those two populations are reported in separate
+// buckets below — a correctly-linked alumni (>=1 AlumniSchool row) is
+// never "unaffiliated", and conflating the two would hide genuinely
+// orphaned alumni accounts among healthy ones.
 
 const KNOWN_SEED_BIOS = [
   "I build platforms that help ambitious people find each other.",
@@ -36,7 +43,11 @@ export async function GET(req: Request) {
   }
 
   const profiles = await prisma.profile.findMany({
-    where: { schoolId: null, user: { role: "STUDENT" } },
+    // schoolId: null alone is not "unaffiliated" for alumni — every alumni
+    // has a null Profile.schoolId by design and is linked via AlumniSchool
+    // instead. alumniSchools: { none: {} } excludes correctly-linked alumni
+    // while still catching non-alumni orphans and alumni with zero links.
+    where: { schoolId: null, user: { role: "STUDENT" }, alumniSchools: { none: {} } },
     include: {
       user: {
         select: {
@@ -45,6 +56,7 @@ export async function GET(req: Request) {
           name: true,
           passwordHash: true,
           createdAt: true,
+          isAlumni: true,
           _count: {
             select: {
               sentMessages: true,
@@ -112,6 +124,7 @@ export async function GET(req: Request) {
     report.push({
       email: u.email,
       name: u.name,
+      isAlumni: u.isAlumni,
       createdAt: u.createdAt.toISOString(),
       activityTotal,
       activityBreakdown: u._count,
@@ -121,5 +134,16 @@ export async function GET(req: Request) {
     });
   }
 
-  return NextResponse.json({ count: report.length, accounts: report });
+  // Split into two buckets so genuinely orphaned alumni (schoolId null AND
+  // zero AlumniSchool links) aren't hidden among ordinary non-alumni
+  // unaffiliated accounts, or vice versa.
+  const nonAlumniAccounts = report.filter((r) => !r.isAlumni);
+  const alumniWithNoSchoolLinks = report.filter((r) => r.isAlumni);
+
+  return NextResponse.json({
+    count: report.length,
+    accounts: nonAlumniAccounts,
+    alumniWithNoSchoolLinksCount: alumniWithNoSchoolLinks.length,
+    alumniWithNoSchoolLinks,
+  });
 }

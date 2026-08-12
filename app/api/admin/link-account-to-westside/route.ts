@@ -2,9 +2,11 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { ensureSchoolGeneralRoom } from "@/lib/communities";
 
-// Links an existing real account to Westside Academy (sets Profile.schoolId,
-// creating the profile if it doesn't have one yet) and joins it to the
-// General community room. Only touches schoolId — no other profile fields.
+// Links an existing real account to Westside Academy and joins it to the
+// General community room. Non-alumni accounts get Profile.schoolId set
+// directly (creating the profile if it doesn't have one yet). Alumni are
+// linked exclusively via an AlumniSchool row — Profile.schoolId is never
+// touched for them (see getSchoolIds in lib/communities.ts).
 export async function POST(req: Request) {
   const { searchParams } = new URL(req.url);
   if (searchParams.get("secret") !== "niv-reset-2026") {
@@ -28,7 +30,23 @@ export async function POST(req: Request) {
   const schoolId = schoolUser.id;
 
   const existingProfile = await prisma.profile.findUnique({ where: { userId: user.id } });
-  if (existingProfile) {
+
+  if (user.isAlumni) {
+    const profile =
+      existingProfile ??
+      (await prisma.profile.create({
+        data: {
+          userId: user.id,
+          displayName: user.name ?? email,
+          onboardingComplete: true,
+        },
+      }));
+    await prisma.alumniSchool.upsert({
+      where: { profileId_schoolId: { profileId: profile.id, schoolId } },
+      create: { profileId: profile.id, schoolId },
+      update: {},
+    });
+  } else if (existingProfile) {
     await prisma.profile.update({ where: { id: existingProfile.id }, data: { schoolId } });
   } else {
     await prisma.profile.create({
