@@ -55,16 +55,8 @@ export async function GET() {
     });
   }
 
-  // Fetch preferred genius types from project
-  let preferredTypes: string[] = [];
-  try {
-    preferredTypes = JSON.parse(project.preferredGeniusTypes ?? "[]");
-  } catch {
-    preferredTypes = [];
-  }
-
-  // Find candidates not already on the team, ordered by preferred genius type first
-  const candidates = await prisma.profile.findMany({
+  // Find candidates not already on the team
+  const sorted = await prisma.profile.findMany({
     where: {
       id: { notIn: existingMemberIds },
       onboardingComplete: true,
@@ -76,7 +68,6 @@ export async function GET() {
       displayName: true,
       headline: true,
       avatarUrl: true,
-      geniusType: true,
       handle: true,
       bio: true,
       strengthSummary: true,
@@ -101,15 +92,6 @@ export async function GET() {
       },
     },
   });
-
-  // Sort preferred genius types to the front
-  const sorted =
-    preferredTypes.length > 0
-      ? [
-          ...candidates.filter((c) => c.geniusType && preferredTypes.includes(c.geniusType)),
-          ...candidates.filter((c) => !c.geniusType || !preferredTypes.includes(c.geniusType)),
-        ]
-      : candidates;
 
   // Record usage
   if (sorted.length > 0) {
