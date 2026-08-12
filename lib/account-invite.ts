@@ -40,7 +40,11 @@ export async function createAccountInvite(
   ).replace(/\/$/, "");
   const activateUrl = `${appUrl}/activate-account?token=${rawToken}`;
 
-  await sendInviteEmail({ to: email, name: args.name, activateUrl });
+  try {
+    await sendInviteEmail({ to: email, name: args.name, activateUrl });
+  } catch (err) {
+    console.error("[createAccountInvite] sendInviteEmail failed:", err);
+  }
 
   return { activateUrl };
 }
