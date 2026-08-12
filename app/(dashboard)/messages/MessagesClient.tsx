@@ -37,12 +37,6 @@ interface Message {
   sender?: { name: string | null; image: string | null };
 }
 
-interface MyProfile {
-  id: string;
-  displayName: string | null;
-  avatarUrl: string | null;
-}
-
 interface PeerResult {
   id: string;
   userId: string;
@@ -55,7 +49,6 @@ interface Props {
   conversations: ConvSummary[];
   myUserId: string;
   myProfileId: string;
-  myProfile: MyProfile;
   initialOpenId?: string | null;
   canSearchAnyone: boolean;
 }
@@ -241,7 +234,7 @@ function NewMessageModal({ myUserId, canSearchAnyone, onClose, onOpen }: {
 
 // ── Main Component ────────────────────────────────────────────────────────────
 
-export default function MessagesClient({ conversations: initialConvs, myUserId, myProfileId, myProfile, initialOpenId, canSearchAnyone }: Props) {
+export default function MessagesClient({ conversations: initialConvs, myUserId, myProfileId, initialOpenId, canSearchAnyone }: Props) {
   const socket = useSocket();
   const router = useRouter();
   const [conversations, setConversations] = useState<ConvSummary[]>(initialConvs);

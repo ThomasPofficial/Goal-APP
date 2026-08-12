@@ -21,7 +21,7 @@ export default async function MessagesPage({
     }),
     prisma.org.findFirst({
       where: { createdById: session.user.id },
-      select: { id: true, name: true },
+      select: { id: true },
     }),
     isMentorUser(session.user.id),
     prisma.user.findUnique({ where: { id: session.user.id }, select: { role: true } }),
@@ -117,16 +117,11 @@ export default async function MessagesPage({
 
   const initialOpenId = params.open ?? serialized[0]?.id ?? null;
 
-  const resolvedProfile = myProfile
-    ? { id: myProfile.id, displayName: myProfile.displayName, avatarUrl: myProfile.avatarUrl }
-    : { id: "", displayName: myOrg?.name ?? session.user.name ?? "Org", avatarUrl: null };
-
   return (
     <MessagesClient
       conversations={serialized}
       myUserId={session.user.id}
-      myProfileId={resolvedProfile.id}
-      myProfile={resolvedProfile}
+      myProfileId={myProfile?.id ?? ""}
       initialOpenId={initialOpenId}
       canSearchAnyone={dbUser?.role !== "SCHOOL" && dbUser?.role !== "ADMIN"}
     />

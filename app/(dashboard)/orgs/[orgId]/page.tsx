@@ -122,7 +122,7 @@ export default async function OrgDetailPage({ params }: { params: Promise<{ orgI
           members: t.members.map((m) => ({
             ...m,
             joinedAt: m.joinedAt.toISOString(),
-            profile: m.profile ? { ...m.profile } : null,
+            profile: m.profile,
           })),
         })),
       }}
@@ -151,7 +151,7 @@ export default async function OrgDetailPage({ params }: { params: Promise<{ orgI
           members: a.team.members.map((m) => ({
             id: m.id,
             role: m.role,
-            profile: m.profile ? { ...m.profile } : null,
+            profile: m.profile,
           })),
         },
       }))}

@@ -167,7 +167,7 @@ export default function DashboardClient({ profile, spaces, traitsDone, tutorialD
         <TutorialWidget {...tutorial} serverDismissed={tutorialDismissed} />
 
         {!traitsDone && (
-          <Link href="/quiz?tab=traits" className="bracket-card" style={{
+          <Link href="/quiz" className="bracket-card" style={{
             display: "flex", alignItems: "center", justifyContent: "space-between",
             gap: 12, padding: "16px 20px", background: "rgba(232,137,58,0.06)",
             border: "1px solid rgba(232,137,58,0.25)", textDecoration: "none",

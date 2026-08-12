@@ -72,9 +72,7 @@ export default async function TeamPage({ params }: { params: Promise<{ teamId: s
         members: team.members.map((m) => ({
           id: m.id,
           role: m.role,
-          profile: m.profile
-            ? { ...m.profile }
-            : null,
+          profile: m.profile,
         })),
       }}
       applications={applications.map((a) => ({

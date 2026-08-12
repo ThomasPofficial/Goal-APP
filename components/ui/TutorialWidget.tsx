@@ -67,7 +67,7 @@ export default function TutorialWidget({ serverDismissed = false, ...initialProp
     {
       label: "Add your traits",
       description: "Tell the community what you're skilled at",
-      href: "/quiz?tab=traits",
+      href: "/quiz",
       ctaLabel: "Add traits",
       done: traitsDone,
       guide: [

@@ -330,10 +330,13 @@ export default function TeamWorkspaceClient({
                     <div
                       className={cn("px-3 py-2 rounded-2xl text-sm leading-relaxed", isMe ? "rounded-tr-sm" : "rounded-tl-sm")}
                     >
-                      <span className={cn(
-                        !isMe && "bg-[#16161a] border border-[#2a2a33] px-3 py-2 rounded-2xl rounded-tl-sm block",
-                        isMe && "block"
-                      )}>
+                      <span
+                        className={cn(
+                          !isMe && "bg-[#16161a] border border-[#2a2a33] px-3 py-2 rounded-2xl rounded-tl-sm block",
+                          isMe && "border px-3 py-2 rounded-2xl rounded-tr-sm block"
+                        )}
+                        style={isMe ? { background: "rgba(74,128,240,0.12)", borderColor: "rgba(74,128,240,0.25)" } : undefined}
+                      >
                         {msg.content}
                       </span>
                     </div>
