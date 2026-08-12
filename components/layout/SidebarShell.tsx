@@ -5,12 +5,10 @@ import { Menu, LayoutDashboard, Users, Building2, UsersRound, MessageSquare, Bri
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Sidebar from "./Sidebar";
-import type { GeniusType } from "@/data/traits";
 
 interface Props {
   userName?: string | null;
   userEmail?: string | null;
-  geniusType?: GeniusType | null;
   myOrgId?: string | null;
   myOrgName?: string | null;
   isOrg?: boolean;
@@ -43,7 +41,7 @@ const SCHOOL_BOTTOM_TABS = [
   { href: "/school/roster",       label: "Roster",       Icon: Users },
 ];
 
-export default function SidebarShell({ userName, userEmail, geniusType, myOrgId, myOrgName, isOrg, isNivarroAdmin, isSchool, isWalledStudent, isAlumni }: Props) {
+export default function SidebarShell({ userName, userEmail, myOrgId, myOrgName, isOrg, isNivarroAdmin, isSchool, isWalledStudent, isAlumni }: Props) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const pathname = usePathname();
@@ -152,7 +150,6 @@ export default function SidebarShell({ userName, userEmail, geniusType, myOrgId,
       <Sidebar
         userName={userName}
         userEmail={userEmail}
-        geniusType={geniusType}
         mobileOpen={mobileOpen}
         onMobileClose={() => setMobileOpen(false)}
         myOrgId={myOrgId}

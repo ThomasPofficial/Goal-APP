@@ -2,7 +2,6 @@ import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import SidebarShell from "@/components/layout/SidebarShell";
-import type { GeniusType } from "@/data/traits";
 
 export default async function DashboardLayout({
   children,
@@ -21,7 +20,7 @@ export default async function DashboardLayout({
     select: {
       role: true,
       isAlumni: true,
-      profile: { select: { displayName: true, geniusType: true, schoolId: true } },
+      profile: { select: { displayName: true, schoolId: true } },
     },
   });
 
@@ -59,7 +58,6 @@ export default async function DashboardLayout({
       <SidebarShell
         userName={profile?.displayName ?? session.user.name}
         userEmail={session.user.email}
-        geniusType={(profile?.geniusType as GeniusType | null) ?? null}
         myOrgId={myOrg?.id ?? null}
         myOrgName={myOrg?.name ?? null}
         isOrg={isOrg}

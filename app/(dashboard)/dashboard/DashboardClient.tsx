@@ -9,16 +9,14 @@ import WelcomeCard from "@/components/ui/WelcomeCard";
 import PlatformUpdatesCard from "@/components/ui/PlatformUpdatesCard";
 import BriefingCard from "@/components/ui/BriefingCard";
 import StatusPill from "@/components/ui/StatusPill";
-import type { GeniusTypeKey } from "@/lib/geniusTypes";
 
 interface ProfileData {
   displayName: string; handle: string | null; avatarUrl: string | null;
-  geniusType: GeniusTypeKey | null; secondaryGeniusType: GeniusTypeKey | null;
   currentFocus: string | null; savedCount: number;
 }
 interface SpaceRow { id: string; name: string; hasUnread: boolean; }
 interface TutorialData {
-  hasGeniusType: boolean; traitsDone: boolean; hasTeam: boolean;
+  traitsDone: boolean; hasTeam: boolean;
   hasApplied: boolean; hasBrowsedOrgs: boolean;
 }
 interface TickerItem {
@@ -164,7 +162,7 @@ export default function DashboardClient({ profile, spaces, traitsDone, tutorialD
 
       {/* ── Intel widgets ─────────────────────────── */}
       <div>
-        <WelcomeCard hasGeniusType={tutorial.hasGeniusType} />
+        <WelcomeCard />
         <PlatformUpdatesCard />
         <TutorialWidget {...tutorial} serverDismissed={tutorialDismissed} />
 

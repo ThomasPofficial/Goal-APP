@@ -1,41 +1,13 @@
 ﻿"use client";
 
 import { useState, useEffect, useRef } from "react";
-import Link from "next/link";
-import { X, ArrowRight, Zap } from "lucide-react";
+import { X } from "lucide-react";
 import NivarroMark from "@/components/ui/NivarroMark";
 
 const STORAGE_KEY = "nv_welcome_v4";
 const DISMISS_AFTER_MS = 22000;
 
-const GENIUS_TYPES = [
-  {
-    emoji: "âš¡",
-    label: "Dynamo",
-    color: "#F59E0B",
-    line: "You think in systems and move fast. You see the full product before anyone else does â€” then you build it.",
-  },
-  {
-    emoji: "ðŸ”¥",
-    label: "Blaze",
-    color: "#EF4444",
-    line: "You change the energy of a room. Orgs don't just want your skills â€” they want you in the room.",
-  },
-  {
-    emoji: "ðŸŽ¯",
-    label: "Tempo",
-    color: "#10B981",
-    line: "You turn big ideas into working plans. You're the reason ambitious projects actually ship.",
-  },
-  {
-    emoji: "ðŸ›¡ï¸",
-    label: "Steel",
-    color: "#6366F1",
-    line: "You go deep where others go fast. You find what's wrong before it breaks, and you fix it right.",
-  },
-];
-
-export default function WelcomeCard({ hasGeniusType }: { hasGeniusType: boolean }) {
+export default function WelcomeCard() {
   const [dismissed, setDismissed] = useState(true);
   const [mounted, setMounted] = useState(false);
   const [progress, setProgress] = useState(100);
@@ -125,62 +97,18 @@ export default function WelcomeCard({ hasGeniusType }: { hasGeniusType: boolean 
         </p>
       </div>
 
-      {/* Genius types */}
-      <div className="px-5 pt-4 pb-4" style={{ borderBottom: "1px solid var(--border)" }}>
-        <div className="flex items-center gap-2 mb-3">
-          <Zap size={11} style={{ color: "var(--blue)", flexShrink: 0 }} />
-          <p className="text-[10px] font-bold tracking-[0.14em] uppercase" style={{ color: "var(--muted)", fontFamily: "var(--font-mono)" }}>
-            Every scholar has a Genius Type
-          </p>
-        </div>
-        <p className="text-xs leading-relaxed mb-3" style={{ color: "var(--text2)" }}>
-          Your Genius Type is how you naturally think, lead, and build. Orgs and teammates use it to understand the exact role you play on a project.
-        </p>
-        <div className="grid grid-cols-2 gap-2">
-          {GENIUS_TYPES.map((t) => (
-            <div
-              key={t.label}
-              className="px-3 py-2.5"
-              style={{ background: "var(--surface2)", borderLeft: `2px solid ${t.color}` }}
-            >
-              <p
-                className="text-[10px] font-bold tracking-[0.1em] uppercase mb-1"
-                style={{ color: t.color, fontFamily: "var(--font-mono)" }}
-              >
-                {t.emoji} {t.label}
-              </p>
-              <p className="text-[11px] leading-relaxed" style={{ color: "var(--text2)" }}>{t.line}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
       {/* CTA */}
       <div className="flex items-center justify-between gap-4 px-5 py-3">
         <p className="text-xs" style={{ color: "var(--text2)" }}>
-          {hasGeniusType
-            ? "Your type is set. Keep building."
-            : "3-minute quiz. Find out where you fit."}
+          Ready to get started?
         </p>
-        <div className="flex items-center gap-2 flex-shrink-0">
-          <button
-            onClick={dismiss}
-            className="text-xs px-3 py-1.5 font-medium transition-colors"
-            style={{ color: "var(--muted)", border: "1px solid var(--border-md)", borderRadius: 0, background: "none", cursor: "pointer" }}
-          >
-            Got it
-          </button>
-          {!hasGeniusType && (
-            <Link
-              href="/quiz"
-              onClick={dismiss}
-              className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5"
-              style={{ background: "var(--blue)", color: "#fff", borderRadius: 0, textDecoration: "none" }}
-            >
-              Take the quiz <ArrowRight size={11} />
-            </Link>
-          )}
-        </div>
+        <button
+          onClick={dismiss}
+          className="text-xs px-3 py-1.5 font-medium transition-colors"
+          style={{ color: "var(--muted)", border: "1px solid var(--border-md)", borderRadius: 0, background: "none", cursor: "pointer" }}
+        >
+          Got it
+        </button>
       </div>
     </div>
   );

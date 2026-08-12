@@ -7,7 +7,6 @@ import { X, Check, ChevronDown, ChevronRight, BookOpen, ArrowRight } from "lucid
 const LS_KEY = "nv_tutorial_v4_dismissed";
 
 interface TutorialState {
-  hasGeniusType: boolean;
   traitsDone: boolean;
   hasTeam: boolean;
   hasApplied: boolean;
@@ -62,22 +61,9 @@ export default function TutorialWidget({ serverDismissed = false, ...initialProp
 
   if (!mounted || dismissed) return null;
 
-  const { hasGeniusType, traitsDone, hasApplied, hasBrowsedOrgs } = state;
+  const { traitsDone, hasApplied, hasBrowsedOrgs } = state;
 
   const steps: Step[] = [
-    {
-      label: "Set up your Genius profile",
-      description: "Take the quiz to discover your type",
-      href: "/quiz",
-      ctaLabel: "Take the quiz",
-      done: hasGeniusType,
-      guide: [
-        "Go to the Quiz page and answer the short personality-style questions.",
-        "Be honest — there are no wrong answers. Your responses reveal how you think and work.",
-        "You'll receive a Genius Type (Dynamo, Blaze, Tempo, or Steel) that appears on your public profile.",
-        "Orgs and teammates use your type to understand what role you'd play on a team.",
-      ],
-    },
     {
       label: "Add your traits",
       description: "Tell the community what you're skilled at",
@@ -85,7 +71,7 @@ export default function TutorialWidget({ serverDismissed = false, ...initialProp
       ctaLabel: "Add traits",
       done: traitsDone,
       guide: [
-        "Head to the Traits tab on the Quiz page after completing your Genius Type.",
+        "Head to the Quiz page and complete the short skill assessment.",
         "Add 3–8 skills or strengths you'd bring to a team — e.g. \"Python\", \"UI Design\", \"Public Speaking\".",
         "Pick things you're genuinely confident in, not just interested in.",
         "Org admins search for specific traits when looking for candidates, so be specific.",
@@ -100,7 +86,7 @@ export default function TutorialWidget({ serverDismissed = false, ...initialProp
       guide: [
         "Visit the Orgs page to see organizations accepting applications.",
         "Read each org's mission and open projects to find ones that match your interests.",
-        "Look at what Genius Types and traits they're seeking — compare with your own profile.",
+        "Look at what traits and skills they're seeking — compare with your own profile.",
         "Save orgs you like to revisit, or jump straight to a project page to apply.",
       ],
     },

@@ -4,7 +4,6 @@ import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import DashboardClient from "./DashboardClient";
 import WalledDashboardClient from "./WalledDashboardClient";
-import type { GeniusTypeKey } from "@/lib/geniusTypes";
 import { isWalledStudent } from "@/lib/accountGate";
 
 export default async function DashboardPage() {
@@ -89,8 +88,6 @@ export default async function DashboardPage() {
       displayName: true,
       handle: true,
       avatarUrl: true,
-      geniusType: true,
-      secondaryGeniusType: true,
       currentFocus: true,
       traitLinks: { select: { id: true } },
       savedOrgs: { select: { id: true } },
@@ -149,8 +146,6 @@ export default async function DashboardPage() {
         displayName: profile?.displayName ?? session.user.name ?? "there",
         handle: profile?.handle ?? null,
         avatarUrl: profile?.avatarUrl ?? null,
-        geniusType: (profile?.geniusType as GeniusTypeKey | null) ?? null,
-        secondaryGeniusType: (profile?.secondaryGeniusType as GeniusTypeKey | null) ?? null,
         currentFocus: profile?.currentFocus ?? null,
         savedCount: (profile?.savedOrgs?.length ?? 0) + (profile?.savedOpportunities?.length ?? 0),
       }}
@@ -158,7 +153,6 @@ export default async function DashboardPage() {
       traitsDone={traitsDone}
       tutorialDismissed={tutorialDismissed || hasActiveWorkflow}
       tutorial={{
-        hasGeniusType: !!profile?.geniusType,
         traitsDone,
         hasTeam,
         hasApplied,
