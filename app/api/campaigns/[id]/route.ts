@@ -1,28 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@prisma/client";
+import { requireSchoolCapability } from "@/lib/school-auth";
 
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const dbUser = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: { role: true },
-  });
-  if (dbUser?.role !== "SCHOOL" && dbUser?.role !== "ADMIN") {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  const check = await requireSchoolCapability("campaigns:edit");
+  if ("error" in check) {
+    return NextResponse.json({ error: check.error }, { status: check.status });
   }
 
   const campaign = await prisma.campaign.findFirst({
-    where: { id, schoolId: session.user.id },
+    where: { id, schoolId: check.schoolId },
   });
   if (!campaign) return NextResponse.json({ error: "Campaign not found." }, { status: 404 });
 
@@ -94,16 +86,13 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const session = await auth();
-  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-  const dbUser = await prisma.user.findUnique({ where: { id: session.user.id }, select: { role: true } });
-  if (dbUser?.role !== "SCHOOL" && dbUser?.role !== "ADMIN") {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  const check = await requireSchoolCapability("campaigns:edit");
+  if ("error" in check) {
+    return NextResponse.json({ error: check.error }, { status: check.status });
   }
 
   const campaign = await prisma.campaign.findFirst({
-    where: { id, schoolId: session.user.id },
+    where: { id, schoolId: check.schoolId },
   });
   if (!campaign) return NextResponse.json({ error: "Not found" }, { status: 404 });
 

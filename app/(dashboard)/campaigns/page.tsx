@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
+import { requireSchoolCapability } from "@/lib/school-auth";
 import CampaignsListClient from "./CampaignsListClient";
 import type { ImageParams } from "@/components/campaigns/CampaignCanvas";
 
@@ -8,14 +9,11 @@ export default async function CampaignsPage() {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
 
-  const dbUser = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: { role: true },
-  });
-  if (dbUser?.role !== "SCHOOL" && dbUser?.role !== "ADMIN") redirect("/dashboard");
+  const check = await requireSchoolCapability("campaigns:view");
+  if ("error" in check) redirect("/dashboard");
 
   const campaigns = await prisma.campaign.findMany({
-    where: { schoolId: session.user.id },
+    where: { schoolId: check.schoolId },
     orderBy: { createdAt: "desc" },
     include: {
       _count: { select: { pledges: true } },

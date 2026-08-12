@@ -1,27 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import Anthropic from "@anthropic-ai/sdk";
 import type { Prisma } from "@prisma/client";
 import { buildTweakPrompt, parseCampaignResponse } from "@/lib/campaign-prompt";
 import type { ImageParams } from "@/components/campaigns/CampaignCanvas";
+import { requireSchoolCapability } from "@/lib/school-auth";
 
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const dbUser = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: { role: true },
-  });
-  if (dbUser?.role !== "SCHOOL" && dbUser?.role !== "ADMIN") {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  const check = await requireSchoolCapability("campaigns:edit");
+  if ("error" in check) {
+    return NextResponse.json({ error: check.error }, { status: check.status });
   }
 
   if (!process.env.ANTHROPIC_API_KEY) {
@@ -29,7 +21,7 @@ export async function POST(
   }
 
   const campaign = await prisma.campaign.findFirst({
-    where: { id, schoolId: session.user.id },
+    where: { id, schoolId: check.schoolId },
   });
   if (!campaign) return NextResponse.json({ error: "Campaign not found." }, { status: 404 });
 
