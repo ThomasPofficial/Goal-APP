@@ -4,7 +4,7 @@
 
 **Goal:** Give schools real, individual logins for faculty (principal, guidance counselors, IT managers, teachers), organized into admin-customizable permission tiers that gate the roster and campaigns/fundraising features.
 
-**Architecture:** A new `STAFF` role sits alongside the existing sole-admin `SCHOOL` role. Each `STAFF` user is scoped to a school via `profile.schoolId` and gets its permissions from either a shared `FacultyTier` (+ optional additive per-person overrides) or, if unassigned to any tier, a fully custom per-person permission set. A new `requireSchoolCapability(capability)` helper replaces the hardcoded `role === "SCHOOL"` checks on roster/campaigns routes, resolving the effective `schoolId` and authorization for both `SCHOOL` and `STAFF` callers. Staff onboard via an invite-link flow (email notification mocked — link is displayed on-screen, not sent) that either creates a new `STAFF` user or upgrades an existing inert roster-imported "STAFF" directory row (`role: STUDENT`, unusable random password) into a real login.
+**Architecture:** A new `STAFF` role sits alongside the existing sole-admin `SCHOOL` role. Each `STAFF` user is scoped to a school via `profile.schoolId` and gets its permissions from either a shared `FacultyTier` (+ optional additive per-person overrides) or, if unassigned to any tier, a fully custom per-person permission set. A new `requireSchoolCapability(capability)` helper replaces the hardcoded `role === "SCHOOL"` checks on roster/campaigns routes, resolving the effective `schoolId` and authorization for both `SCHOOL` and `STAFF` callers. Staff onboard via an invite-link flow built on the app's **existing** `PasswordResetToken` model and `resetPassword(token, password)` server action (`app/actions/auth.ts`) — reused rather than duplicated, per a reconciliation with a concurrent session's overlapping roster-activation spec (see the design doc's "Reconciliation note"). Sending the notification is mocked (link is displayed on-screen, not emailed). A person invited as staff is `role: STUDENT` until they claim the link, at which point `role` flips to `STAFF` — driven by pre-existing tier/override data on their `Profile`, not by any special token type, so `resetPassword` itself stays fully generic.
 
 **Tech Stack:** Next.js 16 App Router, TypeScript, Prisma (Postgres on Render), NextAuth v5 (Credentials provider, JWT sessions), bcryptjs.
 
@@ -14,7 +14,8 @@
 - Every schema change needs a **hand-written** migration file in `prisma/migrations/YYYYMMDDHHMMSS_description/migration.sql` — `prisma generate` does NOT create one, and Render runs `prisma migrate deploy` at startup; a missing file means a crash-on-deploy with "column does not exist." Use `ADD COLUMN IF NOT EXISTS` / `CREATE TABLE IF NOT EXISTS` / `CREATE INDEX IF NOT EXISTS` and wrap `ADD CONSTRAINT` in a `DO $$ BEGIN ... EXCEPTION WHEN duplicate_object THEN null; END $$;` block, matching existing migrations (see `prisma/migrations/20260807000000_add_partnership_request_and_invite/migration.sql`).
 - `ALTER TYPE ... ADD VALUE` must live alone in its own migration file, not combined with statements that might use the new value in the same transaction (matches the existing `20260628100000_add_school_role` migration, which only adds the `SCHOOL` enum value).
 - Never use curl or PowerShell `Invoke-WebRequest` against HTTPS endpoints in this dev environment (SSL cert verification fails here) — use `node --use-system-ca` or plain `fetch`/`node -e` for local `http://localhost:3000` calls (no SSL involved there).
-- Out of scope for this feature (do not touch): mentorship pairing (`/school/mentorship`), partnerships/connections approval, real email delivery (the invite notification step is intentionally mocked), per-tier permission revocation below what a tier grants (only additive overrides), and any change to `isWalledStudent()`'s messaging/mentorship gating beyond the natural effect of `STAFF` no longer being `role: STUDENT`.
+- Out of scope for this feature (do not touch): mentorship pairing (`/school/mentorship`), partnerships/connections approval, real email delivery (the invite notification step is intentionally mocked), per-tier permission revocation below what a tier grants (only additive overrides), any change to `isWalledStudent()`'s messaging/mentorship gating beyond the natural effect of `STAFF` no longer being `role: STUDENT`, and the generic roster-activation feature for students/alumni (`/school/roster`'s add-member/CSV-import flow, `app/api/school/roster/members/route.ts` / `import/route.ts`'s *creation* logic) — owned by a concurrent session's `docs/superpowers/plans/2026-08-11-roster-invite-activation-design.md`. This plan's Task 13 still touches those same two roster files, but only their top-level auth check (swapping `getSchoolSession()`/inline role checks for `requireSchoolCapability`), never their user-creation branches — keep that boundary so the two efforts don't collide.
+- `app/actions/auth.ts`'s `resetPassword` function is shared with the existing `/reset-password` (forgot-password) flow and, per the reconciliation, is also the claim mechanism for this feature's staff invites. Task 4 makes exactly one additive change to it (success return gains `userId`) — do not change its validation, expiry, or password-setting logic, and do not add any staff-specific branching inside it. Staff-specific logic (the role flip) lives entirely in `lib/staffInvite.ts`, which calls `resetPassword` rather than reimplementing it.
 
 ---
 
@@ -22,33 +23,35 @@
 
 New files:
 - `lib/facultyPermissions.ts` — capability list, default tier definitions, `getOrCreateDefaultTiers()`, `computeEffectivePermissions()`.
-- `lib/staffInvite.ts` — `createStaffInvite()`, `notifyInvite()` (mocked), `acceptStaffInvite()`.
+- `lib/staffInvite.ts` — `createStaffInvite()` (resolves the user, sets tier/override data, issues a `PasswordResetToken`), `notifyInvite()` (mocked), `checkStaffInviteToken()` (GET-time validity check), `acceptStaffInvite()` (calls the existing `resetPassword`, then promotes role to `STAFF` when appropriate).
 - `app/api/school/staff/tiers/route.ts` — GET (list, seeding defaults on first call), POST (create tier) — `SCHOOL`-only.
 - `app/api/school/staff/tiers/[tierId]/route.ts` — PATCH (rename/edit permissions), DELETE — `SCHOOL`-only.
 - `app/api/school/staff/route.ts` — GET (list staff + pending invites), POST (send invite) — `staff:manage`.
 - `app/api/school/staff/[userId]/route.ts` — PATCH (reassign tier or set custom permissions for one person) — `staff:manage`.
-- `app/api/staff/accept-invite/route.ts` — GET (validate token), POST (accept: set password, create/upgrade user) — public, no session required.
+- `app/api/staff/accept-invite/route.ts` — GET (validate token), POST (accept: set password via the existing `resetPassword`, promote role) — public, no session required.
 - `app/staff/accept-invite/page.tsx` + `AcceptInviteClient.tsx` — public accept-invite page (outside the `(dashboard)` route group, like `/login`).
 - `app/(dashboard)/school/staff/page.tsx` + `StaffClient.tsx` — staff management UI: list, invite, reassign, tier editor.
 
 Modified files:
-- `prisma/schema.prisma` — `STAFF` enum value, `FacultyTier`, `StaffInvite` models, `Profile.staffTierId`/`staffTier`/`staffPermissionOverrides`.
+- `prisma/schema.prisma` — `STAFF` enum value, `FacultyTier` model, `Profile.staffTierId`/`staffTier`/`staffPermissionOverrides`/`staffInvited`. No new invite/token table — invites reuse the existing `PasswordResetToken` model.
+- `app/actions/auth.ts` — one additive change: `resetPassword`'s success return gains `userId`. No other change to this file.
 - `lib/school-auth.ts` — add `requireSchoolCapability(capability)`.
-- `app/api/school/roster/route.ts`, `app/api/school/roster/members/route.ts`, `app/api/school/roster/import/route.ts`, `app/api/school/roster/members/[userId]/route.ts`, `app/(dashboard)/school/roster/page.tsx` — swap to capability-based gating.
+- `app/api/school/roster/route.ts`, `app/api/school/roster/members/route.ts`, `app/api/school/roster/import/route.ts`, `app/api/school/roster/members/[userId]/route.ts`, `app/(dashboard)/school/roster/page.tsx` — swap to capability-based gating (auth-check lines only — see Global Constraints on the roster-file boundary with the concurrent activation work).
 - `app/api/campaigns/route.ts`, `app/api/campaigns/[id]/route.ts`, `app/api/campaigns/generate/route.ts`, `app/api/campaigns/[id]/tweak/route.ts`, `app/(dashboard)/campaigns/page.tsx`, `app/(dashboard)/campaigns/new/page.tsx` — swap to capability-based gating; fix `schoolId: session.user.id` → effective `schoolId` from the capability check.
 - `app/(dashboard)/layout.tsx`, `components/layout/Sidebar.tsx`, `components/layout/SidebarShell.tsx` — add `isStaff`/`staffCapabilities` plumbing and nav.
 
 ---
 
-### Task 1: Schema — STAFF role, FacultyTier, StaffInvite, Profile fields
+### Task 1: Schema — STAFF role, FacultyTier, Profile permission/invite fields
 
 **Files:**
 - Modify: `prisma/schema.prisma`
 - Create: `prisma/migrations/20260811120000_add_staff_role/migration.sql`
-- Create: `prisma/migrations/20260811120100_add_faculty_tier_and_staff_invite/migration.sql`
+- Create: `prisma/migrations/20260811120100_add_faculty_tier_and_profile_permission_fields/migration.sql`
 
 **Interfaces:**
-- Produces: `UserRole.STAFF`, `FacultyTier { id, schoolId, name, permissions, isSystemDefault, createdAt, updatedAt }`, `StaffInvite { id, email, schoolId, tierId?, customPermissions, token, expiresAt, acceptedAt?, createdAt }`, `Profile.staffTierId?`, `Profile.staffTier?` (relation), `Profile.staffPermissionOverrides`.
+- Produces: `UserRole.STAFF`, `FacultyTier { id, schoolId, name, permissions, isSystemDefault, createdAt, updatedAt }`, `Profile.staffTierId?`, `Profile.staffTier?` (relation), `Profile.staffPermissionOverrides`, `Profile.staffInvited`.
+- No new invite/token table — staff invites reuse the existing `PasswordResetToken` model (`prisma/schema.prisma`, already present) untouched by this task.
 
 - [ ] **Step 1: Add `STAFF` to `UserRole` in `prisma/schema.prisma`**
 
@@ -62,7 +65,7 @@ enum UserRole {
 }
 ```
 
-- [ ] **Step 2: Add `FacultyTier` and `StaffInvite` models** (place after the `Profile` model in `prisma/schema.prisma`)
+- [ ] **Step 2: Add `FacultyTier`** (place after the `Profile` model in `prisma/schema.prisma`)
 
 ```prisma
 model FacultyTier {
@@ -77,29 +80,15 @@ model FacultyTier {
 
   @@index([schoolId])
 }
-
-model StaffInvite {
-  id                String    @id @default(cuid())
-  email             String
-  schoolId          String    // references User.id where role=SCHOOL
-  tierId            String?   // null = custom, one-off permission set
-  customPermissions String    @default("[]") // JSON array; used only when tierId is null
-  token             String    @unique
-  expiresAt         DateTime
-  acceptedAt        DateTime?
-  createdAt         DateTime  @default(now())
-
-  @@index([schoolId])
-  @@index([email, schoolId])
-}
 ```
 
-- [ ] **Step 3: Add permission fields to `Profile`** — insert after the existing `staffTitle String?` line in `prisma/schema.prisma`:
+- [ ] **Step 3: Add permission/invite fields to `Profile`** — insert after the existing `staffTitle String?` line in `prisma/schema.prisma`:
 
 ```prisma
   staffTierId              String?
   staffTier                FacultyTier? @relation(fields: [staffTierId], references: [id])
   staffPermissionOverrides String       @default("[]") // JSON array; additive if staffTierId set, else the full set
+  staffInvited              Boolean      @default(false) // true once a staff invite has been sent for this profile
 ```
 
 - [ ] **Step 4: Write the enum migration** — `prisma/migrations/20260811120000_add_staff_role/migration.sql`:
@@ -109,10 +98,10 @@ model StaffInvite {
 ALTER TYPE "UserRole" ADD VALUE IF NOT EXISTS 'STAFF';
 ```
 
-- [ ] **Step 5: Write the tables/columns migration** — `prisma/migrations/20260811120100_add_faculty_tier_and_staff_invite/migration.sql`:
+- [ ] **Step 5: Write the table/columns migration** — `prisma/migrations/20260811120100_add_faculty_tier_and_profile_permission_fields/migration.sql`:
 
 ```sql
--- Faculty permission tiers: FacultyTier, StaffInvite, Profile permission fields
+-- Faculty permission tiers: FacultyTier, Profile permission/invite fields
 
 CREATE TABLE IF NOT EXISTS "FacultyTier" (
   "id"              TEXT NOT NULL,
@@ -127,25 +116,9 @@ CREATE TABLE IF NOT EXISTS "FacultyTier" (
 
 CREATE INDEX IF NOT EXISTS "FacultyTier_schoolId_idx" ON "FacultyTier"("schoolId");
 
-CREATE TABLE IF NOT EXISTS "StaffInvite" (
-  "id"                TEXT NOT NULL,
-  "email"             TEXT NOT NULL,
-  "schoolId"          TEXT NOT NULL,
-  "tierId"            TEXT,
-  "customPermissions" TEXT NOT NULL DEFAULT '[]',
-  "token"             TEXT NOT NULL,
-  "expiresAt"         TIMESTAMP(3) NOT NULL,
-  "acceptedAt"        TIMESTAMP(3),
-  "createdAt"         TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  CONSTRAINT "StaffInvite_pkey" PRIMARY KEY ("id")
-);
-
-CREATE UNIQUE INDEX IF NOT EXISTS "StaffInvite_token_key" ON "StaffInvite"("token");
-CREATE INDEX IF NOT EXISTS "StaffInvite_schoolId_idx" ON "StaffInvite"("schoolId");
-CREATE INDEX IF NOT EXISTS "StaffInvite_email_schoolId_idx" ON "StaffInvite"("email", "schoolId");
-
 ALTER TABLE "Profile" ADD COLUMN IF NOT EXISTS "staffTierId" TEXT;
 ALTER TABLE "Profile" ADD COLUMN IF NOT EXISTS "staffPermissionOverrides" TEXT NOT NULL DEFAULT '[]';
+ALTER TABLE "Profile" ADD COLUMN IF NOT EXISTS "staffInvited" BOOLEAN NOT NULL DEFAULT false;
 
 DO $$ BEGIN
   ALTER TABLE "Profile" ADD CONSTRAINT "Profile_staffTierId_fkey"
@@ -161,7 +134,7 @@ Run: `npx prisma generate`
 Expected: completes with no errors, regenerates `node_modules/@prisma/client` with the new types.
 
 Run: `npx tsc --noEmit`
-Expected: no new errors (pre-existing errors, if any, are unrelated — only check nothing new appeared).
+Expected: no new errors beyond this repo's pre-existing baseline (8 errors in `app/(dashboard)/admin/org-categories/page.tsx`, `app/(dashboard)/orgs/OrgsClient.tsx`, and `prisma/seed-mock.ts`, confirmed present before this plan started — unrelated to this feature, do not fix them as part of this task).
 
 - [ ] **Step 7: Apply the migration locally against the dev database**
 
@@ -171,8 +144,8 @@ Expected: both new migrations listed as applied, no errors.
 - [ ] **Step 8: Commit**
 
 ```bash
-git add prisma/schema.prisma prisma/migrations/20260811120000_add_staff_role prisma/migrations/20260811120100_add_faculty_tier_and_staff_invite
-git commit -m "feat: add STAFF role, FacultyTier, and StaffInvite models"
+git add prisma/schema.prisma prisma/migrations/20260811120000_add_staff_role prisma/migrations/20260811120100_add_faculty_tier_and_profile_permission_fields
+git commit -m "feat: add STAFF role, FacultyTier model, and staff permission fields on Profile"
 ```
 
 ---
@@ -399,21 +372,40 @@ git commit -m "feat: add requireSchoolCapability for STAFF-aware permission chec
 
 ---
 
-### Task 4: `lib/staffInvite.ts` — create, notify (mocked), accept
+### Task 4: `lib/staffInvite.ts` — create, notify (mocked), accept (built on the existing password-reset primitive)
 
 **Files:**
+- Modify: `app/actions/auth.ts` — one additive change to `resetPassword`'s success return.
 - Create: `lib/staffInvite.ts`
 
 **Interfaces:**
-- Consumes: `prisma`, `bcryptjs`, `crypto.randomBytes`, `Capability` (Task 2).
-- Produces: `createStaffInvite(args: { email: string; schoolId: string; tierId?: string | null; customPermissions?: Capability[] }): Promise<{ invite: StaffInviteRow; link: string }>`, `notifyInvite(invite: StaffInviteRow, link: string): Promise<void>` (mock — logs only), `acceptStaffInvite(args: { token: string; password: string; displayName?: string; staffTitle?: string }): Promise<{ error: string } | { userId: string }>`.
+- Consumes: `prisma`, `bcryptjs` (already a dependency), `crypto` (`randomBytes`, `createHash` — Node builtin, matches the existing pattern in `app/actions/auth.ts`), `Capability` (Task 2), `resetPassword` from `@/app/actions/auth`.
+- Produces (from `app/actions/auth.ts`): `resetPassword(token, password): Promise<{ error: string } | { success: true; userId: string }>` — same signature as today, success branch gains `userId`.
+- Produces (from `lib/staffInvite.ts`): `createStaffInvite(args: { email: string; schoolId: string; tierId?: string | null; customPermissions?: Capability[]; staffTitle?: string }): Promise<{ status: "invited"; link: string } | { status: "already-staff" }>`, `notifyInvite(email: string, link: string): Promise<void>` (mock — logs only), `checkStaffInviteToken(token: string): Promise<{ valid: true; email: string } | { valid: false; error: string }>`, `acceptStaffInvite(args: { token: string; password: string; displayName?: string; staffTitle?: string }): Promise<{ error: string } | { userId: string }>`.
 
-- [ ] **Step 1: Write `lib/staffInvite.ts`**
+- [ ] **Step 1: Extend `resetPassword`'s success return in `app/actions/auth.ts`** — this is the ONLY change to this file. Find the function's return type and its two return statements (see the current file: `Promise<{ error: string } | { success: true }>` in the signature, and `return { success: true };` at the end of the `$transaction` block). Change the signature's success branch to `{ success: true; userId: string }` and the final return to include it:
 
 ```typescript
-import { randomBytes } from "crypto";
-import bcrypt from "bcryptjs";
+export async function resetPassword(
+  token: string,
+  password: string
+): Promise<{ error: string } | { success: true; userId: string }> {
+```
+
+and at the end (replacing only `return { success: true };`):
+
+```typescript
+  return { success: true, userId: user.id };
+```
+
+Nothing else in this function changes — same token hashing, same expiry check, same `$transaction`, same error branches. `user` is already in scope from the existing `const user = await prisma.user.findUnique({ where: { email: record.email } });` line above it.
+
+- [ ] **Step 2: Write `lib/staffInvite.ts`**
+
+```typescript
+import { randomBytes, createHash } from "crypto";
 import { prisma } from "@/lib/prisma";
+import { resetPassword } from "@/app/actions/auth";
 import type { Capability } from "@/lib/facultyPermissions";
 
 const INVITE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
@@ -422,41 +414,105 @@ function baseUrl() {
   return process.env.AUTH_URL ?? "https://app.nivarro.co";
 }
 
+function hasAnyStaffAssignment(profile: { staffTierId: string | null; staffPermissionOverrides: string }) {
+  if (profile.staffTierId) return true;
+  try {
+    const parsed = JSON.parse(profile.staffPermissionOverrides);
+    return Array.isArray(parsed) && parsed.length > 0;
+  } catch {
+    return false;
+  }
+}
+
 export async function createStaffInvite(args: {
   email: string;
   schoolId: string;
   tierId?: string | null;
   customPermissions?: Capability[];
-}) {
+  staffTitle?: string;
+}): Promise<{ status: "invited"; link: string } | { status: "already-staff" }> {
   const email = args.email.trim().toLowerCase();
+  const overridesJson = JSON.stringify(args.customPermissions ?? []);
 
-  // Supersede any prior unaccepted invite for this email at this school.
-  await prisma.staffInvite.deleteMany({
-    where: { email, schoolId: args.schoolId, acceptedAt: null },
+  const existing = await prisma.user.findUnique({ where: { email }, include: { profile: true } });
+
+  if (existing?.role && !["STUDENT", "STAFF"].includes(existing.role)) {
+    throw new Error("This email already belongs to a different account type");
+  }
+
+  if (existing?.role === "STAFF") {
+    // Already has a working login — just update their tier/overrides, no token needed.
+    await prisma.profile.update({
+      where: { userId: existing.id },
+      data: { staffTierId: args.tierId ?? null, staffPermissionOverrides: overridesJson, staffInvited: true },
+    });
+    return { status: "already-staff" };
+  }
+
+  let userId: string;
+  if (existing) {
+    await prisma.profile.update({
+      where: { userId: existing.id },
+      data: {
+        staffTierId: args.tierId ?? null,
+        staffPermissionOverrides: overridesJson,
+        staffInvited: true,
+        ...(args.staffTitle ? { staffTitle: args.staffTitle } : {}),
+      },
+    });
+    userId = existing.id;
+  } else {
+    const created = await prisma.user.create({
+      data: {
+        email,
+        name: email,
+        role: "STUDENT",
+        profile: {
+          create: {
+            displayName: email,
+            schoolId: args.schoolId,
+            staffTitle: args.staffTitle ?? null,
+            staffTierId: args.tierId ?? null,
+            staffPermissionOverrides: overridesJson,
+            staffInvited: true,
+            onboardingComplete: false,
+          },
+        },
+      },
+    });
+    userId = created.id;
+  }
+
+  // Same dedup + token scheme as requestPasswordReset (app/actions/auth.ts),
+  // just a 7-day expiry instead of 1 hour — this is a "get around to it"
+  // invite, not an urgent security action.
+  await prisma.passwordResetToken.deleteMany({ where: { email } });
+  const rawToken = randomBytes(32).toString("hex");
+  const hashedToken = createHash("sha256").update(rawToken).digest("hex");
+  await prisma.passwordResetToken.create({
+    data: { email, token: hashedToken, expires: new Date(Date.now() + INVITE_TTL_MS) },
   });
 
-  const token = randomBytes(32).toString("hex");
-  const invite = await prisma.staffInvite.create({
-    data: {
-      email,
-      schoolId: args.schoolId,
-      tierId: args.tierId ?? null,
-      customPermissions: JSON.stringify(args.customPermissions ?? []),
-      token,
-      expiresAt: new Date(Date.now() + INVITE_TTL_MS),
-    },
-  });
+  const link = `${baseUrl()}/staff/accept-invite?token=${rawToken}`;
+  await notifyInvite(email, link);
 
-  const link = `${baseUrl()}/staff/accept-invite?token=${token}`;
-  return { invite, link };
+  return { status: "invited", link };
 }
 
 // Mocked: real email delivery is deferred. The caller (API route) returns
 // `link` directly in the response so the inviter can copy/send it manually.
 // Swap this function's body for a lib/resend.ts call to go live later —
 // nothing else in the invite flow needs to change.
-export async function notifyInvite(invite: { email: string }, link: string) {
-  console.log(`[staff-invite mock] would email ${invite.email}: ${link}`);
+export async function notifyInvite(email: string, link: string) {
+  console.log(`[staff-invite mock] would email ${email}: ${link}`);
+}
+
+export async function checkStaffInviteToken(token: string): Promise<{ valid: true; email: string } | { valid: false; error: string }> {
+  const hashedToken = createHash("sha256").update(token).digest("hex");
+  const record = await prisma.passwordResetToken.findUnique({ where: { token: hashedToken } });
+  if (!record) return { valid: false, error: "Invite not found" };
+  if (record.expires < new Date()) return { valid: false, error: "Invite expired" };
+  return { valid: true, email: record.email };
 }
 
 export async function acceptStaffInvite(args: {
@@ -465,78 +521,45 @@ export async function acceptStaffInvite(args: {
   displayName?: string;
   staffTitle?: string;
 }): Promise<{ error: string } | { userId: string }> {
-  const invite = await prisma.staffInvite.findUnique({ where: { token: args.token } });
-  if (!invite) return { error: "Invite not found" };
-  if (invite.acceptedAt) return { error: "Invite already accepted" };
-  if (invite.expiresAt < new Date()) return { error: "Invite expired" };
+  const result = await resetPassword(args.token, args.password);
+  if ("error" in result) return result;
 
-  const passwordHash = await bcrypt.hash(args.password, 10);
-  const existingUser = await prisma.user.findUnique({
-    where: { email: invite.email },
-    include: { profile: true },
-  });
+  const user = await prisma.user.findUnique({ where: { id: result.userId }, include: { profile: true } });
+  if (!user?.profile) return { userId: result.userId };
 
-  let userId: string;
-
-  if (!existingUser) {
-    const created = await prisma.user.create({
-      data: {
-        email: invite.email,
-        name: args.displayName ?? invite.email,
-        passwordHash,
-        role: "STAFF",
-        profile: {
-          create: {
-            displayName: args.displayName ?? invite.email,
-            schoolId: invite.schoolId,
-            staffTitle: args.staffTitle ?? null,
-            staffTierId: invite.tierId,
-            staffPermissionOverrides: invite.customPermissions,
-            onboardingComplete: true,
-          },
-        },
-      },
-    });
-    userId = created.id;
-  } else if (existingUser.role === "STUDENT" && existingUser.profile?.staffTitle) {
-    // Inert roster-imported "STAFF" directory row — upgrade in place.
-    await prisma.user.update({
-      where: { id: existingUser.id },
-      data: { role: "STAFF", passwordHash },
-    });
+  if (args.displayName || args.staffTitle) {
     await prisma.profile.update({
-      where: { userId: existingUser.id },
+      where: { userId: user.id },
       data: {
-        staffTierId: invite.tierId,
-        staffPermissionOverrides: invite.customPermissions,
-        ...(args.staffTitle ? { staffTitle: args.staffTitle } : {}),
         ...(args.displayName ? { displayName: args.displayName } : {}),
+        ...(args.staffTitle ? { staffTitle: args.staffTitle } : {}),
       },
     });
-    userId = existingUser.id;
-  } else {
-    return { error: "This email already belongs to a different account type" };
   }
 
-  await prisma.staffInvite.update({
-    where: { id: invite.id },
-    data: { acceptedAt: new Date() },
-  });
+  // Only promote when this activation was a staff invite (signaled by
+  // pre-existing tier/override data set at invite time), never for a plain
+  // password reset — resetPassword itself has no concept of staff invites.
+  if (user.role === "STUDENT" && hasAnyStaffAssignment(user.profile)) {
+    await prisma.user.update({ where: { id: user.id }, data: { role: "STAFF" } });
+  }
 
-  return { userId };
+  return { userId: user.id };
 }
 ```
 
-- [ ] **Step 2: Verify types compile**
+- [ ] **Step 3: Verify types compile**
 
 Run: `npx tsc --noEmit`
-Expected: no new errors.
+Expected: no new errors beyond the pre-existing baseline (see Task 1 Step 6).
 
-- [ ] **Step 3: Commit**
+- [ ] **Step 4: Manual verification of the extended `resetPassword`** — confirm the existing `/reset-password` flow still works: use `requestPasswordReset` (e.g. via the app's "forgot password" UI, or by calling it directly against a demo account's email) to generate a real reset link, open `/reset-password?token=...`, submit a new password, and confirm login with the new password succeeds. This is the regression check for Step 1's change — the only consumer of `resetPassword` besides this feature.
+
+- [ ] **Step 5: Commit**
 
 ```bash
-git add lib/staffInvite.ts
-git commit -m "feat: add staff invite create/notify(mock)/accept flow"
+git add app/actions/auth.ts lib/staffInvite.ts
+git commit -m "feat: add staff invite flow built on the existing password-reset primitive"
 ```
 
 ---
@@ -714,15 +737,15 @@ git commit -m "feat: add faculty tier rename/edit/delete endpoint (SCHOOL-only)"
 - Create: `app/api/school/staff/route.ts`
 
 **Interfaces:**
-- Consumes: `requireSchoolCapability` (Task 3), `createStaffInvite`/`notifyInvite` (Task 4), `prisma`.
-- Produces: `GET` → `{ staff: { userId, email, displayName, staffTitle, tierId, tierName, isCustom, active }[], pendingInvites: { id, email, tierId, tierName, isCustom, expiresAt }[] }`; `POST { email, tierId? }` (tier case) or `{ email, customPermissions }` (custom case) → `{ link }`. Both gated on `staff:manage`.
+- Consumes: `requireSchoolCapability` (Task 3), `createStaffInvite` (Task 4), `prisma`.
+- Produces: `GET` → `{ staff: { userId, email, displayName, staffTitle, tierId, tierName, isCustom }[], pendingInvites: { userId, email, displayName, staffTitle, tierId, tierName, isCustom }[] }` — `staff` is everyone with `role: "STAFF"`; `pendingInvites` is everyone still `role: "STUDENT"` with `profile.staffInvited: true` (invited, not yet claimed). `POST { email, tierId?, staffTitle? }` (tier case) or `{ email, customPermissions, staffTitle? }` (custom case) → `{ status: "invited"; link: string } | { status: "already-staff" }`. Both gated on `staff:manage`.
 
 - [ ] **Step 1: Write the route**
 
 ```typescript
 import { NextRequest, NextResponse } from "next/server";
 import { requireSchoolCapability } from "@/lib/school-auth";
-import { createStaffInvite, notifyInvite } from "@/lib/staffInvite";
+import { createStaffInvite } from "@/lib/staffInvite";
 import { prisma } from "@/lib/prisma";
 import { CAPABILITIES, type Capability } from "@/lib/facultyPermissions";
 
@@ -732,39 +755,29 @@ export async function GET() {
     return NextResponse.json({ error: check.error }, { status: check.status });
   }
 
-  const [staffProfiles, pendingInvites, tiers] = await Promise.all([
-    prisma.profile.findMany({
-      where: { schoolId: check.schoolId, user: { role: "STAFF" } },
-      include: { user: { select: { id: true, email: true } }, staffTier: { select: { id: true, name: true } } },
-      orderBy: { displayName: "asc" },
-    }),
-    prisma.staffInvite.findMany({
-      where: { schoolId: check.schoolId, acceptedAt: null, expiresAt: { gt: new Date() } },
-      orderBy: { createdAt: "desc" },
-    }),
-    prisma.facultyTier.findMany({ where: { schoolId: check.schoolId } }),
-  ]);
+  const profiles = await prisma.profile.findMany({
+    where: {
+      schoolId: check.schoolId,
+      user: { role: { in: ["STAFF", "STUDENT"] } },
+      OR: [{ user: { role: "STAFF" } }, { staffInvited: true }],
+    },
+    include: { user: { select: { id: true, email: true, role: true } }, staffTier: { select: { id: true, name: true } } },
+    orderBy: { displayName: "asc" },
+  });
 
-  const tierNameById = new Map(tiers.map((t) => [t.id, t.name]));
+  const toRow = (p: (typeof profiles)[number]) => ({
+    userId: p.user.id,
+    email: p.user.email,
+    displayName: p.displayName,
+    staffTitle: p.staffTitle,
+    tierId: p.staffTierId,
+    tierName: p.staffTierId ? p.staffTier?.name ?? null : "Custom",
+    isCustom: !p.staffTierId,
+  });
 
   return NextResponse.json({
-    staff: staffProfiles.map((p) => ({
-      userId: p.user.id,
-      email: p.user.email,
-      displayName: p.displayName,
-      staffTitle: p.staffTitle,
-      tierId: p.staffTierId,
-      tierName: p.staffTierId ? p.staffTier?.name ?? null : "Custom",
-      isCustom: !p.staffTierId,
-    })),
-    pendingInvites: pendingInvites.map((i) => ({
-      id: i.id,
-      email: i.email,
-      tierId: i.tierId,
-      tierName: i.tierId ? tierNameById.get(i.tierId) ?? null : "Custom",
-      isCustom: !i.tierId,
-      expiresAt: i.expiresAt.toISOString(),
-    })),
+    staff: profiles.filter((p) => p.user.role === "STAFF").map(toRow),
+    pendingInvites: profiles.filter((p) => p.user.role === "STUDENT").map(toRow),
   });
 }
 
@@ -775,10 +788,11 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json().catch(() => ({}));
-  const { email, tierId, customPermissions } = body as {
+  const { email, tierId, customPermissions, staffTitle } = body as {
     email?: string;
     tierId?: string | null;
     customPermissions?: string[];
+    staffTitle?: string;
   };
 
   if (!email?.trim()) {
@@ -794,27 +808,30 @@ export async function POST(req: NextRequest) {
     (CAPABILITIES as readonly string[]).includes(p)
   );
 
-  const { invite, link } = await createStaffInvite({
-    email: email.trim(),
-    schoolId: check.schoolId,
-    tierId: tierId ?? null,
-    customPermissions: tierId ? [] : validCustomPermissions,
-  });
-
-  await notifyInvite(invite, link);
-
-  return NextResponse.json({ link });
+  try {
+    const result = await createStaffInvite({
+      email: email.trim(),
+      schoolId: check.schoolId,
+      tierId: tierId ?? null,
+      customPermissions: tierId ? [] : validCustomPermissions,
+      staffTitle,
+    });
+    return NextResponse.json(result);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Could not send invite";
+    return NextResponse.json({ error: message }, { status: 400 });
+  }
 }
 ```
 
 - [ ] **Step 2: Verify types compile**
 
 Run: `npx tsc --noEmit`
-Expected: no new errors.
+Expected: no new errors beyond the pre-existing baseline (see Task 1 Step 6).
 
-- [ ] **Step 3: Manual verification** — as a `SCHOOL` account, `POST` `/api/school/staff` with `{ "email": "test-teacher@example.com", "tierId": "<a real tier id from Task 5's GET>" }`.
+- [ ] **Step 3: Manual verification** — as a `SCHOOL` account, `POST` `/api/school/staff` with `{ "email": "test-teacher@example.com", "tierId": "<a real tier id from Task 5's GET>", "staffTitle": "Teacher" }`.
 
-Expected: `200` with `{ link: "https://app.nivarro.co/staff/accept-invite?token=..." }` (or `http://localhost:...` if `AUTH_URL` is set for local dev); a `GET` to `/api/school/staff` afterward shows the email under `pendingInvites` with the right `tierName`.
+Expected: `200` with `{ status: "invited", link: "https://app.nivarro.co/staff/accept-invite?token=..." }` (or `http://localhost:...` if `AUTH_URL` is set for local dev); a `GET` to `/api/school/staff` afterward shows the email under `pendingInvites` with the right `tierName`. Re-`POST`ing the same email regenerates the link (resend behavior) rather than erroring.
 
 - [ ] **Step 4: Commit**
 
@@ -907,26 +924,21 @@ git commit -m "feat: add per-staff tier reassignment and custom permission endpo
 - Create: `app/api/staff/accept-invite/route.ts`
 
 **Interfaces:**
-- Consumes: `prisma`, `acceptStaffInvite` (Task 4).
-- Produces: `GET ?token=` → `{ valid: true, email } | { valid: false, error }` (no auth required); `POST { token, password, displayName?, staffTitle? }` → `{ userId } | { error }` (no auth required — this endpoint is how a staff member gets their FIRST session).
+- Consumes: `checkStaffInviteToken`/`acceptStaffInvite` (Task 4).
+- Produces: `GET ?token=` → `{ valid: true, email } | { valid: false, error }` (no auth required); `POST { token, password, displayName?, staffTitle? }` → `{ userId } | { error }` (no auth required — this endpoint is how a staff member gets their FIRST session). The underlying token IS a `PasswordResetToken` row (Task 4) — this route never references that model directly, only through `lib/staffInvite.ts`'s two functions.
 
 - [ ] **Step 1: Write the route**
 
 ```typescript
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { acceptStaffInvite } from "@/lib/staffInvite";
+import { checkStaffInviteToken, acceptStaffInvite } from "@/lib/staffInvite";
 
 export async function GET(req: NextRequest) {
   const token = req.nextUrl.searchParams.get("token");
   if (!token) return NextResponse.json({ valid: false, error: "Missing token" }, { status: 400 });
 
-  const invite = await prisma.staffInvite.findUnique({ where: { token } });
-  if (!invite) return NextResponse.json({ valid: false, error: "Invite not found" });
-  if (invite.acceptedAt) return NextResponse.json({ valid: false, error: "Invite already accepted" });
-  if (invite.expiresAt < new Date()) return NextResponse.json({ valid: false, error: "Invite expired" });
-
-  return NextResponse.json({ valid: true, email: invite.email });
+  const result = await checkStaffInviteToken(token);
+  return NextResponse.json(result);
 }
 
 export async function POST(req: NextRequest) {
@@ -956,7 +968,7 @@ export async function POST(req: NextRequest) {
 Run: `npx tsc --noEmit`
 Expected: no new errors.
 
-- [ ] **Step 3: Manual verification** — using the invite link produced in Task 7's Step 3, extract the `token` query param and: `GET /api/staff/accept-invite?token=<token>` → expect `{ valid: true, email: "test-teacher@example.com" }`; then `POST /api/staff/accept-invite` with `{ "token": "<token>", "password": "testpass123", "displayName": "Test Teacher" }` → expect `{ userId: "..." }`. Repeat the `GET` afterward and confirm it now returns `{ valid: false, error: "Invite already accepted" }`. Confirm in Prisma Studio (`npx prisma studio`) or a quick query that the new `User` has `role: "STAFF"` and a `passwordHash` that isn't the invite's own data, and log in as `test-teacher@example.com` / `testpass123` via `/login` to confirm the password actually works.
+- [ ] **Step 3: Manual verification** — using the invite link produced in Task 7's Step 3, extract the `token` query param and: `GET /api/staff/accept-invite?token=<token>` → expect `{ valid: true, email: "test-teacher@example.com" }`; then `POST /api/staff/accept-invite` with `{ "token": "<token>", "password": "testpass123", "displayName": "Test Teacher" }` → expect `{ userId: "..." }`. Repeat the `GET` afterward and confirm it now returns `{ valid: false, error: "Invite not found" }` (the underlying `PasswordResetToken` row is deleted on successful claim, same as a normal password reset). Confirm in Prisma Studio (`npx prisma studio`) or a quick query that the `User` for that email now has `role: "STAFF"`, and log in as `test-teacher@example.com` / `testpass123` via `/login` to confirm the password actually works.
 
 Expected: all of the above pass; login succeeds.
 
@@ -1180,12 +1192,13 @@ interface StaffMember {
 }
 
 interface PendingInvite {
-  id: string;
-  email: string;
+  userId: string;
+  email: string | null;
+  displayName: string;
+  staffTitle: string | null;
   tierId: string | null;
   tierName: string | null;
   isCustom: boolean;
-  expiresAt: string;
 }
 
 export default function StaffClient({ isSchool, initialTiers }: { isSchool: boolean; initialTiers: Tier[] }) {
@@ -1326,7 +1339,7 @@ export default function StaffClient({ isSchool, initialTiers }: { isSchool: bool
         <h2>Pending invites</h2>
         <ul>
           {pendingInvites.map((i) => (
-            <li key={i.id}>{i.email} — {i.tierName ?? "Custom"} — expires {new Date(i.expiresAt).toLocaleDateString()}</li>
+            <li key={i.userId}>{i.displayName} ({i.email}) — {i.staffTitle ?? "no title"} — {i.isCustom ? "Custom" : i.tierName}</li>
           ))}
         </ul>
       </section>
@@ -1646,6 +1659,7 @@ git commit -m "feat: gate campaigns routes on campaigns:view/campaigns:edit capa
 
 ## Self-Review Notes
 
-- **Spec coverage:** real STAFF logins (Tasks 1, 4, 9, 10) ✓; preset tiers + per-person overrides (Tasks 1, 2, 5, 6) ✓; roster + campaigns gating only, mentorship/partnerships untouched (Tasks 13–14, nothing else modified) ✓; tier rename/edit/delete SCHOOL-only (Task 6) ✓; per-person Custom permission set by email at invite time (Tasks 4, 7, 10) ✓; delegated `staff:manage` can invite/reassign but not edit tier definitions (Tasks 5–8 route-level gating) ✓; mocked notification, swappable later (Task 4's `notifyInvite`) ✓; migration of existing inert roster "STAFF" rows via the same invite link (Task 4's `acceptStaffInvite` branch) ✓; nav visibility by capability (Task 12) ✓.
-- **Type consistency:** `Capability`/`CAPABILITIES` defined once in Task 2 and imported everywhere else; `requireSchoolCapability`'s return shape (`{ schoolId } | { error, status }`) used identically in every consuming route; `computeEffectivePermissions`'s two call sites (Task 3's helper, Task 12's layout) pass the same `{ tierPermissions, overrides }` shape.
+- **Spec coverage:** real STAFF logins (Tasks 1, 4, 9, 10) ✓; preset tiers + per-person overrides (Tasks 1, 2, 5, 6) ✓; roster + campaigns gating only, mentorship/partnerships untouched (Tasks 13–14, nothing else modified) ✓; tier rename/edit/delete SCHOOL-only (Task 6) ✓; per-person Custom permission set by email at invite time (Tasks 4, 7, 10) ✓; delegated `staff:manage` can invite/reassign but not edit tier definitions (Tasks 5–8 route-level gating) ✓; mocked notification, swappable later (Task 4's `notifyInvite`) ✓; migration of existing inert roster "STAFF" rows via the same invite path (Task 4's `createStaffInvite` existing-user branch) ✓; nav visibility by capability (Task 12) ✓; reconciliation with the concurrent roster-activation spec — reuse of `PasswordResetToken`/`resetPassword` instead of a parallel token system, single additive touch point on `app/actions/auth.ts` (Task 4 Step 1) ✓.
+- **Type consistency:** `Capability`/`CAPABILITIES` defined once in Task 2 and imported everywhere else; `requireSchoolCapability`'s return shape (`{ schoolId } | { error, status }`) used identically in every consuming route; `computeEffectivePermissions`'s two call sites (Task 3's helper, Task 12's layout) pass the same `{ tierPermissions, overrides }` shape; `resetPassword`'s extended return (`{ success: true; userId: string }`) is consumed only by `acceptStaffInvite` (Task 4) — the existing `/reset-password` page only narrows on `"error" in result`, so the added field doesn't require any change there; `pendingInvites`/`staff` rows share the same shape (`{ userId, email, displayName, staffTitle, tierId, tierName, isCustom }`) end-to-end from Task 7's GET through Task 11's `StaffMember`/`PendingInvite` interfaces.
 - **No placeholders:** every step has real, complete code or a concrete manual-verification procedure with an expected result — no "add error handling" or "similar to Task N" shortcuts.
+- **Reconciliation boundary respected:** confirmed no task in this plan creates or modifies `lib/account-invite.ts`, `lib/invite-email.ts`, `app/(auth)/activate-account`, or the user-creation branches inside `app/api/school/roster/members/route.ts` / `import/route.ts` — those remain the concurrent session's scope. Task 13 touches those two roster files' auth-check lines only.
