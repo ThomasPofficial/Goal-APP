@@ -3,13 +3,6 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import type { OrgCategory } from "@prisma/client";
 
-const GENIUS_AFFINITY: Record<string, OrgCategory[]> = {
-  DYNAMO: ["COMPETITION", "ACCELERATOR"],
-  BLAZE: ["FELLOWSHIP", "CLUB"],
-  TEMPO: ["INTERNSHIP", "FELLOWSHIP"],
-  STEEL: ["RESEARCH", "BOOTCAMP"],
-};
-
 export async function GET(req: Request) {
   const session = await auth();
   if (!session?.user?.id) {
@@ -23,12 +16,11 @@ export async function GET(req: Request) {
 
   const profile = await prisma.profile.findUnique({
     where: { userId: session.user.id },
-    select: { grade: true, interests: true, geniusType: true, savedOpportunities: { select: { opportunityId: true } } },
+    select: { grade: true, interests: true, savedOpportunities: { select: { opportunityId: true } } },
   });
 
   const userInterests: string[] = profile?.interests ? JSON.parse(profile.interests) : [];
   const userGrade = profile?.grade;
-  const geniusType = profile?.geniusType ?? null;
   const savedIds = new Set((profile?.savedOpportunities ?? []).map((s) => s.opportunityId));
 
   const where = {
@@ -48,7 +40,6 @@ export async function GET(req: Request) {
 
   const scored = opportunities.map((opp) => {
     let score = 0;
-    if (geniusType && GENIUS_AFFINITY[geniusType]?.includes(opp.category)) score += 2;
     if (userInterests.length > 0 && opp.description) {
       for (const interest of userInterests) {
         if (opp.description.toLowerCase().includes(interest.toLowerCase())) score += 3;
