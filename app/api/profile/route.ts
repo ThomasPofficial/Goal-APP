@@ -14,8 +14,6 @@ const patchSchema = z.object({
   isInternational: z.boolean().optional(),
   handle: z.string().min(3).max(30).regex(/^[a-z0-9_]+$/).optional(),
   onboardingComplete: z.boolean().optional(),
-  geniusType: z.enum(["DYNAMO", "BLAZE", "TEMPO", "STEEL"]).nullable().optional(),
-  secondaryGeniusType: z.enum(["DYNAMO", "BLAZE", "TEMPO", "STEEL"]).nullable().optional(),
   linkedinUrl: z.string().max(300).optional(),
   employer: z.string().max(200).optional(),
   jobTitle: z.string().max(200).optional(),
@@ -84,8 +82,6 @@ export async function PATCH(req: NextRequest) {
   if (data.isInternational !== undefined) updateData.isInternational = data.isInternational;
   if (handle) updateData.handle = handle;
   if (data.onboardingComplete !== undefined) updateData.onboardingComplete = data.onboardingComplete;
-  if (data.geniusType !== undefined) updateData.geniusType = data.geniusType;
-  if (data.secondaryGeniusType !== undefined) updateData.secondaryGeniusType = data.secondaryGeniusType;
   if (data.linkedinUrl !== undefined) updateData.linkedinUrl = data.linkedinUrl;
   if (data.employer !== undefined) updateData.employer = data.employer;
   if (data.jobTitle !== undefined) updateData.jobTitle = data.jobTitle;

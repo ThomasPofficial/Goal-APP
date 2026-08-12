@@ -11,8 +11,6 @@ export async function GET(_req: Request, { params }: { params: Promise<{ handle:
       displayName: true,
       avatarUrl: true,
       handle: true,
-      geniusType: true,
-      secondaryGeniusType: true,
       currentFocus: true,
       interests: true,
       grade: true,
