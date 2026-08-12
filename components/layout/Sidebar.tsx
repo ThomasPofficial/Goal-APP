@@ -209,6 +209,7 @@ export default function Sidebar({ userName, userEmail, geniusType, mobileOpen = 
             userEmail={userEmail}
             geniusType={geniusType}
             isSchool={isSchool}
+            isOrg={isOrg}
           />
         </div>
       )}

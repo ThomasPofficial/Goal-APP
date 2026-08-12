@@ -13,13 +13,15 @@ interface AccountMenuProps {
   userEmail?: string | null;
   geniusType?: GeniusType | null;
   isSchool?: boolean;
+  isOrg?: boolean;
 }
 
-export default function AccountMenu({ userName, userEmail, geniusType, isSchool = false }: AccountMenuProps) {
+export default function AccountMenu({ userName, userEmail, geniusType, isSchool = false, isOrg = false }: AccountMenuProps) {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const initials = getInitials(userName ?? "?");
-  const genius = geniusType ? GENIUS_TYPE_INFO[geniusType] : null;
+  const genius = !isOrg && geniusType ? GENIUS_TYPE_INFO[geniusType] : null;
+  const showGeniusSection = !isSchool && !isOrg;
 
   useEffect(() => {
     function handleOutside(e: MouseEvent | TouchEvent) {
@@ -71,7 +73,7 @@ export default function AccountMenu({ userName, userEmail, geniusType, isSchool 
             </div>
           </div>
 
-          {!isSchool && (
+          {showGeniusSection && (
             <div className="mb-4 pb-4" style={{ borderBottom: "1px solid var(--border)" }}>
               {genius ? (
                 <div
@@ -89,7 +91,7 @@ export default function AccountMenu({ userName, userEmail, geniusType, isSchool 
           )}
 
           <div className="space-y-0.5">
-            {!isSchool && (
+            {showGeniusSection && (
               <Link
                 href="/profile"
                 onClick={() => setOpen(false)}
