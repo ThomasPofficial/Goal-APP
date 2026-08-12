@@ -62,36 +62,34 @@ export default async function MySchoolPage(props: {
       },
       orderBy: { createdAt: "asc" },
     }),
-    prisma.user.findMany({
+    prisma.profile.findMany({
       where: {
-        isAlumni: true,
-        profile: { schoolId },
-        id: { not: session.user.id },
+        alumniSchools: { some: { schoolId } },
+        userId: { not: session.user.id },
       },
       select: {
-        id: true,
-        name: true,
-        profile: {
-          select: {
-            displayName: true,
-            handle: true,
-            avatarUrl: true,
-            bio: true,
-            industry: true,
-            graduationYear: true,
-            isAvailableToMentor: true,
-            intendedCollege: true,
-            teamMemberships: {
-              select: { team: { select: { name: true, org: { select: { name: true } } } } },
-              take: 3,
-            },
-            orgReviews: {
-              select: { org: { select: { name: true } } },
-              take: 3,
-            },
-          },
+        userId: true,
+        displayName: true,
+        handle: true,
+        avatarUrl: true,
+        bio: true,
+        industry: true,
+        graduationYear: true,
+        isAvailableToMentor: true,
+        intendedCollege: true,
+        user: { select: { name: true } },
+        teamMemberships: {
+          select: { team: { select: { name: true, org: { select: { name: true } } } } },
+          take: 3,
+        },
+        orgReviews: {
+          select: { org: { select: { name: true } } },
+          take: 3,
         },
       },
+      // Ordered by Profile.createdAt (profile creation), not AlumniSchool.createdAt (link date):
+      // Prisma can't orderBy a to-many relation field on a findMany, and profile creation is a
+      // reasonable proxy for "when this alum joined Nivarro" for a directory listing.
       orderBy: { createdAt: "asc" },
     }),
     prisma.profile.findMany({
@@ -104,20 +102,20 @@ export default async function MySchoolPage(props: {
   const schoolName = school?.profile?.displayName ?? school?.name ?? "Your School";
   const schoolTagline = school?.profile?.headline ?? "Your private Nivarro community";
 
-  const formattedAlumni = allAlumni.map((u) => ({
-    id: u.id,
-    displayName: u.profile?.displayName ?? u.name ?? "Alumni",
-    handle: u.profile?.handle ?? null,
-    avatarUrl: u.profile?.avatarUrl ?? null,
-    bio: u.profile?.bio ?? null,
-    industry: u.profile?.industry ?? null,
-    graduationYear: u.profile?.graduationYear ?? null,
-    isAvailableToMentor: u.profile?.isAvailableToMentor ?? false,
-    intendedCollege: u.profile?.intendedCollege ?? null,
+  const formattedAlumni = allAlumni.map((p) => ({
+    id: p.userId,
+    displayName: p.displayName ?? p.user.name ?? "Alumni",
+    handle: p.handle ?? null,
+    avatarUrl: p.avatarUrl ?? null,
+    bio: p.bio ?? null,
+    industry: p.industry ?? null,
+    graduationYear: p.graduationYear ?? null,
+    isAvailableToMentor: p.isAvailableToMentor ?? false,
+    intendedCollege: p.intendedCollege ?? null,
     orgs: [
       ...new Set([
-        ...(u.profile?.teamMemberships ?? []).map((m) => m.team.org?.name).filter(Boolean),
-        ...(u.profile?.orgReviews ?? []).map((r) => r.org.name),
+        ...p.teamMemberships.map((m) => m.team.org?.name).filter(Boolean),
+        ...p.orgReviews.map((r) => r.org.name),
       ]),
     ].slice(0, 3) as string[],
   }));
