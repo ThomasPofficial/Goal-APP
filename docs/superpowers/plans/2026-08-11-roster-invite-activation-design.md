@@ -33,8 +33,9 @@ No new tables. One existing, currently-unused field gets a job: `User.emailVerif
 
 Set at creation time:
 - Self-serve `/api/auth/register` → `emailVerified: new Date()` (they picked their own password)
-- Seed/demo account routes → `emailVerified: new Date()`
 - Roster single-add / CSV import (new user branch) → left `null`
+
+**Scope trim (2026-08-11, during planning):** seed/demo account routes (`/api/admin/seed-*`, ~10 create sites across 4 dev-only files) are intentionally left untouched — they're internal tooling real users never go through, and sweeping all of them is unrelated churn for a purely cosmetic effect (a demo account might show a "Setup Pending" badge in a demo roster view, which is harmless).
 
 Set at claim time:
 - Successful password claim via the reused reset flow (see below) → `emailVerified: new Date()`
