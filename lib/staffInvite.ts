@@ -37,24 +37,47 @@ export async function createStaffInvite(args: {
 
   if (existing?.role === "STAFF") {
     // Already has a working login — just update their tier/overrides, no token needed.
-    await prisma.profile.update({
-      where: { userId: existing.id },
-      data: { staffTierId: args.tierId ?? null, staffPermissionOverrides: overridesJson, staffInvited: true },
-    });
+    // A User can exist without a Profile (e.g. Google OAuth sign-in before
+    // onboarding creates one), so branch on whether one exists already
+    // rather than assuming `update` will find a row.
+    const data = { staffTierId: args.tierId ?? null, staffPermissionOverrides: overridesJson, staffInvited: true };
+    if (existing.profile) {
+      await prisma.profile.update({ where: { userId: existing.id }, data });
+    } else {
+      await prisma.profile.create({
+        data: {
+          userId: existing.id,
+          displayName: existing.name ?? email,
+          schoolId: args.schoolId,
+          staffTitle: args.staffTitle ?? null,
+          ...data,
+        },
+      });
+    }
     return { status: "already-staff" };
   }
 
   let userId: string;
   if (existing) {
-    await prisma.profile.update({
-      where: { userId: existing.id },
-      data: {
-        staffTierId: args.tierId ?? null,
-        staffPermissionOverrides: overridesJson,
-        staffInvited: true,
-        ...(args.staffTitle ? { staffTitle: args.staffTitle } : {}),
-      },
-    });
+    // Same no-Profile-yet possibility as above.
+    const data = {
+      staffTierId: args.tierId ?? null,
+      staffPermissionOverrides: overridesJson,
+      staffInvited: true,
+      ...(args.staffTitle ? { staffTitle: args.staffTitle } : {}),
+    };
+    if (existing.profile) {
+      await prisma.profile.update({ where: { userId: existing.id }, data });
+    } else {
+      await prisma.profile.create({
+        data: {
+          userId: existing.id,
+          displayName: existing.name ?? email,
+          schoolId: args.schoolId,
+          ...data,
+        },
+      });
+    }
     userId = existing.id;
   } else {
     const created = await prisma.user.create({
