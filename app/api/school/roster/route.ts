@@ -1,6 +1,6 @@
-import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { getSchoolSession } from "@/lib/school-auth";
+import { getSchoolRosterMembers } from "@/lib/school-roster";
 
 export async function GET() {
   const check = await getSchoolSession();
@@ -9,49 +9,7 @@ export async function GET() {
   }
   const { schoolId } = check;
 
-  const [directMembers, alumniLinks] = await Promise.all([
-    prisma.profile.findMany({
-      where: { schoolId },
-      include: {
-        user: {
-          select: { id: true, email: true, role: true, isAlumni: true, createdAt: true },
-        },
-      },
-    }),
-    prisma.alumniSchool.findMany({
-      where: { schoolId },
-      select: {
-        profile: {
-          include: {
-            user: {
-              select: { id: true, email: true, role: true, isAlumni: true, createdAt: true },
-            },
-          },
-        },
-      },
-    }),
-  ]);
-
-  const memberProfiles = [...directMembers, ...alumniLinks.map((l) => l.profile)];
-
-  const members = memberProfiles
-    .sort((a, b) => a.displayName.localeCompare(b.displayName))
-    .map((p) => ({
-      profileId: p.id,
-      userId: p.userId,
-      displayName: p.displayName,
-      email: p.user.email ?? null,
-      phone: p.phone ?? null,
-      role: p.user.role,
-      isAlumni: p.user.isAlumni,
-      staffTitle: p.staffTitle ?? null,
-      graduationYear: p.graduationYear ?? null,
-      industry: p.industry ?? null,
-      intendedCollege: p.intendedCollege ?? null,
-      intendedMajor: p.intendedMajor ?? null,
-      isAvailableToMentor: p.isAvailableToMentor,
-      createdAt: p.user.createdAt.toISOString(),
-    }));
+  const members = await getSchoolRosterMembers(schoolId);
 
   return NextResponse.json({ members });
 }
