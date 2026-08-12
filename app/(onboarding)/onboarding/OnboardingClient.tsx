@@ -3,12 +3,10 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { GENIUS_TYPES } from "@/lib/geniusTypes";
-import type { GeniusTypeKey } from "@/lib/geniusTypes";
 import { INTEREST_TAG_GROUPS, ALL_INTEREST_TAGS } from "@/lib/interestTags";
 import { cn } from "@/lib/utils";
 
-type Step = 1 | 2 | 3 | 4;
+type Step = 1 | 2 | 3;
 
 const FOCUS_PLACEHOLDERS = [
   "Building a fintech app that helps teens invest…",
@@ -17,10 +15,9 @@ const FOCUS_PLACEHOLDERS = [
   "Launching a tutoring startup in my city…",
 ];
 
-export default function OnboardingClient({ geniusType }: { geniusType: GeniusTypeKey }) {
+export default function OnboardingClient() {
   const router = useRouter();
   const { update } = useSession();
-  const info = GENIUS_TYPES[geniusType];
 
   const [step, setStep] = useState<Step>(1);
   const [focus, setFocus] = useState("");
@@ -30,49 +27,13 @@ export default function OnboardingClient({ geniusType }: { geniusType: GeniusTyp
   const [schoolName, setSchoolName] = useState("");
   const [saving, setSaving] = useState(false);
 
-  // ─── Step 1: Quiz result reveal ─────────────────────────────────────────
+  // ─── Step 1: Current Focus ───────────────────────────────────────────────
   if (step === 1) {
-    return (
-      <div
-        className="min-h-screen flex flex-col items-center justify-center px-6 py-16 text-center"
-        style={{ background: `radial-gradient(ellipse at center, ${info.color}18 0%, transparent 70%)` }}
-      >
-        <div className="max-w-xl w-full space-y-6">
-          <p className="text-xs font-semibold text-[#9898a8] uppercase tracking-[0.2em]">
-            Your Genius Type
-          </p>
-          <h1 className="text-7xl font-bold tracking-tight" style={{ color: info.color }}>
-            {info.label}
-          </h1>
-          <p className={cn("text-sm font-medium tracking-wide", info.tailwindText)}>
-            {info.tagline}
-          </p>
-          <p className="text-[#9898a8] leading-relaxed text-base max-w-md mx-auto">
-            {info.description}
-          </p>
-          <div className={cn("border-l-4 p-4 rounded-r-lg text-center text-sm", info.tailwindBg, info.tailwindBorder)}>
-            <span className={cn("font-semibold", info.tailwindText)}>Growth edge: </span>
-            <span className="text-[#9898a8]">{info.tension}</span>
-          </div>
-          <button
-            onClick={() => setStep(2)}
-            className="mt-4 px-8 py-3 rounded-lg font-semibold text-sm text-white transition-opacity hover:opacity-90"
-            style={{ background: info.color }}
-          >
-            Continue →
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // ─── Step 2: Current Focus ───────────────────────────────────────────────
-  if (step === 2) {
     const placeholder = FOCUS_PLACEHOLDERS[Math.floor(Date.now() / 10000) % FOCUS_PLACEHOLDERS.length];
     return (
       <div className="min-h-screen flex flex-col items-center justify-center px-6 py-16">
         <div className="max-w-lg w-full space-y-5">
-          <StepHeader step={2} label="What are you working on?" />
+          <StepHeader step={1} label="What are you working on?" />
           <p className="text-sm text-[#9898a8]">
             This shows at the top of your profile — first thing visitors read after your name.
           </p>
@@ -90,13 +51,13 @@ export default function OnboardingClient({ geniusType }: { geniusType: GeniusTyp
           </div>
           <div className="flex items-center justify-between pt-1">
             <button
-              onClick={() => setStep(3)}
+              onClick={() => setStep(2)}
               className="text-sm text-[#9898a8] hover:text-[#e8e8ec] transition-colors"
             >
               Skip for now
             </button>
             <button
-              onClick={() => setStep(3)}
+              onClick={() => setStep(2)}
               className="px-6 py-2.5 rounded-lg text-sm font-semibold bg-[#4a80f0] hover:bg-[#6a9fff] text-[#0f0f11] transition-colors"
             >
               Continue →
@@ -107,8 +68,8 @@ export default function OnboardingClient({ geniusType }: { geniusType: GeniusTyp
     );
   }
 
-  // ─── Step 3: Interests ───────────────────────────────────────────────────
-  if (step === 3) {
+  // ─── Step 2: Interests ───────────────────────────────────────────────────
+  if (step === 2) {
     const toggleInterest = (tag: string) => {
       setSelectedInterests((prev) =>
         prev.includes(tag)
@@ -132,7 +93,7 @@ export default function OnboardingClient({ geniusType }: { geniusType: GeniusTyp
     return (
       <div className="min-h-screen flex flex-col items-center px-6 py-16">
         <div className="max-w-2xl w-full space-y-6">
-          <StepHeader step={3} label="What are you interested in?" />
+          <StepHeader step={2} label="What are you interested in?" />
           <div className="flex items-center justify-between">
             <p className="text-sm text-[#9898a8]">
               Select up to 10 — at least 1 required.
@@ -157,7 +118,7 @@ export default function OnboardingClient({ geniusType }: { geniusType: GeniusTyp
                       className={cn(
                         "px-3 py-1 rounded-full text-sm border transition-all",
                         selected
-                          ? cn(info.tailwindBg, info.tailwindText, info.tailwindBorder)
+                          ? "bg-[#4a80f020] text-[#4a80f0] border-[#4a80f040]"
                           : "bg-[#1e1e24] text-[#9898a8] border-transparent hover:border-[#2a2a33]"
                       )}
                     >
@@ -193,12 +154,7 @@ export default function OnboardingClient({ geniusType }: { geniusType: GeniusTyp
                 {freeformTags.map((tag) => (
                   <span
                     key={tag}
-                    className={cn(
-                      "inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm border",
-                      info.tailwindBg,
-                      info.tailwindText,
-                      info.tailwindBorder
-                    )}
+                    className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm border bg-[#4a80f020] text-[#4a80f0] border-[#4a80f040]"
                   >
                     {tag}
                     <button
@@ -215,7 +171,7 @@ export default function OnboardingClient({ geniusType }: { geniusType: GeniusTyp
 
           <div className="flex justify-end pt-2">
             <button
-              onClick={() => setStep(4)}
+              onClick={() => setStep(3)}
               disabled={selectedInterests.length === 0}
               className="px-6 py-2.5 rounded-lg text-sm font-semibold bg-[#4a80f0] hover:bg-[#6a9fff] text-[#0f0f11] transition-colors disabled:opacity-40"
             >
@@ -253,7 +209,7 @@ export default function OnboardingClient({ geniusType }: { geniusType: GeniusTyp
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-6 py-16">
       <div className="max-w-lg w-full space-y-6">
-        <StepHeader step={4} label="A bit about you" />
+        <StepHeader step={3} label="A bit about you" />
         <p className="text-sm text-[#9898a8]">
           Helps match you to relevant opportunities. Marked private — only you can see this.
         </p>
@@ -272,9 +228,7 @@ export default function OnboardingClient({ geniusType }: { geniusType: GeniusTyp
                     onClick={() => setGrade(g)}
                     className={cn(
                       "w-12 h-10 rounded-lg border text-sm font-semibold transition-all",
-                      grade === g
-                        ? cn(info.tailwindBg, info.tailwindText, info.tailwindBorder)
-                        : "border-[#2a2a33] text-[#9898a8] hover:border-[#3a3a44]"
+                      grade === g ? "bg-[#4a80f020] text-[#4a80f0] border-[#4a80f040]" : "border-[#2a2a33] text-[#9898a8] hover:border-[#3a3a44]"
                     )}
                   >
                     {g}
@@ -296,9 +250,7 @@ export default function OnboardingClient({ geniusType }: { geniusType: GeniusTyp
                     onClick={() => setGrade(g)}
                     className={cn(
                       "px-3 h-10 rounded-lg border text-sm font-semibold transition-all",
-                      grade === g
-                        ? cn(info.tailwindBg, info.tailwindText, info.tailwindBorder)
-                        : "border-[#2a2a33] text-[#9898a8] hover:border-[#3a3a44]"
+                      grade === g ? "bg-[#4a80f020] text-[#4a80f0] border-[#4a80f040]" : "border-[#2a2a33] text-[#9898a8] hover:border-[#3a3a44]"
                     )}
                   >
                     {label}
@@ -340,7 +292,7 @@ export default function OnboardingClient({ geniusType }: { geniusType: GeniusTyp
 function StepHeader({ step, label }: { step: number; label: string }) {
   return (
     <div className="space-y-1">
-      <p className="text-xs font-medium text-[#5a5a6a]">Step {step} of 4</p>
+      <p className="text-xs font-medium text-[#5a5a6a]">Step {step} of 3</p>
       <h1 className="text-2xl font-bold text-[#e8e8ec]">{label}</h1>
     </div>
   );
