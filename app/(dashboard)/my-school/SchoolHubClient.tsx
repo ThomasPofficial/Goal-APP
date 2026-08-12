@@ -99,8 +99,8 @@ export default function SchoolHubClient({ schoolName, schoolTagline, staff, alum
   const [banner, setBanner] = useState<string | null>(null);
 
   const visibleStaff = staff.filter((s) => s.displayName.toLowerCase().includes(staffQuery.trim().toLowerCase()));
-
-  const visibleAlumni = alumniFilter === "mentors" ? alumni.filter((a) => a.isAvailableToMentor) : alumni;
+  const visibleAlumni = (alumniFilter === "mentors" ? alumni.filter((a) => a.isAvailableToMentor) : alumni)
+    .filter((a) => a.displayName.toLowerCase().includes(alumniQuery.trim().toLowerCase()));
 
   const allPeople = [
     ...staff.map((s) => ({ id: s.userId, displayName: s.displayName })),
@@ -267,28 +267,31 @@ export default function SchoolHubClient({ schoolName, schoolTagline, staff, alum
           <p style={{ fontFamily: "var(--font-mono)", fontSize: 13, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--amber)", margin: 0 }}>
             Alumni Network
           </p>
-          <div style={{ display: "flex", gap: 6 }}>
-            {(["all", "mentors"] as const).map((f) => (
-              <button
-                key={f}
-                onClick={() => setAlumniFilter(f)}
-                style={{
-                  padding: "4px 12px",
-                  borderRadius: 0,
-                  border: alumniFilter === f ? "1px solid var(--amber)" : "1px solid var(--border)",
-                  background: alumniFilter === f ? "var(--amber)" : "transparent",
-                  color: alumniFilter === f ? "#000" : "var(--n-text2)",
-                  fontFamily: "var(--font-mono)",
-                  fontSize: 11,
-                  fontWeight: 700,
-                  letterSpacing: "0.1em",
-                  textTransform: "uppercase",
-                  cursor: "pointer",
-                }}
-              >
-                {f === "all" ? "All" : "Mentors"}
-              </button>
-            ))}
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <div style={{ display: "flex", gap: 6 }}>
+              {(["all", "mentors"] as const).map((f) => (
+                <button
+                  key={f}
+                  onClick={() => setAlumniFilter(f)}
+                  style={{
+                    padding: "4px 12px",
+                    borderRadius: 0,
+                    border: alumniFilter === f ? "1px solid var(--amber)" : "1px solid var(--border)",
+                    background: alumniFilter === f ? "var(--amber)" : "transparent",
+                    color: alumniFilter === f ? "#000" : "var(--n-text2)",
+                    fontFamily: "var(--font-mono)",
+                    fontSize: 11,
+                    fontWeight: 700,
+                    letterSpacing: "0.1em",
+                    textTransform: "uppercase",
+                    cursor: "pointer",
+                  }}
+                >
+                  {f === "all" ? "All" : "Mentors"}
+                </button>
+              ))}
+            </div>
+            <SearchInput value={alumniQuery} onChange={setAlumniQuery} placeholder="Search alumni…" />
           </div>
         </div>
 
@@ -296,7 +299,11 @@ export default function SchoolHubClient({ schoolName, schoolTagline, staff, alum
           <div style={{ padding: "32px 24px", border: "1px solid var(--border)", background: "var(--surface)", borderRadius: 0, textAlign: "center" }}>
             <GraduationCap size={28} style={{ color: "var(--n-text2)", margin: "0 auto 10px" }} />
             <p style={{ color: "var(--n-text2)", fontSize: 14, margin: 0 }}>
-              {alumniFilter === "mentors" ? "No alumni have opened mentorship yet." : "No alumni yet."}
+              {alumniQuery.trim()
+                ? "No alumni match your search."
+                : alumniFilter === "mentors"
+                ? "No alumni have opened mentorship yet."
+                : "No alumni yet."}
             </p>
           </div>
         ) : (
