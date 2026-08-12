@@ -133,11 +133,15 @@ export async function POST(req: Request) {
     });
     userId = newUser.id;
 
-    const invite = await createAccountInvite({
-      email: email.trim(),
-      name: displayName.trim(),
-    });
-    activateUrl = invite.activateUrl;
+    try {
+      const invite = await createAccountInvite({
+        email: email.trim(),
+        name: displayName.trim(),
+      });
+      activateUrl = invite.activateUrl;
+    } catch (err) {
+      console.error("[roster/members] createAccountInvite failed:", err);
+    }
   }
 
   return NextResponse.json({ id: userId, activateUrl });
