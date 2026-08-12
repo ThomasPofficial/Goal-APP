@@ -60,7 +60,7 @@ export async function POST(req: Request) {
       const sharedFields = {
         displayName,
         phone: row.phone?.trim() || null,
-        ...(isAlumni ? {} : { schoolId }),
+        ...(isAlumni ? { schoolId: null } : { schoolId }),
         onboardingComplete: true,
       };
 
@@ -116,6 +116,18 @@ export async function POST(req: Request) {
             where: { id: existingUser.id },
             data: { isAlumni: true },
           });
+        } else if (!isAlumni && existingUser.isAlumni) {
+          // Demoted away from alumni for this school — drop the stale
+          // AlumniSchool link, and only flip User.isAlumni back to false if
+          // they have no remaining alumni links at any other school.
+          await prisma.alumniSchool.deleteMany({ where: { profileId, schoolId } });
+          const remainingLinks = await prisma.alumniSchool.count({ where: { profileId } });
+          if (remainingLinks === 0) {
+            await prisma.user.update({
+              where: { id: existingUser.id },
+              data: { isAlumni: false },
+            });
+          }
         }
       } else {
         const created = await prisma.user.create({
