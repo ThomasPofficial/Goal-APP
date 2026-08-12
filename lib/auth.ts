@@ -93,7 +93,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           (user as { role?: string }).role = existing.role;
         } else {
           const created = await prisma.user.create({
-            data: { email: user.email, name: user.name, image: user.image, role: "STUDENT" },
+            data: {
+              email: user.email,
+              name: user.name,
+              image: user.image,
+              role: "STUDENT",
+              emailVerified: new Date(),
+            },
             select: { id: true, role: true },
           });
           user.id = created.id;
