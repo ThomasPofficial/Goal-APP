@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { randomUUID } from "crypto";
 import { getSchoolSession } from "@/lib/school-auth";
+import { createAccountInvite } from "@/lib/account-invite";
 
 export async function POST(req: Request) {
   const check = await getSchoolSession();
@@ -92,6 +93,7 @@ export async function POST(req: Request) {
   });
 
   let userId: string;
+  let activateUrl: string | undefined;
 
   if (existingUser) {
     userId = existingUser.id;
@@ -130,7 +132,13 @@ export async function POST(req: Request) {
       },
     });
     userId = newUser.id;
+
+    const invite = await createAccountInvite({
+      email: email.trim(),
+      name: displayName.trim(),
+    });
+    activateUrl = invite.activateUrl;
   }
 
-  return NextResponse.json({ id: userId });
+  return NextResponse.json({ id: userId, activateUrl });
 }
