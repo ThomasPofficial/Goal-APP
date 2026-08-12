@@ -6,6 +6,7 @@ import DashboardClient from "./DashboardClient";
 import WalledDashboardClient from "./WalledDashboardClient";
 import type { GeniusTypeKey } from "@/lib/geniusTypes";
 import { isWalledStudent } from "@/lib/accountGate";
+import { getLinkedSchools } from "@/lib/communities";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -35,17 +36,13 @@ export default async function DashboardPage() {
   // Student/Alum accounts get a school-context dashboard instead of the
   // opportunities-focused one below (which surfaces Teams/Orgs data they're walled off from).
   if (await isWalledStudent(userId)) {
-    const profile = await prisma.profile.findUnique({
-      where: { userId },
-      select: { displayName: true, schoolId: true },
-    });
-
-    const school = profile?.schoolId
-      ? await prisma.user.findUnique({
-          where: { id: profile.schoolId },
-          select: { name: true, profile: { select: { displayName: true, headline: true } } },
-        })
-      : null;
+    const [profile, schools] = await Promise.all([
+      prisma.profile.findUnique({
+        where: { userId },
+        select: { displayName: true },
+      }),
+      getLinkedSchools(userId),
+    ]);
 
     const activityConversations = await prisma.conversation.findMany({
       where: {
@@ -71,7 +68,7 @@ export default async function DashboardPage() {
     return (
       <WalledDashboardClient
         displayName={profile?.displayName ?? session.user.name ?? "there"}
-        schoolName={school?.profile?.displayName ?? school?.name ?? "your school"}
+        schoolNames={schools.map((s) => s.name)}
         hasUnreadCommunity={hasUnreadCommunity}
         hasUnreadMentorship={hasUnreadMentorship}
       />
