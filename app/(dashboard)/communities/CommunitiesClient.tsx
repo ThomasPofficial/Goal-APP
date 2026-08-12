@@ -12,6 +12,7 @@ interface RoomSummary {
   memberCount: number;
   lastMessage: { body: string; createdAt: string } | null;
   updatedAt: string;
+  schoolName: string | null;
 }
 
 interface Message {
@@ -175,10 +176,12 @@ export default function CommunitiesClient({ schoolId, myUserId, isAdmin, initial
   const socket = useSocket();
   const searchParams = useSearchParams();
   const requestedRoomId = searchParams.get("conversation");
-  const generalRoom = initialRooms.find((r) => !r.isPrivateRoom) ?? null;
+  const generalRooms = initialRooms.filter((r) => !r.isPrivateRoom);
+  const generalRoom = generalRooms[0] ?? null;
   const activeRoom =
     (requestedRoomId && initialRooms.find((r) => r.id === requestedRoomId)) || generalRoom;
   const roomId = activeRoom?.id ?? null;
+  const otherGeneralRooms = generalRooms.filter((r) => r.id !== roomId);
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
@@ -275,6 +278,11 @@ export default function CommunitiesClient({ schoolId, myUserId, isAdmin, initial
         <div style={{ width: 10, height: 10, borderRadius: "50%", background: "var(--amber)", flexShrink: 0 }} />
         <p style={{ fontFamily: "var(--font-serif)", fontSize: 20, fontWeight: 600, color: "var(--text)", letterSpacing: "-0.3px" }}>
           {activeRoom?.communityName ?? "General"}
+          {otherGeneralRooms.length > 0 && activeRoom?.schoolName && (
+            <span style={{ fontSize: 13, fontWeight: 400, color: "var(--muted)", marginLeft: 8 }}>
+              — {activeRoom.schoolName}
+            </span>
+          )}
         </p>
         {activeRoom?.memberCount != null && (
           <p style={{ fontSize: 12, color: "var(--muted)", marginLeft: 4 }}>
@@ -282,6 +290,22 @@ export default function CommunitiesClient({ schoolId, myUserId, isAdmin, initial
           </p>
         )}
       </div>
+
+      {/* School switcher — only surfaces when the user has more than one school's general room */}
+      {otherGeneralRooms.length > 0 && (
+        <div style={{ padding: "8px 20px", background: "rgba(0,0,0,0.15)", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+          <p style={{ fontSize: 11, color: "var(--muted)", margin: 0, flexShrink: 0 }}>Also at:</p>
+          {otherGeneralRooms.map((r) => (
+            <a
+              key={r.id}
+              href={`?conversation=${r.id}`}
+              style={{ fontSize: 12, color: "var(--amber)", textDecoration: "underline" }}
+            >
+              {r.schoolName ?? r.communityName ?? "General"}
+            </a>
+          ))}
+        </div>
+      )}
 
       {/* Admin invite code bar */}
       {isAdmin && <AdminCodePanel initialCode={schoolCode} />}

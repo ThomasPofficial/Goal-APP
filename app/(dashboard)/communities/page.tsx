@@ -2,7 +2,7 @@
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import CommunitiesClient from "./CommunitiesClient";
-import { ensureSchoolGeneralRoom, getSchoolIds } from "@/lib/communities";
+import { ensureSchoolGeneralRoom, getLinkedSchools, getSchoolIds } from "@/lib/communities";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Communities — Nivarro" };
@@ -35,18 +35,23 @@ export default async function CommunitiesPage() {
     );
   }
 
-  const conversations = await prisma.conversation.findMany({
-    where: {
-      type: "COMMUNITY",
-      schoolId: { in: schoolIds },
-      participants: { some: { userId: session.user.id } },
-    },
-    include: {
-      messages: { orderBy: { createdAt: "desc" }, take: 1 },
-      _count: { select: { participants: true } },
-    },
-    orderBy: [{ isPrivateRoom: "asc" }, { updatedAt: "desc" }],
-  });
+  const [conversations, linkedSchools] = await Promise.all([
+    prisma.conversation.findMany({
+      where: {
+        type: "COMMUNITY",
+        schoolId: { in: schoolIds },
+        participants: { some: { userId: session.user.id } },
+      },
+      include: {
+        messages: { orderBy: { createdAt: "desc" }, take: 1 },
+        _count: { select: { participants: true } },
+      },
+      orderBy: [{ isPrivateRoom: "asc" }, { updatedAt: "desc" }],
+    }),
+    getLinkedSchools(session.user.id),
+  ]);
+
+  const schoolNameById = new Map(linkedSchools.map((s) => [s.id, s.name]));
 
   const initialRooms = conversations.map((c) => ({
     id: c.id,
@@ -57,6 +62,7 @@ export default async function CommunitiesPage() {
       ? { body: c.messages[0].content, createdAt: c.messages[0].createdAt.toISOString() }
       : null,
     updatedAt: c.updatedAt.toISOString(),
+    schoolName: c.schoolId ? (schoolNameById.get(c.schoolId) ?? null) : null,
   }));
 
   return (
