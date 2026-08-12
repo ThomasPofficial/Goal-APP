@@ -4,9 +4,6 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import { Search, X, Heart, Users, Plus, ChevronRight } from "lucide-react";
 import Avatar from "@/components/ui/Avatar";
-import GeniusTypeBadge from "@/components/ui/GeniusTypeBadge";
-import { GENIUS_TYPES } from "@/lib/geniusTypes";
-import type { GeniusTypeKey } from "@/lib/geniusTypes";
 import { cn } from "@/lib/utils";
 
 interface Peer {
@@ -15,15 +12,12 @@ interface Peer {
   displayName: string;
   handle: string | null;
   avatarUrl: string | null;
-  geniusType: string | null;
-  secondaryGeniusType: string | null;
   currentFocus: string | null;
   interests: string[];
   grade: number | null;
   schoolName: string | null;
 }
 
-const GENIUS_KEYS: GeniusTypeKey[] = ["DYNAMO", "BLAZE", "TEMPO", "STEEL"];
 const GRADES = [9, 10, 11, 12];
 
 export default function PeersClient() {
@@ -31,7 +25,6 @@ export default function PeersClient() {
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
   const [debouncedQ, setDebouncedQ] = useState("");
-  const [selectedTypes, setSelectedTypes] = useState<GeniusTypeKey[]>([]);
   const [selectedGrades, setSelectedGrades] = useState<number[]>([]);
   const [savedContacts, setSavedContacts] = useState<Set<string>>(new Set());
   const [selectedPeer, setSelectedPeer] = useState<Peer | null>(null);
@@ -48,7 +41,6 @@ export default function PeersClient() {
     try {
       const params = new URLSearchParams();
       if (debouncedQ) params.set("q", debouncedQ);
-      selectedTypes.forEach((t) => params.append("geniusType", t));
       selectedGrades.forEach((g) => params.append("grade", String(g)));
       const res = await fetch(`/api/peers?${params}`);
       const data = await res.json();
@@ -56,7 +48,7 @@ export default function PeersClient() {
     } finally {
       setLoading(false);
     }
-  }, [debouncedQ, selectedTypes, selectedGrades]);
+  }, [debouncedQ, selectedGrades]);
 
   useEffect(() => { fetchPeers(); }, [fetchPeers]);
 
@@ -92,42 +84,15 @@ export default function PeersClient() {
     }
   };
 
-  const toggleType = (t: GeniusTypeKey) =>
-    setSelectedTypes((prev) => prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]);
   const toggleGrade = (g: number) =>
     setSelectedGrades((prev) => prev.includes(g) ? prev.filter((x) => x !== g) : [...prev, g]);
 
-  const activeFilters = selectedTypes.length + selectedGrades.length;
+  const activeFilters = selectedGrades.length;
 
   return (
     <div className="flex gap-6">
       {/* ── Filter sidebar ─────────────────────────────────────── */}
       <aside className="w-52 flex-shrink-0 space-y-5">
-        <div>
-          <p className="text-xs font-semibold text-[#9898a8] uppercase tracking-wider mb-2">Genius Type</p>
-          <div className="space-y-1">
-            {GENIUS_KEYS.map((t) => {
-              const info = GENIUS_TYPES[t];
-              const active = selectedTypes.includes(t);
-              return (
-                <button
-                  key={t}
-                  onClick={() => toggleType(t)}
-                  className={cn(
-                    "w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs transition-all",
-                    active
-                      ? cn(info.tailwindBg, info.tailwindText, "border", info.tailwindBorder)
-                      : "text-[#9898a8] hover:bg-[#1e1e24]"
-                  )}
-                >
-                  <span className={cn("w-2 h-2 rounded-full flex-shrink-0")} style={{ background: info.color }} />
-                  {info.label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
         <div>
           <p className="text-xs font-semibold text-[#9898a8] uppercase tracking-wider mb-2">Grade</p>
           <div className="flex flex-wrap gap-1.5">
@@ -150,7 +115,7 @@ export default function PeersClient() {
 
         {activeFilters > 0 && (
           <button
-            onClick={() => { setSelectedTypes([]); setSelectedGrades([]); }}
+            onClick={() => { setSelectedGrades([]); }}
             className="text-xs text-[#5a5a6a] hover:text-[#4a80f0] transition-colors"
           >
             Clear all filters
@@ -248,13 +213,11 @@ function StudentCard({
       <Avatar
         src={peer.avatarUrl}
         name={peer.displayName}
-        geniusType={peer.geniusType as GeniusTypeKey | null}
         size="md"
         className="mb-2"
       />
       <p className="font-medium text-sm text-[#e8e8ec] truncate">{peer.displayName}</p>
       {peer.handle && <p className="text-xs text-[#5a5a6a] mb-1">@{peer.handle}</p>}
-      {peer.geniusType && <GeniusTypeBadge type={peer.geniusType as GeniusTypeKey} size="sm" />}
 
       {peer.interests.length > 0 && (
         <div className="flex flex-wrap gap-1 mt-2">
@@ -297,22 +260,18 @@ function StudentPanel({
           <Avatar
             src={peer.avatarUrl}
             name={peer.displayName}
-            geniusType={peer.geniusType as GeniusTypeKey | null}
             size="lg"
           />
           <div>
             <p className="font-semibold text-[#e8e8ec]">{peer.displayName}</p>
             {peer.handle && <p className="text-xs text-[#9898a8]">@{peer.handle}</p>}
-            {peer.geniusType && (
-              <GeniusTypeBadge type={peer.geniusType as GeniusTypeKey} size="sm" className="mt-1" />
-            )}
           </div>
         </div>
 
-        {peer.currentFocus && peer.geniusType && (
+        {peer.currentFocus && (
           <div
             className="border-l-4 pl-3 py-1 mb-4 text-xs text-[#9898a8] italic leading-relaxed"
-            style={{ borderColor: GENIUS_TYPES[peer.geniusType as GeniusTypeKey].color }}
+            style={{ borderColor: "var(--border-md)" }}
           >
             {peer.currentFocus}
           </div>
@@ -439,7 +398,6 @@ function GroupConversationModal({ peers, onClose }: { peers: Peer[]; onClose: ()
               >
                 <Avatar src={p.avatarUrl} name={p.displayName} size="sm" />
                 <span className="text-sm text-[#e8e8ec]">{p.displayName}</span>
-                {p.geniusType && <GeniusTypeBadge type={p.geniusType as GeniusTypeKey} size="sm" className="ml-auto" />}
               </button>
             ))}
           </div>
