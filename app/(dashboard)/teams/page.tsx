@@ -25,7 +25,7 @@ export default async function TeamsPage() {
           org: { select: { id: true, name: true } },
           members: {
             include: {
-              profile: { select: { id: true, displayName: true, avatarUrl: true, geniusType: true } },
+              profile: { select: { id: true, displayName: true, avatarUrl: true } },
             },
             take: 5,
           },

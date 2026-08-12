@@ -46,7 +46,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
   const message = await prisma.message.create({
     data: { conversationId: convo.id, senderId: session.user.id, content: parsed.data.body },
-    include: { sender: { select: { id: true, name: true, profile: { select: { displayName: true, avatarUrl: true, geniusType: true } } } } },
+    include: { sender: { select: { id: true, name: true, profile: { select: { displayName: true, avatarUrl: true } } } } },
   });
 
   return NextResponse.json({ message });
@@ -78,7 +78,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
     include: {
       sender: {
-        select: { id: true, name: true, profile: { select: { displayName: true, avatarUrl: true, geniusType: true } } },
+        select: { id: true, name: true, profile: { select: { displayName: true, avatarUrl: true } } },
       },
     },
   });

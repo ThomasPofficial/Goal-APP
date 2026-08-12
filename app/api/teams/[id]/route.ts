@@ -30,7 +30,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       members: {
         include: {
           profile: {
-            select: { id: true, displayName: true, avatarUrl: true, geniusType: true, handle: true, userId: true },
+            select: { id: true, displayName: true, avatarUrl: true, handle: true, userId: true },
           },
         },
       },
