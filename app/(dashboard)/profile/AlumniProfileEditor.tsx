@@ -14,9 +14,10 @@ interface Props {
     confirmedMajor: string;
     isAvailableToMentor: boolean;
   };
+  initialSchools: { id: string; name: string }[];
 }
 
-export default function AlumniProfileEditor({ initialProfile }: Props) {
+export default function AlumniProfileEditor({ initialProfile, initialSchools }: Props) {
   const router = useRouter();
   const [linkedinUrl, setLinkedinUrl] = useState(initialProfile.linkedinUrl);
   const [employer, setEmployer] = useState(initialProfile.employer);
@@ -24,9 +25,23 @@ export default function AlumniProfileEditor({ initialProfile }: Props) {
   const [confirmedCollege, setConfirmedCollege] = useState(initialProfile.confirmedCollege);
   const [confirmedMajor, setConfirmedMajor] = useState(initialProfile.confirmedMajor);
   const [isAvailableToMentor, setIsAvailableToMentor] = useState(initialProfile.isAvailableToMentor);
+  const [schools, setSchools] = useState(initialSchools);
+  const [removingSchoolId, setRemovingSchoolId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
+
+  async function handleRemoveSchool(schoolId: string) {
+    setRemovingSchoolId(schoolId);
+    const res = await fetch(`/api/profile/schools/${schoolId}`, { method: "DELETE" });
+    setRemovingSchoolId(null);
+    if (res.ok) {
+      setSchools((prev) => prev.filter((s) => s.id !== schoolId));
+      router.refresh();
+    } else {
+      setError("Couldn't remove that school. Try again.");
+    }
+  }
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
@@ -61,6 +76,37 @@ export default function AlumniProfileEditor({ initialProfile }: Props) {
       </div>
 
       <form onSubmit={handleSave} className="space-y-6">
+        <div className="bg-[#0d0d0e] border border-[#1c1c20] rounded-xl p-5 space-y-3">
+          <h2 className="text-xs font-semibold text-[#909098] uppercase tracking-wider">
+            Schools
+          </h2>
+          <p className="text-xs text-[#606068]">
+            Schools are added by a school admin — you can remove one you no longer want linked, but you can&apos;t add one yourself.
+          </p>
+          {schools.length === 0 ? (
+            <p className="text-sm text-[#909098]">Not linked to any school yet.</p>
+          ) : (
+            <ul className="space-y-2">
+              {schools.map((school) => (
+                <li
+                  key={school.id}
+                  className="flex items-center justify-between bg-[#16161a] border border-[#242429] rounded-md px-3 py-2"
+                >
+                  <span className="text-sm text-[#eaeaea]">{school.name}</span>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveSchool(school.id)}
+                    disabled={removingSchoolId === school.id}
+                    className="text-xs text-[#f87171] hover:text-[#fca5a5] disabled:opacity-60"
+                  >
+                    {removingSchoolId === school.id ? "Removing..." : "Remove"}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
         <div className="bg-[#0d0d0e] border border-[#1c1c20] rounded-xl p-5 space-y-4">
           <h2 className="text-xs font-semibold text-[#909098] uppercase tracking-wider">
             Destination
