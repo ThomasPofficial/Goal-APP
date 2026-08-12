@@ -72,7 +72,6 @@ export async function POST(req: Request) {
           headline: "Entrepreneur & Impact Strategist",
           bio: "I think in systems and move in sprints. Most interested in projects where the output creates something that wasn't there before.",
           strengthSummary: "Natural leader with strong vision-to-execution instincts. Energizes teams and keeps momentum without losing strategic clarity.",
-          geniusType: "BLAZE",
           grade: 12,
           schoolName: "BASIS Scottsdale",
           onboardingComplete: true,
@@ -147,7 +146,6 @@ export async function POST(req: Request) {
         applicationMode: "TEAM",
         appMaterials: JSON.stringify(["cover_letter", "why_us"]),
         requiredSkills: JSON.stringify(["Game development", "Multiplayer networking", "UI/UX accessibility", "Communication"]),
-        preferredGeniusTypes: JSON.stringify(["DYNAMO", "BLAZE"]),
         openSpots: 5,
         hoursPerWeek: "10-15",
         duration: "June 15 – August 30 (11 weeks)",
@@ -299,7 +297,6 @@ export async function POST(req: Request) {
         bio: "I care about projects where the output is real. Not a pitch deck — something that gets used. Spent 11 weeks this summer building a co-op game for 18 Vietnam-era veterans in Sacramento. That's the bar I'm holding everything else to.",
         strengthSummary:
           "Strong team lead with an unusually high tolerance for ambiguity. Thomas doesn't wait to be told what to do — he identifies the void and fills it. His stamina on complex, multi-month projects is the defining trait that separates him from peers.",
-        geniusType: "BLAZE",
         grade: 12,
         schoolName: "Palo Alto High School",
         onboardingComplete: true,
@@ -367,7 +364,6 @@ I would not hesitate to bring Thomas back for a future project, and I would not 
         bio: "I build things fast. The first working prototype of the Sunset Pines co-op game was mine — I had it running in a browser in 48 hours so we could actually show the veterans something real. Speed is a strategy.",
         strengthSummary:
           "Diego ships prototypes faster than most people write specs. His velocity is real — not careless, but genuinely rapid. He's the person you want in week one of any project.",
-        geniusType: "DYNAMO",
         grade: 11,
         schoolName: "Downtown Magnets High School",
         onboardingComplete: true,
@@ -402,7 +398,6 @@ I would not hesitate to bring Thomas back for a future project, and I would not 
         bio: "I spent the first three weeks of the project just sitting with the veterans. Watching how they held a controller. Where their eyes went on a screen. Everything I designed came from those sessions.",
         strengthSummary:
           "Aiko's design decisions are grounded in observation, not assumption. She delayed the UI build by two weeks to do user research — a call that turned out to be exactly right. Her accessibility work made the game playable for veterans with arthritis and limited vision.",
-        geniusType: "STEEL",
         grade: 12,
         schoolName: "Lowell High School",
         onboardingComplete: true,
@@ -437,8 +432,6 @@ I would not hesitate to bring Thomas back for a future project, and I would not 
         bio: "The networking stack for our co-op game was mine. Six simultaneous players, sub-50ms latency, running on a $7/month server. No one told me it was hard — I just built it.",
         strengthSummary:
           "Jordan disappears into hard problems and emerges with working systems. He built the multiplayer networking layer alone over 10 days and never asked for help — not because he's anti-collaborative, but because he knew exactly what he needed to do.",
-        geniusType: "BLAZE",
-        secondaryGeniusType: "STEEL",
         grade: 11,
         schoolName: "Sacramento New Technology High School",
         onboardingComplete: true,

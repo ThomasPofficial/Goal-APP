@@ -137,7 +137,6 @@ export async function POST(req: Request) {
             graduationYear: 2025,
             isAvailableToMentor: true,
             industry: "Technology",
-            geniusType: "STEEL",
             onboardingComplete: true,
           },
         });
@@ -190,7 +189,6 @@ export async function POST(req: Request) {
             graduationYear: 2025,
             isAvailableToMentor: false,
             industry: "Engineering",
-            geniusType: "DYNAMO",
             onboardingComplete: true,
           },
         });
