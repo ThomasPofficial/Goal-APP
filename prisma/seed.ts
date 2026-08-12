@@ -161,8 +161,8 @@ async function main() {
         tagline: "A selective research program for high school scholars serious about original work.",
         description:
           "Nivarro's Research Cohort brings together students with genuine intellectual curiosity to work on real " +
-          "research questions — not simulated ones. Cohort members are matched to projects based on their genius type " +
-          "profile and commit to a 10-week structured sprint. Work is reviewed and published.",
+          "research questions — not simulated ones. Cohort members are matched to projects based on their research interests " +
+          "and expertise, and commit to a 10-week structured sprint. Work is reviewed and published.",
         whatWeSeek:
           "Students who have already done serious independent work. Not looking for resume padding — looking for scholars " +
           "who get uncomfortable when they're not learning something hard.",

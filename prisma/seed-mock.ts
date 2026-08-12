@@ -1,6 +1,6 @@
 /**
  * Mock seeder — 5 fresh scholars + Watershed Initiative as official org/project.
- * Accounts have NO genius type, NO traits, NO teams — truly just started.
+ * Accounts have NO traits, NO teams — truly just started.
  *
  * Run: DATABASE_URL="<render-postgres-url>" npx tsx prisma/seed-mock.ts
  * Password: nivarro123
