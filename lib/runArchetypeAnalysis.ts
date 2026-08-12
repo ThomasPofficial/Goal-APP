@@ -50,7 +50,6 @@ export async function runArchetypeAnalysis(profileId: string): Promise<{
 Your task is to assign 2-3 Animal Archetypes to a student based on their org reviews and engagement data.
 
 STUDENT PROFILE:
-- Genius Type: ${profile.geniusType ?? "Unknown"}
 - Messages sent in last 30 days: ${msgCount}
 
 ORG REVIEWS (written by organizations about this student):

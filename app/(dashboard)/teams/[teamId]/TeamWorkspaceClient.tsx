@@ -5,16 +5,13 @@ import Link from "next/link";
 import { format } from "date-fns";
 import { Send, Plus, ChevronDown, ChevronUp, ExternalLink, X, Trash2, Check } from "lucide-react";
 import Avatar from "@/components/ui/Avatar";
-import GeniusTypeBadge from "@/components/ui/GeniusTypeBadge";
-import { GENIUS_TYPES } from "@/lib/geniusTypes";
-import type { GeniusTypeKey } from "@/lib/geniusTypes";
 import { useSocket } from "@/lib/socket";
 import { cn } from "@/lib/utils";
 
 interface Member {
   id: string;
   role: string;
-  profile: { id: string; userId: string; displayName: string; avatarUrl: string | null; geniusType: GeniusTypeKey | null; handle: string | null } | null;
+  profile: { id: string; userId: string; displayName: string; avatarUrl: string | null; handle: string | null } | null;
 }
 
 interface TeamData {
@@ -35,7 +32,7 @@ interface ChatMessage {
   sender: {
     id: string;
     name: string | null;
-    profile: { displayName: string; avatarUrl: string | null; geniusType: string | null } | null;
+    profile: { displayName: string; avatarUrl: string | null } | null;
   };
 }
 
@@ -67,13 +64,12 @@ interface ApplicationSummary {
 }
 
 export default function TeamWorkspaceClient({
-  team, applications, msgCount: initialMsgCount, myProfileId, myGeniusType, myUserId,
+  team, applications, msgCount: initialMsgCount, myProfileId, myUserId,
 }: {
   team: TeamData;
   applications: ApplicationSummary[];
   msgCount: number;
   myProfileId: string;
-  myGeniusType: GeniusTypeKey | null;
   myUserId: string;
 }) {
   const [tab, setTab] = useState<"chat" | "board" | "applications">("chat");
@@ -148,8 +144,6 @@ export default function TeamWorkspaceClient({
     if (res.ok) setSentCount((c) => c + 1);
     setSending(false);
   };
-
-  const typeInfo = myGeniusType ? GENIUS_TYPES[myGeniusType] : null;
 
   return (
     <div className="flex flex-col h-[calc(100vh-8rem)]">
@@ -252,7 +246,6 @@ export default function TeamWorkspaceClient({
               key={m.id}
               src={m.profile?.avatarUrl}
               name={m.profile?.displayName}
-              geniusType={m.profile?.geniusType}
               size="sm"
               className="border-2 border-[#0f0f11]"
             />
@@ -278,7 +271,7 @@ export default function TeamWorkspaceClient({
           <div className="flex flex-wrap gap-2 mt-2">
             {team.members.map((m) => (
               <div key={m.id} className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-[#16161a] border border-[#2a2a33]">
-                <Avatar src={m.profile?.avatarUrl} name={m.profile?.displayName} geniusType={m.profile?.geniusType} size="xs" />
+                <Avatar src={m.profile?.avatarUrl} name={m.profile?.displayName} size="xs" />
                 <span className="text-xs text-[#e8e8ec]">{m.profile?.displayName}</span>
                 {m.role === "ADMIN" && <span className="text-[10px] text-[#4a80f0] font-semibold">Admin</span>}
               </div>
@@ -319,15 +312,13 @@ export default function TeamWorkspaceClient({
             {messages.map((msg, i) => {
               const isMe = msg.sender.id === myUserId;
               const senderInfo = msg.sender.profile;
-              const senderType = senderInfo?.geniusType as GeniusTypeKey | null;
-              const typeColor = senderType ? GENIUS_TYPES[senderType].color : undefined;
               const prevMsg = messages[i - 1];
               const grouped = prevMsg?.sender.id === msg.sender.id;
 
               return (
                 <div key={msg.id} className={cn("flex gap-2", isMe ? "flex-row-reverse" : "flex-row", grouped && "mt-0.5")}>
                   {!grouped && !isMe && (
-                    <Avatar src={senderInfo?.avatarUrl} name={senderInfo?.displayName} geniusType={senderType} size="sm" className="flex-shrink-0 mt-0.5" />
+                    <Avatar src={senderInfo?.avatarUrl} name={senderInfo?.displayName} size="sm" className="flex-shrink-0 mt-0.5" />
                   )}
                   {grouped && !isMe && <div className="w-8 flex-shrink-0" />}
                   <div className={cn("max-w-[70%]")}>
@@ -338,12 +329,14 @@ export default function TeamWorkspaceClient({
                     )}
                     <div
                       className={cn("px-3 py-2 rounded-2xl text-sm leading-relaxed", isMe ? "rounded-tr-sm" : "rounded-tl-sm")}
-                      style={isMe && typeColor ? { background: `${typeColor}18`, color: "inherit" } : undefined}
                     >
-                      <span className={cn(
-                        !isMe && "bg-[#16161a] border border-[#2a2a33] px-3 py-2 rounded-2xl rounded-tl-sm block",
-                        isMe && "block"
-                      )}>
+                      <span
+                        className={cn(
+                          !isMe && "bg-[#16161a] border border-[#2a2a33] px-3 py-2 rounded-2xl rounded-tl-sm block",
+                          isMe && "border px-3 py-2 rounded-2xl rounded-tr-sm block"
+                        )}
+                        style={isMe ? { background: "rgba(74,128,240,0.12)", borderColor: "rgba(74,128,240,0.25)" } : undefined}
+                      >
                         {msg.content}
                       </span>
                     </div>

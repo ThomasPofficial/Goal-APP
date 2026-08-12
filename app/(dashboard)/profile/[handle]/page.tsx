@@ -2,7 +2,6 @@ import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 import ProfileClient from './ProfileClient';
-import type { GeniusTypeKey } from '@/lib/geniusTypes';
 
 export default async function ProfilePage({ params }: { params: Promise<{ handle: string }> }) {
   const session = await auth();
@@ -16,8 +15,6 @@ export default async function ProfilePage({ params }: { params: Promise<{ handle
         displayName: true,
         avatarUrl: true,
         handle: true,
-        geniusType: true,
-        secondaryGeniusType: true,
         currentFocus: true,
         interests: true,
         grade: true,
@@ -40,7 +37,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ handle
     session?.user?.id
       ? prisma.profile.findUnique({
           where: { userId: session.user.id },
-          select: { id: true, handle: true, displayName: true, avatarUrl: true, geniusType: true, currentFocus: true, interests: true, grade: true, schoolName: true, isFirstGen: true, isHomeschooled: true, isInternational: true, animalArchetypes: true, archetypeAnalysis: true, archetypeUpdatedAt: true, bio: true, staffTitle: true, industry: true, isAvailableToMentor: true, graduationYear: true, intendedCollege: true },
+          select: { id: true, handle: true, displayName: true, avatarUrl: true, currentFocus: true, interests: true, grade: true, schoolName: true, isFirstGen: true, isHomeschooled: true, isInternational: true, animalArchetypes: true, archetypeAnalysis: true, archetypeUpdatedAt: true, bio: true, staffTitle: true, industry: true, isAvailableToMentor: true, graduationYear: true, intendedCollege: true },
         })
       : null,
   ]);
@@ -68,12 +65,10 @@ export default async function ProfilePage({ params }: { params: Promise<{ handle
     <ProfileClient
       profile={{
         ...profile,
-        geniusType: profile.geniusType as GeniusTypeKey | null,
-        secondaryGeniusType: profile.secondaryGeniusType as GeniusTypeKey | null,
         archetypeUpdatedAt: profile.archetypeUpdatedAt?.toISOString() ?? null,
       }}
       isOwn={!!isOwnProfile}
-      myProfile={myProfile ? { ...myProfile, geniusType: myProfile.geniusType as GeniusTypeKey | null, archetypeUpdatedAt: myProfile.archetypeUpdatedAt?.toISOString() ?? null } : null}
+      myProfile={myProfile ? { ...myProfile, archetypeUpdatedAt: myProfile.archetypeUpdatedAt?.toISOString() ?? null } : null}
       ownReviews={ownReviews.map((r) => ({ ...r, createdAt: r.createdAt.toISOString() }))}
     />
   );

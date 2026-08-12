@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import SkillCard from "@/components/profile/SkillCard";
 import type { TraitCategory } from "@/data/traits";
-import { GENIUS_TYPE_INFO } from "@/data/traits";
 import {
   ArrowLeft,
   Check,
@@ -25,7 +24,6 @@ interface Member {
       headline: string | null;
       avatarUrl: string | null;
       strengthSummary: string | null;
-      geniusType: string | null;
       traitLinks: { trait: { name: string; category: string } }[];
     } | null;
   };
@@ -288,7 +286,6 @@ export default function ProjectDetail({
                     headline: profile.headline,
                     avatarUrl: profile.avatarUrl,
                     strengthSummary: profile.strengthSummary,
-                    geniusType: profile.geniusType as never,
                     selfTraits: profile.traitLinks.map((l) => ({
                       name: l.trait.name,
                       category: l.trait.category as TraitCategory,

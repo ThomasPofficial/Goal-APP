@@ -17,7 +17,7 @@ export async function GET() {
         include: {
           user: {
             include: {
-              profile: { select: { id: true, displayName: true, avatarUrl: true, geniusType: true, handle: true } },
+              profile: { select: { id: true, displayName: true, avatarUrl: true, handle: true } },
             },
           },
         },

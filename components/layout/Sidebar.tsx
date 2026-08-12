@@ -6,7 +6,6 @@ import { X, ChevronLeft, ChevronRight, LayoutDashboard, Users, Building2, UsersR
 import AccountMenu from "./AccountMenu";
 import NivarroMark from "@/components/ui/NivarroMark";
 import { cn } from "@/lib/utils";
-import type { GeniusType } from "@/data/traits";
 import type { Capability } from "@/lib/facultyPermissions";
 
 const STANDARD_NAV = [
@@ -44,7 +43,6 @@ function buildStaffNav(caps: Capability[]) {
 interface SidebarProps {
   userName?: string | null;
   userEmail?: string | null;
-  geniusType?: GeniusType | null;
   mobileOpen?: boolean;
   onMobileClose?: () => void;
   myOrgId?: string | null;
@@ -60,7 +58,7 @@ interface SidebarProps {
   onToggleCollapse?: () => void;
 }
 
-export default function Sidebar({ userName, userEmail, geniusType, mobileOpen = false, onMobileClose, myOrgId, myOrgName, isOrg, isNivarroAdmin = false, isSchool = false, isStaff = false, staffCapabilities = [], isWalledStudent = false, isAlumni = false, collapsed = false, onToggleCollapse }: SidebarProps) {
+export default function Sidebar({ userName, userEmail, mobileOpen = false, onMobileClose, myOrgId, myOrgName, isOrg, isNivarroAdmin = false, isSchool = false, isStaff = false, staffCapabilities = [], isWalledStudent = false, isAlumni = false, collapsed = false, onToggleCollapse }: SidebarProps) {
   const pathname = usePathname();
 
   const orgNav = myOrgId ? [
@@ -222,7 +220,6 @@ export default function Sidebar({ userName, userEmail, geniusType, mobileOpen = 
           <AccountMenu
             userName={userName}
             userEmail={userEmail}
-            geniusType={geniusType}
             isSchool={isSchool}
             isOrg={isOrg}
           />

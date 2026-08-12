@@ -21,7 +21,7 @@ export async function GET(req: Request) {
   if (user.profile) {
     const updated = await prisma.profile.update({
       where: { userId: user.id },
-      data: { onboardingComplete: true, geniusType: user.profile.geniusType ?? "DYNAMO" },
+      data: { onboardingComplete: true },
     });
     if (user.role === 'SCHOOL') {
       await ensureSchoolGeneralRoom(user.id, user.id);
@@ -37,7 +37,6 @@ export async function GET(req: Request) {
       userId: user.id,
       displayName: user.name ?? email.split("@")[0],
       handle: uniqueHandle,
-      geniusType: "DYNAMO",
       onboardingComplete: true,
     },
   });

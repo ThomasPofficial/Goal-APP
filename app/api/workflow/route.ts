@@ -11,7 +11,6 @@ export async function GET() {
     where: { userId: session.user.id },
     select: {
       id: true,
-      geniusType: true,
       _count: { select: { traitLinks: true } },
     },
   });
@@ -29,7 +28,7 @@ export async function GET() {
         include: {
           members: {
             include: {
-              profile: { select: { id: true, displayName: true, avatarUrl: true, geniusType: true, handle: true } },
+              profile: { select: { id: true, displayName: true, avatarUrl: true, handle: true } },
             },
           },
         },
@@ -37,10 +36,9 @@ export async function GET() {
     },
   });
 
-  const hasGeniusType = !!profile.geniusType;
   const traitsDone = (profile._count?.traitLinks ?? 0) > 0;
 
-  return NextResponse.json({ session: workflowSession, hasGeniusType, traitsDone });
+  return NextResponse.json({ session: workflowSession, traitsDone });
 }
 
 // POST — start a new workflow on a project (one at a time enforced by DB unique constraint)

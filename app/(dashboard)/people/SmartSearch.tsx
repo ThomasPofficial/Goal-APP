@@ -10,8 +10,8 @@ import {
   Briefcase,
 } from "lucide-react";
 import TraitBadge from "@/components/profile/TraitBadge";
-import { GENIUS_TYPE_INFO, TRAIT_CATEGORY_LABELS, TRAIT_CATEGORY_COLORS } from "@/data/traits";
-import type { TraitCategory, GeniusType } from "@/data/traits";
+import { TRAIT_CATEGORY_LABELS, TRAIT_CATEGORY_COLORS } from "@/data/traits";
+import type { TraitCategory } from "@/data/traits";
 import { getInitials } from "@/lib/utils";
 
 interface Trait {
@@ -26,7 +26,6 @@ interface SearchResult {
   displayName: string;
   headline?: string | null;
   avatarUrl?: string | null;
-  geniusType?: string | null;
   dateOfBirth?: string | null;
   selfTraits: { name: string; slug: string; category: string }[];
   projects: { id: string; name: string; status: string }[];
@@ -38,11 +37,8 @@ interface Props {
   allTraits: Trait[];
 }
 
-const GENIUS_TYPES = ["DYNAMO", "BLAZE", "TEMPO", "STEEL"] as const;
-
 export default function SmartSearch({ allTraits }: Props) {
   const [query, setQuery] = useState("");
-  const [geniusType, setGeniusType] = useState("");
   const [selectedSlugs, setSelectedSlugs] = useState<string[]>([]);
   const [minTraits, setMinTraits] = useState(1);
   const [dobFrom, setDobFrom] = useState("");
@@ -77,7 +73,6 @@ export default function SmartSearch({ allTraits }: Props) {
   const runSearch = useCallback(
     async (params: {
       q: string;
-      geniusType: string;
       slugs: string[];
       minTraits: number;
       dobFrom: string;
@@ -87,7 +82,6 @@ export default function SmartSearch({ allTraits }: Props) {
       setHasSearched(true);
       const sp = new URLSearchParams();
       if (params.q) sp.set("q", params.q);
-      if (params.geniusType) sp.set("geniusType", params.geniusType);
       if (params.slugs.length > 0) {
         sp.set("traits", params.slugs.join(","));
         sp.set("minTraits", String(params.minTraits));
@@ -123,7 +117,6 @@ export default function SmartSearch({ allTraits }: Props) {
     debounceRef.current = setTimeout(() => {
       runSearch({
         q: query,
-        geniusType,
         slugs: selectedSlugs,
         minTraits,
         dobFrom,
@@ -147,12 +140,6 @@ export default function SmartSearch({ allTraits }: Props) {
     scheduleSearch({ slugs: next });
   }
 
-  function setGenius(type: string) {
-    const next = geniusType === type ? "" : type;
-    setGeniusType(next);
-    scheduleSearch({ geniusType: next });
-  }
-
   const filteredTraits = traitSearch
     ? allTraits.filter((t) =>
         t.name.toLowerCase().includes(traitSearch.toLowerCase())
@@ -172,7 +159,7 @@ export default function SmartSearch({ allTraits }: Props) {
       <div>
         <h1 className="text-2xl font-semibold text-[#eaeaea]">Discover People</h1>
         <p className="text-sm text-[#909098] mt-1">
-          Find collaborators by keywords, genius type, traits, or age range.
+          Find collaborators by keywords, traits, or age range.
         </p>
       </div>
 
@@ -191,42 +178,6 @@ export default function SmartSearch({ allTraits }: Props) {
             placeholder="Search by name, bio, strengths, keywords..."
             className="w-full pl-10"
           />
-        </div>
-
-        {/* Genius type filter */}
-        <div className="flex flex-wrap gap-2">
-          <button
-            onClick={() => setGenius("")}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-              !geniusType
-                ? "bg-[#4a80f0] text-[#080809]"
-                : "bg-[#131315] text-[#909098] hover:text-[#eaeaea] border border-[#1c1c20]"
-            }`}
-          >
-            All types
-          </button>
-          {GENIUS_TYPES.map((type) => {
-            const info = GENIUS_TYPE_INFO[type as GeniusType];
-            const active = geniusType === type;
-            return (
-              <button
-                key={type}
-                onClick={() => setGenius(type)}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${
-                  active
-                    ? "border-transparent text-[#080809]"
-                    : "bg-[#131315] text-[#909098] hover:text-[#eaeaea] border-[#1c1c20]"
-                }`}
-                style={
-                  active
-                    ? { backgroundColor: info.color }
-                    : {}
-                }
-              >
-                {info.icon} {info.label}
-              </button>
-            );
-          })}
         </div>
 
         {/* Trait multi-select + min count */}
@@ -460,9 +411,6 @@ export default function SmartSearch({ allTraits }: Props) {
 
 function SearchResultCard({ result }: { result: SearchResult }) {
   const initials = getInitials(result.displayName);
-  const geniusInfo = result.geniusType
-    ? GENIUS_TYPE_INFO[result.geniusType as GeniusType]
-    : null;
 
   const activeProjects = result.projects.filter((p) => p.status === "ACTIVE");
   const completedProjects = result.projects.filter((p) => p.status === "COMPLETED");
@@ -494,17 +442,6 @@ function SearchResultCard({ result }: { result: SearchResult }) {
             </p>
           )}
         </div>
-        {geniusInfo && (
-          <span
-            className="shrink-0 text-xs font-semibold px-2 py-0.5 rounded-full"
-            style={{
-              backgroundColor: `${geniusInfo.color}20`,
-              color: geniusInfo.color,
-            }}
-          >
-            {geniusInfo.icon} {geniusInfo.label}
-          </span>
-        )}
       </div>
 
       {/* Traits */}

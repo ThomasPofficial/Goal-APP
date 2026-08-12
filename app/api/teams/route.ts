@@ -19,7 +19,7 @@ export async function GET() {
     where: { members: { some: { profileId: myProfile.id } } },
     include: {
       members: {
-        include: { profile: { select: { id: true, displayName: true, avatarUrl: true, geniusType: true } } },
+        include: { profile: { select: { id: true, displayName: true, avatarUrl: true } } },
       },
       org: { select: { id: true, name: true } },
     },

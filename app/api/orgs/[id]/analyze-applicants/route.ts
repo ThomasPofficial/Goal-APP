@@ -27,7 +27,6 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       id: true,
       title: true,
       requiredSkills: true,
-      preferredGeniusTypes: true,
       teamApplications: {
         where: { status: { in: ["PENDING", "ACCEPTED"] } },
         select: {
@@ -48,8 +47,6 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
                       headline: true,
                       bio: true,
                       strengthSummary: true,
-                      geniusType: true,
-                      secondaryGeniusType: true,
                       grade: true,
                       schoolName: true,
                       interests: true,
@@ -74,7 +71,6 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   if (!project) return NextResponse.json({ error: "Project not found" }, { status: 404 });
 
   const requiredSkills: string[] = JSON.parse(project.requiredSkills || "[]");
-  const preferredTypes: string[] = JSON.parse(project.preferredGeniusTypes || "[]");
 
   const applicantBlocks = project.teamApplications.map((app) => {
     const members = app.team.members
@@ -86,7 +82,6 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         return `
     Name: ${p.displayName}
     Handle: @${p.handle ?? "none"}
-    Genius Type: ${p.geniusType ?? "unknown"}${p.secondaryGeniusType ? ` / ${p.secondaryGeniusType}` : ""}
     Grade: ${p.grade ?? "unknown"} | School: ${p.schoolName ?? "unknown"}
     Headline: ${p.headline ?? "none"}
     Bio: ${p.bio ?? "none"}
@@ -108,7 +103,6 @@ ${members}`;
 
 PROJECT: "${project.title}"
 Required Skills: ${requiredSkills.join(", ") || "not specified"}
-Preferred Genius Types: ${preferredTypes.join(", ") || "not specified"}
 
 You are reviewing ${project.teamApplications.length} application(s). For each application, analyze the team members' profiles, past org reviews (which function as recommendation letters and reference checks), bios, and stated reasons for applying.
 

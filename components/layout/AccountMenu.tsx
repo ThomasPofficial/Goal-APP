@@ -5,23 +5,18 @@ import { serverSignOut } from "@/lib/auth-actions";
 import Link from "next/link";
 import { LogOut, User, ChevronUp } from "lucide-react";
 import { getInitials } from "@/lib/utils";
-import { GENIUS_TYPE_INFO } from "@/data/traits";
-import type { GeniusType } from "@/data/traits";
 
 interface AccountMenuProps {
   userName?: string | null;
   userEmail?: string | null;
-  geniusType?: GeniusType | null;
   isSchool?: boolean;
   isOrg?: boolean;
 }
 
-export default function AccountMenu({ userName, userEmail, geniusType, isSchool = false, isOrg = false }: AccountMenuProps) {
+export default function AccountMenu({ userName, userEmail, isSchool = false, isOrg = false }: AccountMenuProps) {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const initials = getInitials(userName ?? "?");
-  const genius = !isOrg && geniusType ? GENIUS_TYPE_INFO[geniusType] : null;
-  const showGeniusSection = !isSchool && !isOrg;
 
   useEffect(() => {
     function handleOutside(e: MouseEvent | TouchEvent) {
@@ -73,25 +68,8 @@ export default function AccountMenu({ userName, userEmail, geniusType, isSchool 
             </div>
           </div>
 
-          {showGeniusSection && (
-            <div className="mb-4 pb-4" style={{ borderBottom: "1px solid var(--border)" }}>
-              {genius ? (
-                <div
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold"
-                  style={{ background: `${genius.color}18`, color: genius.color, border: `1px solid ${genius.color}30` }}
-                >
-                  <span>{genius.icon}</span>{genius.label}
-                </div>
-              ) : (
-                <Link href="/quiz" onClick={() => setOpen(false)} className="text-xs" style={{ color: "var(--accent)" }}>
-                  Take the Genius Quiz →
-                </Link>
-              )}
-            </div>
-          )}
-
           <div className="space-y-0.5">
-            {showGeniusSection && (
+            {!isSchool && !isOrg && (
               <Link
                 href="/profile"
                 onClick={() => setOpen(false)}
@@ -129,9 +107,6 @@ export default function AccountMenu({ userName, userEmail, geniusType, isSchool 
           <div className="text-xs font-medium truncate" style={{ color: "var(--text)", fontFamily: "var(--font-body)" }}>
             {userName ?? "Account"}
           </div>
-          {genius && (
-            <div className="text-[10px] truncate" style={{ color: genius.color }}>{genius.icon} {genius.label}</div>
-          )}
         </div>
         <ChevronUp className={`w-3.5 h-3.5 flex-shrink-0 transition-transform duration-150 ${open ? "rotate-0" : "rotate-180"}`} style={{ color: "var(--muted)" }} />
       </button>

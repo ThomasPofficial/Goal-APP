@@ -2,7 +2,6 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { notFound, redirect } from "next/navigation";
 import TeamWorkspaceClient from "./TeamWorkspaceClient";
-import type { GeniusTypeKey } from "@/lib/geniusTypes";
 
 export default async function TeamPage({ params }: { params: Promise<{ teamId: string }> }) {
   const session = await auth();
@@ -12,7 +11,7 @@ export default async function TeamPage({ params }: { params: Promise<{ teamId: s
 
   const myProfile = await prisma.profile.findUnique({
     where: { userId: session.user.id },
-    select: { id: true, displayName: true, avatarUrl: true, geniusType: true },
+    select: { id: true, displayName: true, avatarUrl: true },
   });
   if (!myProfile) redirect("/onboarding");
 
@@ -28,7 +27,7 @@ export default async function TeamPage({ params }: { params: Promise<{ teamId: s
         members: {
           include: {
             profile: {
-              select: { id: true, userId: true, displayName: true, avatarUrl: true, geniusType: true, handle: true },
+              select: { id: true, userId: true, displayName: true, avatarUrl: true, handle: true },
             },
           },
         },
@@ -73,9 +72,7 @@ export default async function TeamPage({ params }: { params: Promise<{ teamId: s
         members: team.members.map((m) => ({
           id: m.id,
           role: m.role,
-          profile: m.profile
-            ? { ...m.profile, geniusType: m.profile.geniusType as GeniusTypeKey | null }
-            : null,
+          profile: m.profile,
         })),
       }}
       applications={applications.map((a) => ({
@@ -91,7 +88,6 @@ export default async function TeamPage({ params }: { params: Promise<{ teamId: s
       }))}
       msgCount={msgCount}
       myProfileId={myProfile.id}
-      myGeniusType={myProfile.geniusType as GeniusTypeKey | null}
       myUserId={session.user.id}
     />
   );

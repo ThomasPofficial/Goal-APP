@@ -4,9 +4,6 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useSocket } from "@/lib/socket";
 import Avatar from "@/components/ui/Avatar";
-import GeniusTypeBadge from "@/components/ui/GeniusTypeBadge";
-import type { GeniusTypeKey } from "@/lib/geniusTypes";
-import { GENIUS_TYPES } from "@/lib/geniusTypes";
 import { Send, Plus, X, Search, Pencil, Check } from "lucide-react";
 
 interface Participant {
@@ -16,7 +13,6 @@ interface Participant {
     id: string;
     displayName: string | null;
     avatarUrl: string | null;
-    geniusType: GeniusTypeKey | null;
     handle: string | null;
   } | null;
 }
@@ -41,19 +37,11 @@ interface Message {
   sender?: { name: string | null; image: string | null };
 }
 
-interface MyProfile {
-  id: string;
-  displayName: string | null;
-  avatarUrl: string | null;
-  geniusType: GeniusTypeKey | null;
-}
-
 interface PeerResult {
   id: string;
   userId: string;
   displayName: string;
   avatarUrl: string | null;
-  geniusType: string | null;
   handle: string | null;
 }
 
@@ -61,7 +49,6 @@ interface Props {
   conversations: ConvSummary[];
   myUserId: string;
   myProfileId: string;
-  myProfile: MyProfile;
   initialOpenId?: string | null;
   canSearchAnyone: boolean;
 }
@@ -89,9 +76,9 @@ function convDisplayName(conv: ConvSummary, myUserId: string): string {
 function convAvatar(conv: ConvSummary, myUserId: string) {
   if (conv.type === "DIRECT") {
     const other = conv.participants.find((p) => p.userId !== myUserId);
-    return { src: other?.profile?.avatarUrl, displayName: other?.profile?.displayName, geniusType: other?.profile?.geniusType };
+    return { src: other?.profile?.avatarUrl, displayName: other?.profile?.displayName };
   }
-  return { src: null, displayName: conv.name ?? "G", geniusType: null as GeniusTypeKey | null };
+  return { src: null, displayName: conv.name ?? "G" };
 }
 
 // ── New Message Modal ─────────────────────────────────────────────────────────
@@ -204,12 +191,11 @@ function NewMessageModal({ myUserId, canSearchAnyone, onClose, onOpen }: {
                   onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "var(--surface2)"; }}
                   onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}
                 >
-                  <Avatar src={peer.avatarUrl} displayName={peer.displayName} geniusType={peer.geniusType as GeniusTypeKey | null} size={36} />
+                  <Avatar src={peer.avatarUrl} displayName={peer.displayName} size={36} />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate" style={{ color: "var(--text)", fontFamily: "var(--font-display, sans-serif)" }}>{peer.displayName}</p>
                     {peer.handle && <p className="text-xs truncate" style={{ color: "var(--muted)" }}>@{peer.handle}</p>}
                   </div>
-                  {peer.geniusType && <GeniusTypeBadge geniusType={peer.geniusType as GeniusTypeKey} size="sm" />}
                 </button>
               ))}
             </>
@@ -248,7 +234,7 @@ function NewMessageModal({ myUserId, canSearchAnyone, onClose, onOpen }: {
 
 // ── Main Component ────────────────────────────────────────────────────────────
 
-export default function MessagesClient({ conversations: initialConvs, myUserId, myProfileId, myProfile, initialOpenId, canSearchAnyone }: Props) {
+export default function MessagesClient({ conversations: initialConvs, myUserId, myProfileId, initialOpenId, canSearchAnyone }: Props) {
   const socket = useSocket();
   const router = useRouter();
   const [conversations, setConversations] = useState<ConvSummary[]>(initialConvs);
@@ -355,8 +341,6 @@ export default function MessagesClient({ conversations: initialConvs, myUserId, 
     }
   };
 
-  const myGT = myProfile.geniusType ? GENIUS_TYPES[myProfile.geniusType] : null;
-
   const sections = [
     { label: "Direct", items: conversations.filter((c) => c.type === "DIRECT") },
     { label: "Group", items: conversations.filter((c) => c.type === "GROUP") },
@@ -432,7 +416,7 @@ export default function MessagesClient({ conversations: initialConvs, myUserId, 
                           paddingRight: "12px",
                         }}
                       >
-                        <Avatar src={av.src} displayName={av.displayName} geniusType={av.geniusType} size={34} />
+                        <Avatar src={av.src} displayName={av.displayName} size={34} />
                         <div className="flex-1 min-w-0">
                           <p className="truncate" style={{ fontFamily: "var(--font-serif)", fontSize: 16, fontWeight: 600, color: isActive ? "var(--text)" : "var(--text2)" }}>{name}</p>
                           {conv.lastMessage && (
@@ -460,7 +444,7 @@ export default function MessagesClient({ conversations: initialConvs, myUserId, 
               >
                 <span style={{ fontSize: 18 }}>←</span>
               </button>
-              {(() => { const av = convAvatar(activeConv, myUserId); return <Avatar src={av.src} displayName={av.displayName} geniusType={av.geniusType} size={30} />; })()}
+              {(() => { const av = convAvatar(activeConv, myUserId); return <Avatar src={av.src} displayName={av.displayName} size={30} />; })()}
               <div className="flex-1 min-w-0">
                 {renaming ? (
                   <div className="flex flex-col gap-1">
@@ -502,10 +486,6 @@ export default function MessagesClient({ conversations: initialConvs, myUserId, 
                     )}
                   </div>
                 )}
-                {activeConv.type === "DIRECT" && (() => {
-                  const other = activeConv.participants.find((p) => p.userId !== myUserId);
-                  return other?.profile?.geniusType ? <GeniusTypeBadge geniusType={other.profile.geniusType} size="sm" /> : null;
-                })()}
               </div>
             </div>
 

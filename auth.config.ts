@@ -23,7 +23,6 @@ export const authConfig: NextAuthConfig = {
     },
     async session({ session, token }) {
       session.user.id = token.id as string;
-      session.user.geniusType = (token.geniusType as string | null) ?? null;
       session.user.onboardingComplete = (token.onboardingComplete as boolean) ?? false;
       return session;
     },

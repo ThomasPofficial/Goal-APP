@@ -49,7 +49,6 @@ export async function GET(req: NextRequest) {
     headline: p.headline,
     avatarUrl: p.avatarUrl,
     strengthSummary: p.strengthSummary,
-    geniusType: p.geniusType,
     selfTraits: p.traitLinks.map((l) => ({
       name: l.trait.name,
       category: l.trait.category,

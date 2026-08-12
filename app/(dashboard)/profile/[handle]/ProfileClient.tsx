@@ -4,8 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import Avatar from "@/components/ui/Avatar";
-import GeniusTypeBadge from "@/components/ui/GeniusTypeBadge";
-import { GENIUS_TYPES, type GeniusTypeKey } from "@/lib/geniusTypes";
 import AnimalArchetypeCard from "@/components/AnimalArchetypeCard";
 import type { AnimalKey } from "@/lib/animalArchetypes";
 import DonationWidget from "@/components/donations/DonationWidget";
@@ -23,8 +21,6 @@ interface ProfileData {
   displayName: string | null;
   avatarUrl: string | null;
   handle: string | null;
-  geniusType: GeniusTypeKey | null;
-  secondaryGeniusType: GeniusTypeKey | null;
   currentFocus: string | null;
   interests: string | null;
   grade: number | null;
@@ -46,7 +42,7 @@ interface ProfileData {
 interface Props {
   profile: ProfileData;
   isOwn: boolean;
-  myProfile: (Omit<ProfileData, "secondaryGeniusType"> & { geniusType: GeniusTypeKey | null }) | null;
+  myProfile: ProfileData | null;
   ownReviews?: OwnReview[];
 }
 
@@ -103,8 +99,6 @@ export default function ProfileClient({ profile, isOwn, ownReviews = [] }: Props
     }
   };
 
-  const gt = profile.geniusType ? GENIUS_TYPES[profile.geniusType] : null;
-
   const saveProfile = async () => {
     setSaving(true);
     setSaveError(null);
@@ -142,12 +136,12 @@ export default function ProfileClient({ profile, isOwn, ownReviews = [] }: Props
       <div
         className="rounded-2xl p-8 mb-6"
         style={{
-          background: gt ? `linear-gradient(135deg, ${gt.color}22, ${gt.color}06)` : "#16161a",
-          border: `1px solid ${gt?.color ?? "#2a2a33"}30`,
+          background: "#16161a",
+          border: "1px solid #2a2a3330",
         }}
       >
         <div className="flex items-start gap-5">
-          <Avatar src={profile.avatarUrl} displayName={profile.displayName} geniusType={profile.geniusType} size={80} />
+          <Avatar src={profile.avatarUrl} displayName={profile.displayName} size={80} />
           <div className="flex-1 min-w-0">
             <h1 className="text-2xl font-bold leading-snug text-[#e8e8ec]">
               {profile.displayName ?? "Anonymous"}
@@ -161,10 +155,6 @@ export default function ProfileClient({ profile, isOwn, ownReviews = [] }: Props
               </p>
             )}
             <div className="flex items-center gap-2 mt-2 flex-wrap">
-              {profile.geniusType && <GeniusTypeBadge geniusType={profile.geniusType} size="md" />}
-              {profile.secondaryGeniusType && (
-                <GeniusTypeBadge geniusType={profile.secondaryGeniusType} size="sm" showEmoji={false} />
-              )}
               {profile.isAvailableToMentor && (
                 <span
                   className="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded-full"
@@ -246,9 +236,9 @@ export default function ProfileClient({ profile, isOwn, ownReviews = [] }: Props
                 key={tag}
                 className="px-3 py-1 rounded-full text-sm"
                 style={{
-                  backgroundColor: `${gt?.color ?? "#4a80f0"}18`,
-                  color: gt?.color ?? "#4a80f0",
-                  border: `1px solid ${gt?.color ?? "#4a80f0"}30`,
+                  backgroundColor: "#4a80f018",
+                  color: "#4a80f0",
+                  border: "1px solid #4a80f030",
                 }}
               >
                 {tag}

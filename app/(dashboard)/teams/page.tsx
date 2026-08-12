@@ -2,7 +2,6 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import type { GeniusTypeKey } from "@/lib/geniusTypes";
 import Avatar from "@/components/ui/Avatar";
 import { cn } from "@/lib/utils";
 import { isWalledStudent } from "@/lib/accountGate";
@@ -26,7 +25,7 @@ export default async function TeamsPage() {
           org: { select: { id: true, name: true } },
           members: {
             include: {
-              profile: { select: { id: true, displayName: true, avatarUrl: true, geniusType: true } },
+              profile: { select: { id: true, displayName: true, avatarUrl: true } },
             },
             take: 5,
           },
@@ -94,7 +93,6 @@ export default async function TeamsPage() {
                       key={m.id}
                       src={m.profile?.avatarUrl}
                       displayName={m.profile?.displayName}
-                      geniusType={m.profile?.geniusType as GeniusTypeKey | null}
                       size={32}
                     />
                   ))}

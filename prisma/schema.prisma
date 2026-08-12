@@ -104,8 +104,6 @@ model Profile {
   bio                 String?
   strengthSummary     String?
   avatarUrl           String?
-  geniusType          GeniusType?
-  secondaryGeniusType GeniusType?
   dateOfBirth         DateTime?
   handle              String?     @unique
   currentFocus        String?
@@ -168,13 +166,6 @@ model FacultyTier {
   profiles        Profile[]
 
   @@index([schoolId])
-}
-
-enum GeniusType {
-  DYNAMO
-  BLAZE
-  TEMPO
-  STEEL
 }
 
 // ─────────────────────────────────────────────
@@ -646,7 +637,6 @@ model OrgProject {
   fullDescription      String?
   openSpots            Int       @default(1)
   requiredSkills       String    @default("[]")
-  preferredGeniusTypes String    @default("[]")
   roles                String    @default("[]")
   hoursPerWeek         String?
   duration             String?

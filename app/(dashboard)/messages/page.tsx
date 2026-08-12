@@ -2,7 +2,6 @@ import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import MessagesClient from './MessagesClient';
-import type { GeniusTypeKey } from '@/lib/geniusTypes';
 import { isWalledStudent } from '@/lib/accountGate';
 import { isMentorUser } from '@/lib/mentorship';
 
@@ -18,11 +17,11 @@ export default async function MessagesPage({
   const [myProfile, myOrg, isMentor, dbUser] = await Promise.all([
     prisma.profile.findUnique({
       where: { userId: session.user.id },
-      select: { id: true, displayName: true, avatarUrl: true, geniusType: true },
+      select: { id: true, displayName: true, avatarUrl: true },
     }),
     prisma.org.findFirst({
       where: { createdById: session.user.id },
-      select: { id: true, name: true },
+      select: { id: true },
     }),
     isMentorUser(session.user.id),
     prisma.user.findUnique({ where: { id: session.user.id }, select: { role: true } }),
@@ -87,7 +86,7 @@ export default async function MessagesPage({
         include: {
           user: {
             include: {
-              profile: { select: { id: true, displayName: true, avatarUrl: true, geniusType: true, handle: true } },
+              profile: { select: { id: true, displayName: true, avatarUrl: true, handle: true } },
             },
           },
         },
@@ -112,24 +111,17 @@ export default async function MessagesPage({
     participants: c.participants.map((p) => ({
       id: p.id,
       userId: p.userId,
-      profile: p.user.profile
-        ? { ...p.user.profile, geniusType: p.user.profile.geniusType as GeniusTypeKey | null }
-        : null,
+      profile: p.user.profile ?? null,
     })),
   }));
 
   const initialOpenId = params.open ?? serialized[0]?.id ?? null;
 
-  const resolvedProfile = myProfile
-    ? { id: myProfile.id, displayName: myProfile.displayName, avatarUrl: myProfile.avatarUrl, geniusType: myProfile.geniusType as GeniusTypeKey | null }
-    : { id: "", displayName: myOrg?.name ?? session.user.name ?? "Org", avatarUrl: null, geniusType: null as GeniusTypeKey | null };
-
   return (
     <MessagesClient
       conversations={serialized}
       myUserId={session.user.id}
-      myProfileId={resolvedProfile.id}
-      myProfile={resolvedProfile}
+      myProfileId={myProfile?.id ?? ""}
       initialOpenId={initialOpenId}
       canSearchAnyone={dbUser?.role !== "SCHOOL" && dbUser?.role !== "ADMIN"}
     />

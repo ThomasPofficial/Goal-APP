@@ -430,13 +430,6 @@ a, button {
 }
 
 /* ─────────────────────────────────────────
-   GENIUS BADGE
-───────────────────────────────────────── */
-
-.genius-badge { transition: box-shadow 150ms, transform 150ms; }
-.genius-badge:hover { transform: scale(1.04); }
-
-/* ─────────────────────────────────────────
    SIDEBAR COLLAPSED STATE
 ───────────────────────────────────────── */
 

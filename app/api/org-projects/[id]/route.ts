@@ -42,7 +42,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
             include: {
               members: {
                 include: {
-                  profile: { select: { id: true, displayName: true, avatarUrl: true, geniusType: true } },
+                  profile: { select: { id: true, displayName: true, avatarUrl: true } },
                 },
               },
             },

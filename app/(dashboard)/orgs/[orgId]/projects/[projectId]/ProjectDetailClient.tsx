@@ -5,8 +5,6 @@ import Link from "next/link";
 import { format } from "date-fns";
 import { ArrowLeft, Clock, ExternalLink } from "lucide-react";
 import ApplyModal from "@/components/ui/ApplyModal";
-import GeniusTypeBadge from "@/components/ui/GeniusTypeBadge";
-import type { GeniusTypeKey } from "@/lib/geniusTypes";
 import { cn } from "@/lib/utils";
 
 interface ProjectDetailClientProps {
@@ -19,7 +17,6 @@ interface ProjectDetailClientProps {
     fullDescription: string | null;
     openSpots: number;
     requiredSkills: string;
-    preferredGeniusTypes: string;
     hoursPerWeek: string | null;
     duration: string | null;
     deadline: string | null;
@@ -42,7 +39,6 @@ export default function ProjectDetailClient({
   );
 
   const requiredSkills: string[] = JSON.parse(project.requiredSkills || "[]");
-  const preferredTypes: string[] = JSON.parse(project.preferredGeniusTypes || "[]");
   const accentColor = project.org.accentColor ?? "#1060d8";
 
   return (
@@ -91,14 +87,6 @@ export default function ProjectDetailClient({
                   >
                     {s}
                   </span>
-                ))}
-              </div>
-            )}
-            {preferredTypes.length > 0 && (
-              <div className="flex items-center gap-1.5 mt-2">
-                <span className="text-[11px]" style={{ color: "#5a7898" }}>Preferred:</span>
-                {preferredTypes.map((t) => (
-                  <GeniusTypeBadge key={t} type={t as GeniusTypeKey} size="sm" />
                 ))}
               </div>
             )}

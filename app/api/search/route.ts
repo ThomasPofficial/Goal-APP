@@ -3,50 +3,18 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@prisma/client";
 
-// Genius type compatibility scores
-// 2 = ideal complement, 1 = good pairing, 0 = same type (not penalised, just not a complement bonus)
-const COMPATIBILITY: Record<string, Record<string, number>> = {
-  DYNAMO: { STEEL: 2, TEMPO: 1, BLAZE: 0, DYNAMO: 0 },
-  BLAZE:  { STEEL: 2, DYNAMO: 1, TEMPO: 0, BLAZE: 0 },
-  TEMPO:  { DYNAMO: 2, STEEL: 1, BLAZE: 0, TEMPO: 0 },
-  STEEL:  { BLAZE: 2, TEMPO: 2, DYNAMO: 1, STEEL: 0 },
-};
-
-function geniusCompatibility(
-  myType: string | null | undefined,
-  theirType: string | null | undefined
-): number {
-  if (!myType || !theirType) return 0;
-  return COMPATIBILITY[myType]?.[theirType] ?? 0;
-}
-
 function buildMatchReason({
-  geniusComp,
   traitMatchCount,
   searchedTraitsCount,
   completenessScore,
   activeProjects,
-  myGeniusType,
-  theirGeniusType,
 }: {
-  geniusComp: number;
   traitMatchCount: number;
   searchedTraitsCount: number;
   completenessScore: number;
   activeProjects: number;
-  myGeniusType: string | null | undefined;
-  theirGeniusType: string | null | undefined;
 }): string {
   const parts: string[] = [];
-
-  const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
-  if (myGeniusType && theirGeniusType) {
-    if (geniusComp === 2) {
-      parts.push(`${cap(theirGeniusType)} pairs ideally with your ${cap(myGeniusType)} type`);
-    } else if (geniusComp === 1) {
-      parts.push(`${cap(theirGeniusType)} pairs well with your ${cap(myGeniusType)} type`);
-    }
-  }
 
   if (searchedTraitsCount > 0 && traitMatchCount > 0) {
     parts.push(
@@ -77,7 +45,6 @@ export async function GET(req: NextRequest) {
   const url = new URL(req.url);
 
   const q = url.searchParams.get("q") ?? "";
-  const geniusTypeFilter = url.searchParams.get("geniusType") ?? "";
   const traitsParam = url.searchParams.get("traits") ?? "";
   const parsedMinTraits = parseInt(url.searchParams.get("minTraits") ?? "1", 10);
   const minTraits = Math.max(1, isNaN(parsedMinTraits) ? 1 : parsedMinTraits);
@@ -87,13 +54,6 @@ export async function GET(req: NextRequest) {
   const searchedSlugs = traitsParam
     ? traitsParam.split(",").map((s) => s.trim()).filter(Boolean)
     : [];
-
-  // Fetch the current user's genius type for compatibility scoring
-  const myProfile = await prisma.profile.findUnique({
-    where: { userId },
-    select: { geniusType: true },
-  });
-  const myGeniusType = myProfile?.geniusType ?? null;
 
   // Build WHERE clause — require at least a display name (so empty signups don't appear)
   const where: Prisma.ProfileWhereInput = {
@@ -113,11 +73,6 @@ export async function GET(req: NextRequest) {
         ],
       },
     ];
-  }
-
-  // Genius type binary filter
-  if (geniusTypeFilter) {
-    where.geniusType = geniusTypeFilter as never;
   }
 
   // DOB range filter — validate dates before using them
@@ -185,22 +140,16 @@ export async function GET(req: NextRequest) {
       (p.headline ? 1 : 0) +
       (p.avatarUrl ? 1 : 0);
 
-    const geniusComp = geniusCompatibility(myGeniusType, p.geniusType);
-
     const score =
-      geniusComp * 3 +
       traitMatchCount * 2 +
       completenessScore +
       Math.min(activeProjects, 3);
 
     const matchReason = buildMatchReason({
-      geniusComp,
       traitMatchCount,
       searchedTraitsCount: searchedSlugs.length,
       completenessScore,
       activeProjects,
-      myGeniusType,
-      theirGeniusType: p.geniusType,
     });
 
     return {
@@ -208,7 +157,6 @@ export async function GET(req: NextRequest) {
       displayName: p.displayName,
       headline: p.headline,
       avatarUrl: p.avatarUrl,
-      geniusType: p.geniusType,
       dateOfBirth: p.dateOfBirth ? p.dateOfBirth.toISOString().split("T")[0] : null,
       selfTraits: p.traitLinks.map((l) => ({
         name: l.trait.name,

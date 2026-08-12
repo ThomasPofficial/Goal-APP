@@ -10,7 +10,6 @@ export async function GET(req: Request) {
 
   const { searchParams } = new URL(req.url);
   const q = searchParams.get("q")?.toLowerCase() ?? "";
-  const geniusTypes = searchParams.getAll("geniusType");
   const grades = searchParams.getAll("grade").map(Number).filter(Boolean);
   const interests = searchParams.getAll("interest");
 
@@ -18,7 +17,6 @@ export async function GET(req: Request) {
     take: 500,
     where: {
       NOT: { userId: session.user.id },
-      ...(geniusTypes.length > 0 ? { geniusType: { in: geniusTypes as never[] } } : {}),
       ...(grades.length > 0 ? { grade: { in: grades } } : {}),
     },
     select: {
@@ -27,8 +25,6 @@ export async function GET(req: Request) {
       displayName: true,
       handle: true,
       avatarUrl: true,
-      geniusType: true,
-      secondaryGeniusType: true,
       currentFocus: true,
       interests: true,
       grade: true,

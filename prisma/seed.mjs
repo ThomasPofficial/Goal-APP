@@ -79,7 +79,7 @@ console.log(`✅ Seeded ${TRAIT_SLUGS.length} traits`);
 
 const pw = await bcrypt.hash("password123", 10);
 
-// Alex (Dynamo)
+// Alex
 const alex = await prisma.user.upsert({
   where: { email: "demo@nivarro.io" },
   update: {},
@@ -97,7 +97,6 @@ const alexProfile = await prisma.profile.upsert({
     headline: "Builder & Systems Thinker",
     bio: "I build platforms that help ambitious people find each other and do their best work together.",
     strengthSummary: "Strong at seeing patterns across complex systems and translating vision into executable plans.",
-    geniusType: "DYNAMO",
     grade: 11,
     onboardingComplete: true,
     interests: JSON.stringify(["Startups", "AI / ML", "Systems Design", "Finance"]),
@@ -110,7 +109,7 @@ for (let i = 0; i < alexTraits.length; i++) {
   });
 }
 
-// Jordan (Blaze)
+// Jordan
 const jordan = await prisma.user.upsert({
   where: { email: "jordan@nivarro.io" },
   update: {},
@@ -128,7 +127,6 @@ const jordanProfile = await prisma.profile.upsert({
     headline: "Team Builder & People Leader",
     bio: "The best products are built by teams who genuinely understand each other.",
     strengthSummary: "Exceptional at aligning teams around a shared vision and keeping morale high.",
-    geniusType: "BLAZE",
     grade: 12,
     onboardingComplete: true,
     interests: JSON.stringify(["Leadership", "Psychology", "Film & Media", "Community Building"]),
@@ -141,7 +139,7 @@ for (let i = 0; i < jordanTraits.length; i++) {
   });
 }
 
-// Sam (Tempo)
+// Sam
 const sam = await prisma.user.upsert({
   where: { email: "sam@nivarro.io" },
   update: {},
@@ -159,7 +157,6 @@ const samProfile = await prisma.profile.upsert({
     headline: "Operations & Execution Lead",
     bio: "I turn ambitious plans into running systems.",
     strengthSummary: "Unmatched at building operational backbone. Reliable, thorough, the reason things don't fall apart.",
-    geniusType: "TEMPO",
     grade: 10,
     onboardingComplete: true,
     interests: JSON.stringify(["Engineering", "Research", "Productivity", "Science"]),
@@ -200,7 +197,7 @@ if (!existingNote) {
   await prisma.note.createMany({
     data: [
       { authorId: alex.id, title: "Product Vision", content: "The platform should feel like walking into a research library — quiet, focused, full of people doing serious work.", pinned: true },
-      { authorId: alex.id, title: "Team composition insight", content: "Best teams have at least one Dynamo, one Blaze, and one Tempo/Steel. The magic happens at those intersections." },
+      { authorId: alex.id, title: "Team composition insight", content: "Best teams mix complementary traits — vision, drive, and execution. The magic happens at those intersections." },
       { authorId: alex.id, content: "Peer endorsements are the key differentiator. They turn self-reported traits into verified strengths over time." },
     ],
   });
@@ -209,6 +206,6 @@ if (!existingNote) {
 await prisma.$disconnect();
 console.log("✅ Seed complete\n");
 console.log("Demo accounts:");
-console.log("  demo@nivarro.io    / password123  ⚡ Dynamo");
-console.log("  jordan@nivarro.io  / password123  🔥 Blaze");
-console.log("  sam@nivarro.io     / password123  🎵 Tempo");
+console.log("  demo@nivarro.io    / password123");
+console.log("  jordan@nivarro.io  / password123");
+console.log("  sam@nivarro.io     / password123");

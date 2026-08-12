@@ -2,7 +2,6 @@ import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import SidebarShell from "@/components/layout/SidebarShell";
-import type { GeniusType } from "@/data/traits";
 import { computeEffectivePermissions } from "@/lib/facultyPermissions";
 
 export default async function DashboardLayout({
@@ -25,7 +24,6 @@ export default async function DashboardLayout({
       profile: {
         select: {
           displayName: true,
-          geniusType: true,
           schoolId: true,
           staffPermissionOverrides: true,
           staffTier: { select: { permissions: true } },
@@ -78,7 +76,6 @@ export default async function DashboardLayout({
       <SidebarShell
         userName={profile?.displayName ?? session.user.name}
         userEmail={session.user.email}
-        geniusType={(profile?.geniusType as GeniusType | null) ?? null}
         myOrgId={myOrg?.id ?? null}
         myOrgName={myOrg?.name ?? null}
         isOrg={isOrg}

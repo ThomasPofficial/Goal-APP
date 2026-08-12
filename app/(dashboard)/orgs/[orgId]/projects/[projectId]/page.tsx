@@ -43,7 +43,6 @@ export default async function ProjectDetailPage({
         ...project,
         shortDescription: project.shortDescription ?? null,
         fullDescription: project.fullDescription ?? null,
-        preferredGeniusTypes: project.preferredGeniusTypes ?? "[]",
         hoursPerWeek: project.hoursPerWeek ?? null,
         duration: project.duration ?? null,
         deadline: project.deadline?.toISOString() ?? null,
