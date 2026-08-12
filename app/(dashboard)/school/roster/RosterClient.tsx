@@ -8,7 +8,7 @@ interface Member {
   displayName: string;
   email: string | null;
   phone: string | null;
-  role: "STUDENT" | "ORG" | "ADMIN" | "SCHOOL";
+  role: "STUDENT" | "ORG" | "ADMIN" | "SCHOOL" | "STAFF";
   isAlumni: boolean;
   staffTitle: string | null;
   graduationYear: number | null;
