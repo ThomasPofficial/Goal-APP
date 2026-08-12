@@ -24,7 +24,7 @@ export async function POST(req: Request) {
     values, logoLetter, logoBg, logoColor, accentColor,
     // project listing
     projectTitle, projectDescription, openSpots, hoursPerWeek, duration,
-    format, requiredSkills, preferredGeniusTypes, gradeEligibility,
+    format, requiredSkills, gradeEligibility,
     applicationMode, appMaterials, autoAccept, stipend, impactStatement,
   } = body;
 
@@ -71,7 +71,6 @@ export async function POST(req: Request) {
         duration,
         format,
         requiredSkills: requiredSkills ?? "[]",
-        preferredGeniusTypes: preferredGeniusTypes ?? "[]",
         gradeEligibility: gradeEligibility ?? "[]",
         applicationMode: applicationMode ?? "TEAM",
         appMaterials: appMaterials ?? "[]",

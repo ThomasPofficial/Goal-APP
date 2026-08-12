@@ -5,8 +5,6 @@ import Link from "next/link";
 import { format, differenceInDays, formatDistanceToNow } from "date-fns";
 import { ExternalLink, Save, Users, MapPin, CheckCircle2, XCircle, Clock, Sparkles, Star, Loader2, Plus, X } from "lucide-react";
 import Avatar from "@/components/ui/Avatar";
-import GeniusTypeBadge from "@/components/ui/GeniusTypeBadge";
-import type { GeniusTypeKey } from "@/lib/geniusTypes";
 import { cn } from "@/lib/utils";
 import { Field, inputStyle, colorPickerStyle, CATEGORIES, type OrgCategory } from "@/components/org/OrgFormFields";
 
@@ -50,7 +48,7 @@ interface OrgDetail {
     members: {
       id: string;
       role: string;
-      profile: { id: string; displayName: string; avatarUrl: string | null; geniusType: GeniusTypeKey | null; userId: string } | null;
+      profile: { id: string; displayName: string; avatarUrl: string | null; userId: string } | null;
     }[];
   }[];
 }
@@ -62,7 +60,6 @@ interface OrgProjectSummary {
   shortDescription: string | null;
   openSpots: number;
   requiredSkills: string;
-  preferredGeniusTypes: string;
   hoursPerWeek: string | null;
   duration: string | null;
   deadline: string | null;
@@ -88,7 +85,6 @@ interface AdminApplication {
         id: string;
         displayName: string;
         avatarUrl: string | null;
-        geniusType: GeniusTypeKey | null;
         handle: string | null;
         headline: string | null;
         bio: string | null;
@@ -737,7 +733,6 @@ export default function OrgDetailClient({
               <div className="space-y-2">
                 {openProjects.map((proj) => {
                   const skills: string[] = JSON.parse(proj.requiredSkills || "[]");
-                  const preferred: string[] = JSON.parse(proj.preferredGeniusTypes || "[]");
                   return (
                     <Link
                       key={proj.id}
@@ -770,11 +765,6 @@ export default function OrgDetailClient({
                               {skills.slice(0, 4).map((s) => (
                                 <span key={s} className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: "var(--surface2)", border: "1px solid var(--border)", color: "var(--text2)" }}>{s}</span>
                               ))}
-                            </div>
-                          )}
-                          {preferred.length > 0 && (
-                            <div className="flex items-center gap-1 mt-1.5">
-                              {preferred.map((t) => <GeniusTypeBadge key={t} type={t as GeniusTypeKey} size="sm" />)}
                             </div>
                           )}
                         </div>
@@ -962,7 +952,7 @@ function WriteReviewModal({
           </div>
         ) : members.length === 1 ? (
           <div className="flex items-center gap-2 mb-4 px-3 py-2 rounded-lg" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
-            <Avatar src={members[0].profile!.avatarUrl} name={members[0].profile!.displayName} geniusType={members[0].profile!.geniusType} size={24} />
+            <Avatar src={members[0].profile!.avatarUrl} name={members[0].profile!.displayName} size={24} />
             <span className="text-sm" style={{ color: "var(--text)" }}>{members[0].profile!.displayName}</span>
           </div>
         ) : null}
@@ -1231,7 +1221,7 @@ function ApplicationCard({
           return (
             <div key={m.id} className="rounded-lg p-3" style={{ background: "var(--n-bg2)", border: "1px solid var(--border)" }}>
               <div className="flex items-center gap-2 flex-wrap">
-                <Avatar src={p.avatarUrl} name={p.displayName} geniusType={p.geniusType} size={26} />
+                <Avatar src={p.avatarUrl} name={p.displayName} size={26} />
                 {p.handle ? (
                   <Link href={`/peers/${p.handle}`} className="text-sm font-medium hover:underline" style={{ color: "var(--text)" }}>
                     {p.displayName}
@@ -1239,7 +1229,6 @@ function ApplicationCard({
                 ) : (
                   <span className="text-sm font-medium" style={{ color: "var(--text)" }}>{p.displayName}</span>
                 )}
-                {p.geniusType && <GeniusTypeBadge type={p.geniusType} size="sm" />}
               </div>
               {p.headline && (
                 <p className="text-xs mt-1.5 ml-8" style={{ color: "var(--text2)" }}>{p.headline}</p>

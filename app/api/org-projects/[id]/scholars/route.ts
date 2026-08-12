@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
-import type { Prisma, GeniusType } from "@prisma/client";
+import type { Prisma } from "@prisma/client";
 
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
@@ -10,13 +10,11 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
   await params;
 
   const { searchParams } = new URL(req.url);
-  const geniusType = searchParams.get("geniusType");
   const traits = searchParams.getAll("trait");
   const q = searchParams.get("q") ?? "";
 
   const where: Prisma.ProfileWhereInput = { onboardingComplete: true };
 
-  if (geniusType) where.geniusType = geniusType as GeniusType;
   if (q) {
     where.OR = [
       { displayName: { contains: q, mode: "insensitive" } },
@@ -35,7 +33,6 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       displayName: true,
       headline: true,
       avatarUrl: true,
-      geniusType: true,
       handle: true,
       traitLinks: {
         take: 3,

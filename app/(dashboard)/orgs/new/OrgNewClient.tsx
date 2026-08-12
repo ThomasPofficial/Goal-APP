@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { ChevronLeft, ChevronRight, Loader2, Plus, X } from "lucide-react";
 import { CATEGORIES, type OrgCategory, Field, inputStyle, colorPickerStyle } from "@/components/org/OrgFormFields";
 
-const GENIUS_TYPES = ["DYNAMO", "BLAZE", "TEMPO", "STEEL"] as const;
 const GRADES = [9, 10, 11, 12] as const;
 const APP_MATERIALS = ["Resume", "Cover Letter", "Portfolio", "Writing Sample", "Video Introduction", "GitHub Profile", "References"];
 const FORMATS = ["Remote", "In-Person", "Hybrid"];
@@ -50,7 +49,6 @@ export default function OrgNewClient() {
   const [format, setFormat] = useState("Remote");
   const [requiredSkills, setRequiredSkills] = useState<string[]>([]);
   const [newSkill, setNewSkill] = useState("");
-  const [preferredGeniusTypes, setPreferredGeniusTypes] = useState<string[]>([]);
   const [gradeEligibility, setGradeEligibility] = useState<number[]>([]);
   const [applicationMode, setApplicationMode] = useState<"TEAM" | "SOLO">("TEAM");
   const [appMaterials, setAppMaterials] = useState<string[]>([]);
@@ -115,7 +113,6 @@ export default function OrgNewClient() {
           duration: duration.trim() || undefined,
           format,
           requiredSkills: JSON.stringify(requiredSkills),
-          preferredGeniusTypes: JSON.stringify(preferredGeniusTypes),
           gradeEligibility: JSON.stringify(gradeEligibility),
           applicationMode,
           appMaterials: JSON.stringify(appMaterials),
@@ -328,16 +325,6 @@ export default function OrgNewClient() {
                 <button onClick={() => { if (newSkill.trim()) { setRequiredSkills([...requiredSkills, newSkill.trim()]); setNewSkill(""); } }} className="btn-ghost" style={{ flexShrink: 0 }}>
                   <Plus size={13} />
                 </button>
-              </div>
-            </Field>
-
-            <Field label="Preferred Genius Types">
-              <div className="flex gap-2 flex-wrap mt-1">
-                {GENIUS_TYPES.map((g) => (
-                  <button key={g} onClick={() => toggleArr(preferredGeniusTypes, g, setPreferredGeniusTypes)} className="text-xs px-2.5 py-1 font-medium transition-all" style={{ border: `1px solid ${preferredGeniusTypes.includes(g) ? "var(--amber)" : "var(--border-md)"}`, background: preferredGeniusTypes.includes(g) ? "rgba(232,137,58,0.1)" : "transparent", color: preferredGeniusTypes.includes(g) ? "var(--amber)" : "var(--text2)", cursor: "pointer" }}>
-                    {g}
-                  </button>
-                ))}
               </div>
             </Field>
 

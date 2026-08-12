@@ -78,7 +78,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
   const reviews = await prisma.orgReview.findMany({
     where,
     include: {
-      profile: { select: { id: true, displayName: true, handle: true, avatarUrl: true, geniusType: true } },
+      profile: { select: { id: true, displayName: true, handle: true, avatarUrl: true } },
       orgProject: { select: { title: true } },
     },
     orderBy: { createdAt: "desc" },

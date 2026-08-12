@@ -2,7 +2,6 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import OrgDetailClient from "./OrgDetailClient";
-import type { GeniusTypeKey } from "@/lib/geniusTypes";
 
 export default async function OrgDetailPage({ params }: { params: Promise<{ orgId: string }> }) {
   const session = await auth();
@@ -16,7 +15,7 @@ export default async function OrgDetailPage({ params }: { params: Promise<{ orgI
           include: {
             members: {
               include: {
-                profile: { select: { id: true, displayName: true, avatarUrl: true, geniusType: true, userId: true } },
+                profile: { select: { id: true, displayName: true, avatarUrl: true, userId: true } },
               },
             },
           },
@@ -33,7 +32,6 @@ export default async function OrgDetailPage({ params }: { params: Promise<{ orgI
         shortDescription: true,
         openSpots: true,
         requiredSkills: true,
-        preferredGeniusTypes: true,
         hoursPerWeek: true,
         duration: true,
         deadline: true,
@@ -77,7 +75,7 @@ export default async function OrgDetailPage({ params }: { params: Promise<{ orgI
                   include: {
                     profile: {
                       select: {
-                        id: true, displayName: true, avatarUrl: true, geniusType: true, handle: true,
+                        id: true, displayName: true, avatarUrl: true, handle: true,
                         headline: true, bio: true, strengthSummary: true,
                         orgReviews: {
                           select: {
@@ -124,16 +122,13 @@ export default async function OrgDetailPage({ params }: { params: Promise<{ orgI
           members: t.members.map((m) => ({
             ...m,
             joinedAt: m.joinedAt.toISOString(),
-            profile: m.profile
-              ? { ...m.profile, geniusType: m.profile.geniusType as GeniusTypeKey | null }
-              : null,
+            profile: m.profile ? { ...m.profile } : null,
           })),
         })),
       }}
       projects={projects.map((p) => ({
         ...p,
         shortDescription: p.shortDescription ?? null,
-        preferredGeniusTypes: p.preferredGeniusTypes ?? "[]",
         hoursPerWeek: p.hoursPerWeek ?? null,
         duration: p.duration ?? null,
         deadline: p.deadline?.toISOString() ?? null,
@@ -156,9 +151,7 @@ export default async function OrgDetailPage({ params }: { params: Promise<{ orgI
           members: a.team.members.map((m) => ({
             id: m.id,
             role: m.role,
-            profile: m.profile
-              ? { ...m.profile, geniusType: m.profile.geniusType as GeniusTypeKey | null }
-              : null,
+            profile: m.profile ? { ...m.profile } : null,
           })),
         },
       }))}
