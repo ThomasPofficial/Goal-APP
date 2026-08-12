@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { GraduationCap, Briefcase, BookOpen, CheckSquare, Square, Users as UsersIcon } from "lucide-react";
+import { GraduationCap, Briefcase, BookOpen, CheckSquare, Square, Users as UsersIcon, Search } from "lucide-react";
 import Link from "next/link";
 import RequestPartnershipModal from "@/components/partnerships/RequestPartnershipModal";
 
@@ -69,12 +69,36 @@ function SelectBox({ checked }: { checked: boolean }) {
   );
 }
 
+function SearchInput({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder: string }) {
+  return (
+    <div style={{ position: "relative", flexShrink: 0 }}>
+      <Search size={13} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "var(--n-muted)", pointerEvents: "none" }} />
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        style={{
+          padding: "6px 10px 6px 30px", fontSize: 12, background: "var(--surface2)",
+          border: "1px solid var(--border-md)", borderRadius: 0, color: "var(--text)",
+          width: 180, fontFamily: "inherit",
+        }}
+      />
+    </div>
+  );
+}
+
 export default function SchoolHubClient({ schoolName, schoolTagline, staff, alumni, mentors, students, currentUserId: _ }: Props) {
   const [alumniFilter, setAlumniFilter] = useState<"all" | "mentors">("all");
+  const [staffQuery, setStaffQuery] = useState("");
+  const [alumniQuery, setAlumniQuery] = useState("");
+  const [studentQuery, setStudentQuery] = useState("");
   const [selectMode, setSelectMode] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [showModal, setShowModal] = useState(false);
   const [banner, setBanner] = useState<string | null>(null);
+
+  const visibleStaff = staff.filter((s) => s.displayName.toLowerCase().includes(staffQuery.trim().toLowerCase()));
 
   const visibleAlumni = alumniFilter === "mentors" ? alumni.filter((a) => a.isAvailableToMentor) : alumni;
 
@@ -183,11 +207,19 @@ export default function SchoolHubClient({ schoolName, schoolTagline, staff, alum
       {/* Staff */}
       {staff.length > 0 && (
         <section style={{ marginBottom: 32 }}>
-          <p style={{ fontFamily: "var(--font-mono)", fontSize: 13, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--amber)", margin: "0 0 14px" }}>
-            School Staff
-          </p>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14, flexWrap: "wrap", gap: 8 }}>
+            <p style={{ fontFamily: "var(--font-mono)", fontSize: 13, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--amber)", margin: 0 }}>
+              School Staff
+            </p>
+            <SearchInput value={staffQuery} onChange={setStaffQuery} placeholder="Search staff…" />
+          </div>
+          {visibleStaff.length === 0 ? (
+            <div style={{ padding: "32px 24px", border: "1px solid var(--border)", background: "var(--surface)", borderRadius: 0, textAlign: "center" }}>
+              <p style={{ color: "var(--n-text2)", fontSize: 14, margin: 0 }}>No staff match your search.</p>
+            </div>
+          ) : (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 10 }}>
-            {staff.map((s) => (
+            {visibleStaff.map((s) => (
               <div key={s.userId} onClick={selectMode ? () => toggleSelected(s.userId) : undefined} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 0, padding: "16px 18px", display: "flex", gap: 12, alignItems: "flex-start", cursor: selectMode ? "pointer" : "default" }}>
                 <Avatar name={s.displayName} avatarUrl={s.avatarUrl} handle={selectMode ? null : s.handle} size={44} />
                 <div style={{ flex: 1, minWidth: 0 }}>
@@ -211,6 +243,7 @@ export default function SchoolHubClient({ schoolName, schoolTagline, staff, alum
               </div>
             ))}
           </div>
+          )}
         </section>
       )}
 
