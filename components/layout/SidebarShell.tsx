@@ -6,6 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Sidebar from "./Sidebar";
 import type { GeniusType } from "@/data/traits";
+import type { Capability } from "@/lib/facultyPermissions";
 
 interface Props {
   userName?: string | null;
@@ -16,6 +17,8 @@ interface Props {
   isOrg?: boolean;
   isNivarroAdmin?: boolean;
   isSchool?: boolean;
+  isStaff?: boolean;
+  staffCapabilities?: Capability[];
   isWalledStudent?: boolean;
   isAlumni?: boolean;
 }
@@ -43,7 +46,7 @@ const SCHOOL_BOTTOM_TABS = [
   { href: "/school/roster",       label: "Roster",       Icon: Users },
 ];
 
-export default function SidebarShell({ userName, userEmail, geniusType, myOrgId, myOrgName, isOrg, isNivarroAdmin, isSchool, isWalledStudent, isAlumni }: Props) {
+export default function SidebarShell({ userName, userEmail, geniusType, myOrgId, myOrgName, isOrg, isNivarroAdmin, isSchool, isStaff, staffCapabilities, isWalledStudent, isAlumni }: Props) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const pathname = usePathname();
@@ -160,6 +163,8 @@ export default function SidebarShell({ userName, userEmail, geniusType, myOrgId,
         isOrg={isOrg}
         isNivarroAdmin={isNivarroAdmin}
         isSchool={isSchool}
+        isStaff={isStaff}
+        staffCapabilities={staffCapabilities}
         isWalledStudent={isWalledStudent}
         isAlumni={isAlumni}
         collapsed={collapsed}

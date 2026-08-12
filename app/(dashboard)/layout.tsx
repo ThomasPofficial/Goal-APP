@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import SidebarShell from "@/components/layout/SidebarShell";
 import type { GeniusType } from "@/data/traits";
+import { computeEffectivePermissions } from "@/lib/facultyPermissions";
 
 export default async function DashboardLayout({
   children,
@@ -21,12 +22,21 @@ export default async function DashboardLayout({
     select: {
       role: true,
       isAlumni: true,
-      profile: { select: { displayName: true, geniusType: true, schoolId: true } },
+      profile: {
+        select: {
+          displayName: true,
+          geniusType: true,
+          schoolId: true,
+          staffPermissionOverrides: true,
+          staffTier: { select: { permissions: true } },
+        },
+      },
     },
   });
 
   const role = dbUser?.role ?? "STUDENT";
   const isSchool = role === "SCHOOL";
+  const isStaff = role === "STAFF";
   const isOrg = role === "ORG" || role === "ADMIN";
   const isNivarroAdmin = role === "ADMIN";
   const profile = dbUser?.profile ?? null;
@@ -34,6 +44,12 @@ export default async function DashboardLayout({
   // (Standard = STUDENT role with no school affiliation; that's just "none of the above" here.)
   const isWalledStudent = role === "STUDENT" && !!profile?.schoolId;
   const isAlumni = !!dbUser?.isAlumni;
+  const staffCapabilities = isStaff
+    ? computeEffectivePermissions({
+        tierPermissions: profile?.staffTier?.permissions ?? null,
+        overrides: profile?.staffPermissionOverrides ?? "[]",
+      })
+    : [];
 
   // Org lookup only runs for org/admin accounts.
   // ADMIN: structural query finds the platform org regardless of which email is logged in.
@@ -65,6 +81,8 @@ export default async function DashboardLayout({
         isOrg={isOrg}
         isNivarroAdmin={isNivarroAdmin}
         isSchool={isSchool}
+        isStaff={isStaff}
+        staffCapabilities={staffCapabilities}
         isWalledStudent={isWalledStudent}
         isAlumni={isAlumni}
       />
