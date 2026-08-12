@@ -38,6 +38,7 @@ export async function POST(req: NextRequest) {
         email,
         passwordHash,
         role: "STUDENT",
+        emailVerified: new Date(),
       },
     });
 

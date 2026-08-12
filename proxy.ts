@@ -23,6 +23,9 @@ export async function proxy(req: NextRequest) {
     // else under those prefixes is accidentally made public now or later.
     pathname.startsWith("/staff/accept-invite") ||
     pathname.startsWith("/api/staff/accept-invite") ||
+    // Same reasoning as staff/accept-invite above, for roster-added students/alumni
+    // activating their account for the first time.
+    pathname.startsWith("/activate-account") ||
     pathname.startsWith("/demo") ||
     pathname.startsWith("/api/auth") ||
     pathname.startsWith("/api/admin") ||

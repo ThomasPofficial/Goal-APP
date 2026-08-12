@@ -17,6 +17,7 @@ interface Member {
   intendedMajor: string | null;
   isAvailableToMentor: boolean;
   createdAt: string;
+  emailVerified: string | null;
 }
 
 interface ParsedRow {
@@ -108,6 +109,11 @@ export default function RosterClient({ members: initialMembers }: Props) {
   const [addJobTitle, setAddJobTitle] = useState("");
   const [addError, setAddError] = useState<string | null>(null);
   const [addLoading, setAddLoading] = useState(false);
+  const [addedInviteUrl, setAddedInviteUrl] = useState<string | null>(null);
+  const [addedMemberName, setAddedMemberName] = useState<string>("");
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const [resendingId, setResendingId] = useState<string | null>(null);
+  const [resendError, setResendError] = useState<string | null>(null);
 
   // Edit Member modal state
   const [editingMember, setEditingMember] = useState<Member | null>(null);
@@ -134,6 +140,7 @@ export default function RosterClient({ members: initialMembers }: Props) {
     imported: number;
     skipped: number;
     errors: string[];
+    invites: { email: string; name: string; activateUrl: string }[];
   } | null>(null);
   const [importing, setImporting] = useState(false);
 
@@ -150,6 +157,16 @@ export default function RosterClient({ members: initialMembers }: Props) {
     setAddJobTitle("");
     setAddError(null);
     setAddLoading(false);
+  };
+
+  const copyToClipboard = async (text: string, key: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedKey(key);
+      setTimeout(() => setCopiedKey((k) => (k === key ? null : k)), 2000);
+    } catch {
+      window.prompt("Couldn't copy automatically — copy this link manually:", text);
+    }
   };
 
   const refreshMembers = async () => {
@@ -198,7 +215,8 @@ export default function RosterClient({ members: initialMembers }: Props) {
         setAddLoading(false);
         return;
       }
-      setShowAddModal(false);
+      setAddedMemberName(addName.trim());
+      setAddedInviteUrl(data.activateUrl ?? null);
       resetAddForm();
       await refreshMembers();
     } catch {
@@ -302,6 +320,27 @@ export default function RosterClient({ members: initialMembers }: Props) {
     }
   };
 
+  const handleCopyInviteLink = async (m: Member) => {
+    setResendError(null);
+    setResendingId(m.userId);
+    try {
+      const res = await fetch(
+        `/api/school/roster/members/${m.userId}/resend-invite`,
+        { method: "POST" }
+      );
+      const data = await res.json();
+      if (!res.ok) {
+        setResendError(data.error ?? "Failed to generate invite link.");
+        return;
+      }
+      await copyToClipboard(data.activateUrl, m.userId);
+    } catch {
+      setResendError("Network error. Please try again.");
+    } finally {
+      setResendingId(null);
+    }
+  };
+
   const resetImportModal = () => {
     setImportStep("input");
     setCsvText("");
@@ -347,6 +386,7 @@ export default function RosterClient({ members: initialMembers }: Props) {
           imported: 0,
           skipped: parsedRows.length,
           errors: [data.error ?? "Import failed"],
+          invites: [],
         });
       } else {
         setImportResult(data);
@@ -357,6 +397,7 @@ export default function RosterClient({ members: initialMembers }: Props) {
         imported: 0,
         skipped: parsedRows.length,
         errors: ["Network error. Please try again."],
+        invites: [],
       });
       setImportStep("result");
     } finally {
@@ -1113,6 +1154,102 @@ export default function RosterClient({ members: initialMembers }: Props) {
                       </div>
                     )}
 
+                    {importResult.invites.length > 0 && (
+                      <div style={{ marginBottom: 16 }}>
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            marginBottom: 8,
+                          }}
+                        >
+                          <p
+                            style={{
+                              fontSize: 12,
+                              color: "var(--muted)",
+                              margin: 0,
+                              lineHeight: 1.5,
+                            }}
+                          >
+                            Since we don&apos;t send these automatically yet, here are
+                            their setup links to share:
+                          </p>
+                          <button
+                            onClick={() => {
+                              const block = importResult.invites
+                                .map((inv) => `${inv.name} <${inv.email}>: ${inv.activateUrl}`)
+                                .join("\n");
+                              copyToClipboard(block, "import-all");
+                            }}
+                            style={{
+                              padding: "5px 12px",
+                              background: "transparent",
+                              border: "1px solid var(--border)",
+                              color: "var(--text)",
+                              fontFamily: "var(--font-mono)",
+                              fontSize: 11,
+                              fontWeight: 700,
+                              letterSpacing: "0.06em",
+                              textTransform: "uppercase",
+                              cursor: "pointer",
+                              borderRadius: 0,
+                              whiteSpace: "nowrap",
+                              flexShrink: 0,
+                            }}
+                          >
+                            {copiedKey === "import-all" ? "Copied!" : "Copy All Links"}
+                          </button>
+                        </div>
+                        <div
+                          style={{
+                            maxHeight: 200,
+                            overflowY: "auto",
+                            border: "1px solid var(--border)",
+                          }}
+                        >
+                          {importResult.invites.map((inv, i) => (
+                            <div
+                              key={i}
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 8,
+                                padding: "6px 10px",
+                                borderBottom:
+                                  i < importResult.invites.length - 1
+                                    ? "1px solid var(--border)"
+                                    : "none",
+                              }}
+                            >
+                              <span style={{ fontSize: 12, color: "var(--text)", flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                                {inv.name} <span style={{ color: "var(--muted)" }}>({inv.email})</span>
+                              </span>
+                              <button
+                                onClick={() => copyToClipboard(inv.activateUrl, `import-${i}`)}
+                                style={{
+                                  padding: "4px 10px",
+                                  background: "transparent",
+                                  border: "1px solid var(--amber)",
+                                  color: "var(--amber)",
+                                  fontFamily: "var(--font-mono)",
+                                  fontSize: 10,
+                                  fontWeight: 700,
+                                  letterSpacing: "0.04em",
+                                  cursor: "pointer",
+                                  borderRadius: 0,
+                                  whiteSpace: "nowrap",
+                                  flexShrink: 0,
+                                }}
+                              >
+                                {copiedKey === `import-${i}` ? "Copied!" : "Copy Link"}
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
                     <div style={{ display: "flex", justifyContent: "flex-end" }}>
                       <button
                         onClick={() => {
@@ -1181,6 +1318,41 @@ export default function RosterClient({ members: initialMembers }: Props) {
               </span>
               <button
                 onClick={() => setRemoveError(null)}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "#ef4444",
+                  cursor: "pointer",
+                  fontSize: 18,
+                  lineHeight: 1,
+                  padding: 0,
+                  flexShrink: 0,
+                }}
+              >
+                &times;
+              </button>
+            </div>
+          )}
+
+          {/* Resend error */}
+          {resendError && (
+            <div
+              style={{
+                border: "1px solid rgba(239,68,68,0.4)",
+                background: "rgba(239,68,68,0.08)",
+                padding: "10px 14px",
+                marginBottom: 12,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 10,
+              }}
+            >
+              <span style={{ fontSize: 13, color: "#ef4444", fontFamily: "var(--font-mono)" }}>
+                {resendError}
+              </span>
+              <button
+                onClick={() => setResendError(null)}
                 style={{
                   background: "none",
                   border: "none",
@@ -1298,6 +1470,28 @@ export default function RosterClient({ members: initialMembers }: Props) {
                       {badgeLabel}
                     </span>
 
+                    {/* Activation status */}
+                    {!m.emailVerified && (
+                      <span
+                        style={{
+                          fontFamily: "var(--font-mono)",
+                          fontSize: 10,
+                          fontWeight: 700,
+                          color: "var(--muted)",
+                          background: "transparent",
+                          border: "1px solid var(--border)",
+                          padding: "2px 8px",
+                          borderRadius: 0,
+                          letterSpacing: "0.08em",
+                          whiteSpace: "nowrap",
+                          flexShrink: 0,
+                        }}
+                        title="This person hasn't set up their account yet"
+                      >
+                        SETUP PENDING
+                      </span>
+                    )}
+
                     {/* System ID */}
                     <span
                       style={{
@@ -1314,6 +1508,33 @@ export default function RosterClient({ members: initialMembers }: Props) {
 
                     {/* Actions */}
                     <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+                      {!m.emailVerified && (
+                        <button
+                          onClick={() => handleCopyInviteLink(m)}
+                          disabled={resendingId === m.userId}
+                          title="Copy invite link"
+                          style={{
+                            padding: "5px 10px",
+                            background: "transparent",
+                            border: "1px solid var(--amber)",
+                            color: "var(--amber)",
+                            cursor: resendingId === m.userId ? "not-allowed" : "pointer",
+                            borderRadius: 0,
+                            fontSize: 11,
+                            fontFamily: "var(--font-mono)",
+                            fontWeight: 700,
+                            letterSpacing: "0.04em",
+                            whiteSpace: "nowrap",
+                            opacity: resendingId === m.userId ? 0.6 : 1,
+                          }}
+                        >
+                          {resendingId === m.userId
+                            ? "…"
+                            : copiedKey === m.userId
+                            ? "Copied!"
+                            : "Copy Invite Link"}
+                        </button>
+                      )}
                       <button
                         onClick={() => openEditModal(m)}
                         title="Edit member"
@@ -1600,6 +1821,8 @@ export default function RosterClient({ members: initialMembers }: Props) {
             if (e.target === e.currentTarget) {
               setShowAddModal(false);
               resetAddForm();
+              setAddedInviteUrl(null);
+              setAddedMemberName("");
             }
           }}
         >
@@ -1618,7 +1841,12 @@ export default function RosterClient({ members: initialMembers }: Props) {
           >
             {/* Close button */}
             <button
-              onClick={() => { setShowAddModal(false); resetAddForm(); }}
+              onClick={() => {
+                setShowAddModal(false);
+                resetAddForm();
+                setAddedInviteUrl(null);
+                setAddedMemberName("");
+              }}
               style={{
                 position: "absolute",
                 top: 16,
@@ -1646,6 +1874,78 @@ export default function RosterClient({ members: initialMembers }: Props) {
             >
               Add Member
             </h2>
+
+            {addedMemberName ? (
+              <div>
+                {addedInviteUrl ? (
+                  <p style={{ fontSize: 14, color: "var(--text)", margin: "0 0 12px", lineHeight: 1.5 }}>
+                    <strong>{addedMemberName}</strong> has been added. We don&apos;t send this
+                    automatically yet — copy the link below and send it to them (text, email,
+                    whatever&apos;s easiest) so they can set up their password and log in.
+                  </p>
+                ) : (
+                  <p style={{ fontSize: 14, color: "var(--text)", margin: "0 0 12px", lineHeight: 1.5 }}>
+                    <strong>{addedMemberName}</strong> has been added. They already have a Nivarro
+                    account, so no setup link is needed — or if this was a new account, its invite
+                    link couldn&apos;t be generated; use &quot;Copy Invite Link&quot; from their row
+                    in the roster list to try again.
+                  </p>
+                )}
+                {addedInviteUrl && (
+                  <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
+                    <input
+                      readOnly
+                      value={addedInviteUrl}
+                      style={{ ...inputStyle, flex: 1, fontFamily: "var(--font-mono)", fontSize: 11 }}
+                      onFocus={(e) => e.target.select()}
+                    />
+                    <button
+                      onClick={() => copyToClipboard(addedInviteUrl, "add-modal")}
+                      style={{
+                        padding: "8px 16px",
+                        background: "var(--amber)",
+                        border: "1px solid var(--amber)",
+                        color: "#000",
+                        fontFamily: "var(--font-mono)",
+                        fontSize: 12,
+                        fontWeight: 700,
+                        letterSpacing: "0.06em",
+                        textTransform: "uppercase",
+                        cursor: "pointer",
+                        borderRadius: 0,
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {copiedKey === "add-modal" ? "Copied!" : "Copy Invite Link"}
+                    </button>
+                  </div>
+                )}
+                <button
+                  onClick={() => {
+                    setShowAddModal(false);
+                    setAddedInviteUrl(null);
+                    setAddedMemberName("");
+                  }}
+                  style={{
+                    width: "100%",
+                    padding: "10px 0",
+                    background: "transparent",
+                    border: "1px solid var(--border)",
+                    color: "var(--text)",
+                    fontFamily: "var(--font-mono)",
+                    fontSize: 12,
+                    fontWeight: 700,
+                    letterSpacing: "0.1em",
+                    textTransform: "uppercase",
+                    cursor: "pointer",
+                    borderRadius: 0,
+                  }}
+                >
+                  Done
+                </button>
+              </div>
+            ) : (
+              <>
 
             {/* Role selector */}
             <div style={{ marginBottom: 18 }}>
@@ -1858,6 +2158,8 @@ export default function RosterClient({ members: initialMembers }: Props) {
             >
               {addLoading ? "Adding…" : "Add Member"}
             </button>
+              </>
+            )}
           </div>
         </div>
       )}

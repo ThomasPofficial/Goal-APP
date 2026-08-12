@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { randomUUID } from "crypto";
 import { requireSchoolCapability } from "@/lib/school-auth";
+import { createAccountInvite } from "@/lib/account-invite";
 
 export async function POST(req: Request) {
   const check = await requireSchoolCapability("roster:edit");
@@ -92,6 +93,7 @@ export async function POST(req: Request) {
   });
 
   let userId: string;
+  let activateUrl: string | undefined;
 
   if (existingUser) {
     userId = existingUser.id;
@@ -130,7 +132,17 @@ export async function POST(req: Request) {
       },
     });
     userId = newUser.id;
+
+    try {
+      const invite = await createAccountInvite({
+        email: email.trim(),
+        name: displayName.trim(),
+      });
+      activateUrl = invite.activateUrl;
+    } catch (err) {
+      console.error("[roster/members] createAccountInvite failed:", err);
+    }
   }
 
-  return NextResponse.json({ id: userId });
+  return NextResponse.json({ id: userId, activateUrl });
 }
