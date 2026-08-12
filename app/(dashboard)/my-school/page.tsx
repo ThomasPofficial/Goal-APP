@@ -62,34 +62,37 @@ export default async function MySchoolPage(props: {
       },
       orderBy: { createdAt: "asc" },
     }),
-    prisma.profile.findMany({
+    prisma.alumniSchool.findMany({
       where: {
-        alumniSchools: { some: { schoolId } },
-        userId: { not: session.user.id },
+        schoolId,
+        profile: { userId: { not: session.user.id } },
       },
       select: {
-        userId: true,
-        displayName: true,
-        handle: true,
-        avatarUrl: true,
-        bio: true,
-        industry: true,
-        graduationYear: true,
-        isAvailableToMentor: true,
-        intendedCollege: true,
-        user: { select: { name: true } },
-        teamMemberships: {
-          select: { team: { select: { name: true, org: { select: { name: true } } } } },
-          take: 3,
-        },
-        orgReviews: {
-          select: { org: { select: { name: true } } },
-          take: 3,
+        profile: {
+          select: {
+            userId: true,
+            displayName: true,
+            handle: true,
+            avatarUrl: true,
+            bio: true,
+            industry: true,
+            graduationYear: true,
+            isAvailableToMentor: true,
+            intendedCollege: true,
+            user: { select: { name: true } },
+            teamMemberships: {
+              select: { team: { select: { name: true, org: { select: { name: true } } } } },
+              take: 3,
+            },
+            orgReviews: {
+              select: { org: { select: { name: true } } },
+              take: 3,
+            },
+          },
         },
       },
-      // Ordered by Profile.createdAt (profile creation), not AlumniSchool.createdAt (link date):
-      // Prisma can't orderBy a to-many relation field on a findMany, and profile creation is a
-      // reasonable proxy for "when this alum joined Nivarro" for a directory listing.
+      // AlumniSchool.createdAt is when this alum linked to THIS school (not Profile.createdAt,
+      // which is account creation and can predate the link for multi-school alumni).
       orderBy: { createdAt: "asc" },
     }),
     prisma.profile.findMany({
@@ -102,23 +105,26 @@ export default async function MySchoolPage(props: {
   const schoolName = school?.profile?.displayName ?? school?.name ?? "Your School";
   const schoolTagline = school?.profile?.headline ?? "Your private Nivarro community";
 
-  const formattedAlumni = allAlumni.map((p) => ({
-    id: p.userId,
-    displayName: p.displayName ?? p.user.name ?? "Alumni",
-    handle: p.handle ?? null,
-    avatarUrl: p.avatarUrl ?? null,
-    bio: p.bio ?? null,
-    industry: p.industry ?? null,
-    graduationYear: p.graduationYear ?? null,
-    isAvailableToMentor: p.isAvailableToMentor ?? false,
-    intendedCollege: p.intendedCollege ?? null,
-    orgs: [
-      ...new Set([
-        ...p.teamMemberships.map((m) => m.team.org?.name).filter(Boolean),
-        ...p.orgReviews.map((r) => r.org.name),
-      ]),
-    ].slice(0, 3) as string[],
-  }));
+  const formattedAlumni = allAlumni.map((link) => {
+    const p = link.profile;
+    return {
+      id: p.userId,
+      displayName: p.displayName ?? p.user.name ?? "Alumni",
+      handle: p.handle ?? null,
+      avatarUrl: p.avatarUrl ?? null,
+      bio: p.bio ?? null,
+      industry: p.industry ?? null,
+      graduationYear: p.graduationYear ?? null,
+      isAvailableToMentor: p.isAvailableToMentor ?? false,
+      intendedCollege: p.intendedCollege ?? null,
+      orgs: [
+        ...new Set([
+          ...p.teamMemberships.map((m) => m.team.org?.name).filter(Boolean),
+          ...p.orgReviews.map((r) => r.org.name),
+        ]),
+      ].slice(0, 3) as string[],
+    };
+  });
 
   const mentors = formattedAlumni.filter((a) => a.isAvailableToMentor);
 
