@@ -102,6 +102,8 @@ export default function SchoolHubClient({ schoolName, schoolTagline, staff, alum
   const visibleAlumni = (alumniFilter === "mentors" ? alumni.filter((a) => a.isAvailableToMentor) : alumni)
     .filter((a) => a.displayName.toLowerCase().includes(alumniQuery.trim().toLowerCase()));
 
+  const visibleStudents = students.filter((s) => s.displayName.toLowerCase().includes(studentQuery.trim().toLowerCase()));
+
   const allPeople = [
     ...staff.map((s) => ({ id: s.userId, displayName: s.displayName })),
     ...alumni.map((a) => ({ id: a.id, displayName: a.displayName })),
@@ -317,17 +319,25 @@ export default function SchoolHubClient({ schoolName, schoolTagline, staff, alum
 
       {/* Students */}
       <section>
-        <p style={{ fontFamily: "var(--font-mono)", fontSize: 13, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--amber)", margin: "0 0 14px" }}>
-          Students
-        </p>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14, flexWrap: "wrap", gap: 8 }}>
+          <p style={{ fontFamily: "var(--font-mono)", fontSize: 13, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--amber)", margin: 0 }}>
+            Students
+          </p>
+          <SearchInput value={studentQuery} onChange={setStudentQuery} placeholder="Search students…" />
+        </div>
         {students.length === 0 ? (
           <div style={{ padding: "32px 24px", border: "1px solid var(--border)", background: "var(--surface)", borderRadius: 0, textAlign: "center" }}>
             <UsersIcon size={28} style={{ color: "var(--n-text2)", margin: "0 auto 10px" }} />
             <p style={{ color: "var(--n-text2)", fontSize: 14, margin: 0 }}>No other students yet.</p>
           </div>
+        ) : visibleStudents.length === 0 ? (
+          <div style={{ padding: "32px 24px", border: "1px solid var(--border)", background: "var(--surface)", borderRadius: 0, textAlign: "center" }}>
+            <UsersIcon size={28} style={{ color: "var(--n-text2)", margin: "0 auto 10px" }} />
+            <p style={{ color: "var(--n-text2)", fontSize: 14, margin: 0 }}>No students match your search.</p>
+          </div>
         ) : (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 10 }}>
-            {students.map((s) => (
+            {visibleStudents.map((s) => (
               <div key={s.id} onClick={selectMode ? () => toggleSelected(s.id) : undefined} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 0, padding: "15px 17px", display: "flex", gap: 11, alignItems: "center", cursor: selectMode ? "pointer" : "default" }}>
                 <Avatar name={s.displayName} avatarUrl={s.avatarUrl} handle={selectMode ? null : s.handle} size={40} />
                 <div style={{ flex: 1, minWidth: 0 }}>
