@@ -141,7 +141,7 @@ export async function GET(req: Request) {
   const alumniWithNoSchoolLinks = report.filter((r) => r.isAlumni);
 
   return NextResponse.json({
-    count: report.length,
+    count: nonAlumniAccounts.length,
     accounts: nonAlumniAccounts,
     alumniWithNoSchoolLinksCount: alumniWithNoSchoolLinks.length,
     alumniWithNoSchoolLinks,
