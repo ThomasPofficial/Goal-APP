@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { GraduationCap, Briefcase, BookOpen, CheckSquare, Square, Users as UsersIcon } from "lucide-react";
+import { GraduationCap, Briefcase, BookOpen, CheckSquare, Square, Users as UsersIcon, Search } from "lucide-react";
 import Link from "next/link";
 import RequestPartnershipModal from "@/components/partnerships/RequestPartnershipModal";
 
@@ -69,14 +69,40 @@ function SelectBox({ checked }: { checked: boolean }) {
   );
 }
 
+function SearchInput({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder: string }) {
+  return (
+    <div style={{ position: "relative", flexShrink: 0 }}>
+      <Search size={13} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "var(--n-muted)", pointerEvents: "none" }} />
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        style={{
+          padding: "6px 10px 6px 30px", fontSize: 12, background: "var(--surface2)",
+          border: "1px solid var(--border-md)", borderRadius: 0, color: "var(--text)",
+          width: 180, fontFamily: "inherit",
+        }}
+      />
+    </div>
+  );
+}
+
 export default function SchoolHubClient({ schoolName, schoolTagline, staff, alumni, mentors, students, currentUserId: _ }: Props) {
   const [alumniFilter, setAlumniFilter] = useState<"all" | "mentors">("all");
+  const [staffQuery, setStaffQuery] = useState("");
+  const [alumniQuery, setAlumniQuery] = useState("");
+  const [studentQuery, setStudentQuery] = useState("");
   const [selectMode, setSelectMode] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [showModal, setShowModal] = useState(false);
   const [banner, setBanner] = useState<string | null>(null);
 
-  const visibleAlumni = alumniFilter === "mentors" ? alumni.filter((a) => a.isAvailableToMentor) : alumni;
+  const visibleStaff = staff.filter((s) => s.displayName.toLowerCase().includes(staffQuery.trim().toLowerCase()));
+  const visibleAlumni = (alumniFilter === "mentors" ? alumni.filter((a) => a.isAvailableToMentor) : alumni)
+    .filter((a) => a.displayName.toLowerCase().includes(alumniQuery.trim().toLowerCase()));
+
+  const visibleStudents = students.filter((s) => s.displayName.toLowerCase().includes(studentQuery.trim().toLowerCase()));
 
   const allPeople = [
     ...staff.map((s) => ({ id: s.userId, displayName: s.displayName })),
@@ -183,11 +209,20 @@ export default function SchoolHubClient({ schoolName, schoolTagline, staff, alum
       {/* Staff */}
       {staff.length > 0 && (
         <section style={{ marginBottom: 32 }}>
-          <p style={{ fontFamily: "var(--font-mono)", fontSize: 13, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--amber)", margin: "0 0 14px" }}>
-            School Staff
-          </p>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14, flexWrap: "wrap", gap: 8 }}>
+            <p style={{ fontFamily: "var(--font-mono)", fontSize: 13, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--amber)", margin: 0 }}>
+              School Staff
+            </p>
+            <SearchInput value={staffQuery} onChange={setStaffQuery} placeholder="Search staff…" />
+          </div>
+          {visibleStaff.length === 0 ? (
+            <div style={{ padding: "32px 24px", border: "1px solid var(--border)", background: "var(--surface)", borderRadius: 0, textAlign: "center" }}>
+              <Briefcase size={28} style={{ color: "var(--n-text2)", margin: "0 auto 10px" }} />
+              <p style={{ color: "var(--n-text2)", fontSize: 14, margin: 0 }}>No staff match your search.</p>
+            </div>
+          ) : (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 10 }}>
-            {staff.map((s) => (
+            {visibleStaff.map((s) => (
               <div key={s.userId} onClick={selectMode ? () => toggleSelected(s.userId) : undefined} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 0, padding: "16px 18px", display: "flex", gap: 12, alignItems: "flex-start", cursor: selectMode ? "pointer" : "default" }}>
                 <Avatar name={s.displayName} avatarUrl={s.avatarUrl} handle={selectMode ? null : s.handle} size={44} />
                 <div style={{ flex: 1, minWidth: 0 }}>
@@ -211,6 +246,7 @@ export default function SchoolHubClient({ schoolName, schoolTagline, staff, alum
               </div>
             ))}
           </div>
+          )}
         </section>
       )}
 
@@ -234,28 +270,31 @@ export default function SchoolHubClient({ schoolName, schoolTagline, staff, alum
           <p style={{ fontFamily: "var(--font-mono)", fontSize: 13, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--amber)", margin: 0 }}>
             Alumni Network
           </p>
-          <div style={{ display: "flex", gap: 6 }}>
-            {(["all", "mentors"] as const).map((f) => (
-              <button
-                key={f}
-                onClick={() => setAlumniFilter(f)}
-                style={{
-                  padding: "4px 12px",
-                  borderRadius: 0,
-                  border: alumniFilter === f ? "1px solid var(--amber)" : "1px solid var(--border)",
-                  background: alumniFilter === f ? "var(--amber)" : "transparent",
-                  color: alumniFilter === f ? "#000" : "var(--n-text2)",
-                  fontFamily: "var(--font-mono)",
-                  fontSize: 11,
-                  fontWeight: 700,
-                  letterSpacing: "0.1em",
-                  textTransform: "uppercase",
-                  cursor: "pointer",
-                }}
-              >
-                {f === "all" ? "All" : "Mentors"}
-              </button>
-            ))}
+          <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+            <div style={{ display: "flex", gap: 6 }}>
+              {(["all", "mentors"] as const).map((f) => (
+                <button
+                  key={f}
+                  onClick={() => setAlumniFilter(f)}
+                  style={{
+                    padding: "4px 12px",
+                    borderRadius: 0,
+                    border: alumniFilter === f ? "1px solid var(--amber)" : "1px solid var(--border)",
+                    background: alumniFilter === f ? "var(--amber)" : "transparent",
+                    color: alumniFilter === f ? "#000" : "var(--n-text2)",
+                    fontFamily: "var(--font-mono)",
+                    fontSize: 11,
+                    fontWeight: 700,
+                    letterSpacing: "0.1em",
+                    textTransform: "uppercase",
+                    cursor: "pointer",
+                  }}
+                >
+                  {f === "all" ? "All" : "Mentors"}
+                </button>
+              ))}
+            </div>
+            {alumni.length > 0 && <SearchInput value={alumniQuery} onChange={setAlumniQuery} placeholder="Search alumni…" />}
           </div>
         </div>
 
@@ -263,7 +302,11 @@ export default function SchoolHubClient({ schoolName, schoolTagline, staff, alum
           <div style={{ padding: "32px 24px", border: "1px solid var(--border)", background: "var(--surface)", borderRadius: 0, textAlign: "center" }}>
             <GraduationCap size={28} style={{ color: "var(--n-text2)", margin: "0 auto 10px" }} />
             <p style={{ color: "var(--n-text2)", fontSize: 14, margin: 0 }}>
-              {alumniFilter === "mentors" ? "No alumni have opened mentorship yet." : "No alumni yet."}
+              {alumniQuery.trim()
+                ? "No alumni match your search."
+                : alumniFilter === "mentors"
+                ? "No alumni have opened mentorship yet."
+                : "No alumni yet."}
             </p>
           </div>
         ) : (
@@ -277,17 +320,25 @@ export default function SchoolHubClient({ schoolName, schoolTagline, staff, alum
 
       {/* Students */}
       <section>
-        <p style={{ fontFamily: "var(--font-mono)", fontSize: 13, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--amber)", margin: "0 0 14px" }}>
-          Students
-        </p>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14, flexWrap: "wrap", gap: 8 }}>
+          <p style={{ fontFamily: "var(--font-mono)", fontSize: 13, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--amber)", margin: 0 }}>
+            Students
+          </p>
+          {students.length > 0 && <SearchInput value={studentQuery} onChange={setStudentQuery} placeholder="Search students…" />}
+        </div>
         {students.length === 0 ? (
           <div style={{ padding: "32px 24px", border: "1px solid var(--border)", background: "var(--surface)", borderRadius: 0, textAlign: "center" }}>
             <UsersIcon size={28} style={{ color: "var(--n-text2)", margin: "0 auto 10px" }} />
             <p style={{ color: "var(--n-text2)", fontSize: 14, margin: 0 }}>No other students yet.</p>
           </div>
+        ) : visibleStudents.length === 0 ? (
+          <div style={{ padding: "32px 24px", border: "1px solid var(--border)", background: "var(--surface)", borderRadius: 0, textAlign: "center" }}>
+            <UsersIcon size={28} style={{ color: "var(--n-text2)", margin: "0 auto 10px" }} />
+            <p style={{ color: "var(--n-text2)", fontSize: 14, margin: 0 }}>No students match your search.</p>
+          </div>
         ) : (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 10 }}>
-            {students.map((s) => (
+            {visibleStudents.map((s) => (
               <div key={s.id} onClick={selectMode ? () => toggleSelected(s.id) : undefined} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 0, padding: "15px 17px", display: "flex", gap: 11, alignItems: "center", cursor: selectMode ? "pointer" : "default" }}>
                 <Avatar name={s.displayName} avatarUrl={s.avatarUrl} handle={selectMode ? null : s.handle} size={40} />
                 <div style={{ flex: 1, minWidth: 0 }}>
