@@ -135,6 +135,9 @@ export async function POST(req: Request) {
           invites.push({ email, name: displayName, activateUrl: invite.activateUrl });
         } catch (inviteErr) {
           console.error(`Failed to create account invite for ${email}:`, inviteErr);
+          errors.push(
+            `Row (${email}): account created but invite link failed — use "Copy Invite Link" from the roster list`
+          );
         }
       }
 

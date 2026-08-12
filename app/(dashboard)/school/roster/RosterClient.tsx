@@ -1875,13 +1875,22 @@ export default function RosterClient({ members: initialMembers }: Props) {
               Add Member
             </h2>
 
-            {addedInviteUrl !== null || (addedInviteUrl === null && addedMemberName) ? (
+            {addedMemberName ? (
               <div>
-                <p style={{ fontSize: 14, color: "var(--text)", margin: "0 0 12px", lineHeight: 1.5 }}>
-                  <strong>{addedMemberName}</strong> has been added. We don&apos;t send this
-                  automatically yet — copy the link below and send it to them (text, email,
-                  whatever&apos;s easiest) so they can set up their password and log in.
-                </p>
+                {addedInviteUrl ? (
+                  <p style={{ fontSize: 14, color: "var(--text)", margin: "0 0 12px", lineHeight: 1.5 }}>
+                    <strong>{addedMemberName}</strong> has been added. We don&apos;t send this
+                    automatically yet — copy the link below and send it to them (text, email,
+                    whatever&apos;s easiest) so they can set up their password and log in.
+                  </p>
+                ) : (
+                  <p style={{ fontSize: 14, color: "var(--text)", margin: "0 0 12px", lineHeight: 1.5 }}>
+                    <strong>{addedMemberName}</strong> has been added. They already have a Nivarro
+                    account, so no setup link is needed — or if this was a new account, its invite
+                    link couldn&apos;t be generated; use &quot;Copy Invite Link&quot; from their row
+                    in the roster list to try again.
+                  </p>
+                )}
                 {addedInviteUrl && (
                   <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
                     <input

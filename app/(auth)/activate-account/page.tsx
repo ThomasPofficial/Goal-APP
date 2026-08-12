@@ -2,7 +2,6 @@
 
 import { useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import Link from "next/link";
 import { Loader2 } from "lucide-react";
 import { resetPassword } from "@/app/actions/auth";
 

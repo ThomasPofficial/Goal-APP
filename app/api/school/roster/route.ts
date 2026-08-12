@@ -19,6 +19,7 @@ export async function GET() {
           role: true,
           isAlumni: true,
           createdAt: true,
+          emailVerified: true,
         },
       },
     },
@@ -40,6 +41,7 @@ export async function GET() {
     intendedMajor: p.intendedMajor ?? null,
     isAvailableToMentor: p.isAvailableToMentor,
     createdAt: p.user.createdAt.toISOString(),
+    emailVerified: p.user.emailVerified ? p.user.emailVerified.toISOString() : null,
   }));
 
   return NextResponse.json({ members });
