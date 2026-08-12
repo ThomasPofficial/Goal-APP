@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { randomUUID } from "crypto";
 import { getSchoolSession } from "@/lib/school-auth";
+import { createAccountInvite } from "@/lib/account-invite";
 
 interface ImportRow {
   displayName: string;
@@ -40,6 +41,7 @@ export async function POST(req: Request) {
   let imported = 0;
   let skipped = 0;
   const errors: string[] = [];
+  const invites: { email: string; name: string; activateUrl: string }[] = [];
 
   for (const row of rows) {
     try {
@@ -127,6 +129,13 @@ export async function POST(req: Request) {
             },
           },
         });
+
+        try {
+          const invite = await createAccountInvite({ email, name: displayName });
+          invites.push({ email, name: displayName, activateUrl: invite.activateUrl });
+        } catch (inviteErr) {
+          console.error(`Failed to create account invite for ${email}:`, inviteErr);
+        }
       }
 
       imported++;
@@ -137,5 +146,5 @@ export async function POST(req: Request) {
     }
   }
 
-  return NextResponse.json({ imported, skipped, errors });
+  return NextResponse.json({ imported, skipped, errors, invites });
 }
