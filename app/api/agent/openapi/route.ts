@@ -86,18 +86,6 @@ const spec = {
             nullable: true,
             description: "URL to the scholar's avatar image",
           },
-          geniusType: {
-            type: "string",
-            nullable: true,
-            enum: ["STEEL", "BLAZE", "DYNAMO", "TEMPO", null],
-            description: "Primary genius archetype",
-          },
-          secondaryGeniusType: {
-            type: "string",
-            nullable: true,
-            enum: ["STEEL", "BLAZE", "DYNAMO", "TEMPO", null],
-            description: "Secondary genius archetype",
-          },
           grade: {
             type: "integer",
             nullable: true,
@@ -152,11 +140,6 @@ const spec = {
                   filters: {
                     type: "object",
                     properties: {
-                      geniusType: {
-                        type: "string",
-                        enum: ["STEEL", "BLAZE", "DYNAMO", "TEMPO"],
-                        description: "Filter by primary genius archetype",
-                      },
                       minReviews: {
                         type: "integer",
                         minimum: 0,
@@ -180,7 +163,7 @@ const spec = {
               },
               example: {
                 query: "Go backend developer",
-                filters: { minReviews: 1, geniusType: "STEEL" },
+                filters: { minReviews: 1 },
               },
             },
           },
@@ -299,7 +282,7 @@ const spec = {
         operationId: "getProjectCandidates",
         summary: "Get candidates for a project",
         description:
-          "Returns today's algorithmic candidate recommendations for a specific org project. The daily quota is calculated as 2× the number of open spots remaining. Candidates matching the project's preferred genius types are ranked first. Includes full scholar profiles with org reviews.",
+          "Returns today's algorithmic candidate recommendations for a specific org project. The daily quota is calculated as 2× the number of open spots remaining. Candidates are ranked by prior org review track record and required-skill keyword matches. Includes full scholar profiles with org reviews.",
         security: [{ BearerAuth: [] }],
         parameters: [
           {

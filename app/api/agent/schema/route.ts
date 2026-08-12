@@ -20,7 +20,6 @@ export async function GET() {
         body: {
           query: "string — optional freeform natural-language query",
           filters: {
-            geniusType: "STEEL | BLAZE | DYNAMO | TEMPO — optional",
             minReviews: "number — minimum review count",
             grade: "number — 9-12",
             interests: "string[] — keywords to match against scholar interests",

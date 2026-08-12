@@ -18,8 +18,6 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       bio: true,
       strengthSummary: true,
       avatarUrl: true,
-      geniusType: true,
-      secondaryGeniusType: true,
       grade: true,
       schoolName: true,
       interests: true,

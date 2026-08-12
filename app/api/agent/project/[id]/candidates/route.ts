@@ -1,7 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { requireAgentAuth } from "@/lib/agent-auth";
 import { NextResponse } from "next/server";
-import type { GeniusType } from "@prisma/client";
 
 // ---------------------------------------------------------------------------
 // Scoring helper
@@ -14,8 +13,6 @@ type ScholarRaw = {
   bio: string | null;
   strengthSummary: string | null;
   avatarUrl: string | null;
-  geniusType: GeniusType | null;
-  secondaryGeniusType: GeniusType | null;
   grade: number | null;
   schoolName: string | null;
   interests: string | null;
@@ -34,7 +31,6 @@ type ScholarRaw = {
 
 function scoreCandidate(
   scholar: ScholarRaw,
-  preferredTypes: string[],
   requiredSkills: string[]
 ): { score: number; matchReasons: string[] } {
   let score = 0;
@@ -47,14 +43,6 @@ function scoreCandidate(
     score += reviewScore;
     matchReasons.push(
       `${reviewCount} org review${reviewCount > 1 ? "s" : ""} from previous work`
-    );
-  }
-
-  // ── Preferred genius type match ───────────────────────────────────────────
-  if (preferredTypes.length > 0 && scholar.geniusType && preferredTypes.includes(scholar.geniusType)) {
-    score += 15;
-    matchReasons.push(
-      `Primary type ${scholar.geniusType} matches project preference`
     );
   }
 
@@ -123,9 +111,6 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     });
   }
 
-  let preferredTypes: string[] = [];
-  try { preferredTypes = JSON.parse(project.preferredGeniusTypes ?? "[]"); } catch { preferredTypes = []; }
-
   let requiredSkills: string[] = [];
   try { requiredSkills = JSON.parse(project.requiredSkills ?? "[]"); } catch { requiredSkills = []; }
 
@@ -141,8 +126,6 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       bio: true,
       strengthSummary: true,
       avatarUrl: true,
-      geniusType: true,
-      secondaryGeniusType: true,
       grade: true,
       schoolName: true,
       interests: true,
@@ -166,7 +149,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 
   // Score and annotate each candidate
   const scored = candidates.map((candidate) => {
-    const { score, matchReasons } = scoreCandidate(candidate, preferredTypes, requiredSkills);
+    const { score, matchReasons } = scoreCandidate(candidate, requiredSkills);
     return { ...candidate, score, matchReasons };
   });
 
@@ -181,7 +164,6 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 
   const projectContext = {
     title: project.title,
-    preferredTypes,
     requiredSkills,
   };
 
