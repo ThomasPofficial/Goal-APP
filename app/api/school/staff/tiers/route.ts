@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSchoolSession } from "@/lib/school-auth";
 import { prisma } from "@/lib/prisma";
-import { CAPABILITIES, getOrCreateDefaultTiers, type Capability } from "@/lib/facultyPermissions";
+import { CAPABILITIES, type Capability } from "@/lib/facultyPermissions";
+import { getOrCreateDefaultTiers } from "@/lib/facultyPermissions.server";
 
 export async function GET() {
   const check = await getSchoolSession();

@@ -1,5 +1,3 @@
-import { prisma } from "@/lib/prisma";
-
 export const CAPABILITIES = [
   "roster:view",
   "roster:edit",
@@ -38,28 +36,6 @@ function parseCapabilityList(json: string | null | undefined): Capability[] {
   } catch {
     return [];
   }
-}
-
-export async function getOrCreateDefaultTiers(schoolId: string) {
-  const existing = await prisma.facultyTier.findMany({
-    where: { schoolId },
-    orderBy: { createdAt: "asc" },
-  });
-  if (existing.length > 0) return existing;
-
-  await prisma.facultyTier.createMany({
-    data: DEFAULT_TIERS.map((t) => ({
-      schoolId,
-      name: t.name,
-      permissions: JSON.stringify(t.permissions),
-      isSystemDefault: true,
-    })),
-  });
-
-  return prisma.facultyTier.findMany({
-    where: { schoolId },
-    orderBy: { createdAt: "asc" },
-  });
 }
 
 export function computeEffectivePermissions(args: {

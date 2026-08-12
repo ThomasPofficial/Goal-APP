@@ -2,7 +2,8 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { requireSchoolCapability } from "@/lib/school-auth";
-import { getOrCreateDefaultTiers, type Capability } from "@/lib/facultyPermissions";
+import type { Capability } from "@/lib/facultyPermissions";
+import { getOrCreateDefaultTiers } from "@/lib/facultyPermissions.server";
 import StaffClient from "./StaffClient";
 
 export default async function StaffPage() {
