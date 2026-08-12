@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
+import { isWalledStudent } from "@/lib/accountGate";
 import Link from "next/link";
 import QuizClient from "./QuizClient";
 import TraitQuizClient from "./TraitQuizClient";
@@ -19,14 +20,7 @@ export default async function QuizPage(props: {
   const session = await auth();
   const userId = session?.user?.id ?? null;
 
-  const dbUser = userId
-    ? await prisma.user.findUnique({
-        where: { id: userId },
-        select: { role: true, profile: { select: { schoolId: true } } },
-      })
-    : null;
-
-  const isSchoolAffiliatedStudent = dbUser?.role === "STUDENT" && !!dbUser.profile?.schoolId;
+  const isSchoolAffiliatedStudent = userId ? await isWalledStudent(userId) : false;
 
   // Student/Alum accounts are walled off from the genius-type quiz entirely.
   if (isSchoolAffiliatedStudent) redirect("/dashboard");

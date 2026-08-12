@@ -2,16 +2,19 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import ProfileEditor from "./ProfileEditor";
 import AlumniProfileEditor from "./AlumniProfileEditor";
+import { isWalledStudent } from "@/lib/accountGate";
 
 export default async function ProfilePage() {
   const session = await auth();
   const userId = session!.user!.id;
 
-  const dbUser = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { role: true, isAlumni: true, profile: { select: { schoolId: true } } },
-  });
-  const walled = dbUser?.role === "STUDENT" && !!dbUser.profile?.schoolId;
+  const [dbUser, walled] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: userId },
+      select: { role: true, isAlumni: true },
+    }),
+    isWalledStudent(userId),
+  ]);
 
   if (walled && dbUser?.isAlumni) {
     const alumniProfile = await prisma.profile.findUnique({
