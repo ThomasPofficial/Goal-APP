@@ -150,6 +150,21 @@ model Profile {
   workflowSession      WorkflowSession?
   algorithmQuotas      AlgorithmQuota[]
   orgReviews           OrgReview[]
+  alumniSchools        AlumniSchool[]
+}
+
+// Schools an alumni Profile is linked to. Alumni can have 0-to-many links;
+// every non-alumni Student still uses the single Profile.schoolId scalar.
+model AlumniSchool {
+  id        String   @id @default(cuid())
+  profileId String
+  schoolId  String   // User.id where role=SCHOOL
+  createdAt DateTime @default(now())
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, schoolId])
+  @@index([schoolId])
 }
 
 enum GeniusType {
