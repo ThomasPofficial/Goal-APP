@@ -44,6 +44,7 @@ interface Props {
   mentors: Alumnus[];
   students: StudentPeer[];
   currentUserId: string;
+  otherSchools: { id: string; name: string }[];
 }
 
 function Avatar({ name, avatarUrl, handle, size = 44 }: { name: string; avatarUrl: string | null; handle?: string | null; size?: number }) {
@@ -69,7 +70,7 @@ function SelectBox({ checked }: { checked: boolean }) {
   );
 }
 
-export default function SchoolHubClient({ schoolName, schoolTagline, staff, alumni, mentors, students, currentUserId: _ }: Props) {
+export default function SchoolHubClient({ schoolName, schoolTagline, staff, alumni, mentors, students, currentUserId: _, otherSchools }: Props) {
   const [alumniFilter, setAlumniFilter] = useState<"all" | "mentors">("all");
   const [selectMode, setSelectMode] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -130,6 +131,22 @@ export default function SchoolHubClient({ schoolName, schoolTagline, staff, alum
               {schoolName}
             </h1>
             <p style={{ fontSize: 16, color: "var(--n-text2)", margin: 0 }}>{schoolTagline}</p>
+            {otherSchools.length > 0 && (
+              <div style={{ display: "flex", gap: 8, marginTop: 12, flexWrap: "wrap" }}>
+                <span style={{ fontSize: 12, color: "var(--n-muted)" }}>Also at:</span>
+                {otherSchools.map((s) => (
+                  <a
+                    key={s.id}
+                    href={`/my-school?school=${s.id}`}
+                    style={{
+                      fontSize: 12, color: "var(--amber)", textDecoration: "underline",
+                    }}
+                  >
+                    {s.name}
+                  </a>
+                ))}
+              </div>
+            )}
           </div>
           {selectMode ? (
             <button

@@ -3,17 +3,17 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import SchoolHubClient from "./SchoolHubClient";
 import { finalizeExpiredPartnershipRequests } from "@/lib/partnerships";
+import { getLinkedSchools } from "@/lib/communities";
 
-export default async function MySchoolPage() {
+export default async function MySchoolPage(props: {
+  searchParams: Promise<{ school?: string }>;
+}) {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
 
-  const profile = await prisma.profile.findUnique({
-    where: { userId: session.user.id },
-    select: { schoolId: true },
-  });
+  const linkedSchools = await getLinkedSchools(session.user.id);
 
-  if (!profile?.schoolId) {
+  if (linkedSchools.length === 0) {
     return (
       <div style={{ maxWidth: 720 }}>
         <h1 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(22px, 3vw, 36px)", letterSpacing: "-0.02em", color: "var(--text)", margin: "0 0 8px" }}>
@@ -34,7 +34,10 @@ export default async function MySchoolPage() {
     );
   }
 
-  const schoolId = profile.schoolId;
+  const searchParams = await props.searchParams;
+  const requestedId = searchParams.school;
+  const activeSchool = linkedSchools.find((s) => s.id === requestedId) ?? linkedSchools[0];
+  const schoolId = activeSchool.id;
 
   await finalizeExpiredPartnershipRequests(schoolId);
 
@@ -138,6 +141,7 @@ export default async function MySchoolPage() {
       mentors={mentors}
       students={formattedStudents}
       currentUserId={session.user.id}
+      otherSchools={linkedSchools.filter((s) => s.id !== schoolId)}
     />
   );
 }
