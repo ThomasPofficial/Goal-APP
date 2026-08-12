@@ -1,8 +1,7 @@
 import Link from "next/link";
 import TraitBadge from "./TraitBadge";
 import { getInitials } from "@/lib/utils";
-import { GENIUS_TYPE_INFO } from "@/data/traits";
-import type { TraitCategory, GeniusType } from "@/data/traits";
+import type { TraitCategory } from "@/data/traits";
 
 interface SkillCardTrait {
   name: string;
@@ -19,7 +18,6 @@ export interface SkillCardData {
   headline?: string | null;
   avatarUrl?: string | null;
   strengthSummary?: string | null;
-  geniusType?: GeniusType | null;
   // Self-selected traits (user chose these)
   selfTraits: SkillCardTrait[];
   // Peer-endorsed traits (teammates confirmed these after a project)
@@ -40,7 +38,6 @@ export default function SkillCard({
   compact = false,
 }: SkillCardProps) {
   const initials = getInitials(data.displayName);
-  const genius = data.geniusType ? GENIUS_TYPE_INFO[data.geniusType] : null;
   const hasPeerTraits = data.peerTraits && data.peerTraits.length > 0;
 
   return (
@@ -49,7 +46,7 @@ export default function SkillCard({
         compact ? "p-4" : "p-5"
       }`}
     >
-      {/* Header: Avatar + Name + Genius type */}
+      {/* Header: Avatar + Name */}
       <div className="flex items-start gap-3">
         <div className="flex-shrink-0">
           {data.avatarUrl ? (
@@ -90,17 +87,6 @@ export default function SkillCard({
             <p className="text-xs text-[#909098] truncate mt-0.5">
               {data.headline}
             </p>
-          )}
-          {genius && (
-            <div
-              className="inline-flex items-center gap-1 mt-1 px-1.5 py-0.5 rounded text-[10px] font-semibold"
-              style={{
-                backgroundColor: `${genius.color}18`,
-                color: genius.color,
-              }}
-            >
-              {genius.icon} {genius.label}
-            </div>
           )}
         </div>
       </div>

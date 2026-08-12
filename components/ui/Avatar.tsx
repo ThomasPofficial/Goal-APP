@@ -1,20 +1,18 @@
 "use client";
 
 import Image from "next/image";
-import { GENIUS_TYPES, type GeniusTypeKey } from "@/lib/geniusTypes";
 
 interface AvatarProps {
   src?: string | null;
   displayName?: string | null;
   name?: string | null;
-  geniusType?: GeniusTypeKey | null;
   size?: number | string;
   className?: string;
 }
 
 const NAMED_SIZES: Record<string, number> = { xs: 24, sm: 32, md: 40, lg: 48, xl: 56 };
 
-export default function Avatar({ src, displayName, name, geniusType, size: sizeProp = 40, className = "" }: AvatarProps) {
+export default function Avatar({ src, displayName, name, size: sizeProp = 40, className = "" }: AvatarProps) {
   const size = typeof sizeProp === "string"
     ? (NAMED_SIZES[sizeProp] ?? (parseInt(sizeProp, 10) || 40))
     : sizeProp;
@@ -23,7 +21,7 @@ export default function Avatar({ src, displayName, name, geniusType, size: sizeP
     ? displayName.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase()
     : "?";
 
-  const ringColor = geniusType ? GENIUS_TYPES[geniusType].color : "#6B7280";
+  const ringColor = "#6B7280";
 
   return (
     <div

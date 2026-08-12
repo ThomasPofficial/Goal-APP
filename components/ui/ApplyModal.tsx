@@ -3,8 +3,6 @@
 import { useState, useEffect } from "react";
 import { X, Search, Check, Users } from "lucide-react";
 import Avatar from "./Avatar";
-import GeniusTypeBadge from "./GeniusTypeBadge";
-import type { GeniusTypeKey } from "@/lib/geniusTypes";
 import { cn } from "@/lib/utils";
 
 interface Peer {
@@ -12,7 +10,6 @@ interface Peer {
   displayName: string;
   handle: string | null;
   avatarUrl: string | null;
-  geniusType: GeniusTypeKey | null;
   grade: number | null;
   schoolName: string | null;
 }
@@ -206,7 +203,6 @@ export default function ApplyModal({
                         <Avatar
                           src={peer.avatarUrl}
                           name={peer.displayName}
-                          geniusType={peer.geniusType}
                           size="sm"
                         />
                         <div className="flex-1 min-w-0">
@@ -214,7 +210,6 @@ export default function ApplyModal({
                             <span className="text-sm font-medium" style={{ color: "var(--text)" }}>
                               {peer.displayName}
                             </span>
-                            {peer.geniusType && <GeniusTypeBadge type={peer.geniusType} size="sm" />}
                           </div>
                           {(peer.schoolName || peer.grade) && (
                             <p className="text-xs truncate" style={{ color: "var(--muted)" }}>
