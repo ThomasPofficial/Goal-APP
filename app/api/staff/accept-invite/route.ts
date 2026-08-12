@@ -18,8 +18,10 @@ export async function POST(req: NextRequest) {
     staffTitle?: string;
   };
 
-  if (!token || !password || password.length < 6) {
-    return NextResponse.json({ error: "token and a password of at least 6 characters are required" }, { status: 400 });
+  // 8-character minimum matches the app's existing standard (reset-password page).
+  // Staff accounts reach roster PII and fundraising, so they get the stronger bar.
+  if (!token || !password || password.length < 8) {
+    return NextResponse.json({ error: "token and a password of at least 8 characters are required" }, { status: 400 });
   }
 
   const result = await acceptStaffInvite({ token, password, displayName, staffTitle });

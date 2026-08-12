@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/lib/auth";
 import { requireSchoolCapability } from "@/lib/school-auth";
 import { createStaffInvite } from "@/lib/staffInvite";
 import { prisma } from "@/lib/prisma";
@@ -62,13 +63,42 @@ export async function POST(req: NextRequest) {
   const validCustomPermissions = (customPermissions ?? []).filter((p): p is Capability =>
     (CAPABILITIES as readonly string[]).includes(p)
   );
+  // A tier assignment discards the custom list entirely, so only the custom path
+  // can smuggle in a capability.
+  const effectiveCustomPermissions: Capability[] = tierId ? [] : validCustomPermissions;
+
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  // Same distinction as the PATCH route: schoolId equals the caller's own id only
+  // for SCHOOL/ADMIN. A delegated staff:manage holder may invite using existing
+  // tiers, but may never mint a new staff:manage holder (incl. an accomplice).
+  const isSchoolOwner = check.schoolId === session.user.id;
+  if (!isSchoolOwner && effectiveCustomPermissions.includes("staff:manage")) {
+    return NextResponse.json(
+      { error: "Only the school account can grant staff management access" },
+      { status: 403 }
+    );
+  }
+  // Inviting your own already-staff email lands in createStaffInvite's "already-staff"
+  // branch, which rewrites that profile's tier/overrides — i.e. the same self-edit the
+  // PATCH route refuses. Close it here too. (A SCHOOL owner's own email can't reach the
+  // invite path at all: createStaffInvite rejects non-STUDENT/STAFF account types.)
+  if (
+    !isSchoolOwner &&
+    session.user.email &&
+    session.user.email.trim().toLowerCase() === email.trim().toLowerCase()
+  ) {
+    return NextResponse.json({ error: "You cannot change your own staff access" }, { status: 403 });
+  }
 
   try {
     const result = await createStaffInvite({
       email: email.trim(),
       schoolId: check.schoolId,
       tierId: tierId ?? null,
-      customPermissions: tierId ? [] : validCustomPermissions,
+      customPermissions: effectiveCustomPermissions,
       staffTitle,
     });
     return NextResponse.json(result);

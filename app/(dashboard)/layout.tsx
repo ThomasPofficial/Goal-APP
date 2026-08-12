@@ -36,10 +36,13 @@ export default async function DashboardLayout({
 
   const role = dbUser?.role ?? "STUDENT";
   const isSchool = role === "SCHOOL";
-  const isStaff = role === "STAFF";
   const isOrg = role === "ORG" || role === "ADMIN";
   const isNivarroAdmin = role === "ADMIN";
   const profile = dbUser?.profile ?? null;
+  // A STAFF account with no schoolId can't pass requireSchoolCapability (it keys
+  // every check off profile.schoolId), so the sidebar must not advertise
+  // Roster/Fundraise/Staff links it would be denied — never promise what the API denies.
+  const isStaff = role === "STAFF" && !!profile?.schoolId;
   // Student/Alum account = STUDENT role with a school affiliation — walled-off nav.
   // (Standard = STUDENT role with no school affiliation; that's just "none of the above" here.)
   const isWalledStudent = role === "STUDENT" && !!profile?.schoolId;

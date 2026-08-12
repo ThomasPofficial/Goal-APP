@@ -1,18 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@prisma/client";
+import { requireSchoolCapability } from "@/lib/school-auth";
 
+// Restoring a previous version mutates the live campaign — a write.
 export async function POST(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string; versionId: string }> }
 ) {
   const { id, versionId } = await params;
-  const session = await auth();
-  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const check = await requireSchoolCapability("campaigns:edit");
+  if ("error" in check) {
+    return NextResponse.json({ error: check.error }, { status: check.status });
+  }
 
   const campaign = await prisma.campaign.findFirst({
-    where: { id, schoolId: session.user.id },
+    where: { id, schoolId: check.schoolId },
   });
   if (!campaign) return NextResponse.json({ error: "Campaign not found" }, { status: 404 });
 

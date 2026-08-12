@@ -163,8 +163,8 @@ export default function AcceptInviteClient({ token }: { token: string }) {
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="Minimum 6 characters"
-            minLength={6}
+            placeholder="Minimum 8 characters"
+            minLength={8}
             required
             className="w-full text-sm"
             style={{ background: "var(--surface2)", color: "var(--text)", border: "1px solid var(--border-md)", borderRadius: "6px", padding: "10px 14px" }}

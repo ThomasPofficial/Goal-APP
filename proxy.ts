@@ -16,6 +16,13 @@ export async function proxy(req: NextRequest) {
     pathname.startsWith("/register") ||
     pathname.startsWith("/forgot-password") ||
     pathname.startsWith("/reset-password") ||
+    // Staff invite acceptance: the person following an invite link has no account
+    // yet (or has one but isn't logged in), so this page and the API it calls must
+    // be reachable unauthenticated or the entire staff onboarding flow is dead.
+    // Deliberately the full exact paths — not "/staff" or "/api/staff" — so nothing
+    // else under those prefixes is accidentally made public now or later.
+    pathname.startsWith("/staff/accept-invite") ||
+    pathname.startsWith("/api/staff/accept-invite") ||
     pathname.startsWith("/demo") ||
     pathname.startsWith("/api/auth") ||
     pathname.startsWith("/api/admin") ||

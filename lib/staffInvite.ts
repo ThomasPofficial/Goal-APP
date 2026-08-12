@@ -35,12 +35,30 @@ export async function createStaffInvite(args: {
     throw new Error("This email already belongs to a different account type");
   }
 
+  // Cross-tenant guard. If this account is already attached to a DIFFERENT school
+  // (another school's roster student, or staff at another school), writing our
+  // tier/overrides onto their profile would leave schoolId pointing at their real
+  // school — requireSchoolCapability returns profile.schoolId for STAFF, so they'd
+  // end up wielding OUR chosen permissions against THAT school's data. Refuse.
+  if (existing?.profile?.schoolId && existing.profile.schoolId !== args.schoolId) {
+    throw new Error("This email already belongs to another school");
+  }
+
   if (existing?.role === "STAFF") {
     // Already has a working login — just update their tier/overrides, no token needed.
     // A User can exist without a Profile (e.g. Google OAuth sign-in before
     // onboarding creates one), so branch on whether one exists already
     // rather than assuming `update` will find a row.
-    const data = { staffTierId: args.tierId ?? null, staffPermissionOverrides: overridesJson, staffInvited: true };
+    // schoolId is written on the update path too (not just create): a profile whose
+    // schoolId is null would leave requireSchoolCapability unable to authorize this
+    // account for anything once they're STAFF. The cross-school guard above already
+    // proved any pre-existing schoolId equals args.schoolId, so this is a no-op there.
+    const data = {
+      schoolId: args.schoolId,
+      staffTierId: args.tierId ?? null,
+      staffPermissionOverrides: overridesJson,
+      staffInvited: true,
+    };
     if (existing.profile) {
       await prisma.profile.update({ where: { userId: existing.id }, data });
     } else {
@@ -48,7 +66,6 @@ export async function createStaffInvite(args: {
         data: {
           userId: existing.id,
           displayName: existing.name ?? email,
-          schoolId: args.schoolId,
           staffTitle: args.staffTitle ?? null,
           ...data,
         },
@@ -60,7 +77,11 @@ export async function createStaffInvite(args: {
   let userId: string;
   if (existing) {
     // Same no-Profile-yet possibility as above.
+    // Same reasoning as the already-staff branch: this is the "promote an existing
+    // plain student/alumni account to staff" path, where schoolId is typically null
+    // and MUST be stamped or every capability check fails after they accept.
     const data = {
+      schoolId: args.schoolId,
       staffTierId: args.tierId ?? null,
       staffPermissionOverrides: overridesJson,
       staffInvited: true,
@@ -73,7 +94,6 @@ export async function createStaffInvite(args: {
         data: {
           userId: existing.id,
           displayName: existing.name ?? email,
-          schoolId: args.schoolId,
           ...data,
         },
       });
@@ -121,8 +141,11 @@ export async function createStaffInvite(args: {
 // `link` directly in the response so the inviter can copy/send it manually.
 // Swap this function's body for a lib/resend.ts call to go live later —
 // nothing else in the invite flow needs to change.
-export async function notifyInvite(email: string, link: string) {
-  console.log(`[staff-invite mock] would email ${email}: ${link}`);
+export async function notifyInvite(email: string, _link: string) {
+  // Deliberately does NOT log the link: it carries the raw invite token, which is
+  // credential-equivalent, and the host retains logs. The inviter gets the real
+  // link from the API response — logs are noise, not a delivery channel.
+  console.log(`[staff-invite mock] invite issued for ${email}`);
 }
 
 export async function checkStaffInviteToken(token: string): Promise<{ valid: true; email: string } | { valid: false; error: string }> {
