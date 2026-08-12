@@ -217,6 +217,7 @@ export default function SchoolHubClient({ schoolName, schoolTagline, staff, alum
           </div>
           {visibleStaff.length === 0 ? (
             <div style={{ padding: "32px 24px", border: "1px solid var(--border)", background: "var(--surface)", borderRadius: 0, textAlign: "center" }}>
+              <Briefcase size={28} style={{ color: "var(--n-text2)", margin: "0 auto 10px" }} />
               <p style={{ color: "var(--n-text2)", fontSize: 14, margin: 0 }}>No staff match your search.</p>
             </div>
           ) : (
@@ -269,7 +270,7 @@ export default function SchoolHubClient({ schoolName, schoolTagline, staff, alum
           <p style={{ fontFamily: "var(--font-mono)", fontSize: 13, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--amber)", margin: 0 }}>
             Alumni Network
           </p>
-          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
             <div style={{ display: "flex", gap: 6 }}>
               {(["all", "mentors"] as const).map((f) => (
                 <button
@@ -293,7 +294,7 @@ export default function SchoolHubClient({ schoolName, schoolTagline, staff, alum
                 </button>
               ))}
             </div>
-            <SearchInput value={alumniQuery} onChange={setAlumniQuery} placeholder="Search alumni…" />
+            {alumni.length > 0 && <SearchInput value={alumniQuery} onChange={setAlumniQuery} placeholder="Search alumni…" />}
           </div>
         </div>
 
@@ -323,7 +324,7 @@ export default function SchoolHubClient({ schoolName, schoolTagline, staff, alum
           <p style={{ fontFamily: "var(--font-mono)", fontSize: 13, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--amber)", margin: 0 }}>
             Students
           </p>
-          <SearchInput value={studentQuery} onChange={setStudentQuery} placeholder="Search students…" />
+          {students.length > 0 && <SearchInput value={studentQuery} onChange={setStudentQuery} placeholder="Search students…" />}
         </div>
         {students.length === 0 ? (
           <div style={{ padding: "32px 24px", border: "1px solid var(--border)", background: "var(--surface)", borderRadius: 0, textAlign: "center" }}>
