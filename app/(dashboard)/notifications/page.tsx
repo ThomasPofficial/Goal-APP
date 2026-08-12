@@ -97,7 +97,6 @@ export default async function NotificationsPage() {
                 id: true,
                 displayName: true,
                 avatarUrl: true,
-                geniusType: true,
                 handle: true,
               },
             },
@@ -136,10 +135,6 @@ export default async function NotificationsPage() {
         type: "recruitment" as const,
         sortDate: r.createdAt.toISOString(),
         createdAt: r.createdAt.toISOString(),
-        fromProfile: {
-          ...r.fromProfile,
-          geniusType: r.fromProfile.geniusType as string | null,
-        },
       }))}
       applications={applications.map((a) => ({
         id: a.id,

@@ -16,7 +16,7 @@ export async function GET() {
     where: { toProfileId: myProfile.id, status: "PENDING" },
     include: {
       orgProject: { select: { id: true, title: true, org: { select: { id: true, name: true } } } },
-      fromProfile: { select: { id: true, displayName: true, avatarUrl: true, geniusType: true } },
+      fromProfile: { select: { id: true, displayName: true, avatarUrl: true } },
       team: { select: { id: true, name: true } },
     },
     orderBy: { createdAt: "desc" },

@@ -24,7 +24,6 @@ export async function GET() {
           displayName: true,
           handle: true,
           avatarUrl: true,
-          geniusType: true,
           schoolName: true,
         },
       },

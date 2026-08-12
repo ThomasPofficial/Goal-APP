@@ -5,8 +5,6 @@ import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import { Gift } from "lucide-react";
 import Avatar from "@/components/ui/Avatar";
-import GeniusTypeBadge from "@/components/ui/GeniusTypeBadge";
-import type { GeniusTypeKey } from "@/lib/geniusTypes";
 import { cn } from "@/lib/utils";
 
 interface RecruitmentItem {
@@ -17,7 +15,7 @@ interface RecruitmentItem {
   message: string | null;
   createdAt: string;
   orgProject: { id: string; title: string; orgId: string; org: { id: string; name: string } };
-  fromProfile: { id: string; displayName: string; avatarUrl: string | null; geniusType: string | null; handle: string | null };
+  fromProfile: { id: string; displayName: string; avatarUrl: string | null; handle: string | null };
   team: { id: string; name: string };
 }
 
@@ -212,7 +210,6 @@ function RecruitCard({
         <Avatar
           src={req.fromProfile.avatarUrl}
           name={req.fromProfile.displayName}
-          geniusType={req.fromProfile.geniusType as GeniusTypeKey | null}
           size="md"
         />
         <div className="flex-1 min-w-0">
@@ -224,9 +221,6 @@ function RecruitCard({
             >
               {req.fromProfile.displayName}
             </Link>
-            {req.fromProfile.geniusType && (
-              <GeniusTypeBadge type={req.fromProfile.geniusType as GeniusTypeKey} size="sm" />
-            )}
             <span className="text-xs font-mono" style={{ color: "var(--muted)" }}>
               {formatDistanceToNow(new Date(req.createdAt), { addSuffix: true })}
             </span>
