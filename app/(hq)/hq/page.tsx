@@ -31,19 +31,32 @@ export default async function HQSchoolsPage() {
     orderBy: { createdAt: "desc" },
   });
 
-  // Get member counts for all schools in a single grouped query
+  // Get member counts for all schools in a single grouped query. Alumni are
+  // linked via AlumniSchool (Profile.schoolId is null for them post multi-school
+  // migration), so direct Profile counts and AlumniSchool counts must be summed
+  // per school to avoid silently undercounting alumni.
   const schoolIds = schools.map((s) => s.id);
-  const memberCountRows = schoolIds.length
-    ? await prisma.profile.groupBy({
-        by: ["schoolId"],
-        where: { schoolId: { in: schoolIds } },
-        _count: { id: true },
-      })
-    : [];
+  const [memberCountRows, alumniCountRows] = schoolIds.length
+    ? await Promise.all([
+        prisma.profile.groupBy({
+          by: ["schoolId"],
+          where: { schoolId: { in: schoolIds } },
+          _count: { id: true },
+        }),
+        prisma.alumniSchool.groupBy({
+          by: ["schoolId"],
+          where: { schoolId: { in: schoolIds } },
+          _count: { id: true },
+        }),
+      ])
+    : [[], []];
 
   const countMap: Record<string, number> = {};
   for (const row of memberCountRows) {
-    if (row.schoolId) countMap[row.schoolId] = row._count.id;
+    if (row.schoolId) countMap[row.schoolId] = (countMap[row.schoolId] ?? 0) + row._count.id;
+  }
+  for (const row of alumniCountRows) {
+    countMap[row.schoolId] = (countMap[row.schoolId] ?? 0) + row._count.id;
   }
 
   return (

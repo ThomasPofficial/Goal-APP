@@ -72,10 +72,12 @@ export async function POST(
 
   const graduationYearNum = graduationYear ? Number(graduationYear) : undefined;
 
+  const isAlumniRole = role === "ALUMNI";
+
   const sharedFields = {
     displayName: displayName.trim(),
     phone: phone?.trim() || null,
-    schoolId,
+    ...(isAlumniRole ? { schoolId: null } : { schoolId }),
     onboardingComplete: true,
   };
 
@@ -87,7 +89,7 @@ export async function POST(
       ...(intendedCollege?.trim() && { intendedCollege: intendedCollege.trim() }),
       ...(intendedMajor?.trim() && { intendedMajor: intendedMajor.trim() }),
     };
-  } else if (role === "ALUMNI") {
+  } else if (isAlumniRole) {
     roleFields = {
       ...(graduationYearNum !== undefined && { graduationYear: graduationYearNum }),
       ...(industry?.trim() && { industry: industry.trim() }),
@@ -108,28 +110,43 @@ export async function POST(
   });
 
   let userId: string;
+  let profileId: string;
 
   if (existingUser) {
     userId = existingUser.id;
 
     if (existingUser.profile) {
+      profileId = existingUser.profile.id;
       await prisma.profile.update({
         where: { userId },
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         data: profileData as any,
       });
     } else {
-      await prisma.profile.create({
+      const created = await prisma.profile.create({
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         data: { userId, ...profileData } as any,
       });
+      profileId = created.id;
     }
 
-    if (role === "ALUMNI" && !existingUser.isAlumni) {
+    if (isAlumniRole && !existingUser.isAlumni) {
       await prisma.user.update({
         where: { id: userId },
         data: { isAlumni: true },
       });
+    } else if (!isAlumniRole && existingUser.isAlumni) {
+      // Demoted away from alumni for this school — drop the stale
+      // AlumniSchool link, and only flip User.isAlumni back to false if
+      // they have no remaining alumni links at any other school.
+      await prisma.alumniSchool.deleteMany({ where: { profileId, schoolId } });
+      const remainingLinks = await prisma.alumniSchool.count({ where: { profileId } });
+      if (remainingLinks === 0) {
+        await prisma.user.update({
+          where: { id: userId },
+          data: { isAlumni: false },
+        });
+      }
     }
   } else {
     const newUser = await prisma.user.create({
@@ -138,14 +155,24 @@ export async function POST(
         email: email.trim(),
         passwordHash: await bcrypt.hash(randomUUID(), 10),
         role: "STUDENT",
-        isAlumni: role === "ALUMNI",
+        isAlumni: isAlumniRole,
         profile: {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           create: profileData as any,
         },
       },
+      include: { profile: true },
     });
     userId = newUser.id;
+    profileId = newUser.profile!.id;
+  }
+
+  if (isAlumniRole) {
+    await prisma.alumniSchool.upsert({
+      where: { profileId_schoolId: { profileId, schoolId } },
+      create: { profileId, schoolId },
+      update: {},
+    });
   }
 
   await ensureSchoolGeneralRoom(schoolId, userId);
