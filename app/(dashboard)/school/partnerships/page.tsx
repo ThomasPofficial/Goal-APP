@@ -43,8 +43,10 @@ export default async function SchoolPartnershipsPage() {
     }),
     prisma.profile.findMany({
       where: {
-        schoolId,
-        OR: [{ staffTitle: { not: null } }, { user: { isAlumni: true } }],
+        OR: [
+          { schoolId, staffTitle: { not: null } },
+          { alumniSchools: { some: { schoolId } } },
+        ],
       },
       select: { userId: true, displayName: true, staffTitle: true, industry: true, user: { select: { isAlumni: true } } },
       orderBy: { displayName: "asc" },
