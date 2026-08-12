@@ -70,10 +70,16 @@ export async function proxy(req: NextRequest) {
       if (session?.user?.id) {
         const user = await prisma.user.findUnique({
           where: { id: session.user.id },
-          select: { role: true, profile: { select: { schoolId: true, onboardingComplete: true } } },
+          select: { role: true, isAlumni: true, profile: { select: { schoolId: true, onboardingComplete: true } } },
         });
+        // Alumni are always Profile.schoolId: null (they're linked via AlumniSchool
+        // rows instead), so the schoolId half of this check is meaningless for them —
+        // exempt alumni from it rather than bouncing them to /onboarding forever.
         const needsOnboarding =
-          user?.role === "STUDENT" && !user.profile?.schoolId && !user.profile?.onboardingComplete;
+          user?.role === "STUDENT" &&
+          !user.isAlumni &&
+          !user.profile?.schoolId &&
+          !user.profile?.onboardingComplete;
         if (needsOnboarding) {
           return NextResponse.redirect(new URL("/onboarding", req.url));
         }

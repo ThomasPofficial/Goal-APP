@@ -44,6 +44,17 @@ export async function PATCH(
     return NextResponse.json({ error: "Member not found" }, { status: 404 });
   }
 
+  // isAlumni cannot be flipped here: doing so would change User.isAlumni without
+  // creating/deleting the corresponding AlumniSchool row, silently un-walling (or
+  // incorrectly walling) the member. Neither RosterClient nor SchoolDetailClient
+  // ever sends this field, so rejecting it outright costs nothing in practice.
+  if (body.isAlumni !== undefined) {
+    return NextResponse.json(
+      { error: "isAlumni cannot be changed here; re-add the member with the correct role" },
+      { status: 400 }
+    );
+  }
+
   // Build partial update — only include fields present in body
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const profileUpdate: Record<string, any> = {};
@@ -60,14 +71,6 @@ export async function PATCH(
     await prisma.profile.update({
       where: { id: profile.id },
       data: profileUpdate,
-    });
-  }
-
-  // If isAlumni provided, update User record too
-  if (body.isAlumni !== undefined) {
-    await prisma.user.update({
-      where: { id: userId },
-      data: { isAlumni: Boolean(body.isAlumni) },
     });
   }
 
