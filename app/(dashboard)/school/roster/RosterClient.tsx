@@ -165,7 +165,7 @@ export default function RosterClient({ members: initialMembers }: Props) {
       setCopiedKey(key);
       setTimeout(() => setCopiedKey((k) => (k === key ? null : k)), 2000);
     } catch {
-      // clipboard API unavailable — silently no-op, the link is still visible to select/copy manually
+      window.prompt("Couldn't copy automatically — copy this link manually:", text);
     }
   };
 
