@@ -54,6 +54,10 @@ export default {
 
       fontFamily: {
         sans: ["var(--font-inter)", "system-ui", "sans-serif"],
+        // --font-playfair is intentionally unset (Playfair Display's next/font/google
+        // loader was removed 2026-08-12 — its pinned font-file URLs were 404ing on
+        // Google's CDN in this Next 16.1.6 install, breaking every production build).
+        // Falls through to the Georgia/serif fallback below.
         serif: ["var(--font-playfair)", "Georgia", "serif"],
         mono: ["JetBrains Mono", "Menlo", "monospace"],
       },

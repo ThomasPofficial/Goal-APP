@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono, Playfair_Display } from "next/font/google";
+import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import SessionProvider from "@/components/providers/SessionProvider";
 import PostHogProvider from "@/components/providers/PostHogProvider";
@@ -30,14 +30,6 @@ const jetbrainsMono = JetBrains_Mono({
   display: "swap",
 });
 
-const playfairDisplay = Playfair_Display({
-  subsets: ["latin"],
-  weight: ["500", "600", "700"],
-  style: ["normal", "italic"],
-  variable: "--font-playfair",
-  display: "swap",
-});
-
 export const metadata: Metadata = {
   title: "Nivarro — Build your team",
   description:
@@ -50,7 +42,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${interDisplay.variable} ${inter.variable} ${jetbrainsMono.variable} ${playfairDisplay.variable}`}>
+    <html lang="en" className={`${interDisplay.variable} ${inter.variable} ${jetbrainsMono.variable}`}>
       <body className="antialiased" style={{ background: "var(--bg)", color: "var(--text)" }}>
         <PostHogProvider>
           <SessionProvider>
