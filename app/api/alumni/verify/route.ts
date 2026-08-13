@@ -27,8 +27,16 @@ export async function POST(req: Request) {
 
   if (profile) {
     await prisma.profile.update({ where: { id: profile.id }, data: { graduationYear: year } });
-    // Auto-join the school's general community room if the alumni is school-linked
+    // Carry forward the school they already had as a Student into an
+    // AlumniSchool link, then null the scalar — same shape the Task 2
+    // backfill produced for pre-existing alumni.
     if (profile.schoolId) {
+      await prisma.alumniSchool.upsert({
+        where: { profileId_schoolId: { profileId: profile.id, schoolId: profile.schoolId } },
+        create: { profileId: profile.id, schoolId: profile.schoolId },
+        update: {},
+      });
+      await prisma.profile.update({ where: { id: profile.id }, data: { schoolId: null } });
       await ensureSchoolGeneralRoom(profile.schoolId, session.user.id);
     }
   } else {

@@ -3,7 +3,7 @@ import { School, Globe, HeartHandshake, Bell } from "lucide-react";
 
 interface Props {
   displayName: string;
-  schoolName: string;
+  schoolNames: string[];
   hasUnreadCommunity: boolean;
   hasUnreadMentorship: boolean;
 }
@@ -15,8 +15,14 @@ const CARDS = [
   { href: "/notifications", label: "Notifications", Icon: Bell, description: "Recent activity" },
 ];
 
-export default function WalledDashboardClient({ displayName, schoolName, hasUnreadCommunity, hasUnreadMentorship }: Props) {
+export default function WalledDashboardClient({ displayName, schoolNames, hasUnreadCommunity, hasUnreadMentorship }: Props) {
   const unread: Record<string, boolean> = { hasUnreadCommunity, hasUnreadMentorship };
+  const hubLabel =
+    schoolNames.length === 0
+      ? "your school"
+      : schoolNames.length === 1
+      ? schoolNames[0]
+      : `${schoolNames[0]} and ${schoolNames.length - 1} more`;
 
   return (
     <div style={{ maxWidth: 800 }}>
@@ -24,7 +30,7 @@ export default function WalledDashboardClient({ displayName, schoolName, hasUnre
         Welcome, {displayName}
       </h1>
       <p style={{ fontSize: 14, color: "var(--n-text2)", margin: "0 0 32px" }}>
-        Your hub at {schoolName}.
+        Your hub at {hubLabel}.
       </p>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 12 }}>

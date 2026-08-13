@@ -2,6 +2,7 @@
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
+import { getSchoolIds } from '@/lib/communities';
 
 // GET — list all community rooms the current user is in (for their school)
 export async function GET() {
@@ -10,30 +11,16 @@ export async function GET() {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const userRecord = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: { role: true },
-  });
+  const schoolIds = await getSchoolIds(session.user.id);
 
-  let effectiveSchoolId: string | null = null;
-  if (userRecord?.role === 'SCHOOL') {
-    effectiveSchoolId = session.user.id;
-  } else {
-    const profile = await prisma.profile.findUnique({
-      where: { userId: session.user.id },
-      select: { schoolId: true },
-    });
-    effectiveSchoolId = profile?.schoolId ?? null;
-  }
-
-  if (!effectiveSchoolId) {
+  if (schoolIds.length === 0) {
     return NextResponse.json({ rooms: [] });
   }
 
   const conversations = await prisma.conversation.findMany({
     where: {
       type: 'COMMUNITY',
-      schoolId: effectiveSchoolId,
+      schoolId: { in: schoolIds },
       participants: { some: { userId: session.user.id } },
     },
     include: {

@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { getSchoolRosterMembers } from "@/lib/school-roster";
 
 async function getAdminSession() {
   const session = await auth();
@@ -45,39 +46,8 @@ export async function GET(
     return NextResponse.json({ error: "School not found" }, { status: 404 });
   }
 
-  // Fetch all members linked to this school
-  const memberProfiles = await prisma.profile.findMany({
-    where: { schoolId },
-    include: {
-      user: {
-        select: {
-          id: true,
-          email: true,
-          role: true,
-          isAlumni: true,
-          createdAt: true,
-        },
-      },
-    },
-    orderBy: { displayName: "asc" },
-  });
-
-  const members = memberProfiles.map((p) => ({
-    profileId: p.id,
-    userId: p.userId,
-    displayName: p.displayName,
-    email: p.user.email ?? null,
-    phone: p.phone ?? null,
-    role: p.user.role,
-    isAlumni: p.user.isAlumni,
-    staffTitle: p.staffTitle ?? null,
-    graduationYear: p.graduationYear ?? null,
-    industry: p.industry ?? null,
-    intendedCollege: p.intendedCollege ?? null,
-    intendedMajor: p.intendedMajor ?? null,
-    isAvailableToMentor: p.isAvailableToMentor,
-    createdAt: p.user.createdAt.toISOString(),
-  }));
+  // Fetch all members linked to this school (direct + AlumniSchool-linked alumni)
+  const members = await getSchoolRosterMembers(schoolId);
 
   return NextResponse.json({
     school: {

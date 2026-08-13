@@ -1,20 +1,54 @@
 import { prisma } from '@/lib/prisma';
 
 /**
- * Resolves a user's schoolId. SCHOOL-role accounts are their own schoolId;
- * everyone else's comes from their Profile.
+ * Resolves the set of schools a user belongs to. SCHOOL-role accounts are
+ * their own school. Non-alumni Students have 0-or-1 (their Profile.schoolId).
+ * Alumni have 0-to-many, resolved through AlumniSchool.
  */
-export async function getSchoolId(userId: string): Promise<string | null> {
+export async function getSchoolIds(userId: string): Promise<string[]> {
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { role: true },
+    select: { role: true, isAlumni: true },
   });
-  if (user?.role === 'SCHOOL') return userId;
+  if (user?.role === 'SCHOOL') return [userId];
+
+  if (user?.isAlumni) {
+    const profile = await prisma.profile.findUnique({
+      where: { userId },
+      select: { id: true },
+    });
+    if (!profile) return [];
+    const links = await prisma.alumniSchool.findMany({
+      where: { profileId: profile.id },
+      orderBy: { createdAt: 'asc' },
+      select: { schoolId: true },
+    });
+    return links.map((l) => l.schoolId);
+  }
+
   const profile = await prisma.profile.findUnique({
     where: { userId },
     select: { schoolId: true },
   });
-  return profile?.schoolId ?? null;
+  return profile?.schoolId ? [profile.schoolId] : [];
+}
+
+/**
+ * Same resolution as getSchoolIds, but returns each school's display name —
+ * for UI lists (dashboard greeting, /my-school switcher, profile editor).
+ */
+export async function getLinkedSchools(userId: string): Promise<{ id: string; name: string }[]> {
+  const schoolIds = await getSchoolIds(userId);
+  if (schoolIds.length === 0) return [];
+  const schools = await prisma.user.findMany({
+    where: { id: { in: schoolIds } },
+    select: { id: true, name: true, profile: { select: { displayName: true } } },
+  });
+  const byId = new Map(schools.map((s) => [s.id, s]));
+  return schoolIds
+    .map((id) => byId.get(id))
+    .filter((s): s is NonNullable<typeof s> => !!s)
+    .map((s) => ({ id: s.id, name: s.profile?.displayName ?? s.name ?? 'School' }));
 }
 
 /**

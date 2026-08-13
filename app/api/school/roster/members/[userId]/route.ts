@@ -31,13 +31,28 @@ export async function PATCH(
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  // Security: find profile only if it belongs to this school
+  // Security: find profile only if it belongs to this school — either
+  // directly (non-alumni) or via an AlumniSchool link.
   const profile = await prisma.profile.findFirst({
-    where: { userId, schoolId },
+    where: {
+      userId,
+      OR: [{ schoolId }, { alumniSchools: { some: { schoolId } } }],
+    },
   });
 
   if (!profile) {
     return NextResponse.json({ error: "Member not found" }, { status: 404 });
+  }
+
+  // isAlumni cannot be flipped here: doing so would change User.isAlumni without
+  // creating/deleting the corresponding AlumniSchool row, silently un-walling (or
+  // incorrectly walling) the member. Neither RosterClient nor SchoolDetailClient
+  // ever sends this field, so rejecting it outright costs nothing in practice.
+  if (body.isAlumni !== undefined) {
+    return NextResponse.json(
+      { error: "isAlumni cannot be changed here; re-add the member with the correct role" },
+      { status: 400 }
+    );
   }
 
   // Build partial update — only include fields present in body
@@ -59,14 +74,6 @@ export async function PATCH(
     });
   }
 
-  // If isAlumni provided, update User record too
-  if (body.isAlumni !== undefined) {
-    await prisma.user.update({
-      where: { id: userId },
-      data: { isAlumni: Boolean(body.isAlumni) },
-    });
-  }
-
   return NextResponse.json({ ok: true });
 }
 
@@ -81,20 +88,30 @@ export async function DELETE(
   const { schoolId } = check;
   const { userId } = await params;
 
-  // Security: find profile only if it belongs to this school
+  // Security: find profile only if it belongs to this school — either
+  // directly (non-alumni) or via an AlumniSchool link.
   const profile = await prisma.profile.findFirst({
-    where: { userId, schoolId },
+    where: {
+      userId,
+      OR: [{ schoolId }, { alumniSchools: { some: { schoolId } } }],
+    },
   });
 
   if (!profile) {
     return NextResponse.json({ error: "Member not found" }, { status: 404 });
   }
 
-  // Unlink from school — do NOT delete the user
-  await prisma.profile.update({
-    where: { id: profile.id },
-    data: { schoolId: null },
-  });
+  // Unlink from this specific school — do NOT delete the user, and do NOT
+  // touch any of their other AlumniSchool links.
+  await Promise.all([
+    prisma.profile.updateMany({
+      where: { id: profile.id, schoolId },
+      data: { schoolId: null },
+    }),
+    prisma.alumniSchool.deleteMany({
+      where: { profileId: profile.id, schoolId },
+    }),
+  ]);
 
   return NextResponse.json({ ok: true });
 }

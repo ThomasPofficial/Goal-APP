@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import SchoolDetailClient from "./SchoolDetailClient";
+import { getSchoolRosterMembers } from "@/lib/school-roster";
 
 export default async function SchoolDetailPage({
   params,
@@ -65,39 +66,8 @@ export default async function SchoolDetailPage({
     );
   }
 
-  // Fetch all members linked to this school
-  const memberProfiles = await prisma.profile.findMany({
-    where: { schoolId },
-    include: {
-      user: {
-        select: {
-          id: true,
-          email: true,
-          role: true,
-          isAlumni: true,
-          createdAt: true,
-        },
-      },
-    },
-    orderBy: { displayName: "asc" },
-  });
-
-  const members = memberProfiles.map((p) => ({
-    profileId: p.id,
-    userId: p.userId,
-    displayName: p.displayName,
-    email: p.user.email ?? null,
-    phone: p.phone ?? null,
-    role: p.user.role as "STUDENT" | "ORG" | "ADMIN" | "SCHOOL",
-    isAlumni: p.user.isAlumni,
-    staffTitle: p.staffTitle ?? null,
-    graduationYear: p.graduationYear ?? null,
-    industry: p.industry ?? null,
-    intendedCollege: p.intendedCollege ?? null,
-    intendedMajor: p.intendedMajor ?? null,
-    isAvailableToMentor: p.isAvailableToMentor,
-    createdAt: p.user.createdAt.toISOString(),
-  }));
+  // Fetch all members linked to this school (direct + AlumniSchool-linked alumni)
+  const members = await getSchoolRosterMembers(schoolId);
 
   const school = {
     id: schoolUser.id,

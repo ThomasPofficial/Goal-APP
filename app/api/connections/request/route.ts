@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getSchoolId } from "@/lib/communities";
+import { getSchoolIds } from "@/lib/communities";
 import { z } from "zod";
 
 const requestSchema = z.object({
@@ -49,12 +49,14 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const [fromSchoolId, toSchoolId] = await Promise.all([
-    getSchoolId(fromUserId),
-    getSchoolId(toUserId),
+  const [fromSchoolIds, toSchoolIds] = await Promise.all([
+    getSchoolIds(fromUserId),
+    getSchoolIds(toUserId),
   ]);
 
-  if (!fromSchoolId || !toSchoolId || fromSchoolId !== toSchoolId) {
+  const sharedSchoolId = fromSchoolIds.find((id) => toSchoolIds.includes(id));
+
+  if (!sharedSchoolId) {
     return NextResponse.json({ error: "Not in the same school" }, { status: 400 });
   }
 
@@ -82,7 +84,7 @@ export async function POST(req: Request) {
   }
 
   const request = await prisma.connectionRequest.create({
-    data: { schoolId: fromSchoolId, fromUserId, toUserId, status: "PENDING", message: message || null },
+    data: { schoolId: sharedSchoolId, fromUserId, toUserId, status: "PENDING", message: message || null },
   });
 
   return NextResponse.json({ request });

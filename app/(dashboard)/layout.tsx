@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { isWalledStudent } from "@/lib/accountGate";
 import SidebarShell from "@/components/layout/SidebarShell";
 import { computeEffectivePermissions } from "@/lib/facultyPermissions";
 
@@ -43,7 +44,7 @@ export default async function DashboardLayout({
   const isStaff = role === "STAFF" && !!profile?.schoolId;
   // Student/Alum account = STUDENT role with a school affiliation — walled-off nav.
   // (Standard = STUDENT role with no school affiliation; that's just "none of the above" here.)
-  const isWalledStudent = role === "STUDENT" && !!profile?.schoolId;
+  const isWalledStudentAccount = await isWalledStudent(session.user.id);
   const isAlumni = !!dbUser?.isAlumni;
   const staffCapabilities = isStaff
     ? computeEffectivePermissions({
@@ -83,7 +84,7 @@ export default async function DashboardLayout({
         isSchool={isSchool}
         isStaff={isStaff}
         staffCapabilities={staffCapabilities}
-        isWalledStudent={isWalledStudent}
+        isWalledStudent={isWalledStudentAccount}
         isAlumni={isAlumni}
       />
       <main className="dashboard-main min-h-screen pt-14 pb-[60px] md:pt-0 md:pb-0">

@@ -2,7 +2,7 @@
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import CommunitiesClient from "./CommunitiesClient";
-import { ensureSchoolGeneralRoom } from "@/lib/communities";
+import { ensureSchoolGeneralRoom, getLinkedSchools, getSchoolIds } from "@/lib/communities";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Communities — Nivarro" };
@@ -11,29 +11,19 @@ export default async function CommunitiesPage() {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
 
-  // School admin accounts (role=SCHOOL) use their own id as schoolId
-  const [user, profile] = await Promise.all([
-    prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { role: true, schoolCode: true },
-    }),
-    prisma.profile.findUnique({
-      where: { userId: session.user.id },
-      select: { schoolId: true, displayName: true },
-    }),
-  ]);
-
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { role: true, schoolCode: true },
+  });
   const isAdmin = user?.role === "SCHOOL";
-  const schoolId = isAdmin ? session.user.id : (profile?.schoolId ?? null);
+  const schoolIds = await getSchoolIds(session.user.id);
 
-  // Ensure the General Room exists and the current user is a participant — for
-  // admins (their own school) and for any school-affiliated student/alum, who
-  // has no self-serve code-entry path into their school's room.
-  if (schoolId) {
-    await ensureSchoolGeneralRoom(schoolId, session.user.id);
-  }
+  // Ensure the General Room exists and the current user is a participant, for
+  // every linked school — admins (their own school) and any school-affiliated
+  // student/alum, who has no self-serve code-entry path into their room(s).
+  await Promise.all(schoolIds.map((id) => ensureSchoolGeneralRoom(id, session.user.id)));
 
-  if (!schoolId) {
+  if (schoolIds.length === 0) {
     return (
       <CommunitiesClient
         schoolId={null}
@@ -45,18 +35,23 @@ export default async function CommunitiesPage() {
     );
   }
 
-  const conversations = await prisma.conversation.findMany({
-    where: {
-      type: "COMMUNITY",
-      schoolId,
-      participants: { some: { userId: session.user.id } },
-    },
-    include: {
-      messages: { orderBy: { createdAt: "desc" }, take: 1 },
-      _count: { select: { participants: true } },
-    },
-    orderBy: [{ isPrivateRoom: "asc" }, { updatedAt: "desc" }],
-  });
+  const [conversations, linkedSchools] = await Promise.all([
+    prisma.conversation.findMany({
+      where: {
+        type: "COMMUNITY",
+        schoolId: { in: schoolIds },
+        participants: { some: { userId: session.user.id } },
+      },
+      include: {
+        messages: { orderBy: { createdAt: "desc" }, take: 1 },
+        _count: { select: { participants: true } },
+      },
+      orderBy: [{ isPrivateRoom: "asc" }, { updatedAt: "desc" }],
+    }),
+    getLinkedSchools(session.user.id),
+  ]);
+
+  const schoolNameById = new Map(linkedSchools.map((s) => [s.id, s.name]));
 
   const initialRooms = conversations.map((c) => ({
     id: c.id,
@@ -67,11 +62,12 @@ export default async function CommunitiesPage() {
       ? { body: c.messages[0].content, createdAt: c.messages[0].createdAt.toISOString() }
       : null,
     updatedAt: c.updatedAt.toISOString(),
+    schoolName: c.schoolId ? (schoolNameById.get(c.schoolId) ?? null) : null,
   }));
 
   return (
     <CommunitiesClient
-      schoolId={schoolId}
+      schoolId={schoolIds[0]}
       myUserId={session.user.id}
       isAdmin={isAdmin}
       initialRooms={initialRooms}

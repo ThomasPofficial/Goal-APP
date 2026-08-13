@@ -3,17 +3,17 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import SchoolHubClient from "./SchoolHubClient";
 import { finalizeExpiredPartnershipRequests } from "@/lib/partnerships";
+import { getLinkedSchools } from "@/lib/communities";
 
-export default async function MySchoolPage() {
+export default async function MySchoolPage(props: {
+  searchParams: Promise<{ school?: string }>;
+}) {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
 
-  const profile = await prisma.profile.findUnique({
-    where: { userId: session.user.id },
-    select: { schoolId: true },
-  });
+  const linkedSchools = await getLinkedSchools(session.user.id);
 
-  if (!profile?.schoolId) {
+  if (linkedSchools.length === 0) {
     return (
       <div style={{ maxWidth: 720 }}>
         <h1 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(22px, 3vw, 36px)", letterSpacing: "-0.02em", color: "var(--text)", margin: "0 0 8px" }}>
@@ -34,7 +34,10 @@ export default async function MySchoolPage() {
     );
   }
 
-  const schoolId = profile.schoolId;
+  const searchParams = await props.searchParams;
+  const requestedId = searchParams.school;
+  const activeSchool = linkedSchools.find((s) => s.id === requestedId) ?? linkedSchools[0];
+  const schoolId = activeSchool.id;
 
   await finalizeExpiredPartnershipRequests(schoolId);
 
@@ -59,17 +62,15 @@ export default async function MySchoolPage() {
       },
       orderBy: { createdAt: "asc" },
     }),
-    prisma.user.findMany({
+    prisma.alumniSchool.findMany({
       where: {
-        isAlumni: true,
-        profile: { schoolId },
-        id: { not: session.user.id },
+        schoolId,
+        profile: { userId: { not: session.user.id } },
       },
       select: {
-        id: true,
-        name: true,
         profile: {
           select: {
+            userId: true,
             displayName: true,
             handle: true,
             avatarUrl: true,
@@ -78,6 +79,7 @@ export default async function MySchoolPage() {
             graduationYear: true,
             isAvailableToMentor: true,
             intendedCollege: true,
+            user: { select: { name: true } },
             teamMemberships: {
               select: { team: { select: { name: true, org: { select: { name: true } } } } },
               take: 3,
@@ -89,6 +91,8 @@ export default async function MySchoolPage() {
           },
         },
       },
+      // AlumniSchool.createdAt is when this alum linked to THIS school (not Profile.createdAt,
+      // which is account creation and can predate the link for multi-school alumni).
       orderBy: { createdAt: "asc" },
     }),
     prisma.profile.findMany({
@@ -101,23 +105,26 @@ export default async function MySchoolPage() {
   const schoolName = school?.profile?.displayName ?? school?.name ?? "Your School";
   const schoolTagline = school?.profile?.headline ?? "Your private Nivarro community";
 
-  const formattedAlumni = allAlumni.map((u) => ({
-    id: u.id,
-    displayName: u.profile?.displayName ?? u.name ?? "Alumni",
-    handle: u.profile?.handle ?? null,
-    avatarUrl: u.profile?.avatarUrl ?? null,
-    bio: u.profile?.bio ?? null,
-    industry: u.profile?.industry ?? null,
-    graduationYear: u.profile?.graduationYear ?? null,
-    isAvailableToMentor: u.profile?.isAvailableToMentor ?? false,
-    intendedCollege: u.profile?.intendedCollege ?? null,
-    orgs: [
-      ...new Set([
-        ...(u.profile?.teamMemberships ?? []).map((m) => m.team.org?.name).filter(Boolean),
-        ...(u.profile?.orgReviews ?? []).map((r) => r.org.name),
-      ]),
-    ].slice(0, 3) as string[],
-  }));
+  const formattedAlumni = allAlumni.map((link) => {
+    const p = link.profile;
+    return {
+      id: p.userId,
+      displayName: p.displayName ?? p.user.name ?? "Alumni",
+      handle: p.handle ?? null,
+      avatarUrl: p.avatarUrl ?? null,
+      bio: p.bio ?? null,
+      industry: p.industry ?? null,
+      graduationYear: p.graduationYear ?? null,
+      isAvailableToMentor: p.isAvailableToMentor ?? false,
+      intendedCollege: p.intendedCollege ?? null,
+      orgs: [
+        ...new Set([
+          ...p.teamMemberships.map((m) => m.team.org?.name).filter(Boolean),
+          ...p.orgReviews.map((r) => r.org.name),
+        ]),
+      ].slice(0, 3) as string[],
+    };
+  });
 
   const mentors = formattedAlumni.filter((a) => a.isAvailableToMentor);
 
@@ -138,6 +145,7 @@ export default async function MySchoolPage() {
       mentors={mentors}
       students={formattedStudents}
       currentUserId={session.user.id}
+      otherSchools={linkedSchools.filter((s) => s.id !== schoolId)}
     />
   );
 }

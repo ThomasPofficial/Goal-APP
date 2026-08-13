@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { getSchoolRosterMembers } from "@/lib/school-roster";
 
 // Diagnostic endpoint: exact headcounts for the Westside Academy stress-test
 // roster, plus a check of which "Thomas"-named accounts are (or aren't)
@@ -19,17 +20,22 @@ export async function GET(req: Request) {
     select: { id: true },
   });
 
-  const [totalLinkedProfiles, staffCount, mentorCount, plainStudentCount, roomParticipants, messageCount] =
-    await Promise.all([
-      prisma.profile.count({ where: { schoolId } }),
-      prisma.profile.count({ where: { schoolId, staffTitle: { not: null } } }),
-      prisma.profile.count({ where: { schoolId, isAvailableToMentor: true } }),
-      prisma.profile.count({ where: { schoolId, staffTitle: null, isAvailableToMentor: false } }),
-      room
-        ? prisma.conversationParticipant.count({ where: { conversationId: room.id } })
-        : Promise.resolve(0),
-      room ? prisma.message.count({ where: { conversationId: room.id } }) : Promise.resolve(0),
-    ]);
+  // Use the canonical roster resolver (unions direct Profile.schoolId members
+  // with AlumniSchool-linked alumni) so these counts don't regress to the
+  // pre-migration schoolId-only view and undercount alumni mentors/members.
+  const [members, roomParticipants, messageCount] = await Promise.all([
+    getSchoolRosterMembers(schoolId),
+    room
+      ? prisma.conversationParticipant.count({ where: { conversationId: room.id } })
+      : Promise.resolve(0),
+    room ? prisma.message.count({ where: { conversationId: room.id } }) : Promise.resolve(0),
+  ]);
+
+  const totalLinkedProfiles = members.length;
+  const staffCount = members.filter((m) => m.staffTitle !== null).length;
+  const mentorCount = members.filter((m) => m.isAvailableToMentor).length;
+  const plainStudentCount = members.filter((m) => m.staffTitle === null && !m.isAvailableToMentor).length;
+  const alumniCount = members.filter((m) => m.isAlumni).length;
 
   // Find any "Thomas"-named real accounts and check their school link + room membership
   const thomasUsers = await prisma.user.findMany({
@@ -39,7 +45,8 @@ export async function GET(req: Request) {
       name: true,
       email: true,
       role: true,
-      profile: { select: { schoolId: true, displayName: true } },
+      isAlumni: true,
+      profile: { select: { id: true, schoolId: true, displayName: true } },
     },
   });
 
@@ -50,12 +57,19 @@ export async function GET(req: Request) {
             where: { conversationId_userId: { conversationId: room.id, userId: u.id } },
           }))
         : false;
+      // The legacy Profile.schoolId scalar is null for every alumni post-migration,
+      // so it alone is not a reliable affiliation check — also check AlumniSchool.
+      const alumniLink = u.profile
+        ? await prisma.alumniSchool.findFirst({ where: { profileId: u.profile.id, schoolId } })
+        : null;
       return {
         name: u.name,
         email: u.email,
         role: u.role,
         profileSchoolId: u.profile?.schoolId ?? null,
         matchesWestsideSchoolId: u.profile?.schoolId === schoolId,
+        linkedViaAlumniSchool: !!alumniLink,
+        isAffiliatedWithWestside: u.profile?.schoolId === schoolId || !!alumniLink,
         isParticipantInGeneralRoom: inRoom,
       };
     })
@@ -69,6 +83,7 @@ export async function GET(req: Request) {
       staff: staffCount,
       mentors: mentorCount,
       plainStudents: plainStudentCount,
+      alumni: alumniCount,
       generalRoomParticipants: roomParticipants,
       messagesInGeneralRoom: messageCount,
     },

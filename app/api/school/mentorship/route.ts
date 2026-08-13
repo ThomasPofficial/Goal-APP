@@ -34,8 +34,10 @@ export async function GET() {
     }),
     prisma.profile.findMany({
       where: {
-        schoolId,
-        OR: [{ staffTitle: { not: null } }, { user: { isAlumni: true } }],
+        OR: [
+          { schoolId, staffTitle: { not: null } },
+          { alumniSchools: { some: { schoolId } } },
+        ],
       },
       select: { userId: true, displayName: true, staffTitle: true, industry: true, user: { select: { isAlumni: true } } },
       orderBy: { displayName: "asc" },
@@ -104,8 +106,10 @@ export async function POST(req: Request) {
   const validMentors = await prisma.profile.findMany({
     where: {
       userId: { in: mentorIds },
-      schoolId,
-      OR: [{ staffTitle: { not: null } }, { user: { isAlumni: true } }],
+      OR: [
+        { schoolId, staffTitle: { not: null } },
+        { alumniSchools: { some: { schoolId } } },
+      ],
     },
     select: { userId: true },
   });
