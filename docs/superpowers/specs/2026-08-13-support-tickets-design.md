@@ -17,14 +17,15 @@ enum SupportTicketStatus {
 }
 
 model SupportTicket {
-  id         String              @id @default(cuid())
-  userId     String
-  subject    String
-  message    String
-  path       String?
-  status     SupportTicketStatus @default(OPEN)
-  createdAt  DateTime            @default(now())
-  resolvedAt DateTime?
+  id           String              @id @default(cuid())
+  userId       String
+  subject      String
+  message      String
+  path         String?
+  status       SupportTicketStatus @default(OPEN)
+  replyMessage String?
+  createdAt    DateTime            @default(now())
+  resolvedAt   DateTime?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -33,6 +34,7 @@ model SupportTicket {
 ```
 
 - `path` is the page the user was on when they opened the modal — captured automatically client-side (`usePathname()`), not a form field.
+- `replyMessage` is the optional short note an admin attaches when resolving — set once, at resolve time (see Resolution notice below), not a running thread.
 - No denormalized email/role snapshot on the ticket; the admin view joins through `user` (email, role, `profile.displayName`) the same way `Message`/`OrgReview` already do.
 - Add `supportTickets SupportTicket[]` to `User`.
 - Needs a manual migration file per [[Nivarro Dev Patterns]] (Render runs `prisma migrate deploy` at startup; `prisma generate` alone won't create the column).
@@ -44,7 +46,9 @@ model SupportTicket {
 - `GET` — ADMIN-only (`dbUser.role !== "ADMIN"` → 403). Returns all tickets, `status: OPEN` first, then `createdAt desc`, each with `user.email`, `user.role`, `user.profile.displayName`.
 
 `app/api/support-tickets/[id]/route.ts`
-- `PATCH` — ADMIN-only. Body `{ status: "OPEN" | "RESOLVED" }`. Updates `status` and sets/clears `resolvedAt`.
+- `PATCH` — ADMIN-only. Body `{ status: "OPEN" | "RESOLVED", replyMessage?: string }`. Updates `status` and sets/clears `resolvedAt`.
+  - On transition to `RESOLVED`: stores `replyMessage` (if provided) and triggers the resolution notice (see below).
+  - On transition back to `OPEN` (reopen): clears `resolvedAt`, leaves the prior `replyMessage` in place as history, does not re-notify.
 
 ## Entry point (all roles)
 
@@ -65,8 +69,17 @@ New `components/support/SupportTicketModal.tsx` (client component):
 - Fetches tickets via the same query the GET route uses (or calls it directly server-side via Prisma — no need to round-trip through the API from a server component).
 - Renders open tickets first, then resolved. Each row: subject, message, submitter email/role/displayName, `path`, relative timestamp, and a resolve/reopen button.
 - Resolve/reopen button is a small client subcomponent (`SupportTicketRow.tsx`) that calls the `PATCH` route and updates local state — same shape as other admin toggle actions in this codebase (e.g. `CloseProjectModal`).
+- Resolving is a small inline form, not a bare button: an optional single-line/short-textarea "Reply (optional)" field next to the Resolve button. Submitting calls `PATCH` with `{ status: "RESOLVED", replyMessage }` (empty string sent as `undefined`). Reopening is a plain button, no reply field.
 
 `app/(hq)/layout.tsx`: add `<Link href="/hq/support" className="hq-nav-link">Support</Link>` next to the existing "Schools" link.
+
+## Resolution notice
+
+When a ticket transitions to `RESOLVED` via the `PATCH` route, best-effort (log-and-swallow, never fails the request) on both channels:
+
+- **Email** — via `lib/resend.ts` to `user.email`, `from: "Nivarro Support <support@nivarro.co>"`, subject `"Your Nivarro support ticket has been resolved"`. Body includes the original `subject`, and `replyMessage` if one was given (falls back to a generic "Your ticket has been resolved" line if not).
+- **In-app** — surfaced on the existing `/notifications` page, which already aggregates unrelated domain events on the fly per role (donations, chat, recruitment requests/decisions in `NotificationsClient`; donations + chat in `WalledNotificationsClient`) rather than reading from a generic notification table. Add one more on-the-fly query in `app/(dashboard)/notifications/page.tsx`: `prisma.supportTicket.findMany({ where: { userId: session.user.id, status: "RESOLVED" }, orderBy: { resolvedAt: "desc" }, take: 20 })`, mapped into the same item shape both notification clients already consume (`kind: "support"`, `label`: subject, `lastMessage`: `replyMessage`, `updatedAt: resolvedAt`, `unread: false` — matching how donations already render with no per-item read state, `href: "/support"` is not needed since there's no ticket detail page; omit `href` or point nowhere/disable the click). Included in both the SCHOOL/walled-student branch and the standard branch of that page.
+- Caveat: `orgNav` (`Sidebar.tsx`) has no "Notifications" link today, so org accounts won't have an obvious way to browse to `/notifications` and see this in-app — they're covered by the email side of this notice. Not fixing that gap here since it's pre-existing and outside this feature's scope; flagging so it's a known limitation, not a missed case.
 
 ## Removing the old feedback path
 
@@ -75,6 +88,6 @@ New `components/support/SupportTicketModal.tsx` (client component):
 
 ## Out of scope
 
-- In-app replies/threading — follow-up happens over email, same as today.
-- User-facing ticket history/status page — admins triage via HQ; users get the confirmation toast and any reply by email. Can be added later as a follow-up if it turns out to be needed.
+- Ongoing reply threading — an admin gets exactly one `replyMessage`, attached at the moment they resolve the ticket. No back-and-forth conversation, no per-message history. If the user needs to follow up, they file a new ticket.
+- User-facing ticket history/status page — no page listing "my past tickets." Users get the submission confirmation toast, then the resolution notice (email + notifications-page item) when it's closed out. Can be added later as a follow-up if it turns out to be needed.
 - Categories/severity — kept to subject + message per the design discussion; can be added as a column later without a breaking change if triage volume grows.
