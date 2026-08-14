@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import NotificationsClient from "./NotificationsClient";
 import WalledNotificationsClient from "./WalledNotificationsClient";
 import { isWalledStudent } from "@/lib/accountGate";
+import { canReceiveDonations } from "@/lib/donationEligibility";
 
 export default async function NotificationsPage() {
   const session = await auth();
@@ -11,14 +12,24 @@ export default async function NotificationsPage() {
 
   const dbUser = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { role: true },
+    select: { role: true, isAlumni: true, profile: { select: { staffTitle: true } } },
   });
 
-  const donations = await prisma.donation.findMany({
-    where: { recipientUserId: session.user.id },
-    orderBy: { createdAt: "desc" },
-    take: 20,
-  });
+  // Students, school accounts, and staff/teachers never see donation
+  // notifications — the personal "donate to me" flow is off-limits to them
+  // in the first place (see lib/donationEligibility.ts), and any pre-existing
+  // Donation rows (seed data, a stale account role change) must not surface
+  // here either.
+  const eligibleForDonations =
+    !!dbUser && canReceiveDonations(dbUser, { staffTitle: dbUser.profile?.staffTitle ?? null });
+
+  const donations = eligibleForDonations
+    ? await prisma.donation.findMany({
+        where: { recipientUserId: session.user.id },
+        orderBy: { createdAt: "desc" },
+        take: 20,
+      })
+    : [];
 
   const donationItems = donations.map((d) => ({
     id: `donation-${d.id}`,

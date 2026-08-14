@@ -2,6 +2,7 @@ import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 import ProfileClient from './ProfileClient';
+import { canReceiveDonations } from '@/lib/donationEligibility';
 
 export default async function ProfilePage({ params }: { params: Promise<{ handle: string }> }) {
   const session = await auth();
@@ -32,6 +33,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ handle
         isAvailableToMentor: true,
         graduationYear: true,
         intendedCollege: true,
+        user: { select: { role: true, isAlumni: true } },
       },
     }),
     session?.user?.id
@@ -61,12 +63,15 @@ export default async function ProfilePage({ params }: { params: Promise<{ handle
       })
     : [];
 
+  const { user: profileUser, ...profileFields } = profile;
+
   return (
     <ProfileClient
       profile={{
-        ...profile,
+        ...profileFields,
         archetypeUpdatedAt: profile.archetypeUpdatedAt?.toISOString() ?? null,
       }}
+      canReceiveDonations={canReceiveDonations(profileUser, profile)}
       isOwn={!!isOwnProfile}
       myProfile={myProfile ? { ...myProfile, archetypeUpdatedAt: myProfile.archetypeUpdatedAt?.toISOString() ?? null } : null}
       ownReviews={ownReviews.map((r) => ({ ...r, createdAt: r.createdAt.toISOString() }))}

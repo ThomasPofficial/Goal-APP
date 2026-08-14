@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { processDonation } from "@/lib/payments/processDonation";
+import { canReceiveDonations } from "@/lib/donationEligibility";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -17,9 +18,20 @@ export async function POST(req: Request) {
 
   const profile = await prisma.profile.findUnique({
     where: { handle: parsed.data.recipientHandle },
-    select: { userId: true },
+    select: {
+      userId: true,
+      staffTitle: true,
+      user: { select: { role: true, isAlumni: true } },
+    },
   });
   if (!profile) return NextResponse.json({ error: "Recipient not found" }, { status: 404 });
+
+  if (!canReceiveDonations(profile.user, profile)) {
+    return NextResponse.json(
+      { error: "This account cannot receive personal donations." },
+      { status: 403 }
+    );
+  }
 
   try {
     const donation = await processDonation({

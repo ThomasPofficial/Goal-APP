@@ -41,12 +41,13 @@ interface ProfileData {
 
 interface Props {
   profile: ProfileData;
+  canReceiveDonations: boolean;
   isOwn: boolean;
   myProfile: ProfileData | null;
   ownReviews?: OwnReview[];
 }
 
-export default function ProfileClient({ profile, isOwn, ownReviews = [] }: Props) {
+export default function ProfileClient({ profile, canReceiveDonations, isOwn, ownReviews = [] }: Props) {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({
@@ -195,7 +196,7 @@ export default function ProfileClient({ profile, isOwn, ownReviews = [] }: Props
       </div>
 
       {/* Support */}
-      {profile.handle && (
+      {profile.handle && canReceiveDonations && (
         <div className="mb-6">
           {isOwn ? (
             <div className="rounded-xl p-5" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
