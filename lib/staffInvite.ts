@@ -25,6 +25,11 @@ export async function createStaffInvite(args: {
   tierId?: string | null;
   customPermissions?: Capability[];
   staffTitle?: string;
+  displayName?: string;
+  // Only ever used to PROMOTE (true) via this path — never demotes an existing
+  // Core Admin as a side effect of an unrelated invite/edit. Demotion is only
+  // ever explicit, via PATCH /api/school/admins/[userId].
+  isCoreAdmin?: boolean;
 }): Promise<{ status: "invited"; link: string } | { status: "already-staff" }> {
   const email = args.email.trim().toLowerCase();
   const overridesJson = JSON.stringify(args.customPermissions ?? []);
@@ -58,6 +63,9 @@ export async function createStaffInvite(args: {
       staffTierId: args.tierId ?? null,
       staffPermissionOverrides: overridesJson,
       staffInvited: true,
+      ...(args.staffTitle ? { staffTitle: args.staffTitle } : {}),
+      ...(args.displayName?.trim() ? { displayName: args.displayName.trim() } : {}),
+      ...(args.isCoreAdmin === true ? { isCoreAdmin: true } : {}),
     };
     if (existing.profile) {
       await prisma.profile.update({ where: { userId: existing.id }, data });
@@ -86,6 +94,8 @@ export async function createStaffInvite(args: {
       staffPermissionOverrides: overridesJson,
       staffInvited: true,
       ...(args.staffTitle ? { staffTitle: args.staffTitle } : {}),
+      ...(args.displayName?.trim() ? { displayName: args.displayName.trim() } : {}),
+      ...(args.isCoreAdmin === true ? { isCoreAdmin: true } : {}),
     };
     if (existing.profile) {
       await prisma.profile.update({ where: { userId: existing.id }, data });
@@ -103,16 +113,17 @@ export async function createStaffInvite(args: {
     const created = await prisma.user.create({
       data: {
         email,
-        name: email,
+        name: args.displayName?.trim() || email,
         role: "STUDENT",
         profile: {
           create: {
-            displayName: email,
+            displayName: args.displayName?.trim() || email,
             schoolId: args.schoolId,
             staffTitle: args.staffTitle ?? null,
             staffTierId: args.tierId ?? null,
             staffPermissionOverrides: overridesJson,
             staffInvited: true,
+            isCoreAdmin: args.isCoreAdmin === true,
             onboardingComplete: false,
           },
         },

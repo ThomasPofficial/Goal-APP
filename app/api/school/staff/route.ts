@@ -29,6 +29,9 @@ export async function GET() {
     tierId: p.staffTierId,
     tierName: p.staffTierId ? p.staffTier?.name ?? null : "Custom",
     isCustom: !p.staffTierId,
+    isCoreAdmin: p.isCoreAdmin,
+    overrides: JSON.parse(p.staffPermissionOverrides || "[]") as Capability[],
+    revocations: JSON.parse(p.staffPermissionRevocations || "[]") as Capability[],
   });
 
   return NextResponse.json({
@@ -44,11 +47,13 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json().catch(() => ({}));
-  const { email, tierId, customPermissions, staffTitle } = body as {
+  const { email, tierId, customPermissions, staffTitle, name, makeCoreAdmin } = body as {
     email?: string;
     tierId?: string | null;
     customPermissions?: string[];
     staffTitle?: string;
+    name?: string;
+    makeCoreAdmin?: boolean;
   };
 
   if (!email?.trim()) {
@@ -71,11 +76,8 @@ export async function POST(req: NextRequest) {
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  // Same distinction as the PATCH route: schoolId equals the caller's own id only
-  // for SCHOOL/ADMIN. A delegated staff:manage holder may invite using existing
-  // tiers, but may never mint a new staff:manage holder (incl. an accomplice).
-  const isSchoolOwner = check.schoolId === session.user.id;
-  if (!isSchoolOwner && effectiveCustomPermissions.includes("staff:manage")) {
+  const isOwnerOrCoreAdmin = check.isOwner || check.isCoreAdmin;
+  if (!isOwnerOrCoreAdmin && effectiveCustomPermissions.includes("staff:manage")) {
     return NextResponse.json(
       { error: "Only the school account can grant staff management access" },
       { status: 403 }
@@ -86,7 +88,7 @@ export async function POST(req: NextRequest) {
   // PATCH route refuses. Close it here too. (A SCHOOL owner's own email can't reach the
   // invite path at all: createStaffInvite rejects non-STUDENT/STAFF account types.)
   if (
-    !isSchoolOwner &&
+    !isOwnerOrCoreAdmin &&
     session.user.email &&
     session.user.email.trim().toLowerCase() === email.trim().toLowerCase()
   ) {
@@ -100,6 +102,8 @@ export async function POST(req: NextRequest) {
       tierId: tierId ?? null,
       customPermissions: effectiveCustomPermissions,
       staffTitle,
+      displayName: name,
+      isCoreAdmin: isOwnerOrCoreAdmin ? !!makeCoreAdmin : false,
     });
     return NextResponse.json(result);
   } catch (err) {
