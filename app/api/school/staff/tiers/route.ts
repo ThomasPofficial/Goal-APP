@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSchoolSession } from "@/lib/school-auth";
+import { requireCoreAdmin } from "@/lib/school-auth";
 import { prisma } from "@/lib/prisma";
 import { CAPABILITIES, type Capability } from "@/lib/facultyPermissions";
 import { getOrCreateDefaultTiers } from "@/lib/facultyPermissions.server";
 
 export async function GET() {
-  const check = await getSchoolSession();
+  const check = await requireCoreAdmin();
   if ("error" in check) {
     return NextResponse.json({ error: check.error }, { status: check.status });
   }
@@ -23,7 +23,7 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const check = await getSchoolSession();
+  const check = await requireCoreAdmin();
   if ("error" in check) {
     return NextResponse.json({ error: check.error }, { status: check.status });
   }
