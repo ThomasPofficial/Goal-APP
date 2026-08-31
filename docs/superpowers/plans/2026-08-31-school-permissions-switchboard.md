@@ -263,7 +263,7 @@ git commit -m "Expand capabilities to 10, add revocation and toggle helpers"
 
 **Interfaces:**
 - Consumes: `computeEffectivePermissions`, `CAPABILITIES`, `hasCapability`, `Capability` from `@/lib/facultyPermissions` (Task 2).
-- Produces: `getSchoolCapabilities(): Promise<{ schoolId: string; isOwner: boolean; isCoreAdmin: boolean; capabilities: Capability[] } | { error: "Unauthorized"; status: 401 } | { error: "Forbidden"; status: 403 }>`, `requireSchoolCapability(capability: Capability): Promise<{ schoolId: string; isOwner: boolean; isCoreAdmin: boolean } | { error; status }>`, `requireCoreAdmin(): Promise<{ schoolId: string; isOwner: boolean; isCoreAdmin: boolean } | { error; status }>`. `getSchoolSession()` is **removed** (Task confirms it has zero remaining callers after this plan's sweep tasks 7-9 land — see note below).
+- Produces: `getSchoolCapabilities(): Promise<{ schoolId: string; isOwner: boolean; isCoreAdmin: boolean; capabilities: Capability[] } | { error: "Unauthorized"; status: 401 } | { error: "Forbidden"; status: 403 }>`, `requireSchoolCapability(capability: Capability): Promise<{ schoolId: string; isOwner: boolean; isCoreAdmin: boolean } | { error; status }>`, `requireCoreAdmin(): Promise<{ schoolId: string; isOwner: boolean; isCoreAdmin: boolean } | { error; status }>`. `getSchoolSession()` is kept **unchanged** in this task — five files still call it and aren't swept onto the new helpers until Tasks 4, 7, and 9, so removing it here would break the build for every commit in between. Task 9 (the last task to sweep a caller) deletes it once it confirms zero callers remain.
 
 - [ ] **Step 1: Rewrite `lib/school-auth.ts`**
 
@@ -339,9 +339,24 @@ export async function requireCoreAdmin(): Promise<
   if (!check.isOwner && !check.isCoreAdmin) return { error: "Forbidden", status: 403 };
   return { schoolId: check.schoolId, isOwner: check.isOwner, isCoreAdmin: check.isCoreAdmin };
 }
+
+// TEMPORARY — kept only so the five not-yet-swept call sites below keep
+// compiling between this task and Task 9. Task 9 deletes this function once
+// it confirms every caller has moved to requireSchoolCapability/requireCoreAdmin.
+// Do not add any new caller of this function.
+export async function getSchoolSession() {
+  const session = await auth();
+  if (!session?.user?.id) return { error: "Unauthorized" as const, status: 401 as const };
+  const dbUser = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { role: true },
+  });
+  if (dbUser?.role !== "SCHOOL") return { error: "Forbidden" as const, status: 403 as const };
+  return { schoolId: session.user.id };
+}
 ```
 
-Note: `getSchoolSession()` is deliberately not carried over. It has exactly six call sites on `main` today (`app/api/school/mentorship/route.ts`, `app/api/school/mentorship/[conversationId]/route.ts`, `app/api/school/staff/tiers/route.ts`, `app/api/school/staff/tiers/[tierId]/route.ts`, `app/api/school/roster/members/[userId]/resend-invite/route.ts`), all of which Tasks 5 and 7-9 in this plan sweep onto `requireSchoolCapability`/`requireCoreAdmin`. After those tasks land there are zero remaining callers — do not leave it as dead code.
+Note: `getSchoolSession()` above is scaffolding, not a design decision — it has exactly five remaining call sites on `main` today (`app/api/school/mentorship/route.ts`, `app/api/school/mentorship/[conversationId]/route.ts`, `app/api/school/staff/tiers/route.ts`, `app/api/school/staff/tiers/[tierId]/route.ts`, `app/api/school/roster/members/[userId]/resend-invite/route.ts`), all of which Tasks 4, 7, and 9 in this plan sweep onto `requireSchoolCapability`/`requireCoreAdmin`. Task 9 deletes the function itself as its final step once it confirms zero callers remain.
 
 - [ ] **Step 2: Update `app/(dashboard)/layout.tsx`**
 
@@ -455,7 +470,7 @@ Run: `npm run dev` in the background, then in a browser log in as `team.nivarro@
 
 ```bash
 git add lib/school-auth.ts "app/(dashboard)/layout.tsx"
-git commit -m "Add Core Admin support to school-auth, remove getSchoolSession"
+git commit -m "Add Core Admin support to school-auth (getSchoolSession kept temporarily, removed in Task 9)"
 ```
 
 ---
@@ -1448,17 +1463,23 @@ export async function POST(
 
 (rest of the file is unchanged — it already destructures `{ schoolId }` from `check`).
 
-- [ ] **Step 4: Verify**
+- [ ] **Step 4: Remove the now-unused `getSchoolSession` scaffolding**
 
-Run: `npx tsc --noEmit` — expected no new errors. This should also resolve the "missing revocations argument" errors flagged as expected back in Task 2, since every remaining `computeEffectivePermissions` caller has now been updated — confirm zero errors mentioning `facultyPermissions` remain.
+This is the last of the three sweep tasks (Tasks 4, 7, and this one) that had a `getSchoolSession()` caller — after Step 3 above, grep the whole project for `getSchoolSession` and confirm the only remaining match is its own definition in `lib/school-auth.ts` (the "TEMPORARY" function Task 3 added). If any other caller remains, stop and fix it as part of this task rather than proceeding — the plan's task ordering assumed all five callers (Task 4's two, Task 7's two, this task's one) would be gone by this point.
+
+Once confirmed, delete the `getSchoolSession` function (and its preceding `TEMPORARY` comment block) from `lib/school-auth.ts` entirely.
+
+- [ ] **Step 5: Verify**
+
+Run: `npx tsc --noEmit` — expected no new errors. This should also resolve the "missing revocations argument" errors flagged as expected back in Task 2, since every remaining `computeEffectivePermissions` caller has now been updated — confirm zero errors mentioning `facultyPermissions` remain. This is also the first point where `getSchoolSession` is fully gone — a stray import of it anywhere would now surface as a real compile error, not just a lint warning.
 
 Manual check with `npm run dev`: as `team.nivarro@gmail.com`, load `/communities` and confirm the admin join-code panel still renders and a code can still be set. Then confirm `POST /api/school/roster/members/<some-unactivated-member-id>/resend-invite` (pick one from `/school/roster`) still returns an activation URL.
 
-- [ ] **Step 5: Commit**
+- [ ] **Step 6: Commit**
 
 ```bash
-git add "app/(dashboard)/communities" app/api/communities/school-code app/api/school/roster/members
-git commit -m "Gate community admin panel and roster resend-invite on capabilities"
+git add "app/(dashboard)/communities" app/api/communities/school-code app/api/school/roster/members lib/school-auth.ts
+git commit -m "Gate community admin panel and roster resend-invite on capabilities, remove getSchoolSession scaffolding"
 ```
 
 ---
