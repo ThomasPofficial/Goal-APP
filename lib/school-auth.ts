@@ -69,18 +69,3 @@ export async function requireCoreAdmin(): Promise<
   if (!check.isOwner && !check.isCoreAdmin) return { error: "Forbidden", status: 403 };
   return { schoolId: check.schoolId, isOwner: check.isOwner, isCoreAdmin: check.isCoreAdmin };
 }
-
-// TEMPORARY — kept only so the five not-yet-swept call sites below keep
-// compiling between this task and Task 9. Task 9 deletes this function once
-// it confirms every caller has moved to requireSchoolCapability/requireCoreAdmin.
-// Do not add any new caller of this function.
-export async function getSchoolSession() {
-  const session = await auth();
-  if (!session?.user?.id) return { error: "Unauthorized" as const, status: 401 as const };
-  const dbUser = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: { role: true },
-  });
-  if (dbUser?.role !== "SCHOOL") return { error: "Forbidden" as const, status: 403 as const };
-  return { schoolId: session.user.id };
-}

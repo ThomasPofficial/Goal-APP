@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import CommunitiesClient from "./CommunitiesClient";
 import { ensureSchoolGeneralRoom, getLinkedSchools, getSchoolIds } from "@/lib/communities";
+import { getSchoolCapabilities } from "@/lib/school-auth";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Communities — Nivarro" };
@@ -11,11 +12,13 @@ export default async function CommunitiesPage() {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
 
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: { role: true, schoolCode: true },
-  });
-  const isAdmin = user?.role === "SCHOOL";
+  const capCheck = await getSchoolCapabilities();
+  const isAdmin = !("error" in capCheck) && capCheck.capabilities.includes("community:manage");
+  let adminSchoolCode: string | null = null;
+  if (isAdmin && !("error" in capCheck)) {
+    const owner = await prisma.user.findUnique({ where: { id: capCheck.schoolId }, select: { schoolCode: true } });
+    adminSchoolCode = owner?.schoolCode ?? null;
+  }
   const schoolIds = await getSchoolIds(session.user.id);
 
   // Ensure the General Room exists and the current user is a participant, for
@@ -71,7 +74,7 @@ export default async function CommunitiesPage() {
       myUserId={session.user.id}
       isAdmin={isAdmin}
       initialRooms={initialRooms}
-      schoolCode={isAdmin ? (user?.schoolCode ?? null) : null}
+      schoolCode={adminSchoolCode}
     />
   );
 }
