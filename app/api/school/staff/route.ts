@@ -60,9 +60,18 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "email is required" }, { status: 400 });
   }
 
+  const isOwnerOrCoreAdmin = check.isOwner || check.isCoreAdmin;
+
   if (tierId) {
     const tier = await prisma.facultyTier.findFirst({ where: { id: tierId, schoolId: check.schoolId } });
     if (!tier) return NextResponse.json({ error: "Tier not found" }, { status: 404 });
+    const tierPermissions = JSON.parse(tier.permissions) as Capability[];
+    if (!isOwnerOrCoreAdmin && tierPermissions.includes("staff:manage")) {
+      return NextResponse.json(
+        { error: "Only the school account or a core admin can grant staff management access" },
+        { status: 403 }
+      );
+    }
   }
 
   const validCustomPermissions = (customPermissions ?? []).filter((p): p is Capability =>
@@ -76,7 +85,6 @@ export async function POST(req: NextRequest) {
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  const isOwnerOrCoreAdmin = check.isOwner || check.isCoreAdmin;
   if (!isOwnerOrCoreAdmin && effectiveCustomPermissions.includes("staff:manage")) {
     return NextResponse.json(
       { error: "Only the school account can grant staff management access" },
