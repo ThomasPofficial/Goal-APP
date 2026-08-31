@@ -24,6 +24,7 @@ const SCHOOL_NAV = [
   { href: "/communities",         label: "Community",     Icon: Globe },
   { href: "/campaigns",           label: "Fundraise",     Icon: HeartHandshake },
   { href: "/school/partnerships", label: "Partnerships",  Icon: UsersRound },
+  { href: "/school/staff",        label: "Permissions",   Icon: UsersRound },
   { href: "/messages",            label: "Messages",      Icon: MessageSquare },
   { href: "/notifications",       label: "Notifications", Icon: Bell },
   { href: "/school/roster",       label: "Roster",        Icon: Users },
@@ -35,7 +36,15 @@ function buildStaffNav(caps: Capability[]) {
   ];
   if (caps.includes("roster:view")) items.push({ href: "/school/roster", label: "Roster", Icon: Users });
   if (caps.includes("campaigns:view")) items.push({ href: "/campaigns", label: "Fundraise", Icon: HeartHandshake });
-  if (caps.includes("staff:manage")) items.push({ href: "/school/staff", label: "Staff", Icon: UsersRound });
+  if (
+    caps.includes("mentorship:view") ||
+    caps.includes("mentorship:edit") ||
+    caps.includes("partnerships:view") ||
+    caps.includes("partnerships:edit")
+  ) {
+    items.push({ href: "/school/partnerships", label: "Partnerships", Icon: UsersRound });
+  }
+  if (caps.includes("staff:manage")) items.push({ href: "/school/staff", label: "Permissions", Icon: UsersRound });
   items.push({ href: "/notifications", label: "Notifications", Icon: Bell });
   return items;
 }
