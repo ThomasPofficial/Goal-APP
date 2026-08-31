@@ -1,9 +1,9 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
-import { getSchoolSession } from "@/lib/school-auth";
+import { requireSchoolCapability } from "@/lib/school-auth";
 
 export async function GET() {
-  const check = await getSchoolSession();
+  const check = await requireSchoolCapability("mentorship:view");
   if ("error" in check) {
     return NextResponse.json({ error: check.error }, { status: check.status });
   }
@@ -70,7 +70,7 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  const check = await getSchoolSession();
+  const check = await requireSchoolCapability("mentorship:edit");
   if ("error" in check) {
     return NextResponse.json({ error: check.error }, { status: check.status });
   }
