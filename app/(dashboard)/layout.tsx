@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { isWalledStudent } from "@/lib/accountGate";
 import SidebarShell from "@/components/layout/SidebarShell";
-import { computeEffectivePermissions } from "@/lib/facultyPermissions";
+import { CAPABILITIES, computeEffectivePermissions } from "@/lib/facultyPermissions";
 
 export default async function DashboardLayout({
   children,
@@ -26,7 +26,9 @@ export default async function DashboardLayout({
         select: {
           displayName: true,
           schoolId: true,
+          isCoreAdmin: true,
           staffPermissionOverrides: true,
+          staffPermissionRevocations: true,
           staffTier: { select: { permissions: true } },
         },
       },
@@ -46,12 +48,17 @@ export default async function DashboardLayout({
   // (Standard = STUDENT role with no school affiliation; that's just "none of the above" here.)
   const isWalledStudentAccount = await isWalledStudent(session.user.id);
   const isAlumni = !!dbUser?.isAlumni;
-  const staffCapabilities = isStaff
-    ? computeEffectivePermissions({
-        tierPermissions: profile?.staffTier?.permissions ?? null,
-        overrides: profile?.staffPermissionOverrides ?? "[]",
-      })
-    : [];
+  // A Core Admin bypasses the tier system entirely — treat them as having every
+  // capability for nav-gating purposes, same as requireSchoolCapability does server-side.
+  const staffCapabilities = !isStaff
+    ? []
+    : profile?.isCoreAdmin
+      ? [...CAPABILITIES]
+      : computeEffectivePermissions({
+          tierPermissions: profile?.staffTier?.permissions ?? null,
+          overrides: profile?.staffPermissionOverrides ?? "[]",
+          revocations: profile?.staffPermissionRevocations ?? "[]",
+        });
 
   // Org lookup only runs for org/admin accounts.
   // ADMIN: structural query finds the platform org regardless of which email is logged in.
