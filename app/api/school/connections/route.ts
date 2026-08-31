@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { requireSchoolCapability } from "@/lib/school-auth";
 
 async function userSummary(userId: string) {
   const user = await prisma.user.findUnique({
@@ -19,20 +19,12 @@ async function userSummary(userId: string) {
 
 // GET — school admin: queue of accepted requests awaiting room creation, plus history
 export async function GET() {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const check = await requireSchoolCapability("partnerships:view");
+  if ("error" in check) {
+    return NextResponse.json({ error: check.error }, { status: check.status });
   }
 
-  const admin = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: { role: true },
-  });
-  if (admin?.role !== "SCHOOL") {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
-
-  const schoolId = session.user.id;
+  const schoolId = check.schoolId;
 
   const [queue, history] = await Promise.all([
     prisma.connectionRequest.findMany({

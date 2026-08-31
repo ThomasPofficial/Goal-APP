@@ -1,27 +1,19 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { requireSchoolCapability } from "@/lib/school-auth";
 import { createPrivateRoom } from "@/lib/communities";
 
 type Params = Promise<{ id: string }>;
 
 // POST — school admin approves an accepted request, creating the private room
 export async function POST(_req: Request, { params }: { params: Params }) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const admin = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: { role: true },
-  });
-  if (admin?.role !== "SCHOOL") {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  const check = await requireSchoolCapability("partnerships:edit");
+  if ("error" in check) {
+    return NextResponse.json({ error: check.error }, { status: check.status });
   }
 
   const { id } = await params;
-  const schoolId = session.user.id;
+  const schoolId = check.schoolId;
 
   const connectionRequest = await prisma.connectionRequest.findUnique({ where: { id } });
   if (!connectionRequest || connectionRequest.schoolId !== schoolId) {

@@ -1,20 +1,20 @@
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import SchoolPartnershipsClient from "./SchoolPartnershipsClient";
 import { finalizeExpiredPartnershipRequests, partnerUserSummaries } from "@/lib/partnerships";
+import { getSchoolCapabilities } from "@/lib/school-auth";
 
 export default async function SchoolPartnershipsPage() {
-  const session = await auth();
-  if (!session?.user?.id) redirect("/login");
+  const check = await getSchoolCapabilities();
+  if ("error" in check) redirect(check.error === "Unauthorized" ? "/login" : "/dashboard");
 
-  const dbUser = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: { role: true },
-  });
-  if (dbUser?.role !== "SCHOOL") redirect("/dashboard");
+  const canViewMentorship = check.capabilities.includes("mentorship:view");
+  const canEditMentorship = check.capabilities.includes("mentorship:edit");
+  const canViewPartnerships = check.capabilities.includes("partnerships:view");
+  const canEditPartnerships = check.capabilities.includes("partnerships:edit");
+  if (!canViewMentorship && !canViewPartnerships) redirect("/dashboard");
 
-  const schoolId = session.user.id;
+  const schoolId = check.schoolId;
 
   await finalizeExpiredPartnershipRequests(schoolId);
 
@@ -155,6 +155,10 @@ export default async function SchoolPartnershipsPage() {
       requestHistory={formattedHistory}
       connectionRequestQueue={formattedConnectionQueue}
       connectionRequestHistory={formattedConnectionHistory}
+      canViewMentorship={canViewMentorship}
+      canEditMentorship={canEditMentorship}
+      canViewPartnerships={canViewPartnerships}
+      canEditPartnerships={canEditPartnerships}
     />
   );
 }

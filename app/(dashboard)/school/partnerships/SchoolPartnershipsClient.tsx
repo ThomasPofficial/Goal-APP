@@ -92,6 +92,10 @@ interface Props {
   requestHistory: PartnershipRequestRow[];
   connectionRequestQueue: ConnectionRequestRow[];
   connectionRequestHistory: ConnectionRequestRow[];
+  canViewMentorship: boolean;
+  canEditMentorship: boolean;
+  canViewPartnerships: boolean;
+  canEditPartnerships: boolean;
 }
 
 const labelStyle: React.CSSProperties = {
@@ -132,6 +136,10 @@ export default function SchoolPartnershipsClient({
   requestHistory,
   connectionRequestQueue,
   connectionRequestHistory,
+  canViewMentorship,
+  canEditMentorship,
+  canViewPartnerships,
+  canEditPartnerships,
 }: Props) {
   const router = useRouter();
   const [showNewModal, setShowNewModal] = useState(false);
@@ -270,6 +278,8 @@ export default function SchoolPartnershipsClient({
 
   return (
     <div style={{ maxWidth: 900 }}>
+      {canViewMentorship && (
+      <>
       {/* Header */}
       <div style={{ marginBottom: 24, display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
         <div>
@@ -291,6 +301,7 @@ export default function SchoolPartnershipsClient({
             or approve partnership requests students sent on their own below.
           </p>
         </div>
+        {canEditMentorship && (
         <button
           onClick={() => setShowNewModal(true)}
           disabled={students.length === 0 || mentors.length === 0}
@@ -313,6 +324,7 @@ export default function SchoolPartnershipsClient({
         >
           + New Pairing
         </button>
+        )}
       </div>
 
       {/* Empty state */}
@@ -421,7 +433,11 @@ export default function SchoolPartnershipsClient({
           ))}
         </div>
       )}
+      </>
+      )}
 
+      {canViewPartnerships && (
+      <>
       {/* 1:1 Mentorship Requests */}
       <p
         style={{
@@ -488,6 +504,7 @@ export default function SchoolPartnershipsClient({
                   </p>
                 )}
               </div>
+              {canEditPartnerships && (
               <button
                 onClick={() => handleApproveConnectionRequest(r.id)}
                 disabled={connectionApprovingId === r.id}
@@ -509,6 +526,7 @@ export default function SchoolPartnershipsClient({
               >
                 {connectionApprovingId === r.id ? "Creating…" : "Create Room"}
               </button>
+              )}
             </div>
           ))}
         </div>
@@ -629,6 +647,7 @@ export default function SchoolPartnershipsClient({
                   </p>
                 )}
               </div>
+              {canEditPartnerships && (
               <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
                 <button
                   onClick={() => handleRejectRequest(r.id)}
@@ -673,6 +692,7 @@ export default function SchoolPartnershipsClient({
                   {approvingId === r.id ? "Creating…" : "Create Room"}
                 </button>
               </div>
+              )}
             </div>
           ))}
         </div>
@@ -724,9 +744,11 @@ export default function SchoolPartnershipsClient({
           ))}
         </div>
       )}
+      </>
+      )}
 
       {/* New Pairing Modal */}
-      {showNewModal && (
+      {canEditMentorship && showNewModal && (
         <div
           style={{
             position: "fixed",
