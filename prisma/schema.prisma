@@ -128,7 +128,9 @@ model Profile {
   staffTitle          String?     // "Dean", "Counselor", "AP History Teacher", etc.
   staffTierId              String?
   staffTier                FacultyTier? @relation(fields: [staffTierId], references: [id])
-  staffPermissionOverrides String       @default("[]") // JSON array; additive if staffTierId set, else the full set
+  staffPermissionOverrides   String     @default("[]") // JSON array; additive if staffTierId set, else the full set
+  staffPermissionRevocations String     @default("[]") // JSON array; capabilities to subtract from the tier's grants (ignored if staffTierId is null)
+  isCoreAdmin                Boolean    @default(false) // true = Owner-equivalent power for this school, bypasses the tier system entirely
   staffInvited              Boolean      @default(false) // true once a staff invite has been sent for this profile
   phone String?
   advancementEmail  String?
