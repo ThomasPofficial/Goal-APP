@@ -46,20 +46,13 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ us
 
   const isOwnerOrCoreAdmin = check.isOwner || check.isCoreAdmin;
 
-  if (email !== undefined && email.trim() && email.trim().toLowerCase() !== target.email?.toLowerCase()) {
-    try {
-      await prisma.user.update({ where: { id: userId }, data: { email: email.trim().toLowerCase() } });
-    } catch (err: unknown) {
-      if (typeof err === "object" && err !== null && "code" in err && (err as { code: string }).code === "P2002") {
-        return NextResponse.json({ error: "That email is already in use" }, { status: 409 });
-      }
-      throw err;
-    }
+  // Editing a Core Admin at all — not just granting/revoking staff:manage — is
+  // restricted to Owner/Core Admin. Without this, a plain staff:manage holder
+  // could rewrite a Core Admin's login email and take over their account via
+  // password reset, a full end-run around the tier system.
+  if (target.profile.isCoreAdmin && !isOwnerOrCoreAdmin) {
+    return NextResponse.json({ error: "Only an owner or core admin can edit a core admin" }, { status: 403 });
   }
-
-  const identityData: { displayName?: string; staffTitle?: string | null } = {};
-  if (name !== undefined && name.trim()) identityData.displayName = name.trim();
-  if (staffTitle !== undefined) identityData.staffTitle = staffTitle.trim() || null;
 
   let permissionData: { staffTierId?: string | null; staffPermissionOverrides?: string; staffPermissionRevocations?: string } = {};
 
@@ -97,6 +90,25 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ us
       ? { staffTierId: tierId, staffPermissionOverrides: JSON.stringify(validOverrides), staffPermissionRevocations: JSON.stringify(validRevocations) }
       : { staffTierId: null, staffPermissionOverrides: JSON.stringify(validOverrides), staffPermissionRevocations: "[]" };
   }
+
+  // Only after every authorization check above has passed do we perform any write.
+  if (email !== undefined && email.trim() && email.trim().toLowerCase() !== target.email?.toLowerCase()) {
+    try {
+      await prisma.user.update({
+        where: { id: userId },
+        data: { email: email.trim().toLowerCase(), emailVerified: null },
+      });
+    } catch (err: unknown) {
+      if (typeof err === "object" && err !== null && "code" in err && (err as { code: string }).code === "P2002") {
+        return NextResponse.json({ error: "That email is already in use" }, { status: 409 });
+      }
+      throw err;
+    }
+  }
+
+  const identityData: { displayName?: string; staffTitle?: string | null } = {};
+  if (name !== undefined && name.trim()) identityData.displayName = name.trim();
+  if (staffTitle !== undefined) identityData.staffTitle = staffTitle.trim() || null;
 
   await prisma.profile.update({
     where: { userId },

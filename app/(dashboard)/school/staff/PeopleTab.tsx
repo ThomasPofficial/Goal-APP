@@ -22,10 +22,11 @@ interface FormState {
   overrides: Capability[];
   revocations: Capability[];
   makeCoreAdmin: boolean;
+  originalIsCoreAdmin: boolean; // lets handleSave detect a real change vs. a no-op resubmit
 }
 
 function emptyForm(defaultGroupId: string | null): FormState {
-  return { userId: null, name: "", email: "", staffTitle: "", groupId: defaultGroupId, overrides: [], revocations: [], makeCoreAdmin: false };
+  return { userId: null, name: "", email: "", staffTitle: "", groupId: defaultGroupId, overrides: [], revocations: [], makeCoreAdmin: false, originalIsCoreAdmin: false };
 }
 
 export default function PeopleTab({ people, loading, groups, isOwnerOrCoreAdmin, onChanged }: Props) {
@@ -52,6 +53,7 @@ export default function PeopleTab({ people, loading, groups, isOwnerOrCoreAdmin,
       overrides: p.overrides,
       revocations: p.revocations,
       makeCoreAdmin: p.isCoreAdmin,
+      originalIsCoreAdmin: p.isCoreAdmin,
     });
   }
 
@@ -129,6 +131,19 @@ export default function PeopleTab({ people, loading, groups, isOwnerOrCoreAdmin,
         if (!res.ok) {
           setError(data.error ?? "Failed to save.");
           return;
+        }
+        if (form.makeCoreAdmin !== form.originalIsCoreAdmin) {
+          const adminRes = await fetch(`/api/school/admins/${form.userId}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ isCoreAdmin: form.makeCoreAdmin }),
+          });
+          if (!adminRes.ok) {
+            const adminData = await adminRes.json().catch(() => ({}));
+            setError(adminData.error ?? "Saved other changes, but failed to update Core Admin status.");
+            await onChanged();
+            return;
+          }
         }
         await onChanged();
         setForm(null);
