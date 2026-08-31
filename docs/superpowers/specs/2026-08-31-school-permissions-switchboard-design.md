@@ -10,7 +10,8 @@ Nivarro schools have exactly one authenticated admin account (`role: "SCHOOL"`),
 1. Permission coverage extended to every school-admin feature area, not just roster/campaigns.
 2. Per-person fine-tuning that can both grant extra and **revoke** capabilities a person's tier would otherwise give them (today's system is additive-only).
 3. Multiple co-equal full admins ("Core Admins") for a school, not just one sole `SCHOOL` account — with a clear answer to how they're created and whether they can remove each other.
-4. A proper dedicated settings surface for all of this, not a single page bolted onto the sidebar.
+4. A proper dedicated Permissions surface for all of this, not a single page bolted onto the sidebar — with a Google-Docs-like feel (add/edit a person in a couple of fields, name and manage permission groups directly), not an admin console.
+5. A last-resort recovery path for when the school Owner is locked out and normal password reset doesn't work.
 
 This design extends the existing tier/capability system rather than replacing it — no other account type (`ORG`, `ADMIN`, `STUDENT`) currently needs delegated permissions, so a general-purpose ACL rewrite would be speculative scope with no second consumer.
 
@@ -38,7 +39,7 @@ Nivarro has no separate `School` table. A school's identity **is** its single `S
 | `roster:edit` | Add/edit/delete/import roster, resend roster invites (unchanged, now also covers the resend-invite route which was hard-`SCHOOL`-gated) |
 | `campaigns:view` | View fundraising campaigns (unchanged) |
 | `campaigns:edit` | Create/manage campaigns (unchanged) |
-| `mentorship:view` | View mentor/student pairings and threads (`/school/mentorship` API, Mentorship tab in `/school/alumni`) |
+| `mentorship:view` | View mentor/student pairings and threads (`/api/school/mentorship`, the pairing section within `/school/partnerships`) |
 | `mentorship:edit` | Create/edit pairings |
 | `partnerships:view` | View the partnership/connection request queue and history (`/school/partnerships`, `/school/connections`) |
 | `partnerships:edit` | Approve/reject partnership and connection requests |
@@ -153,40 +154,57 @@ Everywhere one of these routes currently trusts `session.user.id` directly as `s
 
 `POST /api/school/staff` gains optional `name` and `title` fields (in addition to existing `email` + `tierId`/`customPermissions`), and an optional `makeCoreAdmin` boolean (only honored if the caller is a Core Admin/Owner — silently ignored otherwise, same defensive pattern as other capability checks). Pre-fills `User.name` and `Profile.staffTitle` on the created/updated row. The invitee can still edit their own name/title on the accept-invite page — the admin's entry is a starting point, not a lock.
 
-## UI: the Settings surface
+## UI: the Permissions surface
 
-`/school/staff` is restructured into a tabbed settings page (keeping the existing URL so no redirect/bookmark churn — same pattern as `/school/connections` → `/school/partnerships`), with its sidebar label changed from **"Staff"** to **"Settings"**. Visible to the Owner, any Core Admin, and any `STAFF` with at least one manageable capability (`staff:manage` at minimum to see the Staff tab).
+`/school/staff` is restructured into a tabbed page (keeping the existing URL so no redirect/bookmark churn — same pattern as `/school/connections` → `/school/partnerships`), with its sidebar label changed from **"Staff"** to **"Permissions"**. Visible to the Owner, any Core Admin, and any `STAFF` with at least one manageable capability (`staff:manage` at minimum to see the People tab).
 
-**Tab 1 — Staff** (visible to anyone with `staff:manage`, or Core Admin/Owner):
-- Invite form: email, name, title, then tier-or-custom picker (unchanged mechanic), plus a "Make Core Admin" checkbox visible only to Core Admin/Owner callers.
-- Active staff list: each row expandable into a **3-state capability grid** — for a tiered person, each of the 10 capabilities shows as:
-  - *Inherited (checked, dimmed)* — granted by their tier; clicking it adds a revocation, turning it off for this person only.
-  - *Personal grant (checked, highlighted)* — added via override beyond their tier; clicking removes the override.
-  - *Off* — not granted; clicking adds an override (or, if already inherited-but-revoked, removes the revocation).
-  - For an untiered/Custom person, this collapses to a plain checkbox list (overrides ARE the whole set, as today).
-  - The `staff:manage` cell in this grid is disabled/read-only for callers who aren't Core Admin/Owner.
-- Pending invites list (unchanged).
+Overall feel: a Google Docs share-dialog, not an admin console — adding, editing, or re-permissioning someone is a two-field-and-a-dropdown action, never a separate multi-step wizard.
 
-**Tab 2 — Permissions** (Core Admin/Owner only): the tier matrix — rows are tiers, columns are the 10 capabilities, checkbox at each intersection, inline rename, add-tier and delete-tier controls. Replaces today's per-tier chip list.
+**Tab 1 — People** (visible to anyone with `staff:manage`, or Core Admin/Owner): a single **"+ Add person"** action opens a compact form — Name, Email, then a role picker that's either *pick an existing Group* (dropdown) or *Custom* (check individual capabilities), plus a "Make Core Admin" checkbox visible only to Core Admin/Owner callers. Submitting it does the same invite/update logic as today's form, just reframed as one unified "add or edit a person" action.
 
-**Tab 3 — Admins** (Core Admin/Owner only): lists the Owner (labeled, no action available) and all Core Admins with a "Remove Core Admin" action per row (any Core Admin can act on any other; no self-protection needed since demotion just returns someone to their prior tier, and the Owner is the permanent fallback).
+Clicking any existing person (active staff or pending invite) reopens that same form pre-filled, letting the caller edit their **name, email, title, or permissions** in place — this is new: today's UI can only reassign a whole tier, not edit a person's name/email or fine-tune their permissions individually. Editing email requires the normal uniqueness check (same validation as account creation) since it's a real login identifier. The permissions portion of that form is a **3-state capability list** — for a tiered person, each of the 10 capabilities shows as:
+- *Inherited (checked, dimmed)* — granted by their Group; clicking it adds a revocation, turning it off for this person only.
+- *Personal grant (checked, highlighted)* — added via override beyond their Group; clicking removes the override.
+- *Off* — not granted; clicking adds an override (or, if already inherited-but-revoked, removes the revocation).
+- For an untiered/Custom person, this collapses to a plain checkbox list (overrides ARE the whole set, as today).
+- The `staff:manage` row in this list is disabled/read-only for callers who aren't Core Admin/Owner.
+
+**Tab 2 — Groups** (Core Admin/Owner only): the group matrix — rows are Groups (what the data model still calls `FacultyTier`; "Group" is UI copy only, no model rename needed), columns are the 10 capabilities, checkbox at each intersection, inline rename, add-group and delete-group controls. Replaces today's per-tier chip list.
+
+**Tab 3 — Admins** (Core Admin/Owner only): lists the Owner (labeled, no action available) and all Core Admins with a "Remove Core Admin" action per row (any Core Admin can act on any other; no self-protection needed since demotion just returns someone to their prior Group, and the Owner is the permanent fallback).
 
 ## Nav wiring
 
 `components/layout/Sidebar.tsx`:
-- `buildStaffNav()` renames the `staff:manage`-gated entry from "Staff" to "Settings" (still `/school/staff`), and adds a single `Partnerships` entry (`/school/partnerships`) gated on `mentorship:view || mentorship:edit || partnerships:view || partnerships:edit`, following the existing `if (caps.includes(...))` pattern. `Alumni Net` is not added to `buildStaffNav` — it stays out of scope, `SCHOOL`/`ADMIN`-only, unchanged.
+- `buildStaffNav()` renames the `staff:manage`-gated entry from "Staff" to "Permissions" (still `/school/staff`), and adds a single `Partnerships` entry (`/school/partnerships`) gated on `mentorship:view || mentorship:edit || partnerships:view || partnerships:edit`, following the existing `if (caps.includes(...))` pattern. `Alumni Net` is not added to `buildStaffNav` — it stays out of scope, `SCHOOL`/`ADMIN`-only, unchanged.
 - `SCHOOL_NAV` (Owner) is unchanged — Owner already sees everything.
+
+## Emergency access (Owner lockout — last resort)
+
+**Scope of the problem, precisely:** self-service "Forgot password" is always the first line of defense, and it already works for anyone — including the Owner — who still has access to their registered email. Regaining the Owner login alone restores full control instantly, regardless of what any `STAFF`/Core Admin can or can't do — so a locked-out Owner with working staff underneath them is not actually a permissions problem, it's a "get the Owner logged back in" problem, already solved by the existing reset flow. This section is for the genuine last resort: **password reset itself doesn't work** (e.g., the Owner lost access to their registered email too), whether or not the school has any staff at all.
+
+**Design:** no new time-boxed impersonation, no automated multi-party approval — extend the existing Support Ticket system (`SupportTicket` model, `/hq/support` triage; **note: this feature currently lives on the unmerged `support-tickets` branch, not `main` — this depends on that branch landing first**) with one narrow, human-reviewed path:
+
+- `SupportTicket` gains a `category` field: `enum SupportTicketCategory { GENERAL, OWNER_LOCKOUT }`, default `GENERAL`.
+- The Support modal gets a distinct, clearly-labeled option — **"Locked out as the school owner?"** — that opens a pre-filled ticket template (`category: OWNER_LOCKOUT`) walking the requester through confirming which school and why the normal reset isn't working, instead of a blank subject/message.
+- **Critical: the Owner is, by definition, the one who can't log in — so they usually can't be the one filing this ticket.** Any `STAFF` account at that school (any teacher, any tier, no special capability required — this must work even for a Teacher with zero other permissions) can file this ticket on the Owner's behalf, reporting "our school owner is locked out." Filing it while logged in as `STAFF` auto-resolves the affected school from the filer's own `profile.schoolId` — no manual school lookup needed. The Owner can also file it themselves if they retain some access but the reset flow specifically is broken. Filing requires being logged into *some* account at that school — a school with literally nobody able to log in (Owner locked out, zero staff ever added) has no in-app path and would need to reach Nivarro by some other channel; that residual gap is accepted, not solved here.
+- Filing it does exactly what every ticket already does: creates the row and emails `team.nivarro@gmail.com` — no new notification plumbing.
+- A Nivarro human reviews it at `/hq/support` (unchanged triage page) and decides whether to approve. This is intentionally a human decision, not an automated vote — there is no reliable "two other people at this school" to ask when the scenario is specifically "the Owner is unreachable and there may be no capable staff at all."
+- For `OWNER_LOCKOUT` tickets only, the triage page's resolve action gains one extra button: **issue a temporary password** for that school's Owner account. This reveals the Owner's registered email on the ticket (so the Nivarro admin can confirm they're contacting the right address) and generates a temporary password through the same hashing path every other password-set in the app already uses — no new auth mechanism.
+- No `EmergencyAccessRequest`/`EmergencyAccessApproval` tables, no dual-staff approval, no "act as this school" mode, no expiring grant. Once the Owner has a working password again, they have their normal full Owner access — nothing else needs to change hands.
 
 ## Testing
 
 - Unit tests for `computeEffectivePermissions` covering: tier + override, tier + revocation, tier + override + revocation (revocation always wins for that capability), untiered/custom (revocations ignored).
 - Enforcement tests for each swept route: 403 for a `STAFF` lacking the capability, 200 for one with it via tier, override, or Core Admin bypass; confirm `schoolId` resolves to the Owner's id in all cases, not the actor's own id.
 - Admin endpoint tests: non-Core-Admin `STAFF` gets 403 on promote/demote; attempt to demote the Owner is rejected; a newly promoted Core Admin can immediately demote a different pre-existing Core Admin (symmetric peers).
-- Manual walkthrough: invite a teacher with name/title prefilled, confirm accept-invite still allows editing them; promote to Core Admin, confirm tier-editor and Admins tab become visible; demote, confirm they fall back to their prior tier's actual permissions (not zeroed out).
+- Manual walkthrough: invite a teacher with name/title prefilled, confirm accept-invite still allows editing them; promote to Core Admin, confirm the Groups and Admins tabs become visible; demote, confirm they fall back to their prior Group's actual permissions (not zeroed out); edit an existing person's name/email/permissions from the People tab and confirm it persists.
+- `OWNER_LOCKOUT` ticket walkthrough: file one from the Support modal, confirm it's flagged distinctly in `/hq/support`, confirm the "issue temporary password" action only appears for that category, confirm the Owner can log in with the issued password afterward.
 
 ## Out of scope / explicitly deferred
 
-- Real email delivery for invites (still mocked, unchanged from the existing feature).
+- Real email delivery for regular staff invites (still mocked, unchanged from the existing feature) — the `OWNER_LOCKOUT` support ticket path is real email already, since it rides the existing Support Ticket → Resend pipeline.
 - Any change to the Owner account itself being transferable or removable — flagged as a known structural limitation (the schoolId-anchor problem), not solved here.
 - Audit log / history of who changed whose permissions (worth a future pass if the school asks "who gave X this access," not requested now).
 - Extending this capability system to `ORG` or top-level `ADMIN` accounts — no second consumer exists yet, so generalizing beyond `SCHOOL`/`STAFF` would be speculative.
+- Automated or multi-party approval for the Owner-lockout path — deliberately a single human Nivarro reviewer, not a voting mechanism (see rationale above).
