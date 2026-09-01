@@ -4,8 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import Avatar from "@/components/ui/Avatar";
-import AnimalArchetypeCard from "@/components/AnimalArchetypeCard";
-import type { AnimalKey } from "@/lib/animalArchetypes";
 import DonationWidget from "@/components/donations/DonationWidget";
 
 interface OwnReview {
@@ -28,9 +26,6 @@ interface ProfileData {
   isFirstGen: boolean;
   isHomeschooled: boolean;
   isInternational: boolean;
-  animalArchetypes: string;
-  archetypeAnalysis: string | null;
-  archetypeUpdatedAt: string | null;
   bio: string | null;
   staffTitle: string | null;
   industry: string | null;
@@ -61,12 +56,6 @@ export default function ProfileClient({ profile, canReceiveDonations, isOwn, own
   });
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
-  const [analyzingArchetype, setAnalyzingArchetype] = useState(false);
-  const [archetypeError, setArchetypeError] = useState<string | null>(null);
-  const [archetypes, setArchetypes] = useState<AnimalKey[]>(() => {
-    try { return JSON.parse(profile.animalArchetypes ?? "[]"); } catch { return []; }
-  });
-  const [archetypeAnalysis, setArchetypeAnalysis] = useState<string | null>(profile.archetypeAnalysis);
   const [linkCopied, setLinkCopied] = useState(false);
   const giveLink = profile.handle
     ? `${typeof window !== "undefined" ? window.location.origin : ""}/give/${profile.handle}`
@@ -81,24 +70,6 @@ export default function ProfileClient({ profile, canReceiveDonations, isOwn, own
   const interests: string[] = (() => {
     try { return JSON.parse(profile.interests ?? "[]"); } catch { return []; }
   })();
-
-  const analyzeArchetype = async () => {
-    if (!profile.handle) return;
-    setAnalyzingArchetype(true);
-    setArchetypeError(null);
-    try {
-      const res = await fetch(`/api/profile/${profile.handle}/analyze-archetype`, { method: "POST" });
-      const data = await res.json();
-      if (!res.ok) {
-        setArchetypeError(data.error ?? "Analysis failed");
-        return;
-      }
-      setArchetypes(data.archetypes);
-      setArchetypeAnalysis(data.analysis);
-    } finally {
-      setAnalyzingArchetype(false);
-    }
-  };
 
   const saveProfile = async () => {
     setSaving(true);
@@ -249,75 +220,6 @@ export default function ProfileClient({ profile, canReceiveDonations, isOwn, own
         </div>
       )}
 
-      {/* Animal Archetypes */}
-      {(archetypes.length > 0 || isOwn) && (
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-xs font-semibold uppercase tracking-wider" style={{ color: "#5a6a7a" }}>
-              Animal Archetypes
-            </h2>
-            {isOwn && ownReviews.length >= 3 && (
-              <button
-                onClick={analyzeArchetype}
-                disabled={analyzingArchetype}
-                className="text-[11px] font-mono px-3 py-1 rounded-full transition-all"
-                style={{
-                  background: analyzingArchetype ? "#1a2030" : "#0A1628",
-                  border: "1px solid #1E3A5A",
-                  color: analyzingArchetype ? "#4a6a8a" : "#4A90D4",
-                  cursor: analyzingArchetype ? "not-allowed" : "pointer",
-                }}
-              >
-                {analyzingArchetype
-                  ? "Analyzing…"
-                  : archetypes.length > 0
-                  ? "Re-analyze"
-                  : "Analyze now"}
-              </button>
-            )}
-          </div>
-
-          {archetypeError && (
-            <p className="text-xs mb-3 px-3 py-2 rounded-lg" style={{ color: "#E87070", background: "#200A0A", border: "1px solid #3A1010" }}>
-              {archetypeError}
-            </p>
-          )}
-
-          {archetypes.length > 0 ? (
-            <div>
-              <div className="flex gap-3 flex-wrap">
-                {archetypes.map((key) => (
-                  <AnimalArchetypeCard key={key} animalKey={key} />
-                ))}
-              </div>
-              {archetypeAnalysis && (
-                <div className="mt-4 px-4 py-3 rounded-xl" style={{ background: "#0A1020", border: "1px solid #1E2A3A" }}>
-                  <p className="text-[10px] font-mono uppercase tracking-widest mb-1.5" style={{ color: "#3A5A7A" }}>
-                    AI Analysis
-                  </p>
-                  <p className="text-sm leading-relaxed" style={{ color: "#6888a8" }}>{archetypeAnalysis}</p>
-                </div>
-              )}
-            </div>
-          ) : isOwn ? (
-            <div
-              className="rounded-xl p-5 text-center"
-              style={{ background: "#060C14", border: "1px dashed #1E2A3A" }}
-            >
-              <div className="text-2xl mb-2">🦍 🐯 🦁</div>
-              <p className="text-sm font-medium mb-1" style={{ color: "#4A6A8A" }}>
-                Your animal archetypes haven&apos;t been discovered yet
-              </p>
-              <p className="text-xs" style={{ color: "#2A4060" }}>
-                {ownReviews.length >= 3
-                  ? "You have enough reviews — your archetypes will be assigned automatically, or click \"Analyze now\" above."
-                  : `Archetypes unlock after ${3 - ownReviews.length} more detailed org review${3 - ownReviews.length === 1 ? "" : "s"} (240+ words each). They're assigned automatically when you hit 3.`}
-              </p>
-            </div>
-          ) : null}
-        </div>
-      )}
-
       {/* Background — own profile only */}
       {isOwn && (
         <div className="bg-[#16161a] border border-[#2a2a33] rounded-xl p-5">
@@ -384,7 +286,7 @@ export default function ProfileClient({ profile, canReceiveDonations, isOwn, own
         >
           <p className="text-sm font-medium" style={{ color: "#5a7898" }}>No reviews yet</p>
           <p className="text-xs mt-1" style={{ color: "var(--muted)" }}>
-            Reviews appear here after you complete an org project. They&apos;re written by the org and visible only to you. Once you have 3, your animal archetypes are automatically assigned.
+            Reviews appear here after you complete an org project. They&apos;re written by the org and visible only to you.
           </p>
         </div>
       )}

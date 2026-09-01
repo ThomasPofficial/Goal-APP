@@ -24,9 +24,6 @@ export default async function ProfilePage({ params }: { params: Promise<{ handle
         isHomeschooled: true,
         isInternational: true,
         userId: true,
-        animalArchetypes: true,
-        archetypeAnalysis: true,
-        archetypeUpdatedAt: true,
         bio: true,
         staffTitle: true,
         industry: true,
@@ -39,7 +36,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ handle
     session?.user?.id
       ? prisma.profile.findUnique({
           where: { userId: session.user.id },
-          select: { id: true, handle: true, displayName: true, avatarUrl: true, currentFocus: true, interests: true, grade: true, schoolName: true, isFirstGen: true, isHomeschooled: true, isInternational: true, animalArchetypes: true, archetypeAnalysis: true, archetypeUpdatedAt: true, bio: true, staffTitle: true, industry: true, isAvailableToMentor: true, graduationYear: true, intendedCollege: true },
+          select: { id: true, handle: true, displayName: true, avatarUrl: true, currentFocus: true, interests: true, grade: true, schoolName: true, isFirstGen: true, isHomeschooled: true, isInternational: true, bio: true, staffTitle: true, industry: true, isAvailableToMentor: true, graduationYear: true, intendedCollege: true },
         })
       : null,
   ]);
@@ -67,13 +64,10 @@ export default async function ProfilePage({ params }: { params: Promise<{ handle
 
   return (
     <ProfileClient
-      profile={{
-        ...profileFields,
-        archetypeUpdatedAt: profile.archetypeUpdatedAt?.toISOString() ?? null,
-      }}
+      profile={profileFields}
       canReceiveDonations={canReceiveDonations(profileUser, profile)}
       isOwn={!!isOwnProfile}
-      myProfile={myProfile ? { ...myProfile, archetypeUpdatedAt: myProfile.archetypeUpdatedAt?.toISOString() ?? null } : null}
+      myProfile={myProfile}
       ownReviews={ownReviews.map((r) => ({ ...r, createdAt: r.createdAt.toISOString() }))}
     />
   );
