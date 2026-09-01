@@ -3,15 +3,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import SkillCard from "@/components/profile/SkillCard";
-import type { TraitCategory } from "@/data/traits";
+import { getInitials } from "@/lib/utils";
 import {
   ArrowLeft,
   Check,
-  UserPlus,
-  CheckCircle2,
   Loader2,
-  X,
 } from "lucide-react";
 
 interface Member {
@@ -24,23 +20,8 @@ interface Member {
       headline: string | null;
       avatarUrl: string | null;
       strengthSummary: string | null;
-      traitLinks: { trait: { name: string; category: string } }[];
     } | null;
   };
-}
-
-interface Trait {
-  id: string;
-  slug: string;
-  name: string;
-  category: string;
-}
-
-interface PeerTrait {
-  traitId: string;
-  name: string;
-  category: string;
-  count: number;
 }
 
 interface Props {
@@ -54,24 +35,15 @@ interface Props {
   };
   isOwner: boolean;
   currentUserId: string;
-  peerTraitsByUser: Record<string, PeerTrait[]>;
-  pendingEndorsees: string[];
-  allTraits: Trait[];
 }
 
 export default function ProjectDetail({
   project,
   isOwner,
   currentUserId,
-  peerTraitsByUser,
-  pendingEndorsees,
-  allTraits,
 }: Props) {
   const router = useRouter();
   const [completing, setCompleting] = useState(false);
-  const [endorseFor, setEndorseFor] = useState<string | null>(null);
-  const [selectedTraits, setSelectedTraits] = useState<string[]>([]);
-  const [submitting, setSubmitting] = useState(false);
   const [addMemberQuery, setAddMemberQuery] = useState("");
   const [searchResults, setSearchResults] = useState<
     { userId: string; displayName: string; headline: string | null }[]
@@ -83,7 +55,7 @@ export default function ProjectDetail({
   );
 
   async function markComplete() {
-    if (!confirm("Mark this project as complete? This will trigger the peer endorsement flow.")) return;
+    if (!confirm("Mark this project as complete?")) return;
     setCompleting(true);
     await fetch(`/api/projects/${project.id}`, {
       method: "PATCH",
@@ -118,34 +90,6 @@ export default function ProjectDetail({
     });
     setAddMemberQuery("");
     setSearchResults([]);
-    router.refresh();
-  }
-
-  function toggleTrait(traitId: string) {
-    setSelectedTraits((prev) =>
-      prev.includes(traitId)
-        ? prev.filter((id) => id !== traitId)
-        : prev.length < 5
-        ? [...prev, traitId]
-        : prev
-    );
-  }
-
-  async function submitEndorsement() {
-    if (!endorseFor || selectedTraits.length === 0) return;
-    setSubmitting(true);
-    await fetch("/api/endorsements", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        projectId: project.id,
-        endorseeId: endorseFor,
-        traitIds: selectedTraits,
-      }),
-    });
-    setSubmitting(false);
-    setEndorseFor(null);
-    setSelectedTraits([]);
     router.refresh();
   }
 
@@ -203,25 +147,7 @@ export default function ProjectDetail({
         </div>
       </div>
 
-      {/* Endorsement prompt (completed projects only) */}
-      {isCompleted && pendingEndorsees.length > 0 && (
-        <div className="bg-[#4ADE8010] border border-[#4ADE8030] rounded-xl p-4">
-          <div className="flex items-start gap-3">
-            <CheckCircle2 className="w-5 h-5 text-[#4ADE80] flex-shrink-0 mt-0.5" />
-            <div>
-              <div className="text-sm font-semibold text-[#eaeaea] mb-1">
-                Project complete — endorse your teammates
-              </div>
-              <p className="text-xs text-[#909098]">
-                Select up to 5 traits that each teammate genuinely displayed during
-                this project. Your endorsements appear on their Skill Cards.
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Member Skill Cards */}
+      {/* Member cards */}
       <div>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-sm font-semibold text-[#eaeaea] uppercase tracking-wider">
@@ -264,119 +190,64 @@ export default function ProjectDetail({
           {project.members.map((member) => {
             const profile = member.user.profile;
             if (!profile) return null;
-            const peerTraits = (peerTraitsByUser[member.userId] ?? [])
-              .sort((a, b) => b.count - a.count)
-              .map((t) => ({
-                name: t.name,
-                category: t.category as TraitCategory,
-                endorseCount: t.count,
-              }));
-
-            const isPending =
-              isCompleted &&
-              member.userId !== currentUserId &&
-              pendingEndorsees.includes(member.userId);
 
             return (
-              <div key={member.id} className="relative">
-                <SkillCard
-                  data={{
-                    userId: member.userId,
-                    displayName: profile.displayName,
-                    headline: profile.headline,
-                    avatarUrl: profile.avatarUrl,
-                    strengthSummary: profile.strengthSummary,
-                    selfTraits: profile.traitLinks.map((l) => ({
-                      name: l.trait.name,
-                      category: l.trait.category as TraitCategory,
-                    })),
-                    peerTraits,
-                  }}
-                />
-                {isPending && (
-                  <button
-                    onClick={() => {
-                      setEndorseFor(member.userId);
-                      setSelectedTraits([]);
-                    }}
-                    className="absolute bottom-3 right-3 flex items-center gap-1 text-xs font-medium text-[#4ADE80] border border-[#4ADE8030] hover:border-[#4ADE8060] bg-[#4ADE8010] rounded-md px-2 py-1.5 transition-colors"
-                  >
-                    <UserPlus className="w-3 h-3" />
-                    Endorse
-                  </button>
+              <div
+                key={member.id}
+                className="bg-[#0d0d0e] border border-[#1c1c20] rounded-[10px] p-5 flex flex-col gap-3.5"
+              >
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0">
+                    {profile.avatarUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={profile.avatarUrl}
+                        alt={profile.displayName}
+                        className="w-12 h-12 rounded-full object-cover"
+                        style={{ boxShadow: "0 0 0 1px rgba(74,128,240,0.19)" }}
+                      />
+                    ) : (
+                      <div
+                        className="w-12 h-12 rounded-full flex items-center justify-center font-bold text-sm"
+                        style={{
+                          background: "rgba(74,128,240,0.13)",
+                          color: "var(--accent)",
+                          boxShadow: "0 0 0 1px rgba(74,128,240,0.19)",
+                        }}
+                      >
+                        {getInitials(profile.displayName)}
+                      </div>
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-semibold text-[#eaeaea] text-sm truncate">
+                      {profile.displayName}
+                    </h3>
+                    {profile.headline && (
+                      <p className="text-xs text-[#909098] truncate mt-0.5">
+                        {profile.headline}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {profile.strengthSummary && (
+                  <p className="text-xs text-[#909098] leading-relaxed line-clamp-3 border-t border-[#1c1c20] pt-3">
+                    {profile.strengthSummary}
+                  </p>
                 )}
+
+                <Link
+                  href={`/people/${member.userId}`}
+                  className="text-center text-xs font-medium text-[#909098] hover:text-[#eaeaea] border border-[#1c1c20] hover:border-[#28282e] rounded-md py-1.5 transition-colors mt-auto"
+                >
+                  View
+                </Link>
               </div>
             );
           })}
         </div>
       </div>
-
-      {/* Endorsement modal */}
-      {endorseFor && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#0d0d0e] border border-[#1c1c20] rounded-xl p-6 w-full max-w-lg shadow-[0_24px_48px_rgba(0,0,0,0.6)]">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-base font-semibold text-[#eaeaea]">
-                Endorse traits
-              </h2>
-              <button onClick={() => setEndorseFor(null)}>
-                <X className="w-5 h-5 text-[#58586a] hover:text-[#909098]" />
-              </button>
-            </div>
-            <p className="text-sm text-[#909098] mb-5">
-              Select up to 5 traits that this person genuinely displayed during the
-              project. Be honest — these will appear on their permanent Skill Card.
-            </p>
-
-            <div className="flex flex-wrap gap-1.5 mb-6 max-h-60 overflow-y-auto pr-1">
-              {allTraits.map((trait) => {
-                const isSel = selectedTraits.includes(trait.id);
-                const isDisabled = !isSel && selectedTraits.length >= 5;
-                return (
-                  <button
-                    key={trait.id}
-                    disabled={isDisabled}
-                    onClick={() => toggleTrait(trait.id)}
-                    className={`inline-flex items-center gap-1 px-2.5 py-1 rounded text-xs font-medium border-l-2 transition-all ${
-                      isDisabled ? "opacity-30 cursor-not-allowed" : "cursor-pointer"
-                    } ${isSel ? "opacity-100" : "opacity-70"}`}
-                    style={{
-                      borderLeftColor: "#909098",
-                      backgroundColor: isSel ? "#90909825" : "#9090980C",
-                      color: isSel ? "#eaeaea" : "#909098",
-                    }}
-                  >
-                    {isSel && <Check className="w-3 h-3" />}
-                    {trait.name}
-                  </button>
-                );
-              })}
-            </div>
-
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-[#58586a]">
-                {selectedTraits.length}/5 selected
-              </span>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setEndorseFor(null)}
-                  className="text-sm text-[#909098] hover:text-[#eaeaea] px-3 py-2"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={submitEndorsement}
-                  disabled={selectedTraits.length === 0 || submitting}
-                  className="flex items-center gap-2 bg-[#4ADE80] hover:bg-[#22C55E] text-[#080809] font-semibold text-sm rounded-md px-4 py-2 transition-colors disabled:opacity-50"
-                >
-                  {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
-                  Submit endorsement
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
