@@ -12,12 +12,20 @@ export default async function CommunitiesPage() {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
 
-  const capCheck = await getSchoolCapabilities();
-  const isAdmin = !("error" in capCheck) && capCheck.capabilities.includes("community:manage");
+  // Cheap short-circuit before the heavier capability query (which joins
+  // Profile + FacultyTier): only SCHOOL/ADMIN/STAFF can ever hold
+  // community:manage, and the overwhelming majority of visitors here are
+  // plain STUDENT accounts who can't.
+  const roleCheck = await prisma.user.findUnique({ where: { id: session.user.id }, select: { role: true } });
+  let isAdmin = false;
   let adminSchoolCode: string | null = null;
-  if (isAdmin && !("error" in capCheck)) {
-    const owner = await prisma.user.findUnique({ where: { id: capCheck.schoolId }, select: { schoolCode: true } });
-    adminSchoolCode = owner?.schoolCode ?? null;
+  if (roleCheck?.role === "SCHOOL" || roleCheck?.role === "ADMIN" || roleCheck?.role === "STAFF") {
+    const capCheck = await getSchoolCapabilities();
+    isAdmin = !("error" in capCheck) && capCheck.capabilities.includes("community:manage");
+    if (isAdmin && !("error" in capCheck)) {
+      const owner = await prisma.user.findUnique({ where: { id: capCheck.schoolId }, select: { schoolCode: true } });
+      adminSchoolCode = owner?.schoolCode ?? null;
+    }
   }
   const schoolIds = await getSchoolIds(session.user.id);
 

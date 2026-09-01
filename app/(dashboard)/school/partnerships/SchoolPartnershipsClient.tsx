@@ -278,9 +278,8 @@ export default function SchoolPartnershipsClient({
 
   return (
     <div style={{ maxWidth: 900 }}>
-      {canViewMentorship && (
-      <>
-      {/* Header */}
+      {/* Header — shown regardless of which of mentorship/partnerships this viewer has,
+          since the page itself is only reachable with at least one of the two. */}
       <div style={{ marginBottom: 24, display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
         <div>
           <h1
@@ -327,6 +326,8 @@ export default function SchoolPartnershipsClient({
         )}
       </div>
 
+      {canViewMentorship && (
+      <>
       {/* Empty state */}
       {pairings.length === 0 && (
         <div

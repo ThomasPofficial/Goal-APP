@@ -64,8 +64,15 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ us
       newTierPermissionsJson = tier.permissions;
     }
 
-    const validOverrides = (overrides ?? []).filter((p): p is Capability => (CAPABILITIES as readonly string[]).includes(p));
-    const validRevocations = (revocations ?? []).filter((p): p is Capability => (CAPABILITIES as readonly string[]).includes(p));
+    const rawValidRevocations = (revocations ?? []).filter((p): p is Capability => (CAPABILITIES as readonly string[]).includes(p));
+    // Revocation always wins (per computeEffectivePermissions) — dedupe at write time
+    // so a capability is never stored in both arrays. Without this, capabilityState's
+    // UI classification (which checks overrides first) could show "granted" for a
+    // capability the server actually treats as revoked.
+    const validOverrides = (overrides ?? [])
+      .filter((p): p is Capability => (CAPABILITIES as readonly string[]).includes(p))
+      .filter((p) => !rawValidRevocations.includes(p));
+    const validRevocations = rawValidRevocations;
 
     const oldEffective = computeEffectivePermissions({
       tierPermissions: target.profile.staffTier?.permissions ?? null,

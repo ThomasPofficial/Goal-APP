@@ -15,7 +15,11 @@ export async function GET() {
       select: { id: true, email: true, name: true, profile: { select: { displayName: true } } },
     }),
     prisma.profile.findMany({
-      where: { schoolId, isCoreAdmin: true },
+      // Pending invites (still role STUDENT, awaiting acceptance) can carry
+      // isCoreAdmin=true, but they have no working login yet and PATCH
+      // /api/school/admins/[userId] requires role STAFF — excluding them here
+      // avoids listing a row whose "Remove Core Admin" button would 404.
+      where: { schoolId, isCoreAdmin: true, user: { role: "STAFF" } },
       include: { user: { select: { id: true, email: true } } },
       orderBy: { displayName: "asc" },
     }),

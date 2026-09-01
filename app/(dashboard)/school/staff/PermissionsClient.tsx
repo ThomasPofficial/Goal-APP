@@ -41,13 +41,14 @@ interface StaffApiRow {
 }
 
 interface Props {
+  currentUserId: string;
   isOwnerOrCoreAdmin: boolean;
   initialGroups: Group[];
 }
 
 type Tab = "people" | "groups" | "admins";
 
-export default function PermissionsClient({ isOwnerOrCoreAdmin, initialGroups }: Props) {
+export default function PermissionsClient({ currentUserId, isOwnerOrCoreAdmin, initialGroups }: Props) {
   const [tab, setTab] = useState<Tab>("people");
   const [groups, setGroups] = useState<Group[]>(initialGroups);
   const [people, setPeople] = useState<Person[]>([]);
@@ -126,7 +127,7 @@ export default function PermissionsClient({ isOwnerOrCoreAdmin, initialGroups }:
         <PeopleTab people={people} loading={loadingPeople} groups={groups} isOwnerOrCoreAdmin={isOwnerOrCoreAdmin} onChanged={refreshPeople} />
       )}
       {tab === "groups" && isOwnerOrCoreAdmin && <GroupsTab groups={groups} onChanged={refreshGroups} />}
-      {tab === "admins" && isOwnerOrCoreAdmin && <AdminsTab onChanged={refreshPeople} />}
+      {tab === "admins" && isOwnerOrCoreAdmin && <AdminsTab currentUserId={currentUserId} onChanged={refreshPeople} />}
     </div>
   );
 }

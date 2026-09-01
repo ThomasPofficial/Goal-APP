@@ -18,6 +18,7 @@ export default async function StaffPage() {
 
   return (
     <PermissionsClient
+      currentUserId={session.user.id}
       isOwnerOrCoreAdmin={isOwnerOrCoreAdmin}
       initialGroups={tiers.map((t) => ({
         id: t.id,
