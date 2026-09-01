@@ -2,22 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import TraitBadge from "@/components/profile/TraitBadge";
-import {
-  TRAIT_CATEGORY_LABELS,
-  TRAIT_CATEGORY_COLORS,
-  TRAITS_BY_CATEGORY,
-} from "@/data/traits";
-import type { TraitCategory } from "@/data/traits";
-import { Loader2, Check } from "lucide-react";
-
-interface Trait {
-  id: string;
-  slug: string;
-  name: string;
-  description: string;
-  category: string;
-}
+import { Loader2 } from "lucide-react";
 
 interface Props {
   userId: string;
@@ -26,16 +11,12 @@ interface Props {
     headline: string;
     bio: string;
     strengthSummary: string;
-    traitIds: string[];
     dateOfBirth: string;
   } | null;
-  allTraits: Trait[];
   locked?: boolean;
 }
 
-const MAX_TRAITS = 5;
-
-export default function ProfileEditor({ initialProfile, allTraits, locked = false }: Props) {
+export default function ProfileEditor({ initialProfile, locked = false }: Props) {
   const router = useRouter();
   const [displayName, setDisplayName] = useState(
     initialProfile?.displayName ?? ""
@@ -48,23 +29,9 @@ export default function ProfileEditor({ initialProfile, allTraits, locked = fals
   const [dateOfBirth, setDateOfBirth] = useState(
     initialProfile?.dateOfBirth ?? ""
   );
-  const [selectedTraitIds, setSelectedTraitIds] = useState<string[]>(
-    initialProfile?.traitIds ?? []
-  );
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
-
-  const traitById = Object.fromEntries(allTraits.map((t) => [t.id, t]));
-  const categories = Object.keys(TRAIT_CATEGORY_LABELS) as TraitCategory[];
-
-  function toggleTrait(traitId: string) {
-    setSelectedTraitIds((prev) => {
-      if (prev.includes(traitId)) return prev.filter((id) => id !== traitId);
-      if (prev.length >= MAX_TRAITS) return prev;
-      return [...prev, traitId];
-    });
-  }
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
@@ -79,7 +46,6 @@ export default function ProfileEditor({ initialProfile, allTraits, locked = fals
         headline,
         bio,
         strengthSummary,
-        traitIds: selectedTraitIds,
         dateOfBirth: dateOfBirth || undefined,
       }),
     });
@@ -181,107 +147,6 @@ export default function ProfileEditor({ initialProfile, allTraits, locked = fals
               placeholder="What do you do best? How do you work?"
               className="w-full resize-none"
             />
-          </div>
-        </div>
-
-        {/* Traits selector */}
-        <div className="bg-[#0d0d0e] border border-[#1c1c20] rounded-xl p-5 space-y-5">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xs font-semibold text-[#909098] uppercase tracking-wider">
-              Traits
-            </h2>
-            <span
-              className={`text-xs font-medium ${
-                selectedTraitIds.length >= MAX_TRAITS
-                  ? "text-[#4a80f0]"
-                  : "text-[#58586a]"
-              }`}
-            >
-              {selectedTraitIds.length}/{MAX_TRAITS} selected
-            </span>
-          </div>
-
-          {/* Selected preview */}
-          {selectedTraitIds.length > 0 && (
-            <div className="flex flex-wrap gap-2 p-3 bg-[#131315] rounded-lg border border-[#1c1c20]">
-              {selectedTraitIds.map((id) => {
-                const t = traitById[id];
-                if (!t) return null;
-                return (
-                  <button
-                    key={id}
-                    type="button"
-                    onClick={() => toggleTrait(id)}
-                    className="group"
-                  >
-                    <TraitBadge
-                      name={t.name}
-                      category={t.category as TraitCategory}
-                      size="md"
-                    />
-                  </button>
-                );
-              })}
-            </div>
-          )}
-
-          {/* Trait grid by category */}
-          <div className="space-y-5">
-            {categories.map((cat) => {
-              const categoryTraits = TRAITS_BY_CATEGORY[cat];
-              const dbTraits = allTraits.filter((t) => t.category === cat);
-
-              return (
-                <div key={cat}>
-                  <div className="flex items-center gap-2 mb-2.5">
-                    <div
-                      className="w-2 h-2 rounded-full"
-                      style={{
-                        backgroundColor: TRAIT_CATEGORY_COLORS[cat],
-                      }}
-                    />
-                    <span className="text-xs font-medium text-[#909098]">
-                      {TRAIT_CATEGORY_LABELS[cat]}
-                    </span>
-                  </div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {dbTraits.map((trait) => {
-                      const isSelected = selectedTraitIds.includes(trait.id);
-                      const isDisabled =
-                        !isSelected && selectedTraitIds.length >= MAX_TRAITS;
-                      const traitDef = categoryTraits.find(
-                        (t) => t.slug === trait.slug
-                      );
-
-                      return (
-                        <button
-                          key={trait.id}
-                          type="button"
-                          onClick={() => !isDisabled && toggleTrait(trait.id)}
-                          disabled={isDisabled}
-                          title={traitDef?.description}
-                          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded text-xs font-medium border-l-2 transition-all ${
-                            isDisabled ? "opacity-30 cursor-not-allowed" : "cursor-pointer"
-                          }`}
-                          style={{
-                            borderLeftColor: TRAIT_CATEGORY_COLORS[cat],
-                            backgroundColor: isSelected
-                              ? `${TRAIT_CATEGORY_COLORS[cat]}25`
-                              : `${TRAIT_CATEGORY_COLORS[cat]}0C`,
-                            color: isSelected
-                              ? TRAIT_CATEGORY_COLORS[cat]
-                              : "#909098",
-                          }}
-                        >
-                          {isSelected && <Check className="w-3 h-3" />}
-                          {trait.name}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            })}
           </div>
         </div>
 
