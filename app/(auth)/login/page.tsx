@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Loader2 } from "lucide-react";
@@ -11,12 +11,9 @@ function LoginForm() {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") ?? "/dashboard";
   const justRegistered = searchParams.get("registered") === "1";
-  const prefillEmail = searchParams.get("email") ?? "";
-  const prefillPassword = searchParams.get("password") ?? "";
-  const autoSubmit = searchParams.get("auto") === "1";
 
-  const [email, setEmail] = useState(prefillEmail);
-  const [password, setPassword] = useState(prefillPassword);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -43,13 +40,6 @@ function LoginForm() {
     e.preventDefault();
     await doLogin(email, password);
   }
-
-  useEffect(() => {
-    if (autoSubmit && prefillEmail && prefillPassword) {
-      doLogin(prefillEmail, prefillPassword);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
