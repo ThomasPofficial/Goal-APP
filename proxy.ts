@@ -30,6 +30,11 @@ export async function proxy(req: NextRequest) {
     pathname.startsWith("/api/auth") ||
     pathname.startsWith("/api/admin") ||
     pathname.startsWith("/api/webhooks") ||
+    // Public agent API: third-party AI agents authenticate with a Bearer token
+    // (requireAgentAuth, lib/agent-auth.ts), not a browser session cookie — so
+    // this whole prefix must bypass the cookie check here or every request gets
+    // redirected to /login before ever reaching the route's own auth.
+    pathname.startsWith("/api/agent") ||
     pathname.startsWith("/quiz") ||
     pathname.startsWith("/onboarding") ||
     pathname.startsWith("/give") ||
