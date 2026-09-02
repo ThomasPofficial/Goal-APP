@@ -42,7 +42,6 @@ async function main() {
 
     const existing = await prisma.profile.findUnique({ where: { userId: user.id }, select: { id: true } });
     if (existing) {
-      await prisma.profileTrait.deleteMany({ where: { profileId: existing.id } });
       await prisma.teamMember.deleteMany({ where: { profileId: existing.id } });
     }
 
