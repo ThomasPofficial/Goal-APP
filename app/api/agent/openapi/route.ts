@@ -45,21 +45,6 @@ const spec = {
         },
         required: ["id", "body", "createdAt", "org", "orgProject"],
       },
-      TraitLink: {
-        type: "object",
-        properties: {
-          trait: {
-            type: "object",
-            properties: {
-              slug: { type: "string" },
-              name: { type: "string" },
-              category: { type: "string" },
-            },
-            required: ["slug", "name", "category"],
-          },
-        },
-        required: ["trait"],
-      },
       Scholar: {
         type: "object",
         properties: {
@@ -101,11 +86,6 @@ const spec = {
             nullable: true,
             description: "Comma-separated or freeform interests string",
           },
-          traitLinks: {
-            type: "array",
-            items: { $ref: "#/components/schemas/TraitLink" },
-            description: "Top traits linked to this scholar's profile",
-          },
           orgReviews: {
             type: "array",
             items: { $ref: "#/components/schemas/OrgReview" },
@@ -113,7 +93,7 @@ const spec = {
               "Private org reviews for this scholar. Not visible to the scholar — only to authenticated orgs.",
           },
         },
-        required: ["id", "displayName", "handle", "traitLinks", "orgReviews"],
+        required: ["id", "displayName", "handle", "orgReviews"],
       },
     },
   },
@@ -218,7 +198,7 @@ const spec = {
         operationId: "getScholar",
         summary: "Get a scholar by ID",
         description:
-          "Returns the full profile for a specific scholar, including all org reviews and trait links.",
+          "Returns the full profile for a specific scholar, including all org reviews.",
         security: [{ BearerAuth: [] }],
         parameters: [
           {
