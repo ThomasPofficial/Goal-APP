@@ -10,7 +10,6 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
   await params;
 
   const { searchParams } = new URL(req.url);
-  const traits = searchParams.getAll("trait");
   const q = searchParams.get("q") ?? "";
 
   const where: Prisma.ProfileWhereInput = { onboardingComplete: true };
@@ -20,9 +19,6 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       { displayName: { contains: q, mode: "insensitive" } },
       { headline: { contains: q, mode: "insensitive" } },
     ];
-  }
-  if (traits.length > 0) {
-    where.traitLinks = { some: { trait: { slug: { in: traits } } } };
   }
 
   const scholars = await prisma.profile.findMany({
@@ -34,11 +30,6 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       headline: true,
       avatarUrl: true,
       handle: true,
-      traitLinks: {
-        take: 3,
-        include: { trait: { select: { slug: true, name: true } } },
-        orderBy: { order: "asc" },
-      },
     },
     orderBy: { createdAt: "desc" },
   });
