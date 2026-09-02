@@ -7,7 +7,6 @@ import { X, Check, ChevronDown, ChevronRight, BookOpen, ArrowRight } from "lucid
 const LS_KEY = "nv_tutorial_v4_dismissed";
 
 interface TutorialState {
-  traitsDone: boolean;
   hasTeam: boolean;
   hasApplied: boolean;
   hasBrowsedOrgs: boolean;
@@ -61,22 +60,9 @@ export default function TutorialWidget({ serverDismissed = false, ...initialProp
 
   if (!mounted || dismissed) return null;
 
-  const { traitsDone, hasApplied, hasBrowsedOrgs } = state;
+  const { hasApplied, hasBrowsedOrgs } = state;
 
   const steps: Step[] = [
-    {
-      label: "Add your traits",
-      description: "Tell the community what you're skilled at",
-      href: "/quiz",
-      ctaLabel: "Add traits",
-      done: traitsDone,
-      guide: [
-        "Head to the Quiz page and complete the short skill assessment.",
-        "Add 3–8 skills or strengths you'd bring to a team — e.g. \"Python\", \"UI Design\", \"Public Speaking\".",
-        "Pick things you're genuinely confident in, not just interested in.",
-        "Org admins search for specific traits when looking for candidates, so be specific.",
-      ],
-    },
     {
       label: "Browse organizations",
       description: "Find orgs posting open projects",
@@ -86,7 +72,7 @@ export default function TutorialWidget({ serverDismissed = false, ...initialProp
       guide: [
         "Visit the Orgs page to see organizations accepting applications.",
         "Read each org's mission and open projects to find ones that match your interests.",
-        "Look at what traits and skills they're seeking — compare with your own profile.",
+        "Look at what skills they're seeking — compare with your own profile.",
         "Save orgs you like to revisit, or jump straight to a project page to apply.",
       ],
     },

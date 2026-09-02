@@ -11,7 +11,6 @@ export async function GET() {
     where: { userId: session.user.id },
     select: {
       id: true,
-      _count: { select: { traitLinks: true } },
     },
   });
   if (!profile) return NextResponse.json({ session: null });
@@ -36,9 +35,7 @@ export async function GET() {
     },
   });
 
-  const traitsDone = (profile._count?.traitLinks ?? 0) > 0;
-
-  return NextResponse.json({ session: workflowSession, traitsDone });
+  return NextResponse.json({ session: workflowSession });
 }
 
 // POST — start a new workflow on a project (one at a time enforced by DB unique constraint)

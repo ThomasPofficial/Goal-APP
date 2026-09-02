@@ -10,12 +10,10 @@ export async function GET() {
     where: { userId: session.user.id },
     select: {
       id: true,
-      traitLinks: { select: { id: true }, take: 1 },
       teamMemberships: { select: { id: true }, take: 1 },
     },
   });
 
-  const traitsDone = (profile?.traitLinks?.length ?? 0) > 0;
   const hasTeam = (profile?.teamMemberships?.length ?? 0) > 0;
 
   const hasApplied = hasTeam && profile?.id
@@ -25,7 +23,6 @@ export async function GET() {
     : false;
 
   return NextResponse.json({
-    traitsDone,
     hasTeam,
     hasApplied,
     hasBrowsedOrgs: hasTeam || hasApplied,
