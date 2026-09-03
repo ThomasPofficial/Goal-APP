@@ -48,18 +48,9 @@ export default async function ProfilePage() {
     );
   }
 
-  const [profile, allTraits] = await Promise.all([
-    prisma.profile.findUnique({
-      where: { userId },
-      include: {
-        traitLinks: {
-          orderBy: { order: "asc" },
-          include: { trait: true },
-        },
-      },
-    }),
-    prisma.trait.findMany({ orderBy: { category: "asc" } }),
-  ]);
+  const profile = await prisma.profile.findUnique({
+    where: { userId },
+  });
 
   return (
     <ProfileEditor
@@ -72,14 +63,12 @@ export default async function ProfilePage() {
               headline: profile.headline ?? "",
               bio: profile.bio ?? "",
               strengthSummary: profile.strengthSummary ?? "",
-              traitIds: profile.traitLinks.map((l) => l.traitId),
               dateOfBirth: profile.dateOfBirth
                 ? profile.dateOfBirth.toISOString().split("T")[0]
                 : "",
             }
           : null
       }
-      allTraits={allTraits}
     />
   );
 }

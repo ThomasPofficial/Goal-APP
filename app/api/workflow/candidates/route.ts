@@ -74,11 +74,6 @@ export async function GET() {
       interests: true,
       grade: true,
       schoolName: true,
-      traitLinks: {
-        take: 5,
-        include: { trait: { select: { slug: true, name: true, category: true } } },
-        orderBy: { order: "asc" },
-      },
       // Reviews visible in algorithm view — this is the paywall mechanism
       orgReviews: {
         select: {

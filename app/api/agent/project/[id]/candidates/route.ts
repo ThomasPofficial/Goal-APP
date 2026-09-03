@@ -16,10 +16,6 @@ type ScholarRaw = {
   grade: number | null;
   schoolName: string | null;
   interests: string | null;
-  traitLinks: {
-    trait: { slug: string; name: string; category: string };
-    order: number;
-  }[];
   orgReviews: {
     id: string;
     body: string | null;
@@ -129,11 +125,6 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       grade: true,
       schoolName: true,
       interests: true,
-      traitLinks: {
-        take: 5,
-        include: { trait: { select: { slug: true, name: true, category: true } } },
-        orderBy: { order: "asc" },
-      },
       orgReviews: {
         select: {
           id: true,

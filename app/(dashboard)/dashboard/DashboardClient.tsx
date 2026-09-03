@@ -16,7 +16,7 @@ interface ProfileData {
 }
 interface SpaceRow { id: string; name: string; hasUnread: boolean; }
 interface TutorialData {
-  traitsDone: boolean; hasTeam: boolean;
+  hasTeam: boolean;
   hasApplied: boolean; hasBrowsedOrgs: boolean;
 }
 interface TickerItem {
@@ -78,8 +78,8 @@ function SectionHeader({ tag, title, href, linkLabel }: { tag: string; title: st
   );
 }
 
-export default function DashboardClient({ profile, spaces, traitsDone, tutorialDismissed, tutorial }: {
-  profile: ProfileData; spaces: SpaceRow[]; traitsDone: boolean;
+export default function DashboardClient({ profile, spaces, tutorialDismissed, tutorial }: {
+  profile: ProfileData; spaces: SpaceRow[];
   tutorialDismissed?: boolean; tutorial: TutorialData;
 }) {
   const [activeFilter, setActiveFilter] = useState("ALL");
@@ -165,23 +165,6 @@ export default function DashboardClient({ profile, spaces, traitsDone, tutorialD
         <WelcomeCard />
         <PlatformUpdatesCard />
         <TutorialWidget {...tutorial} serverDismissed={tutorialDismissed} />
-
-        {!traitsDone && (
-          <Link href="/quiz" className="bracket-card" style={{
-            display: "flex", alignItems: "center", justifyContent: "space-between",
-            gap: 12, padding: "16px 20px", background: "rgba(232,137,58,0.06)",
-            border: "1px solid rgba(232,137,58,0.25)", textDecoration: "none",
-          }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-              <span style={{ fontSize: 18 }}>✦</span>
-              <div>
-                <p style={{ fontSize: 15, fontWeight: "bold", color: "#FFFFFF", fontFamily: "var(--font-body)", margin: 0 }}>Complete your Skill Card</p>
-                <p style={{ fontSize: 13, color: "var(--text2)", fontFamily: "var(--font-body)", margin: "2px 0 0" }}>Take the Traits Quiz to identify your 5 core strengths</p>
-              </div>
-            </div>
-            <span style={{ fontSize: 12, fontWeight: "700", color: "var(--amber)", fontFamily: "var(--font-mono)", letterSpacing: "0.14em", textTransform: "uppercase", flexShrink: 0 }}>Start →</span>
-          </Link>
-        )}
       </div>
 
       {/* ── Projects ──────────────────────────────── */}

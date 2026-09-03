@@ -27,14 +27,7 @@ export async function GET(
         include: {
           user: {
             include: {
-              profile: {
-                include: {
-                  traitLinks: {
-                    orderBy: { order: "asc" },
-                    include: { trait: true },
-                  },
-                },
-              },
+              profile: true,
             },
           },
         },

@@ -1,8 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import { auth } from "@/lib/auth";
-import TraitBadge from "@/components/profile/TraitBadge";
-import type { TraitCategory } from "@/data/traits";
 import { getInitials } from "@/lib/utils";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
@@ -18,10 +16,6 @@ export default async function PersonProfilePage({
   const profile = await prisma.profile.findUnique({
     where: { userId },
     include: {
-      traitLinks: {
-        orderBy: { order: "asc" },
-        include: { trait: true },
-      },
       user: {
         select: { id: true, name: true, email: true },
       },
@@ -79,25 +73,6 @@ export default async function PersonProfilePage({
             </div>
           </div>
         </div>
-
-        {/* Traits */}
-        {profile.traitLinks.length > 0 && (
-          <div className="p-6 border-b border-[#1c1c20]">
-            <h2 className="text-xs font-semibold text-[#58586a] uppercase tracking-wider mb-3">
-              Traits
-            </h2>
-            <div className="flex flex-wrap gap-2">
-              {profile.traitLinks.map((link) => (
-                <TraitBadge
-                  key={link.id}
-                  name={link.trait.name}
-                  category={link.trait.category as TraitCategory}
-                  size="md"
-                />
-              ))}
-            </div>
-          </div>
-        )}
 
         {/* Strength summary */}
         {profile.strengthSummary && (

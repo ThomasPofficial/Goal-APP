@@ -24,10 +24,6 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       currentFocus: true,
       isFirstGen: true,
       isInternational: true,
-      traitLinks: {
-        include: { trait: { select: { slug: true, name: true, category: true } } },
-        orderBy: { order: "asc" },
-      },
       orgReviews: {
         select: {
           id: true,

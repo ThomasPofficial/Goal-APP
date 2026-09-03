@@ -90,8 +90,6 @@ model User {
   ideaNotes             IdeaNote[]
   sentMessages          Message[]                 @relation("SentMessages")
   participations        ConversationParticipant[]
-  endorsementsGiven     PeerEndorsement[]         @relation("EndorsementsGiven")
-  endorsementsReceived  PeerEndorsement[]         @relation("EndorsementsReceived")
   campaigns             Campaign[]                @relation("SchoolCampaigns")
   donationsReceived     Donation[]                @relation("DonationsReceived")
 }
@@ -114,9 +112,6 @@ model Profile {
   isHomeschooled      Boolean     @default(false)
   isInternational     Boolean     @default(false)
   onboardingComplete  Boolean     @default(false)
-  animalArchetypes    String      @default("[]")
-  archetypeAnalysis   String?
-  archetypeUpdatedAt  DateTime?
   isDemo              Boolean     @default(false)
   // School-side fields
   intendedCollege     String?
@@ -144,7 +139,6 @@ model Profile {
   updatedAt           DateTime    @updatedAt
 
   user                 User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
-  traitLinks           ProfileTrait[]
   savedOpportunities   SavedOpportunity[]
   savedOrgs            SavedOrg[]
   contacts             Contact[]            @relation("ContactOwner")
@@ -186,48 +180,6 @@ model FacultyTier {
 }
 
 // ─────────────────────────────────────────────
-// TRAITS
-// ─────────────────────────────────────────────
-
-model Trait {
-  id          String        @id @default(cuid())
-  slug        String        @unique
-  name        String
-  description String
-  category    TraitCategory
-  createdAt   DateTime      @default(now())
-
-  profileLinks     ProfileTrait[]
-  peerEndorsements PeerEndorsedTrait[]
-}
-
-model ProfileTrait {
-  id        String   @id @default(cuid())
-  profileId String
-  traitId   String
-  order     Int      @default(0)
-  createdAt DateTime @default(now())
-
-  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  trait   Trait   @relation(fields: [traitId], references: [id], onDelete: Cascade)
-
-  @@unique([profileId, traitId])
-}
-
-enum TraitCategory {
-  VISION
-  DRIVE
-  LEADERSHIP
-  COMMUNICATION
-  COLLABORATION
-  ORGANIZATION
-  ANALYTICAL
-  ADAPTABILITY
-  INTEGRITY
-  JUDGMENT
-}
-
-// ─────────────────────────────────────────────
 // PROJECTS
 // ─────────────────────────────────────────────
 
@@ -242,7 +194,6 @@ model Project {
   updatedAt   DateTime      @updatedAt
 
   members      ProjectMember[]
-  endorsements PeerEndorsement[]
 }
 
 model ProjectMember {
@@ -267,38 +218,6 @@ enum ProjectStatus {
 enum ProjectRole {
   OWNER
   MEMBER
-}
-
-// ─────────────────────────────────────────────
-// PEER ENDORSEMENTS
-// ─────────────────────────────────────────────
-
-model PeerEndorsement {
-  id          String    @id @default(cuid())
-  projectId   String
-  endorserId  String
-  endorseeId  String
-  completedAt DateTime?
-  createdAt   DateTime  @default(now())
-
-  project  Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  endorser User                @relation("EndorsementsGiven", fields: [endorserId], references: [id], onDelete: Cascade)
-  endorsee User                @relation("EndorsementsReceived", fields: [endorseeId], references: [id], onDelete: Cascade)
-  traits   PeerEndorsedTrait[]
-
-  @@unique([projectId, endorserId, endorseeId])
-}
-
-model PeerEndorsedTrait {
-  id            String   @id @default(cuid())
-  endorsementId String
-  traitId       String
-  createdAt     DateTime @default(now())
-
-  endorsement PeerEndorsement @relation(fields: [endorsementId], references: [id], onDelete: Cascade)
-  trait       Trait           @relation(fields: [traitId], references: [id], onDelete: Cascade)
-
-  @@unique([endorsementId, traitId])
 }
 
 // ─────────────────────────────────────────────

@@ -62,8 +62,6 @@ export async function GET(req: Request) {
               sentMessages: true,
               sessions: true,
               participations: true,
-              endorsementsGiven: true,
-              endorsementsReceived: true,
               projectMemberships: true,
               notes: true,
             },
@@ -82,8 +80,6 @@ export async function GET(req: Request) {
       u._count.sentMessages +
       u._count.sessions +
       u._count.participations +
-      u._count.endorsementsGiven +
-      u._count.endorsementsReceived +
       u._count.projectMemberships +
       u._count.notes;
 

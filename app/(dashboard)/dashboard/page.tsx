@@ -86,7 +86,6 @@ export default async function DashboardPage() {
       handle: true,
       avatarUrl: true,
       currentFocus: true,
-      traitLinks: { select: { id: true } },
       savedOrgs: { select: { id: true } },
       savedOpportunities: { select: { id: true } },
       teamMemberships: {
@@ -129,8 +128,6 @@ export default async function DashboardPage() {
       })) > 0
     : false;
 
-  const traitsDone = (profile?.traitLinks?.length ?? 0) > 0;
-
   // Hide tutorial widget when there's an active workflow — two flows at once is confusing
   const hasActiveWorkflow = profile?.id
     ? (await prisma.workflowSession.count({ where: { profileId: profile.id } })) > 0
@@ -147,14 +144,8 @@ export default async function DashboardPage() {
         savedCount: (profile?.savedOrgs?.length ?? 0) + (profile?.savedOpportunities?.length ?? 0),
       }}
       spaces={spaces}
-      traitsDone={traitsDone}
       tutorialDismissed={tutorialDismissed || hasActiveWorkflow}
-      tutorial={{
-        traitsDone,
-        hasTeam,
-        hasApplied,
-        hasBrowsedOrgs: hasTeam || hasApplied,
-      }}
+      tutorial={{ hasTeam, hasApplied, hasBrowsedOrgs: hasTeam || hasApplied }}
     />
     </>
   );

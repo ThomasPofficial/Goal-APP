@@ -10,35 +10,19 @@ export async function GET(req: NextRequest) {
 
   const url = new URL(req.url);
   const q = url.searchParams.get("q") ?? "";
-  const category = url.searchParams.get("category") ?? "";
 
   const profiles = await prisma.profile.findMany({
     where: {
       userId: { not: session.user.id },
-      AND: [
-        q
-          ? {
-              OR: [
-                { displayName: { contains: q } },
-                { headline: { contains: q } },
-                { strengthSummary: { contains: q } },
-              ],
-            }
-          : {},
-        category
-          ? {
-              traitLinks: {
-                some: { trait: { category: category as never } },
-              },
-            }
-          : {},
-      ],
-    },
-    include: {
-      traitLinks: {
-        orderBy: { order: "asc" },
-        include: { trait: true },
-      },
+      ...(q
+        ? {
+            OR: [
+              { displayName: { contains: q } },
+              { headline: { contains: q } },
+              { strengthSummary: { contains: q } },
+            ],
+          }
+        : {}),
     },
     take: 50,
   });
@@ -49,10 +33,6 @@ export async function GET(req: NextRequest) {
     headline: p.headline,
     avatarUrl: p.avatarUrl,
     strengthSummary: p.strengthSummary,
-    selfTraits: p.traitLinks.map((l) => ({
-      name: l.trait.name,
-      category: l.trait.category,
-    })),
   }));
 
   return NextResponse.json({ profiles: formatted });
